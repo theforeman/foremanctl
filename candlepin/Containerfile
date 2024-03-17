@@ -1,0 +1,8 @@
+FROM quay.io/centos/centos:stream9
+
+RUN dnf -y install \
+    https://yum.theforeman.org/candlepin/4.3/el9/x86_64/candlepin-4.3.12-1.el9.noarch.rpm \
+    https://yum.theforeman.org/candlepin/4.3/el9/x86_64/candlepin-selinux-4.3.12-1.el9.noarch.rpm
+RUN dnf clean all
+
+CMD ["/usr/libexec/tomcat/server", "start"]

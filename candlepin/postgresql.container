@@ -1,0 +1,9 @@
+[Install]
+WantedBy=default.target
+
+[Container]
+Image=ghcr.io/theforeman/postgresql-evr:12
+ContainerName=postgresql
+Volume=postgresql.volume:/var/lib/postgresql
+Network=candlepin.network
+Secret=postgresql-root-password-container,type=env,target=POSTGRESQL_ROOT_PASSWORD
