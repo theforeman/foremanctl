@@ -5,5 +5,5 @@ WantedBy=default.target
 Image=ghcr.io/theforeman/postgresql-evr:12
 ContainerName=postgresql
 Volume=postgresql.volume:/var/lib/postgresql
-Network=candlepin.network
+PublishPort=5432
 Secret=postgresql-root-password-container,type=env,target=POSTGRESQL_ROOT_PASSWORD

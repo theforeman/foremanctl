@@ -1,0 +1,44 @@
+# Vim
+*.swo
+*.swp
+*.swn
+
+katello-installer*
+foreman-installer*
+.idea
+repo
+
+# Ansible
+*.retry
+*.pyc
+user_playbooks
+playbooks/galaxy_roles
+playbooks/galaxy_collections
+inventories/local_*
+user_devel_env_files/
+.cache
+
+# Vagrant
+.vagrant
+boxes.yaml
+vagrant/Gemfile.lock
+vagrant/settings.yaml
+vagrant/boxes.d/*-local.yaml
+vagrant/boxes.d/80-tmp-*.yaml
+
+# Packer
+packer/packer_cache/
+packer/output*
+packer/*.box
+packer/build.*
+
+# VSCode
+.vscode
+
+# local development environment
+.env
+.venv
+.python-version
+
+# mkdocs
+/site
