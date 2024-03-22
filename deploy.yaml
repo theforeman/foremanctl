@@ -46,24 +46,10 @@
       ansible.builtin.set_fact:
         root_password: "{{ lookup('community.general.random_string', special=false, length=20) }}"
 
-    - name: Create the kube secret for the postgresql root password
-      containers.podman.podman_secret:
-        name: postgresql-root-password-kube
-        state: present
-        skip_existing: true
-        data: |
-          apiVersion: v1
-          data:
-            password: "{{ root_password | b64encode }}"
-          kind: Secret
-          metadata:
-            name: postgresql-root-password-kube
-
     - name: Create the podman secret for the postgresql root password
       containers.podman.podman_secret:
         name: postgresql-root-password-container
         state: present
-        skip_existing: true
         data: "{{ root_password }}"
 
   - name: Create the Quadlet directory
