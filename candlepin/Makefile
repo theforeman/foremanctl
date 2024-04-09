@@ -1,5 +1,5 @@
 build:
-	podman build -t quay.io/ehelms/candlepin:4.3.12 .
+	podman build -t quay.io/ehelms/candlepin:${VERSION} .
 
 push:
-	podman push quay.io/ehelms/candlepin:4.3.12
+	podman push quay.io/ehelms/candlepin:${VERSION}

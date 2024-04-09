@@ -1,0 +1,10 @@
+FROM quay.io/centos/centos:stream9
+
+RUN dnf -y install \
+    https://yum.theforeman.org/nightly/el9/x86_64/foreman-release.rpm
+RUN dnf -y install foreman foreman-postgresql foreman-redis foreman-service
+RUN dnf clean all
+
+COPY container-rake /usr/bin/container-rake
+
+CMD ["/usr/share/foreman/bin/rails server", "--environment", "production"]
