@@ -1,0 +1,4 @@
+#!/bin/bash
+
+vagrant ssh-config > .vagrant/ssh-config
+py.test --hosts=quadlet --ssh-config=.vagrant/ssh-config tests/*_test.py
