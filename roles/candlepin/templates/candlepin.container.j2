@@ -1,0 +1,22 @@
+[Unit]
+Description=Candlepin
+After=local-fs.target
+
+[Container]
+Image=quay.io/candlepin/candlepin:4.3.12-1
+LogDriver=journald
+Network=host
+
+Volume=/etc/tomcat/server.xml:/etc/tomcat/server.xml:Z
+Volume=/etc/tomcat/login.config:/etc/tomcat/login.config:Z
+Volume=/etc/tomcat/cert-roles.properties:/etc/tomcat/cert-roles.properties:Z
+Volume=/etc/tomcat/cert-users.properties:/etc/tomcat/cert-users.properties:Z
+Volume=/etc/tomcat/conf.d/jaas.conf:/etc/tomcat/conf.d/jaas.conf:Z
+Volume=/etc/tomcat/tomcat.conf:/etc/tomcat/tomcat.conf:Z
+Volume=/etc/candlepin:/etc/candlepin:Z
+Volume=/var/log/candlepin:/var/log/candlepin:Z
+Volume=/var/log/tomcat:/var/log/tomcat:Z
+
+[Install]
+# Start by default on boot
+WantedBy=multi-user.target default.target

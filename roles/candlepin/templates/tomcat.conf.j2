@@ -1,0 +1,51 @@
+# This is managed by Puppet, DO NOT EDIT!
+#
+# System-wide configuration file for tomcat services
+# This will be loaded by systemd as an environment file,
+# so please keep the syntax. For shell expansion support
+#
+# There are 2 "classes" of startup behavior in this package.
+# The old one, the default service named tomcat.service.
+# The new named instances are called tomcat@instance.service.
+#
+# Use this file to change default values for all services.
+# Change the service specific ones to affect only one service.
+# For tomcat.service it's /etc/sysconfig/tomcat, for
+# tomcat@instance it's /etc/sysconfig/tomcat@instance.
+
+# This variable is used to figure out if config is loaded or not.
+TOMCAT_CFG_LOADED="1"
+
+# In new-style instances, if CATALINA_BASE isn't specified, it will
+# be constructed by joining TOMCATS_BASE and NAME.
+TOMCATS_BASE="<%= scope.lookupvar('::candlepin::tomcat_base') %>"
+
+# Where your java installation lives
+JAVA_HOME="<%= scope.lookupvar('::candlepin::java_home') %>"
+
+# Where your tomcat installation lives
+CATALINA_HOME="<%= scope.lookupvar('::candlepin::catalina_home') %>"
+
+# System-wide tmp
+CATALINA_TMPDIR="<%= scope.lookupvar('::candlepin::catalina_tmpdir') %>"
+
+# You can pass some parameters to java here if you wish to
+JAVA_OPTS="<%= scope.lookupvar('::candlepin::java_opts') %><%= scope.lookupvar('::candlepin::disable_fips') ? ' -Dcom.redhat.fips=false' : '' %>"
+
+# You can change your tomcat locale here
+<% unless [nil, :undefined, :undef, ''].include?(scope.lookupvar('::candlepin::lang')) %>
+LANG="<%= scope.lookupvar('::candlepin::lang') %>"
+<% else %>
+#LANG="en_US"
+<% end %>
+
+# Run tomcat under the Java Security Manager
+SECURITY_MANAGER="<%= scope.lookupvar('::candlepin::security_manager') ? '1' : '0' %>"
+
+# Time to wait in seconds, before killing process
+# TODO(stingray): does nothing, fix.
+<% unless [nil, :undefined, :undef, ''].include?(scope.lookupvar('::candlepin::shutdown_wait')) %>
+SHUTDOWN_WAIT="<%= scope.lookupvar('::candlepin::shutdown_wait') %>"
+<% else %>
+# SHUTDOWN_WAIT="30"
+<% end %>

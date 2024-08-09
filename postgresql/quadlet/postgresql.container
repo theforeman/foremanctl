@@ -1,9 +1,0 @@
-[Install]
-WantedBy=default.target
-
-[Container]
-Image=ghcr.io/theforeman/postgresql-evr:12
-ContainerName=postgresql
-Volume=postgresql.volume:/var/lib/postgresql
-PublishPort=5432:5432
-Secret=postgresql-root-password-container,type=env,target=POSTGRES_PASSWORD

@@ -1,0 +1,135 @@
+---
+- name: Create a podman secret for the self signed certificate
+  block:
+  - name: Create a scratch directory
+    ansible.builtin.file:
+      path: /opt/quadlet-demo/
+      state: directory
+      mode: '0755'
+
+- name: Create the podman secret for the postgresql root password
+  containers.podman.podman_secret:
+    name: postgresql-root-password-container
+    state: present
+    data: "{{ candlepin_db_password }}"
+
+- name: Create the Quadlet directory
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+  - /etc/containers
+  - /etc/containers/systemd
+
+- name: Copy the Quadlet container file
+  ansible.builtin.template:
+    src: candlepin.container.j2
+    dest: /etc/containers/systemd/candlepin.container
+    owner: root
+    group: root
+    mode: '0640'
+
+- name: Create Tomcat user
+  ansible.builtin.user:
+    name: tomcat
+
+- name: Candlepin configuration
+  block:
+  - name: Create the Candlepin config directory
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: directory
+      owner: root
+      group: root
+      mode: '0755'
+    loop:
+    - /etc/candlepin
+
+  - name: Copy Candlepin configuration
+    ansible.builtin.template:
+      src: candlepin.conf.j2
+      dest: /etc/candlepin/candlepin.conf
+      owner: root
+      group: tomcat
+      mode: '0640'
+
+  - name: Copy Candlepin broker.xml
+    ansible.builtin.template:
+      src: broker.xml.j2
+      dest: /etc/candlepin/broker.xml
+      owner: root
+      group: tomcat
+      mode: '0640'
+
+- name: Tomcat configuration
+  block:
+  - name: Create the Tomcat config directories
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: directory
+      owner: root
+      group: tomcat
+      mode: '0755'
+    loop:
+    - /etc/tomcat
+    - /etc/tomcat/conf.d
+
+  - name: Copy Tomcat configuration
+    ansible.builtin.template:
+      src: tomcat.conf.j2
+      dest: /etc/tomcat/tomcat.conf
+      owner: root
+      group: tomcat
+      mode: '0640'
+
+  - name: Copy Tomcat server config
+    ansible.builtin.template:
+      src: server.xml.j2
+      dest: /etc/tomcat/server.xml
+      owner: root
+      group: tomcat
+      mode: '0640'
+
+  - name: Copy Tomcat login config
+    ansible.builtin.template:
+      src: login.config
+      dest: /etc/tomcat/login.config
+      owner: root
+      group: tomcat
+      mode: '0640'
+
+  - name: Copy Tomcat jaas.conf
+    ansible.builtin.template:
+      src: jaas.conf
+      dest: /etc/tomcat/conf.d/jaas.conf
+      owner: root
+      group: tomcat
+      mode: '0640'
+
+  - name: Copy Tomcat cert-roles.properties
+    ansible.builtin.template:
+      src: cert-roles.properties
+      dest: /etc/tomcat/cert-roles.properties
+      owner: root
+      group: tomcat
+      mode: '0640'
+
+  - name: Copy Tomcat cert-users.properties
+    ansible.builtin.template:
+      src: cert-users.properties.j2
+      dest: /etc/tomcat/cert-users.properties
+      owner: root
+      group: tomcat
+      mode: '0640'
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start the Quadlet Demo Service
+  ansible.builtin.systemd:
+    name: candlepin
+    state: started

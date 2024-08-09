@@ -2,7 +2,10 @@
 - name: Setup quadlet demo machine
   hosts: all
   become: true
-  tasks:
+  vars:
+    candlepin_db_password: "{{ lookup('community.general.random_string', special=false, length=20) }}"
+    candlepin_artemis_client_dn: "CN=katello"
+  pre_tasks:
   - name: Upgrade all packages
     ansible.builtin.package:
       name: "*"
@@ -31,59 +34,13 @@
     when:
     - services['firewalld.service'] is defined
     - services['firewalld.service']['state'] == 'running'
-
-  - name: Create a podman secret for the self signed certificate
-    block:
-    - name: Create a scratch directory
-      ansible.builtin.file:
-        path: /opt/quadlet-demo/
-        state: directory
-        mode: '0755'
-
-  - name: Create the secrets for the postgresql server
-    block:
-    - name: Create random string and save it in root_password
-      ansible.builtin.set_fact:
-        root_password: "{{ lookup('community.general.random_string', special=false, length=20) }}"
-
-    - name: Create the podman secret for the postgresql root password
-      containers.podman.podman_secret:
-        name: postgresql-root-password-container
-        state: present
-        data: "{{ root_password }}"
-
-  - name: Create the Quadlet directory
-    ansible.builtin.file:
-      path: "{{ item }}"
-      state: directory
-      owner: root
-      group: root
-      mode: '0755'
-    loop:
-    - /etc/containers
-    - /etc/containers/systemd
-
-  - name: Copy the Quadlet files
-    ansible.builtin.copy:
-      src: candlepin/quadlet/
-      dest: /etc/containers/systemd
-      owner: root
-      group: root
-      mode: '0644'
-
-  - name: Copy the Postgresql files
-    ansible.builtin.copy:
-      src: postgresql/quadlet/
-      dest: /etc/containers/systemd
-      owner: root
-      group: root
-      mode: '0644'
-
-  - name: Run daemon reload to make Quadlet create the service files
-    ansible.builtin.systemd:
-      daemon_reload: true
-
-  - name: Start the Quadlet Demo Service
-    ansible.builtin.systemd:
-      name: candlepin
-      state: started
+  roles:
+    - role: geerlingguy.postgresql
+      vars:
+        postgresql_databases:
+        - name: candlepin
+        postgresql_users:
+          - name: candlepin
+            password: "{{ candlepin_db_password }}"
+            db: candlepin
+    - candlepin

@@ -3,3 +3,6 @@ collections:
 - community.crypto
 - ansible.posix
 - containers.podman
+
+roles:
+- geerlingguy.postgresql
