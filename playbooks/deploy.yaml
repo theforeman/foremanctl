@@ -3,16 +3,27 @@
   hosts: all
   become: true
   vars:
-    candlepin_db_password: "{{ lookup('community.general.random_string', special=false, length=20) }}"
+    #candlepin_db_password: "{{ lookup('community.general.random_string', special=false, length=36) }}"
+    candlepin_db_password: "changeme"
     candlepin_artemis_client_dn: "CN=katello"
     candlepin_ca_key: "{{ certificates_ca_directory }}/private/ca.key"
     candlepin_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
+    candlepin_tomcat_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}.key"
+    candlepin_tomcat_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}.crt"
+    candlepin_client_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}-client.crt"
     postgresql_databases:
     - name: candlepin
+      owner: candlepin
     postgresql_users:
       - name: candlepin
         password: "{{ candlepin_db_password }}"
-        db: candlepin
+    postgresql_hba_entries:
+      - { type: local, database: all, user: postgres, auth_method: ident }
+      - { type: local, database: all, user: all, auth_method: ident }
+      - { type: host, database: all, user: postgres, address: '127.0.0.1/32', auth_method: md5 }
+      - { type: host, database: all, user: postgres, address: '0.0.0.0/0', auth_method: reject }
+      - { type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: md5 }
+      - { type: host, database: all, user: all, address: '::1/128', auth_method: md5 }
   roles:
     - certificates
     - geerlingguy.postgresql

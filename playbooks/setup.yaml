@@ -2,9 +2,6 @@
 - name: Setup quadlet demo machine
   hosts: all
   become: true
-  vars:
-    candlepin_db_password: "{{ lookup('community.general.random_string', special=false, length=20) }}"
-    candlepin_artemis_client_dn: "CN=katello"
   pre_tasks:
   - name: Upgrade all packages
     ansible.builtin.package:

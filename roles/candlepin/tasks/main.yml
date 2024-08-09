@@ -1,12 +1,4 @@
 ---
-- name: Create a podman secret for the self signed certificate
-  block:
-  - name: Create a scratch directory
-    ansible.builtin.file:
-      path: /opt/quadlet-demo/
-      state: directory
-      mode: '0755'
-
 - name: Create the podman secret for the postgresql root password
   containers.podman.podman_secret:
     name: postgresql-root-password-container

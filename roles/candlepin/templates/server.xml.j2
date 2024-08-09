@@ -78,8 +78,6 @@
                keystoreFile="/etc/candlepin/certs/keystore"
                keystorePass="{{ candlepin_keystore_password }}"
                keystoreType="PKCS12"
-               truststoreFile="/etc/candlepin/certs/truststore"
-               truststorePass="{{ candlepin_truststore_password }}"
                ciphers="{{ candlepin_ciphers | join(',\n                   ') }}"
     />
 

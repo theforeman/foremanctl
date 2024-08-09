@@ -19,6 +19,8 @@ Volume=/var/log/tomcat:/var/log/tomcat:Z
 
 Secret=candlepin-ca-cert,target=/etc/candlepin/certs/candlepin-ca.crt,mode=0440
 Secret=candlepin-ca-key,target=/etc/candlepin/certs/candlepin-ca.key,mode=0440
+Secret=candlepin-tomcat-keystore,target=/etc/candlepin/certs/keystore,mode=0440
+Secret=candlepin-tomcat-truststore,target=/etc/candlepin/certs/truststore,mode=0440
 
 [Install]
 # Start by default on boot

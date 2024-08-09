@@ -1,4 +1,31 @@
 ---
+- name: Set password fact
+  ansible.builtin.set_fact:
+    candlepin_keystore_password: "changeme"
+    candlepin_truststore_password: "changeme"
+
+- name: Generate keystore
+  community.crypto.openssl_pkcs12:
+    action: export
+    passphrase: "{{ candlepin_keystore_password }}"
+    path: "/root/candlepin.keystore"
+    friendly_name: 'tomcat'
+    privatekey_path: "{{ candlepin_tomcat_key }}"
+    certificate_path: "{{ candlepin_tomcat_certificate }}"
+    other_certificates: "{{ candlepin_ca_certificate }}"
+    state: present
+
+- name: Generate truststore
+  community.crypto.openssl_pkcs12:
+    action: export
+    passphrase: "{{ candlepin_truststore_password }}"
+    path: "/root/candlepin.truststore"
+    friendly_name: 'tomcat'
+    other_certificates:
+    - "{{ candlepin_ca_certificate }}"
+    - "{{ candlepin_client_certificate }}"
+    state: present
+
 - name: Create the podman secret for Candlepin CA certificate
   containers.podman.podman_secret:
     name: candlepin-ca-cert
@@ -10,3 +37,27 @@
     name: candlepin-ca-key
     path: "{{ candlepin_ca_key }}"
     state: present
+
+- name: Create the podman secret for Tomcat keystore
+  containers.podman.podman_secret:
+    name: candlepin-tomcat-keystore
+    path: "/root/candlepin.keystore"
+    state: present
+
+- name: Create the podman secret for Tomcat keystore
+  containers.podman.podman_secret:
+    name: candlepin-tomcat-truststore
+    path: "/root/candlepin.truststore"
+    state: present
+
+- name: Create the podman secret for the keystore password
+  containers.podman.podman_secret:
+    name: candlepin-tomcat-keystore-password
+    state: present
+    data: "{{ candlepin_keystore_password }}"
+
+- name: Create the podman secret for the truststore password
+  containers.podman.podman_secret:
+    name: candlepin-tomcat-truststore-password
+    state: present
+    data: "{{ candlepin_truststore_password }}"
