@@ -1,20 +1,3 @@
-<%- |
-  String[1] $module_name,
-  Stdlib::Host $host,
-  Stdlib::Port $ssl_port,
-  Array[String] $ciphers,
-  Array[String] $tls_versions,
-  Stdlib::Absolutepath $keystore_file,
-  Optional[Sensitive[String]] $keystore_password,
-  String $keystore_type,
-  Stdlib::Absolutepath $truststore_file,
-  Optional[Sensitive[String]] $truststore_password,
-| -%>
-<?xml version='1.0' encoding='utf-8'?>
-<!--
-  File managed with puppet ###
-  Module: '<%= $module_name %>'
--->
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
@@ -84,20 +67,22 @@
          connector should be using the OpenSSL style configuration
          described in the APR documentation -->
 
-    <Connector port="<%= $ssl_port %>"
-               address="<%= $host %>"
+    <Connector port="{{ candlepin_ssl_port }}"
+               address="{{ candlepin_hostname }}"
                protocol="HTTP/1.1"
                SSLEnabled="true"
                maxThreads="150" scheme="https" secure="true"
                clientAuth="want"
-               sslProtocol="<%= $tls_versions.map |$version| { "TLSv${version}" }.join(",") %>"
-               sslEnabledProtocols="<%= $tls_versions.map |$version| { "TLSv${version}" }.join(",") %>"
-               keystoreFile="<%= $keystore_file %>"
-               keystorePass="<%= $keystore_password %>"
-               keystoreType="<%= $keystore_type %>"
-               truststoreFile="<%= $truststore_file %>"
-               truststorePass="<%= $truststore_password %>"
-               ciphers="<%= $ciphers.join(",\n                    ") %>" />
+               sslProtocol="{{ candlepin_tls_versions | join(',') }}"
+               sslEnabledProtocols="{{ candlepin_tls_versions | join(',') }}"
+               keystoreFile="/etc/candlepin/certs/keystore"
+               keystorePass="{{ candlepin_keystore_password }}"
+               keystoreType="PKCS12"
+               truststoreFile="/etc/candlepin/certs/truststore"
+               truststorePass="{{ candlepin_truststore_password }}"
+               ciphers="{{ candlepin_ciphers | join(',\n                   ') }}"
+    />
+
 
     <!-- An Engine represents the entry point (within Catalina) that processes
          every request.  The Engine implementation for Tomcat stand alone

@@ -1,5 +1,3 @@
-# This is managed by Puppet, DO NOT EDIT!
-#
 # System-wide configuration file for tomcat services
 # This will be loaded by systemd as an environment file,
 # so please keep the syntax. For shell expansion support
@@ -18,34 +16,19 @@ TOMCAT_CFG_LOADED="1"
 
 # In new-style instances, if CATALINA_BASE isn't specified, it will
 # be constructed by joining TOMCATS_BASE and NAME.
-TOMCATS_BASE="<%= scope.lookupvar('::candlepin::tomcat_base') %>"
+TOMCATS_BASE="/var/lib/tomcats/"
 
 # Where your java installation lives
-JAVA_HOME="<%= scope.lookupvar('::candlepin::java_home') %>"
+JAVA_HOME="/usr/lib/jvm/jre-17"
 
 # Where your tomcat installation lives
-CATALINA_HOME="<%= scope.lookupvar('::candlepin::catalina_home') %>"
+CATALINA_HOME="/usr/share/tomcat"
 
 # System-wide tmp
-CATALINA_TMPDIR="<%= scope.lookupvar('::candlepin::catalina_tmpdir') %>"
+CATALINA_TMPDIR="/var/cache/tomcat/temp"
 
 # You can pass some parameters to java here if you wish to
-JAVA_OPTS="<%= scope.lookupvar('::candlepin::java_opts') %><%= scope.lookupvar('::candlepin::disable_fips') ? ' -Dcom.redhat.fips=false' : '' %>"
-
-# You can change your tomcat locale here
-<% unless [nil, :undefined, :undef, ''].include?(scope.lookupvar('::candlepin::lang')) %>
-LANG="<%= scope.lookupvar('::candlepin::lang') %>"
-<% else %>
-#LANG="en_US"
-<% end %>
+JAVA_OPTS="-Xms1024m -Xmx4096m -Dcom.redhat.fips=false"
 
 # Run tomcat under the Java Security Manager
-SECURITY_MANAGER="<%= scope.lookupvar('::candlepin::security_manager') ? '1' : '0' %>"
-
-# Time to wait in seconds, before killing process
-# TODO(stingray): does nothing, fix.
-<% unless [nil, :undefined, :undef, ''].include?(scope.lookupvar('::candlepin::shutdown_wait')) %>
-SHUTDOWN_WAIT="<%= scope.lookupvar('::candlepin::shutdown_wait') %>"
-<% else %>
-# SHUTDOWN_WAIT="30"
-<% end %>
+SECURITY_MANAGER="0"

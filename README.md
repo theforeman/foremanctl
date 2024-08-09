@@ -8,7 +8,8 @@ This setup usess Vagrant to create a basic VM for running the deployment on:
 
 ```
 vagrant up quadlet
-ansible-playbook deploy.yml
+ansible-playbook playbooks/setup.yaml
+ansible-playbook playbooks/deploy.yaml
 ```
 
 
@@ -19,7 +20,8 @@ To run tests:
 Ensure you have a deployment
 ```
 vagrant up quadlet
-ansible-playbook deploy.yml
+ansible-playbook playbooks/setup.yaml
+ansible-playbook playbooks/deploy.yaml
 ```
 
 Now run the tests:

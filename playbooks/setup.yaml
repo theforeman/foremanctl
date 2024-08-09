@@ -34,13 +34,3 @@
     when:
     - services['firewalld.service'] is defined
     - services['firewalld.service']['state'] == 'running'
-  roles:
-    - role: geerlingguy.postgresql
-      vars:
-        postgresql_databases:
-        - name: candlepin
-        postgresql_users:
-          - name: candlepin
-            password: "{{ candlepin_db_password }}"
-            db: candlepin
-    - candlepin

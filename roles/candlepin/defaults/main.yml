@@ -1,0 +1,24 @@
+---
+candlepin_truststore_password: changeme
+candlepin_keystore_password: changeme
+candlepin_oauth_secret: changeme
+candlepin_artemis_client_dn: changeme
+candlepin_ssl_port: 23443
+candlepin_hostname: localhost
+candlepin_tls_versions:
+  - "TLSv1.2"
+candlepin_ciphers:
+  - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+  - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+  - TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384
+  - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
+  - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+  - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+  - TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256
+  - TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256
+
+candlepin_ca_certificate:
+candlepin_ca_key:
+candlepin_tomcat_certificate:
+candlepin_tomcat_key:
+candlepin_tomcat_client_certificate:

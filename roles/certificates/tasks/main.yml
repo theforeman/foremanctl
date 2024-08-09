@@ -1,0 +1,124 @@
+---
+- name: 'Install openssl'
+  yum:
+    name: openssl
+    state: present
+
+- name: 'Create certs directory'
+  file:
+    path: "{{ certificates_ca_directory_certs }}"
+    state: directory
+    mode: 0755
+
+- name: 'Create keys directory'
+  file:
+    path: "{{ certificates_ca_directory_keys }}"
+    state: directory
+    mode: 0755
+
+- name: 'Create requests directory'
+  file:
+    path: "{{ certificates_ca_directory_requests }}"
+    state: directory
+    mode: 0755
+
+- name: 'Deploy configuration file'
+  template:
+    src: openssl.cnf.j2
+    dest: "{{ certificates_ca_directory }}/openssl.cnf"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: 'Create index file'
+  file:
+    path: "{{ certificates_ca_directory }}/index.txt"
+    state: touch
+    owner: root
+    group: root
+    mode: 0644
+
+- name: 'Ensure serial starting number'
+  template:
+    src: serial.j2
+    dest: "{{ certificates_ca_directory }}/serial"
+    force: no
+    owner: root
+    group: root
+    mode: 0644
+
+- name: 'Creating CA certificate and key'
+  command: >
+    openssl req -new
+      -x509
+      -nodes
+      -extensions v3_ca
+      -config "{{ certificates_ca_directory }}/openssl.cnf"
+      -keyout "{{ certificates_ca_directory_keys }}/ca.key"
+      -out "{{ certificates_ca_directory_certs }}/ca.crt"
+  args:
+    creates: "{{ certificates_ca_directory_certs }}/ca.crt"
+
+- name: 'Create server key'
+  command: >
+    openssl genrsa
+      -out "{{ certificates_ca_directory_keys }}/{{ certificates_server }}.key"
+  args:
+    creates: "{{ certificates_ca_directory_keys }}/{{ certificates_server }}.key"
+
+- name: 'Create server signing request'
+  command: >
+    openssl req
+      -new
+      -config "{{ certificates_ca_directory }}/openssl.cnf"
+      -key "{{ certificates_ca_directory_keys }}/{{ certificates_server }}.key"
+      -out "{{ certificates_ca_directory_requests }}/{{ certificates_server }}.csr"
+  args:
+    creates: "{{ certificates_ca_directory_requests }}/{{ certificates_server }}.csr"
+
+- name: 'Create server certificate'
+  command: >
+    openssl ca
+      -create_serial
+      -batch
+      -extensions ssl_server
+      -config "{{ certificates_ca_directory }}/openssl.cnf"
+      -in "{{ certificates_ca_directory_requests }}/{{ certificates_server }}.csr"
+      -out "{{ certificates_ca_directory_certs }}/{{ certificates_server }}.crt"
+  args:
+    creates: "{{ certificates_ca_directory_certs }}/{{ certificates_server }}.crt"
+
+- name: 'Create client key'
+  command: >
+    openssl genrsa
+      -out "{{ certificates_ca_directory_keys }}/{{ certificates_client }}.key"
+  args:
+    creates: "{{ certificates_ca_directory_keys }}/{{ certificates_client }}.key"
+
+- name: 'Create client signing request'
+  command: >
+    openssl req
+      -new
+      -config "{{ certificates_ca_directory }}/openssl.cnf"
+      -key "{{ certificates_ca_directory_keys }}/{{ certificates_client }}.key"
+      -out "{{ certificates_ca_directory_requests }}/{{ certificates_client }}.csr"
+  args:
+    creates: "{{ certificates_ca_directory_requests }}/{{ certificates_client }}.csr"
+
+- name: 'Create server certificate'
+  command: >
+    openssl ca
+      -create_serial
+      -batch
+      -extensions ssl_client
+      -config "{{ certificates_ca_directory }}/openssl.cnf"
+      -in "{{ certificates_ca_directory_requests }}/{{ certificates_client }}.csr"
+      -out "{{ certificates_ca_directory_certs }}/{{ certificates_client }}.crt"
+  args:
+    creates: "{{ certificates_ca_directory_certs }}/{{ certificates_client }}.crt"
+
+- include_tasks: issue.yml
+  when: certificates_hostnames is defined
+  with_items: "{{ certificates_hostnames }}"
+  loop_control:
+    loop_var: certificates_hostname

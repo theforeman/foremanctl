@@ -47,6 +47,7 @@
       mode: '0755'
     loop:
     - /etc/candlepin
+    - /var/log/candlepin
 
   - name: Copy Candlepin configuration
     ansible.builtin.template:
@@ -64,6 +65,9 @@
       group: tomcat
       mode: '0640'
 
+- ansible.builtin.include_tasks:
+    file: certs.yml
+
 - name: Tomcat configuration
   block:
   - name: Create the Tomcat config directories
@@ -76,6 +80,7 @@
     loop:
     - /etc/tomcat
     - /etc/tomcat/conf.d
+    - /var/log/tomcat
 
   - name: Copy Tomcat configuration
     ansible.builtin.template:
@@ -132,4 +137,4 @@
 - name: Start the Quadlet Demo Service
   ansible.builtin.systemd:
     name: candlepin
-    state: started
+    state: restarted
