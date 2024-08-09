@@ -29,3 +29,8 @@ Now run the tests:
 ```
 ./run_tests
 ```
+
+## TODOs:
+
+ * scram-sha-256 for the postgresql configuration
+ * Add in truststore for Candlepin? I removed it to reduce complexity
