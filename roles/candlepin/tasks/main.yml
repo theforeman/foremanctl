@@ -5,6 +5,14 @@
     state: present
     data: "{{ candlepin_db_password }}"
 
+- name: Extract the DN from the client certificate
+  ansible.builtin.command: "openssl x509 -in {{ candlepin_client_certificate }} -noout -subject -nameopt rfc2253"
+  register: openssl_response
+
+- name: Set candlepin_artemis_client_dn
+  ansible.builtin.set_fact:
+    candlepin_artemis_client_dn: "{{ openssl_response.stdout | replace('subject=', '') }}"
+
 - name: Create the Quadlet directory
   ansible.builtin.file:
     path: "{{ item }}"
