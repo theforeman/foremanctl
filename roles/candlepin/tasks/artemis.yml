@@ -1,0 +1,48 @@
+---
+- name: Extract the DN from the client certificate
+  ansible.builtin.command: "openssl x509 -in {{ candlepin_client_certificate }} -noout -subject -nameopt rfc2253"
+  register: openssl_response
+
+- name: Set candlepin_artemis_client_dn
+  ansible.builtin.set_fact:
+    candlepin_artemis_client_dn: "{{ openssl_response.stdout | replace('subject=', '') }}"
+
+- name: Copy Candlepin broker.xml
+  ansible.builtin.template:
+    src: broker.xml.j2
+    dest: /etc/candlepin/broker.xml
+    owner: root
+    group: tomcat
+    mode: '0640'
+
+- name: Copy Tomcat login config
+  ansible.builtin.template:
+    src: login.config
+    dest: /etc/tomcat/login.config
+    owner: root
+    group: tomcat
+    mode: '0640'
+
+- name: Copy Tomcat jaas.conf
+  ansible.builtin.template:
+    src: jaas.conf
+    dest: /etc/tomcat/conf.d/jaas.conf
+    owner: root
+    group: tomcat
+    mode: '0640'
+
+- name: Copy Tomcat cert-roles.properties
+  ansible.builtin.template:
+    src: cert-roles.properties
+    dest: /etc/tomcat/cert-roles.properties
+    owner: root
+    group: tomcat
+    mode: '0640'
+
+- name: Copy Tomcat cert-users.properties
+  ansible.builtin.template:
+    src: cert-users.properties.j2
+    dest: /etc/tomcat/cert-users.properties
+    owner: root
+    group: tomcat
+    mode: '0640'
