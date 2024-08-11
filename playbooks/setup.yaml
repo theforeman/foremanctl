@@ -17,6 +17,7 @@
       - podman
       - python3-cryptography
       - bash-completion
+      - nmap
 
   - name: Populate service facts
     ansible.builtin.service_facts:
