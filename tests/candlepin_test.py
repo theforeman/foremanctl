@@ -47,3 +47,13 @@ def test_tls(host):
 
     # Test that the least cipher strength is "strong" or "A"
     assert "least strength: A" in result
+
+
+def test_cert_roles(host):
+    file = host.file('/etc/tomcat/cert-roles.properties')
+    assert file.exists
+    assert file.is_file
+    assert file.mode == 0o640
+    assert file.user == 'root'
+    assert file.group == 'tomcat'
+    assert file.contains('candlepinEventsConsumer=katelloUser')
