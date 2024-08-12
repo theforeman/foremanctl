@@ -14,3 +14,9 @@ candlepin_ciphers:
   - TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256
 candlepin_container_image: quay.io/ehelms/candlepin
 candlepin_container_tag: 4.4.14
+
+candlepin_db_host: localhost
+candlepin_db_port: 5432
+candlepin_db_ssl: False
+candlepin_db_ssl_ca: None
+candlepin_db_ssl_verify: True
