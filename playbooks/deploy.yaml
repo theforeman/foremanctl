@@ -3,7 +3,9 @@
   hosts: all
   become: true
   vars:
-    candlepin_db_password: "{{ lookup('community.general.random_string', special=false, length=36) }}"
+    candlepin_db_password: "CHANGEME"
+    candlepin_keystore_password: "CHANGEME"
+    candlepin_oauth_secret: "CHANGEME"
     candlepin_ca_key: "{{ certificates_ca_directory }}/private/ca.key"
     candlepin_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
     candlepin_tomcat_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}.key"

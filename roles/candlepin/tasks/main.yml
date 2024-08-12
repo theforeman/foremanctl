@@ -60,18 +60,18 @@
     - /etc/tomcat/conf.d
     - /var/log/tomcat
 
-  - name: Copy Tomcat configuration
+  - name: Copy Tomcat server config
     ansible.builtin.template:
-      src: tomcat.conf.j2
-      dest: /etc/tomcat/tomcat.conf
+      src: server.xml.j2
+      dest: /etc/tomcat/server.xml
       owner: root
       group: tomcat
       mode: '0640'
 
   - name: Copy Tomcat server config
     ansible.builtin.template:
-      src: server.xml.j2
-      dest: /etc/tomcat/server.xml
+      src: tomcat.conf
+      dest: /etc/tomcat/tomcat.conf
       owner: root
       group: tomcat
       mode: '0640'
