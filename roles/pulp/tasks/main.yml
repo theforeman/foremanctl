@@ -1,0 +1,10 @@
+---
+- name: Deploy Pulp Quadlet service
+  ansible.builtin.template:
+    src: pulp.container.j2
+    dest: /etc/containers/systemd/pulp.container
+    mode: '0644'
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes

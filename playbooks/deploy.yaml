@@ -28,3 +28,4 @@
     - certificates
     - geerlingguy.postgresql
     - candlepin
+    - pulp

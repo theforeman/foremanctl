@@ -1,0 +1,15 @@
+[Unit]
+Description=Pulp 
+After=network.target
+
+[Container]
+Image={{ pulp_image }}
+ContainerName={{ pulp_container_name }}
+PublishPort={{ pulp_ports }}:80
+{% for volume in pulp_volumes %}
+Volume={{ volume }}
+{% endfor %}
+Environment=PULP_CONTENT_ORIGIN=http://{{ ansible_hostname }}:{{ pulp_port }}
+
+[Install]
+WantedBy=multi-user.target

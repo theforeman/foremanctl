@@ -1,0 +1,9 @@
+---
+pulp_image: quay.io/pulp/pulp:stable
+pulp_ports: 8080
+pulp_volumes:
+  - pulp_settings:/etc/pulp:Z
+  - pulp_storage:/var/lib/pulp:Z
+  - pulp_pgsql:/var/lib/pgsql:Z
+  - pulp_containers:/var/lib/containers:Z
+pulp_container_name: pulp
