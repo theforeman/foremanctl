@@ -1,0 +1,24 @@
+---
+- name: Pull the Pulp container image
+  containers.podman.podman_image:
+    name: "{{ pulp_image }}"
+    state: present
+
+- name: Deploy Pulp Container
+  containers.podman.podman_container:
+    name: "{{ pulp_container_name }}"
+    image: "{{ pulp_image }}"
+    state: started
+    restart_policy: always
+    ports:  
+      - "{{ pulp_ports }}"
+    volumes:
+      - "{{ pulp_volumes }}"
+    env:
+      PULP_CONTENT_ORIGIN: "http://{{ ansible_hostname }}:8080"
+
+- name: Wait for Pulp service to be accessible
+  wait_for:
+    host: "{{ ansible_hostname }}"
+    port: 8080
+    timeout: 300

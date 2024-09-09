@@ -38,3 +38,4 @@
     - candlepin
     - foreman-proxy
     - redis
+    - pulp
