@@ -1,4 +1,3 @@
----
 - name: Pull the Pulp container image
   containers.podman.podman_image:
     name: "{{ pulp_image }}"
