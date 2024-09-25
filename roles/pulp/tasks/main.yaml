@@ -14,12 +14,20 @@
   containers.podman.podman_container:
     name: "{{ pulp_container_name }}"
     image: "{{ pulp_image }}"
-    state: started
-    restart_policy: always
+    state: quadlet
     ports: "{{ pulp_ports }}"
     volumes: "{{ pulp_volumes }}"
     env:
       PULP_CONTENT_ORIGIN: "http://{{ ansible_hostname }}:8080"
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start the Pulp Service
+  ansible.builtin.systemd:
+    name: pulp
+    state: restarted
 
 - name: Wait for Pulp service to be accessible
   wait_for:
