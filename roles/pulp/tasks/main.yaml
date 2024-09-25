@@ -4,6 +4,12 @@
     name: "{{ pulp_image }}"
     state: present
 
+- name: Create Pulp storage
+  ansible.builtin.file:
+    path: "{{ item | split(':') | first }}"
+    state: directory
+  loop: "{{ pulp_volumes }}"
+
 - name: Deploy Pulp Container
   containers.podman.podman_container:
     name: "{{ pulp_container_name }}"
