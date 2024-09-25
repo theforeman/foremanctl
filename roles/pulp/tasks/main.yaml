@@ -16,10 +16,8 @@
     image: "{{ pulp_image }}"
     state: started
     restart_policy: always
-    ports:  
-      - "{{ pulp_ports }}"
-    volumes:
-      - "{{ pulp_volumes }}"
+    ports: "{{ pulp_ports }}"
+    volumes: "{{ pulp_volumes }}"
     env:
       PULP_CONTENT_ORIGIN: "http://{{ ansible_hostname }}:8080"
 
