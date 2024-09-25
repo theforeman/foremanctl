@@ -1,5 +1,5 @@
 ---
-pulp_image: pulp/pulp:stable
+pulp_image: quay.io/pulp/pulp:stable
 pulp_ports:
   - "8080:80"
 pulp_volumes:
