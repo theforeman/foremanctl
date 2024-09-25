@@ -3,7 +3,8 @@ collections:
 - community.postgresql
 - community.crypto
 - ansible.posix
-- containers.podman
+- name: containers.podman
+  version: ">=1.14.0"
 
 roles:
 - geerlingguy.postgresql
