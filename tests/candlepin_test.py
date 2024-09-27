@@ -15,6 +15,7 @@ def test_candlepin_port(host):
 def test_candlepin_status(host):
     status = host.run('curl -k -s -o /dev/null -w \'%{http_code}\' https://localhost:23443/candlepin/status')
     assert status.succeeded
+    assert status.stdout == '200'
 
 
 def test_artemis_port(host):
