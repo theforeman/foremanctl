@@ -27,6 +27,7 @@
 - name: Start the Pulp Service
   ansible.builtin.systemd:
     name: pulp
+    enabled: true
     state: restarted
 
 - name: Wait for Pulp service to be accessible
