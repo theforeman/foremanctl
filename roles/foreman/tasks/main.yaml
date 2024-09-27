@@ -1,0 +1,115 @@
+---
+- name: Pull the Foreman container image
+  containers.podman.podman_image:
+    name: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
+    state: present
+
+- name: Create secret for DATABASE_URL
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-database-url
+    data: "postgresql://foreman:{{ foreman_db_password }}@localhost/foreman"
+
+- name: Create settings config secret
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-settings-yaml
+    data: "{{ lookup('ansible.builtin.template', 'settings.yaml.j2') }}"
+
+- name: Create katello config secret
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-katello-yaml
+    data: "{{ lookup('ansible.builtin.template', 'katello.yaml.j2') }}"
+
+- name: Create the podman secret for Foreman CA certificate
+  containers.podman.podman_secret:
+    name: foreman-ca-cert
+    path: "{{ foreman_ca_certificate }}"
+    state: present
+
+- name: Create the podman secret for Foreman client certificate
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-client-cert
+    path: "{{ foreman_client_certificate }}"
+
+- name: Create the podman secret for Foreman client key
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-client-key
+    path: "{{ foreman_client_key }}"
+
+- name: Deploy Foreman Container
+  containers.podman.podman_container:
+    name: "foreman"
+    image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
+    state: quadlet
+    network: host
+    hostname: "{{ ansible_fqdn }}"
+    secrets:
+      - 'foreman-database-url,type=env,target=DATABASE_URL'
+      - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
+      - 'foreman-katello-yaml,type=mount,target=/etc/foreman/plugins/katello.yaml'
+      - 'foreman-ca-cert,type=mount,target=/etc/foreman/katello-default-ca.crt'
+      - 'foreman-client-cert,type=mount,target=/etc/foreman/client_cert.pem'
+      - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
+    env:
+      SEED_ADMIN_PASSWORD: changeme
+
+- name: Deploy Dynflow Container
+  containers.podman.podman_container:
+    name: "dynflow-sidekiq-%i"
+    quadlet_filename: "dynflow-sidekiq@"
+    image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
+    state: quadlet
+    network: host
+    hostname: "{{ ansible_fqdn }}"
+    secrets:
+      - 'foreman-database-url,type=env,target=DATABASE_URL'
+      - 'foreman-katello-yaml,type=mount,target=/etc/foreman/plugins/katello.yaml'
+      - 'foreman-ca-cert,type=mount,target=/etc/foreman/katello-default-ca.crt'
+      - 'foreman-client-cert,type=mount,target=/etc/foreman/client_cert.pem'
+      - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
+    env:
+      DYNFLOW_SIDEKIQ_SCRIPT: "/usr/share/foreman/extras/dynflow-sidekiq.rb"
+      DYNFLOW_REDIS_URL: "redis://localhost:6379/6"
+      REDIS_PROVIDER: "DYNFLOW_REDIS_URL"
+    command: "/usr/libexec/foreman/sidekiq-selinux -e production -r /usr/share/foreman/extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yml"
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start the Foreman Service
+  ansible.builtin.systemd:
+    name: foreman
+    enabled: true
+    state: started
+
+- name: Start the Dynflow Services
+  ansible.builtin.systemd:
+    name: "dynflow-sidekiq@{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - orchestrator
+    - worker
+
+- name: Wait for Foreman service to be accessible
+  ansible.builtin.uri:
+    url: 'http://{{ ansible_hostname }}:3000/api/v2/ping'
+  until: foreman_status.status == 200
+  retries: 60
+  delay: 5
+  register: foreman_status
+
+- name: Wait for Foreman tasks to be ready
+  ansible.builtin.uri:
+    url: 'http://{{ ansible_hostname }}:3000/api/v2/ping'
+  until: foreman_tasks_status.json['results']['katello']['services']['foreman_tasks']['status'] == 'ok'
+  retries: 60
+  delay: 5
+  register: foreman_tasks_status
+  when:
+    - "'katello' in foreman_status.json['results']"

@@ -1,0 +1,12 @@
+---
+:ssl_certificate: /etc/foreman/client_cert.pem
+:ssl_ca_file: /etc/foreman/katello-default-ca.crt
+:ssl_priv_key: /etc/foreman/client_key.pem
+
+:rails_cache_store:
+  :type: redis
+  :urls:
+    - redis://localhost:6379/4
+  :options:
+    :compress: true
+    :namespace: foreman
