@@ -19,6 +19,17 @@
       - bash-completion
       - nmap
 
+  - name: Configure pulpcore repository
+    ansible.builtin.yum_repository:
+      name: pulpcore
+      description: pulpcore nightly
+      baseurl: https://yum.theforeman.org/pulpcore/nightly/el9/x86_64/
+      gpgcheck: false
+
+  - name: Install postgresql-evr
+    ansible.builtin.package:
+      name: postgresql-evr
+
   - name: Populate service facts
     ansible.builtin.service_facts:
 
