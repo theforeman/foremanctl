@@ -35,3 +35,4 @@
     - geerlingguy.postgresql
     - candlepin
     - foreman-proxy
+    - redis
