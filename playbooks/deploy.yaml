@@ -10,6 +10,7 @@
     candlepin_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
     candlepin_tomcat_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}.key"
     candlepin_tomcat_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}.crt"
+    candlepin_client_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}-client.key"
     candlepin_client_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}-client.crt"
     postgresql_databases:
     - name: candlepin
