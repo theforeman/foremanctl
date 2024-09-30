@@ -1,0 +1,43 @@
+---
+name: Test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+
+concurrency:
+  group: ${{ github.ref_name }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Setup libvirt for Vagrant
+        run: |
+          sudo add-apt-repository --yes ppa:evgeni/vagrant
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends vagrant vagrant-libvirt libvirt-clients libvirt-daemon-system libvirt-daemon qemu-system-x86 qemu-utils dnsmasq
+          sudo chmod 666 /var/run/libvirt/libvirt-sock
+      - name: Install Ansible
+        run: pip install --upgrade ansible-core
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Install collection dependencies
+        run: ansible-galaxy install -r requirements.yml
+      - name: Start VM
+        run: vagrant up quadlet
+      - name: Run deployment
+        run: |
+          ansible-playbook playbooks/setup.yaml
+          ansible-playbook playbooks/deploy.yaml
+      - name: Run tests
+        run: ./run_tests
