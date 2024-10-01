@@ -10,6 +10,17 @@
     other_certificates: "{{ candlepin_ca_certificate }}"
     state: present
 
+- name: Generate truststore
+  community.crypto.openssl_pkcs12:
+    action: export
+    passphrase: "{{ candlepin_keystore_password }}"
+    path: "/root/candlepin.truststore"
+    friendly_name: 'artemis-client'
+    privatekey_path: "{{ candlepin_client_key }}"
+    certificate_path: "{{ candlepin_client_certificate }}"
+    other_certificates: "{{ candlepin_ca_certificate }}"
+    state: present
+
 - name: Create the podman secret for Candlepin CA certificate
   containers.podman.podman_secret:
     name: candlepin-ca-cert
@@ -26,6 +37,12 @@
   containers.podman.podman_secret:
     name: candlepin-tomcat-keystore
     path: "/root/candlepin.keystore"
+    state: present
+
+- name: Create the podman secret for Tomcat truststore
+  containers.podman.podman_secret:
+    name: candlepin-tomcat-truststore
+    path: "/root/candlepin.truststore"
     state: present
 
 - name: Create the podman secret for the keystore password

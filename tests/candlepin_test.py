@@ -23,6 +23,11 @@ def test_artemis_port(host):
     assert candlepin.port("61613").is_reachable
 
 
+def test_artemis_auth(host):
+    cmd = host.run('echo "" | openssl s_client -CAfile /root/certificates/certs/ca.crt -cert /root/certificates/certs/quadlet.example.com-client.crt -key /root/certificates/private/quadlet.example.com-client.key -connect localhost:61613')
+    assert cmd.succeeded, f"exit: {cmd.rc}\n\nstdout:\n{cmd.stdout}\n\nstderr:\n{cmd.stderr}"
+
+
 def test_certs_users_file(host):
     file = host.file("/etc/tomcat/cert-users.properties")
     assert file.exists
