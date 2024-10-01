@@ -1,22 +1,27 @@
 ---
-- name: Ensure the Quadlet directory exists
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-  loop:
-  - /etc/containers
-  - /etc/containers/systemd
-
-- name: Copy the Quadlet container file
-  ansible.builtin.template:
-    src: candlepin.container.j2
-    dest: /etc/containers/systemd/candlepin.container
-    owner: root
-    group: root
-    mode: '0640'
+- name: Deploy Candlepin quadlet
+  containers.podman.podman_container:
+    name: "candlepin"
+    image: "{{ candlepin_container_image }}:{{ candlepin_container_tag }}"
+    state: quadlet
+    network: host
+    hostname: "{{ ansible_fqdn }}"
+    secrets:
+      - 'candlepin-ca-cert,target=/etc/candlepin/certs/candlepin-ca.crt,mode=0440,type=mount'
+      - 'candlepin-ca-key,target=/etc/candlepin/certs/candlepin-ca.key,mode=0440,type=mount'
+      - 'candlepin-tomcat-keystore,target=/etc/candlepin/certs/keystore,mode=0440,type=mount'
+      - 'candlepin-tomcat-truststore,target=/etc/candlepin/certs/truststore,mode=0440,type=mount'
+    volumes:
+      - /etc/tomcat/server.xml:/etc/tomcat/server.xml:Z
+      - /etc/tomcat/tomcat.conf:/etc/tomcat/tomcat.conf:Z
+      - /etc/tomcat/login.config:/etc/tomcat/login.config:Z
+      - /etc/tomcat/cert-roles.properties:/etc/tomcat/cert-roles.properties:Z
+      - /etc/tomcat/cert-users.properties:/etc/tomcat/cert-users.properties:Z
+      - /etc/tomcat/conf.d/jaas.conf:/etc/tomcat/conf.d/jaas.conf:Z
+      - /etc/candlepin/candlepin.conf:/etc/candlepin/candlepin.conf:Z
+      - /etc/candlepin/broker.xml:/etc/candlepin/broker.xml:Z
+      - /var/log/candlepin:/var/log/candlepin:Z
+      - /var/log/tomcat:/var/log/tomcat:Z
 
 - name: Create Tomcat user
   ansible.builtin.user:
