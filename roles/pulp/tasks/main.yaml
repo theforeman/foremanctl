@@ -19,6 +19,9 @@
     volumes: "{{ pulp_volumes }}"
     env:
       PULP_CONTENT_ORIGIN: "http://{{ ansible_hostname }}:8080"
+      PULP_CACHE_ENABLED: "true"
+      PULP_REDIS_HOST: "localhost"
+      PULP_REDIS_PORT: "6379"
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
