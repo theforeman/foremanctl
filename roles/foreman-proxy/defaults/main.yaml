@@ -1,0 +1,5 @@
+---
+foreman_proxy_container_image: "quay.io/evgeni/foreman-proxy-rpm"
+foreman_proxy_container_tag: "3.12"
+foreman_proxy_pulp_url: "http://localhost:8080"
+foreman_proxy_pulp_content_url: "{{ foreman_proxy_pulp_url }}/pulp/content/"
