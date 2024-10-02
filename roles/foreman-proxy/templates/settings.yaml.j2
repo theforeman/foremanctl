@@ -1,0 +1,22 @@
+:settings_directory: /etc/foreman-proxy/settings.d
+
+:ssl_ca_file: /etc/foreman-proxy/ssl_ca.pem
+:ssl_certificate: /etc/foreman-proxy/ssl_cert.pem
+:ssl_private_key: /etc/foreman-proxy/ssl_key.pem
+
+:trusted_hosts:
+  - {{ ansible_fqdn }}
+
+:foreman_url: http://{{ ansible_fqdn }}:3000
+
+:foreman_ssl_ca: /etc/foreman-proxy/foreman_ssl_ca.pem
+:foreman_ssl_cert: /etc/foreman-proxy/foreman_ssl_cert.pem
+:foreman_ssl_key: /etc/foreman-proxy/foreman_ssl_key.pem
+
+:bind_host: '*'
+:https_port: 9090
+:log_file: /var/log/foreman-proxy/proxy.log
+:log_level: INFO
+
+:log_buffer: 2000
+:log_buffer_errors: 1000
