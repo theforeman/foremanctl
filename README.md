@@ -44,6 +44,23 @@ To view an individual configuration file:
 podman secret inspect --showsecret --format "{{.SecretData}}" <secret-name>
 ```
 
+### Naming Convention
+
+Each secret, whether a configuration file or value shall following the following conventions:
+
+Naming:
+
+    * Config files: <role_namespace>-<app>-<filename>-<extension>
+    * Strings: <role_namespace>-<app>-<descriptive_name>
+
+Each shall contain labels that provide additional metadata:
+
+    * Config Files
+        - filename: <name of file>.<extension>
+        - app: <name of application that uses the configuration file>
+    * Strings:
+        - app: <name of application that uses the string>
+
 ## TODOs:
 
  * scram-sha-256 for the postgresql configuration

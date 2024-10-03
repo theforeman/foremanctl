@@ -1,6 +1,12 @@
 import re
 
 
+def assert_secret_content(host, secret_name, secret_value):
+    secret = host.run(f'podman secret inspect --format {"{{.SecretData}}"} --showsecret {secret_name}')
+    assert secret.succeeded
+    assert secret.stdout.strip() == secret_value
+
+
 def test_candlepin_service(host):
     candlepin = host.service("candlepin")
     assert candlepin.is_running
@@ -29,12 +35,7 @@ def test_artemis_auth(host):
 
 
 def test_certs_users_file(host):
-    file = host.file("/etc/tomcat/cert-users.properties")
-    assert file.exists
-    assert file.is_file
-    assert file.mode == 0o640
-    assert file.user == 'root'
-    assert file.group == 'tomcat'
+    assert_secret_content(host, 'candlepin-artemis-cert-users-properties', 'katelloUser=CN=quadlet.example.com, O=Foreman, ST=NC, C=US')
 
 
 def test_tls(host):
@@ -56,10 +57,4 @@ def test_tls(host):
 
 
 def test_cert_roles(host):
-    file = host.file('/etc/tomcat/cert-roles.properties')
-    assert file.exists
-    assert file.is_file
-    assert file.mode == 0o640
-    assert file.user == 'root'
-    assert file.group == 'tomcat'
-    assert file.contains('candlepinEventsConsumer=katelloUser')
+    assert_secret_content(host, 'candlepin-artemis-cert-roles-properties', 'candlepinEventsConsumer=katelloUser')

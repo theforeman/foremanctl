@@ -1,4 +1,40 @@
 ---
+- name: Create log directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+  - /var/log/candlepin
+  - /var/log/tomcat
+
+- ansible.builtin.include_tasks:
+    file: certs.yml
+
+- name: Create Candlepin configuration
+  containers.podman.podman_secret:
+    state: present
+    name: candlepin.conf
+    data: "{{ lookup('ansible.builtin.template', 'candlepin.conf.j2') }}"
+
+- name: Create Tomcat server.xml
+  containers.podman.podman_secret:
+    state: present
+    name: server.xml
+    data: "{{ lookup('ansible.builtin.template', 'server.xml.j2') }}"
+
+- name: Create Tomcat server configuration
+  containers.podman.podman_secret:
+    state: present
+    name: tomcat.conf
+    data: "{{ lookup('ansible.builtin.template', 'tomcat.conf') }}"
+
+- name: Setup artemis
+  ansible.builtin.include_tasks:
+    file: artemis.yml
+
 - name: Deploy Candlepin quadlet
   containers.podman.podman_container:
     name: "candlepin"
@@ -11,79 +47,17 @@
       - 'candlepin-ca-key,target=/etc/candlepin/certs/candlepin-ca.key,mode=0440,type=mount'
       - 'candlepin-tomcat-keystore,target=/etc/candlepin/certs/keystore,mode=0440,type=mount'
       - 'candlepin-tomcat-truststore,target=/etc/candlepin/certs/truststore,mode=0440,type=mount'
+      - 'candlepin-candlepin-conf,target=/etc/candlepin/candlepin.conf,mode=0440,type=mount'
+      - 'candlepin-artemis-broker-xml,target=/etc/candlepin/broker.xml,mode=440,type=mount'
+      - 'candlepin-tomcat-server-xml,target=/etc/tomcat/server.xml,mode=440,type=mount'
+      - 'candlepin-tomcat-conf,target=/etc/tomcat/tomcat.conf,mode=440,type=mount'
+      - 'candlepin-artemis-login-config,target=/etc/tomcat/login.config,mode=440,type=mount'
+      - 'candlepin-artemis-cert-roles-properties,target=/etc/tomcat/cert-roles.properties,mode=440,type=mount'
+      - 'candlepin-artemis-cert-users-properties,target=/etc/tomcat/cert-users.properties,mode=440,type=mount'
+      - 'candlepin-artemis-jaas-conf,target=/etc/tomcat/conf.d/jaas.conf,mode=440,type=mount'
     volumes:
-      - /etc/tomcat/server.xml:/etc/tomcat/server.xml:Z
-      - /etc/tomcat/tomcat.conf:/etc/tomcat/tomcat.conf:Z
-      - /etc/tomcat/login.config:/etc/tomcat/login.config:Z
-      - /etc/tomcat/cert-roles.properties:/etc/tomcat/cert-roles.properties:Z
-      - /etc/tomcat/cert-users.properties:/etc/tomcat/cert-users.properties:Z
-      - /etc/tomcat/conf.d/jaas.conf:/etc/tomcat/conf.d/jaas.conf:Z
-      - /etc/candlepin/candlepin.conf:/etc/candlepin/candlepin.conf:Z
-      - /etc/candlepin/broker.xml:/etc/candlepin/broker.xml:Z
       - /var/log/candlepin:/var/log/candlepin:Z
       - /var/log/tomcat:/var/log/tomcat:Z
-
-- name: Create Tomcat user
-  ansible.builtin.user:
-    name: tomcat
-
-- name: Candlepin configuration
-  block:
-  - name: Create the Candlepin config directory
-    ansible.builtin.file:
-      path: "{{ item }}"
-      state: directory
-      owner: root
-      group: root
-      mode: '0755'
-    loop:
-    - /etc/candlepin
-    - /var/log/candlepin
-
-  - name: Copy Candlepin configuration
-    ansible.builtin.template:
-      src: candlepin.conf.j2
-      dest: /etc/candlepin/candlepin.conf
-      owner: root
-      group: tomcat
-      mode: '0640'
-
-- ansible.builtin.include_tasks:
-    file: certs.yml
-
-- name: Tomcat configuration
-  block:
-  - name: Create the Tomcat config directories
-    ansible.builtin.file:
-      path: "{{ item }}"
-      state: directory
-      owner: root
-      group: tomcat
-      mode: '0755'
-    loop:
-    - /etc/tomcat
-    - /etc/tomcat/conf.d
-    - /var/log/tomcat
-
-  - name: Copy Tomcat server config
-    ansible.builtin.template:
-      src: server.xml.j2
-      dest: /etc/tomcat/server.xml
-      owner: root
-      group: tomcat
-      mode: '0640'
-
-  - name: Copy Tomcat server config
-    ansible.builtin.template:
-      src: tomcat.conf
-      dest: /etc/tomcat/tomcat.conf
-      owner: root
-      group: tomcat
-      mode: '0640'
-
-- name: Setup artemis
-  ansible.builtin.include_tasks:
-    file: artemis.yml
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:

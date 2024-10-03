@@ -7,42 +7,32 @@
   ansible.builtin.set_fact:
     candlepin_artemis_client_dn: "{{ openssl_response.stdout | replace('subject=', '') }}"
 
-- name: Copy Candlepin broker.xml
-  ansible.builtin.template:
-    src: broker.xml.j2
-    dest: /etc/candlepin/broker.xml
-    owner: root
-    group: tomcat
-    mode: '0640'
+- name: Create Candlepin broker.xml
+  containers.podman.podman_secret:
+    state: present
+    name: broker.xml
+    data: "{{ lookup('ansible.builtin.template', 'broker.xml.j2') }}"
 
-- name: Copy Tomcat login config
-  ansible.builtin.template:
-    src: login.config
-    dest: /etc/tomcat/login.config
-    owner: root
-    group: tomcat
-    mode: '0640'
+- name: Create Tomcat login config
+  containers.podman.podman_secret:
+    state: present
+    name: login.config
+    data: "{{ lookup('ansible.builtin.template', 'login.config') }}"
 
-- name: Copy Tomcat jaas.conf
-  ansible.builtin.template:
-    src: jaas.conf
-    dest: /etc/tomcat/conf.d/jaas.conf
-    owner: root
-    group: tomcat
-    mode: '0640'
+- name: Create Tomcat jaas.conf
+  containers.podman.podman_secret:
+    state: present
+    name: jaas.conf
+    data: "{{ lookup('ansible.builtin.template', 'jaas.conf') }}"
 
-- name: Copy Tomcat cert-roles.properties
-  ansible.builtin.template:
-    src: cert-roles.properties
-    dest: /etc/tomcat/cert-roles.properties
-    owner: root
-    group: tomcat
-    mode: '0640'
+- name: Create Tomcat cert-roles.properties
+  containers.podman.podman_secret:
+    state: present
+    name: cert-roles.properties
+    data: "{{ lookup('ansible.builtin.template', 'cert-roles.properties') }}"
 
-- name: Copy Tomcat cert-users.properties
-  ansible.builtin.template:
-    src: cert-users.properties.j2
-    dest: /etc/tomcat/cert-users.properties
-    owner: root
-    group: tomcat
-    mode: '0640'
+- name: Create Tomcat cert-users.properties
+  containers.podman.podman_secret:
+    state: present
+    name: cert-users.properties
+    data: "{{ lookup('ansible.builtin.template', 'cert-users.properties.j2') }}"
