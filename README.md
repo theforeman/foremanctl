@@ -30,6 +30,20 @@ Now run the tests:
 ./run_tests
 ```
 
+## Service Configuration
+
+Configuration files for services are stored as [podman secrets](https://docs.podman.io/en/latest/markdown/podman-secret-create.1.html) and mounted into the container at the expected locations. These configuration files can be listed:
+
+```
+podman secret ls
+```
+
+To view an individual configuration file:
+
+```
+podman secret inspect --showsecret --format "{{.SecretData}}" <secret-name>
+```
+
 ## TODOs:
 
  * scram-sha-256 for the postgresql configuration
