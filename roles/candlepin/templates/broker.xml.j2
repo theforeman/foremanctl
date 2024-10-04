@@ -10,7 +10,7 @@
 
         <acceptors>
             <acceptor name="in-vm">vm://0</acceptor>
-            <acceptor name="stomp">tcp://localhost:61613?protocols=STOMP;useEpoll=false;sslEnabled=true;keyStorePath=/etc/candlepin/certs/keystore;keyStorePassword={{ candlepin_keystore_password }};needClientAuth=true</acceptor>
+            <acceptor name="stomp">tcp://localhost:61613?protocols=STOMP;useEpoll=false;sslEnabled=true;trustStorePath=/etc/candlepin/certs/truststore;trustStorePassword={{ candlepin_keystore_password }};keyStorePath=/etc/candlepin/certs/keystore;keyStorePassword={{ candlepin_keystore_password }};needClientAuth=true</acceptor>
         </acceptors>
 
         <security-enabled>true</security-enabled>

@@ -13,13 +13,19 @@ def test_candlepin_port(host):
 
 
 def test_candlepin_status(host):
-    status = host.run('curl -k -s -o /dev/null -w \'%{http_code}\' https://localhost:23443/candlepin/status')
+    status = host.run('curl --cacert /root/certificates/certs/ca.crt --silent --output /dev/null --write-out \'%{http_code}\' https://localhost:23443/candlepin/status')
     assert status.succeeded
+    assert status.stdout == '200'
 
 
 def test_artemis_port(host):
     candlepin = host.addr("localhost")
     assert candlepin.port("61613").is_reachable
+
+
+def test_artemis_auth(host):
+    cmd = host.run('echo "" | openssl s_client -CAfile /root/certificates/certs/ca.crt -cert /root/certificates/certs/quadlet.example.com-client.crt -key /root/certificates/private/quadlet.example.com-client.key -connect localhost:61613')
+    assert cmd.succeeded, f"exit: {cmd.rc}\n\nstdout:\n{cmd.stdout}\n\nstderr:\n{cmd.stderr}"
 
 
 def test_certs_users_file(host):

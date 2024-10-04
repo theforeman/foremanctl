@@ -1,9 +1,11 @@
 FROM quay.io/centos/centos:stream9
 
-RUN dnf -y install \
+##Using rpm -ivh instead of dnf install for foreman-release.rpm speeds up the build
+##since foreman-release don't need to sync with the repos to install anything
+RUN rpm -ivh \
     https://yum.theforeman.org/nightly/el9/x86_64/foreman-release.rpm
-RUN dnf -y install foreman foreman-postgresql foreman-redis foreman-service
-RUN dnf clean all
+RUN dnf -y --nodocs install foreman foreman-postgresql foreman-redis foreman-service && \
+    dnf clean all
 
 COPY container-rake /usr/bin/container-rake
 

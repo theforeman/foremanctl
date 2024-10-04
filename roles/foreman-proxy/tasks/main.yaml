@@ -1,0 +1,80 @@
+---
+- name: Pull the Foreman Proxy container image
+  containers.podman.podman_image:
+    name: "{{ foreman_proxy_container_image }}:{{ foreman_proxy_container_tag }}"
+    state: present
+
+- name: Create config secret
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-settings-yaml
+    data: "{{ lookup('ansible.builtin.template', 'settings.yaml.j2') }}"
+
+- name: Create pulp config secret
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-pulpcore-yaml
+    data: "{{ lookup('ansible.builtin.template', 'pulpcore.yaml.j2') }}"
+
+- name: Create the podman secret for Foreman Proxy CA certificate
+  containers.podman.podman_secret:
+    name: foreman-proxy-ca-cert
+    path: "{{ foreman_proxy_ca_certificate }}"
+    state: present
+
+- name: Create the podman secret for Foreman Proxy client certificate
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-client-cert
+    path: "{{ foreman_proxy_client_certificate }}"
+
+- name: Create the podman secret for Foreman Proxy client key
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-client-key
+    path: "{{ foreman_proxy_client_key }}"
+
+- name: Create the podman secret for Foreman Proxy server certificate
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-server-cert
+    path: "{{ foreman_proxy_server_certificate }}"
+
+- name: Create the podman secret for Foreman Proxy server key
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-server-key
+    path: "{{ foreman_proxy_server_key }}"
+
+- name: Deploy Foreman Proxy Container
+  containers.podman.podman_container:
+    name: "foreman-proxy"
+    image: "{{ foreman_proxy_container_image }}:{{ foreman_proxy_container_tag }}"
+    state: quadlet
+    network: host
+    hostname: "{{ ansible_fqdn }}"
+    secrets:
+      - 'foreman-proxy-settings-yaml,type=mount,target=/etc/foreman-proxy/settings.yml'
+      - 'foreman-proxy-pulpcore-yaml,type=mount,target=/etc/foreman-proxy/settings.d/pulpcore.yml'
+      - 'foreman-proxy-ca-cert,type=mount,target=/etc/foreman-proxy/foreman_ssl_ca.pem'
+      - 'foreman-proxy-client-cert,type=mount,target=/etc/foreman-proxy/foreman_ssl_cert.pem'
+      - 'foreman-proxy-client-key,type=mount,target=/etc/foreman-proxy/foreman_ssl_key.pem'
+      - 'foreman-proxy-ca-cert,type=mount,target=/etc/foreman-proxy/ssl_ca.pem'
+      - 'foreman-proxy-server-cert,type=mount,target=/etc/foreman-proxy/ssl_cert.pem'
+      - 'foreman-proxy-server-key,type=mount,target=/etc/foreman-proxy/ssl_key.pem'
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start the Foreman Proxy Service
+  ansible.builtin.systemd:
+    name: foreman-proxy
+    enabled: true
+    state: started
+
+- name: Wait for Foreman Proxy service to be accessible
+  wait_for:
+    host: "{{ ansible_hostname }}"
+    port: 9090
+    timeout: 300
