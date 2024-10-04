@@ -16,24 +16,38 @@
 - name: Create Candlepin configuration
   containers.podman.podman_secret:
     state: present
-    name: candlepin.conf
+    name: candlepin-candlepin-conf
     data: "{{ lookup('ansible.builtin.template', 'candlepin.conf.j2') }}"
+    labels:
+      filename: candlepin.conf
+      app: candlepin
 
 - name: Create Tomcat server.xml
   containers.podman.podman_secret:
     state: present
-    name: server.xml
+    name: candlepin-tomcat-server-xml
     data: "{{ lookup('ansible.builtin.template', 'server.xml.j2') }}"
+    labels:
+      filename: server.xml
+      app: tomcat
 
 - name: Create Tomcat server configuration
   containers.podman.podman_secret:
     state: present
-    name: tomcat.conf
+    name: candlepin-tomcat-conf
     data: "{{ lookup('ansible.builtin.template', 'tomcat.conf') }}"
+    labels:
+      filename: tomcat.conf
+      app: tomcat
 
 - name: Setup artemis
   ansible.builtin.include_tasks:
     file: artemis.yml
+
+- name: Pull the Candlepin container image
+  containers.podman.podman_image:
+    name: "{{ candlepin_container_image }}:{{ candlepin_container_tag }}"
+    state: present
 
 - name: Deploy Candlepin quadlet
   containers.podman.podman_container:

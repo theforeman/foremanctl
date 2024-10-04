@@ -50,6 +50,11 @@ Each secret, whether a configuration file or value shall following the following
 
 Naming:
 
+    * Config files: <role_namespace>-<filename>-<extension>
+    * Strings: <role_namespace>-<descriptive_name>
+
+Naming when additional application context is required that does not match the `role_namespace`:
+
     * Config files: <role_namespace>-<app>-<filename>-<extension>
     * Strings: <role_namespace>-<app>-<descriptive_name>
 
