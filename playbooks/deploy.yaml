@@ -47,3 +47,4 @@
     - foreman-proxy
     - redis
     - foreman
+    - pulp

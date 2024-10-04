@@ -1,0 +1,39 @@
+- name: Pull the Pulp container image
+  containers.podman.podman_image:
+    name: "{{ pulp_image }}"
+    state: present
+
+- name: Create Pulp storage
+  ansible.builtin.file:
+    path: "{{ item | split(':') | first }}"
+    state: directory
+  loop: "{{ pulp_volumes }}"
+
+- name: Deploy Pulp Container
+  containers.podman.podman_container:
+    name: "{{ pulp_container_name }}"
+    image: "{{ pulp_image }}"
+    state: quadlet
+    ports: "{{ pulp_ports }}"
+    volumes: "{{ pulp_volumes }}"
+    env:
+      PULP_CONTENT_ORIGIN: "http://{{ ansible_hostname }}:8080"
+      PULP_CACHE_ENABLED: "true"
+      PULP_REDIS_HOST: "localhost"
+      PULP_REDIS_PORT: "6379"
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start the Pulp Service
+  ansible.builtin.systemd:
+    name: pulp
+    enabled: true
+    state: restarted
+
+- name: Wait for Pulp service to be accessible
+  wait_for:
+    host: "{{ ansible_hostname }}"
+    port: 8080
+    timeout: 300
