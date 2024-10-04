@@ -3,13 +3,15 @@
   hosts: all
   become: true
   vars:
+    certificates_hostnames:
+      - localhost
     candlepin_db_password: "CHANGEME"
     candlepin_keystore_password: "CHANGEME"
     candlepin_oauth_secret: "CHANGEME"
     candlepin_ca_key: "{{ certificates_ca_directory }}/private/ca.key"
     candlepin_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
-    candlepin_tomcat_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}.key"
-    candlepin_tomcat_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}.crt"
+    candlepin_tomcat_key: "{{ certificates_ca_directory }}/private/localhost.key"
+    candlepin_tomcat_certificate: "{{ certificates_ca_directory }}/certs/localhost.crt"
     candlepin_client_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}-client.key"
     candlepin_client_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}-client.crt"
     foreman_proxy_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
