@@ -23,30 +23,42 @@
 
 - name: Create the podman secret for Candlepin CA certificate
   containers.podman.podman_secret:
+    state: present
     name: candlepin-ca-cert
     path: "{{ candlepin_ca_certificate }}"
-    state: present
+    labels:
+      app: candlepin
 
 - name: Create the podman secret for Candlepin CA key
   containers.podman.podman_secret:
+    state: present
     name: candlepin-ca-key
     path: "{{ candlepin_ca_key }}"
-    state: present
+    labels:
+      app: candlepin
 
 - name: Create the podman secret for Tomcat keystore
   containers.podman.podman_secret:
+    state: present
     name: candlepin-tomcat-keystore
     path: "/root/candlepin.keystore"
-    state: present
+    labels:
+      filename: candlepin.keystore
+      app: tomcat
 
 - name: Create the podman secret for Tomcat truststore
   containers.podman.podman_secret:
+    state: present
     name: candlepin-tomcat-truststore
     path: "/root/candlepin.truststore"
-    state: present
+    labels:
+      filename: candlepin.truststore
+      app: tomcat
 
 - name: Create the podman secret for the keystore password
   containers.podman.podman_secret:
-    name: candlepin-tomcat-keystore-password
     state: present
+    name: candlepin-tomcat-keystore-password
     data: "{{ candlepin_keystore_password }}"
+    labels:
+      app: tomcat

@@ -10,29 +10,44 @@
 - name: Create Candlepin broker.xml
   containers.podman.podman_secret:
     state: present
-    name: broker.xml
+    name: candlepin-artemis-broker-xml
     data: "{{ lookup('ansible.builtin.template', 'broker.xml.j2') }}"
+    labels:
+      filename: broker.xml
+      app: artemis
 
 - name: Create Tomcat login config
   containers.podman.podman_secret:
     state: present
-    name: login.config
+    name: candlepin-artemis-login-config
     data: "{{ lookup('ansible.builtin.template', 'login.config') }}"
+    labels:
+      filename: login.config
+      app: artemis
 
 - name: Create Tomcat jaas.conf
   containers.podman.podman_secret:
     state: present
-    name: jaas.conf
+    name: candlepin-artemis-jaas-conf
     data: "{{ lookup('ansible.builtin.template', 'jaas.conf') }}"
+    labels:
+      filename: jaas.conf
+      app: artemis
 
 - name: Create Tomcat cert-roles.properties
   containers.podman.podman_secret:
     state: present
-    name: cert-roles.properties
+    name: candlepin-artemis-cert-roles-properties
     data: "{{ lookup('ansible.builtin.template', 'cert-roles.properties') }}"
+    labels:
+      filename: cert-roles.properties
+      app: artemis
 
 - name: Create Tomcat cert-users.properties
   containers.podman.podman_secret:
     state: present
-    name: cert-users.properties
+    name: candlepin-artemis-cert-users-properties
     data: "{{ lookup('ansible.builtin.template', 'cert-users.properties.j2') }}"
+    labels:
+      filename: cert-users.properties
+      app: artemis
