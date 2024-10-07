@@ -1,0 +1,77 @@
+<VirtualHost *:443>
+  ServerName {{ ansible_fqdn }}
+
+  ## Load additional static includes
+  IncludeOptional "/etc/httpd/conf.d/05-foreman-ssl.d/*.conf"
+
+  ## Logging
+  ErrorLog "/var/log/httpd/foreman-ssl_error_ssl.log"
+  ServerSignature Off
+  CustomLog "/var/log/httpd/foreman-ssl_access_ssl.log" combined
+
+  ## Request header rules
+  ## as per http://httpd.apache.org/docs/2.4/mod/mod_headers.html#requestheader
+  RequestHeader set X_FORWARDED_PROTO "https"
+  RequestHeader set SSL_CLIENT_S_DN "%{SSL_CLIENT_S_DN}s"
+  RequestHeader set SSL_CLIENT_CERT "%{SSL_CLIENT_CERT}s"
+  RequestHeader set SSL_CLIENT_VERIFY "%{SSL_CLIENT_VERIFY}s"
+  RequestHeader unset REMOTE_USER
+  RequestHeader unset REMOTE-USER
+
+  ## SSL directives
+  SSLEngine on
+  SSLCertificateFile      "{{ httpd_ssl_dir }}/certs/katello-apache.crt"
+  SSLCertificateKeyFile   "{{ httpd_ssl_dir }}/private/katello-apache.key"
+  SSLCertificateChainFile "{{ httpd_ssl_dir }}/certs/katello-server-ca.crt"
+  SSLVerifyClient         optional
+  SSLVerifyDepth          3
+  SSLCACertificateFile    "{{ httpd_ssl_dir }}/certs/katello-default-ca.crt"
+  SSLOptions +StdEnvVars +ExportCertData
+
+  # SSL Proxy directives
+  SSLProxyEngine On
+
+  ProxyPass /pulp_ansible/galaxy/ {{ httpd_pulp_api_backend }}/pulp_ansible/galaxy/
+  ProxyPassReverse /pulp_ansible/galaxy/ {{ httpd_pulp_api_backend }}/pulp_ansible/galaxy/
+
+  <Location "/pulpcore_registry/v2/">
+    RequestHeader unset REMOTE_USER
+    RequestHeader unset REMOTE-USER
+    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_fqdn }}'"
+    ProxyPass {{ httpd_pulp_api_backend }}/v2/
+    ProxyPassReverse {{ httpd_pulp_api_backend }}/v2/
+  </Location>
+
+  ProxyPass /pulp/container/ {{ httpd_pulp_content_backend }}/pulp/container/
+  ProxyPassReverse /pulp/container/ {{ httpd_pulp_content_backend }}/pulp/container/
+
+  <Location "/pulp/content">
+    RequestHeader unset X-CLIENT-CERT
+    RequestHeader set X-CLIENT-CERT "%{SSL_CLIENT_CERT}s" env=SSL_CLIENT_CERT
+    ProxyPass {{ httpd_pulp_content_backend }}/pulp/content disablereuse=on timeout=600
+    ProxyPassReverse {{ httpd_pulp_content_backend }}/pulp/content
+  </Location>
+
+  <Location "/pulp/api/v3">
+    RequestHeader unset REMOTE_USER
+    RequestHeader unset REMOTE-USER
+    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_fqdn }}'"
+    ProxyPass {{ httpd_pulp_api_backend }}/pulp/api/v3 timeout=600
+    ProxyPassReverse {{ httpd_pulp_api_backend }}/pulp/api/v3
+  </Location>
+
+  ProxyPass /pulp/assets/ {{ httpd_pulp_api_backend }}/pulp/assets/
+  ProxyPassReverse /pulp/assets/ {{ httpd_pulp_api_backend }}/pulp/assets/
+
+  ## Proxy rules
+  ProxyRequests Off
+  ProxyPreserveHost On
+  ProxyAddHeaders On
+  ProxyPass /pulp !
+  ProxyPass /icons !
+  ProxyPass /server-status !
+  ProxyPass / {{ httpd_foreman_backend }}/ retry=0 timeout=900
+  ProxyPassReverse / {{ httpd_foreman_backend }}/
+
+  AddDefaultCharset UTF-8
+</VirtualHost>
