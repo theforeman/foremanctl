@@ -1,0 +1,52 @@
+---
+- name: Install Apache httpd
+  ansible.builtin.package:
+    name:
+      - httpd
+      - mod_ssl
+    state: present
+
+- name: Set httpd_can_network_connect so Apache can connect to Puma and Gunicorn
+  ansible.posix.seboolean:
+    name: httpd_can_network_connect
+    state: true
+    persistent: true
+
+- name: Disable welcome page
+  ansible.builtin.file:
+    path: /etc/httpd/conf.d/welcome.conf
+    state: absent
+
+- name: Create cert directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ httpd_ssl_dir }}/certs"
+    - "{{ httpd_ssl_dir }}/private"
+
+- name: Deploy certificates
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ httpd_ssl_dir }}/{{ item.dest }}"
+    remote_src: true
+  loop:
+    - src: "{{ httpd_server_ca_certificate }}"
+      dest: "certs/katello-server-ca.crt"
+    - src: "{{ httpd_client_ca_certificate }}"
+      dest: "certs/katello-default-ca.crt"
+    - src: "{{ httpd_server_certificate }}"
+      dest: "certs/katello-apache.crt"
+    - src: "{{ httpd_server_key }}"
+      dest: "private/katello-apache.key"
+
+- name: Configure foreman-ssl vhost
+  ansible.builtin.template:
+    src: foreman-ssl-vhost.conf.j2
+    dest: /etc/httpd/conf.d/foreman-ssl.conf
+
+- name: Start Apache httpd
+  ansible.builtin.service:
+    name: httpd
+    state: started
+    enabled: true
