@@ -113,3 +113,11 @@
   register: foreman_tasks_status
   when:
     - "'katello' in foreman_status.json['results']"
+
+- name: Configure Foreman Proxy
+  theforeman.foreman.smart_proxy:
+    name: "{{ ansible_fqdn }}"
+    url: "https://{{ ansible_fqdn }}:9090"
+    server_url: "http://{{ ansible_fqdn }}:3000"
+    username: admin
+    password: changeme
