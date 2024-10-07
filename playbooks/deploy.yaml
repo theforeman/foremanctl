@@ -44,7 +44,7 @@
     - certificates
     - geerlingguy.postgresql
     - candlepin
+    - pulp
     - foreman-proxy
     - redis
     - foreman
-    - pulp
