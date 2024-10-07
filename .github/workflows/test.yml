@@ -5,7 +5,11 @@ on:
   push:
     branches:
       - master
+    paths-ignore:
+      - 'container-images/**'
   pull_request:
+    paths-ignore:
+      - 'container-images/**'
 
 
 concurrency:
