@@ -5,8 +5,8 @@ on:
   push:
     branches:
       - master
-    paths:
-      - '!container-images/**'
+    paths-ignore:
+      - 'container-images/**'
   pull_request:
     paths:
       - '!container-images/**'
