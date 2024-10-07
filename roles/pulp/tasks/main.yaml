@@ -37,3 +37,9 @@
     host: "{{ ansible_hostname }}"
     port: 8080
     timeout: 300
+
+# Only needed until we have cert auth configured
+- name: Set Pulp admin password
+  containers.podman.podman_container_exec:
+    name: "{{ pulp_container_name }}"
+    command: pulpcore-manager reset-admin-password --password CHANGEME
