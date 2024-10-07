@@ -8,8 +8,8 @@ on:
     paths-ignore:
       - 'container-images/**'
   pull_request:
-    paths:
-      - '!container-images/**'
+    paths-ignore:
+      - 'container-images/**'
 
 
 concurrency:
