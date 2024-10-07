@@ -9,6 +9,12 @@
     state: directory
   loop: "{{ pulp_volumes }}"
 
+- name: Create settings config secret
+  containers.podman.podman_secret:
+    state: present
+    name: pulp-settings-py
+    data: "{{ lookup('ansible.builtin.template', 'settings.py.j2') }}"
+
 - name: Deploy Pulp Container
   containers.podman.podman_container:
     name: "{{ pulp_container_name }}"
@@ -16,11 +22,8 @@
     state: quadlet
     ports: "{{ pulp_ports }}"
     volumes: "{{ pulp_volumes }}"
-    env:
-      PULP_CONTENT_ORIGIN: "http://{{ ansible_hostname }}:8080"
-      PULP_CACHE_ENABLED: "true"
-      PULP_REDIS_HOST: "localhost"
-      PULP_REDIS_PORT: "6379"
+    secrets:
+      - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
