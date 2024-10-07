@@ -2,8 +2,6 @@
 :enabled: true
 :pulp_url: {{ foreman_proxy_pulp_url }}
 :content_app_url: {{ foreman_proxy_pulp_content_url }}
-:username: admin
-:password: CHANGEME
 :mirror: false
-:client_authentication: ['password']
+:client_authentication: ["client_certificate"]
 #:rhsm_url: https://localhost/rhsm
