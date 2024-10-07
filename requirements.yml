@@ -5,6 +5,7 @@ collections:
 - ansible.posix
 - name: containers.podman
   version: ">=1.14.0"
+- name: theforeman.foreman
 
 roles:
 - geerlingguy.postgresql
