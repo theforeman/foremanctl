@@ -51,3 +51,8 @@ def test_pulp_status_content(pulp_status):
 
 def test_pulp_status_workers(pulp_status):
     assert pulp_status['online_workers']
+
+def test_pulp_admin_auth(host):
+    cmd = host.run(f"curl --silent --write-out '%{{stderr}}%{{http_code}}' --user admin:CHANGEME http://{PULP_HOST}:{PULP_PORT}/pulp/api/v3/users/")
+    assert cmd.succeeded
+    assert cmd.stderr == '200'
