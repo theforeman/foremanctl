@@ -1,10 +1,20 @@
 ---
-pulp_image: quay.io/pulp/pulp:stable
-pulp_ports:
-  - "8080:80"
+pulp_api_image: quay.io/pulp/pulp-minimal:stable
+pulp_content_image: quay.io/pulp/pulp-minimal:stable
+pulp_worker_image: quay.io/pulp/pulp-minimal:stable
+
+pulp_api_ports:
+  - "24817:80"
+pulp_content_ports:
+  - "24816:80"
+pulp_worker_count: 2
+
 pulp_volumes:
   - /var/lib/pulp/settings:/etc/pulp:Z
   - /var/lib/pulp/pulp_storage:/var/lib/pulp:Z
   - /var/lib/pulp/pgsql:/var/lib/pgsql:Z
   - /var/lib/pulp/containers:/var/lib/containers:Z
-pulp_container_name: pulp
+
+pulp_api_container_name: pulp-api
+pulp_content_container_name: pulp-content
+pulp_worker_container_name: pulp-worker

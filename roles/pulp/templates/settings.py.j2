@@ -1,7 +1,21 @@
 CONTENT_ORIGIN="http://{{ ansible_hostname }}:8080"
+API_CONTENT_ORIGIN="http://{{ ansible_hostname }}:24817"
+CONTENT_SERVICE_ORIGIN="http://{{ ansible_hostname }}:24816"
 CACHE_ENABLED=True
 REDIS_HOST="localhost"
 REDIS_PORT=6379
+
+DATABASES = {
+	'default': {
+		'ENGINE': 'django.db.backends.postgresql',
+		'NAME': 'pulp',
+		'USER': 'pulp',
+		'PASSWORD': '{{ pulp_db_password }}',
+		'HOST': 'localhost',
+		'PORT': '5432',
+	}
+}
+
 AUTHENTICATION_BACKENDS=['pulpcore.app.authentication.PulpNoCreateRemoteUserBackend']
 REMOTE_USER_ENVIRON_NAME="HTTP_REMOTE_USER"
 REST_FRAMEWORK__DEFAULT_AUTHENTICATION_CLASSES=('rest_framework.authentication.SessionAuthentication', 'pulpcore.app.authentication.PulpRemoteUserAuthentication')

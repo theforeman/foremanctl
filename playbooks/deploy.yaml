@@ -27,16 +27,21 @@
     httpd_client_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
     httpd_server_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}.crt"
     httpd_server_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}.key"
+    pulp_db_password: "CHANGEME"
     postgresql_databases:
       - name: candlepin
         owner: candlepin
       - name: foreman
         owner: foreman
+      - name: pulp
+        owner: pulp
     postgresql_users:
       - name: candlepin
         password: "{{ candlepin_db_password }}"
       - name: foreman
         password: "{{ foreman_db_password }}"
+      - name: pulp
+        password: "{{ pulp_db_password }}"
     postgresql_hba_entries:
       - { type: local, database: all, user: postgres, auth_method: ident }
       - { type: local, database: all, user: all, auth_method: ident }
@@ -47,9 +52,9 @@
   roles:
     - certificates
     - geerlingguy.postgresql
+    - redis
     - candlepin
     - httpd
     - pulp
     - foreman_proxy
-    - redis
     - foreman
