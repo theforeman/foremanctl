@@ -1,6 +1,16 @@
-- name: Pull the Pulp container image
+- name: Pull the Pulp API container image
   containers.podman.podman_image:
-    name: "{{ pulp_image }}"
+    name: "{{ pulp_api_image }}"
+    state: present
+
+- name: Pull the Pulp Content container image
+  containers.podman.podman_image:
+    name: "{{ pulp_content_image }}"
+    state: present
+
+- name: Pull the Pulp Worker container image
+  containers.podman.podman_image:
+    name: "{{ pulp_worker_image }}"
     state: present
 
 - name: Create Pulp storage
@@ -16,15 +26,71 @@
     name: pulp-settings-py
     data: "{{ lookup('ansible.builtin.template', 'settings.py.j2') }}"
 
-- name: Deploy Pulp Container
+- name: Generate database symmetric key
+  ansible.builtin.command: "bash -c 'openssl rand -base64 32 | tr \"+/\" \"-_\" > /var/lib/pulp/database_fields.symmetric.key'"
+  args:
+    creates: /var/lib/pulp/database_fields.symmetric.key
+
+- name: Create database symmetric key secret
+  containers.podman.podman_secret:
+    state: present
+    name: pulp-symmetric-key
+    data: "{{ lookup('file', '/var/lib/pulp/database_fields.symmetric.key') }}"
+
+- name: Wait for PostgreSQL to be ready
+  ansible.builtin.wait_for:
+    host: "localhost"
+    port: 5432
+    timeout: 300
+
+- name: Deploy Pulp API Container
   containers.podman.podman_container:
-    name: "{{ pulp_container_name }}"
-    image: "{{ pulp_image }}"
+    name: "{{ pulp_api_container_name }}"
+    image: "{{ pulp_api_image }}"
     state: quadlet
-    ports: "{{ pulp_ports }}"
+    command: pulp-api
+    ports: "{{ pulp_api_ports }}"
     volumes: "{{ pulp_volumes }}"
     secrets:
       - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
+      - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
+
+- name: Deploy Pulp Content Container
+  containers.podman.podman_container:
+    name: "{{ pulp_content_container_name }}"
+    image: "{{ pulp_content_image }}"
+    state: quadlet
+    command: pulp-content
+    ports: "{{ pulp_content_ports }}"
+    volumes: "{{ pulp_volumes }}"
+    secrets:
+      - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
+      - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
+
+- name: Wait for Pulp API service to be accessible
+  ansible.builtin.wait_for:
+    host: "{{ ansible_hostname }}"
+    port: 24817
+    timeout: 300
+
+- name: Deploy Pulp Worker Container
+  containers.podman.podman_container:
+    name: "{{ pulp_worker_container_name }}"
+    image: "{{ pulp_worker_image }}"
+    state: quadlet
+    command: pulp-worker
+    volumes: "{{ pulp_volumes }}"
+    secrets:
+      - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
+      - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
     quadlet_options:
       - |
         [Install]
@@ -34,17 +100,29 @@
   ansible.builtin.systemd:
     daemon_reload: true
 
-- name: Start the Pulp Service
+- name: Start the Pulp API services
   ansible.builtin.systemd:
-    name: pulp
+    name: pulp-api
     enabled: true
-    state: restarted
+    state: started
 
-- name: Wait for Pulp service to be accessible
+- name: Start the Pulp Content services
+  ansible.builtin.systemd:
+    name: pulp-content
+    enabled: true
+    state: started
+
+- name: Wait for Pulp Content service to be accessible
   ansible.builtin.wait_for:
     host: "{{ ansible_hostname }}"
-    port: 8080
-    timeout: 300
+    port: 24816
+    timeout: 600
+
+- name: Start the Pulp Worker service
+  ansible.builtin.systemd:
+    name: pulp-worker
+    enabled: true
+    state: started
 
 # Only needed until we have cert auth configured
 - name: Set Pulp admin password
