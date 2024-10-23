@@ -8,19 +8,19 @@
   file:
     path: "{{ certificates_ca_directory_certs }}"
     state: directory
-    mode: 0755
+    mode: '0755'
 
 - name: 'Create keys directory'
   file:
     path: "{{ certificates_ca_directory_keys }}"
     state: directory
-    mode: 0755
+    mode: '0755'
 
 - name: 'Create requests directory'
   file:
     path: "{{ certificates_ca_directory_requests }}"
     state: directory
-    mode: 0755
+    mode: '0755'
 
 - name: 'Deploy configuration file'
   template:
@@ -28,7 +28,7 @@
     dest: "{{ certificates_ca_directory }}/openssl.cnf"
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
 
 - name: 'Create index file'
   file:
@@ -36,7 +36,7 @@
     state: touch
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
 
 - name: 'Ensure serial starting number'
   template:
@@ -45,7 +45,7 @@
     force: false
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
 
 - name: 'Creating CA certificate and key'
   command: >
