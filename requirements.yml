@@ -8,4 +8,4 @@ collections:
   - name: theforeman.foreman
 
 roles:
-  - geerlingguy.postgresql
+  - name: geerlingguy.postgresql
