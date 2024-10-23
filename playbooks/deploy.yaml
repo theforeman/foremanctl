@@ -28,10 +28,10 @@
     httpd_server_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}.crt"
     httpd_server_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}.key"
     postgresql_databases:
-    - name: candlepin
-      owner: candlepin
-    - name: foreman
-      owner: foreman
+      - name: candlepin
+        owner: candlepin
+      - name: foreman
+        owner: foreman
     postgresql_users:
       - name: candlepin
         password: "{{ candlepin_db_password }}"

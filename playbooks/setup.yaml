@@ -3,45 +3,45 @@
   hosts: all
   become: true
   pre_tasks:
-  - name: Upgrade all packages
-    ansible.builtin.package:
-      name: "*"
-      state: latest
-    register: result
-    retries: 5
-    until: result is success
+    - name: Upgrade all packages
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+      register: result
+      retries: 5
+      until: result is success
 
-  - name: Install packages
-    ansible.builtin.package:
-      name:
-      - podman
-      - python3-cryptography
-      - python3-libsemanage
-      - python3-requests
-      - bash-completion
-      - nmap
+    - name: Install packages
+      ansible.builtin.package:
+        name:
+          - podman
+          - python3-cryptography
+          - python3-libsemanage
+          - python3-requests
+          - bash-completion
+          - nmap
 
-  - name: Configure pulpcore repository
-    ansible.builtin.yum_repository:
-      name: pulpcore
-      description: pulpcore nightly
-      baseurl: https://yum.theforeman.org/pulpcore/nightly/el9/x86_64/
-      gpgcheck: false
+    - name: Configure pulpcore repository
+      ansible.builtin.yum_repository:
+        name: pulpcore
+        description: pulpcore nightly
+        baseurl: https://yum.theforeman.org/pulpcore/nightly/el9/x86_64/
+        gpgcheck: false
 
-  - name: Install postgresql-evr
-    ansible.builtin.package:
-      name: postgresql-evr
+    - name: Install postgresql-evr
+      ansible.builtin.package:
+        name: postgresql-evr
 
-  - name: Populate service facts
-    ansible.builtin.service_facts:
+    - name: Populate service facts
+      ansible.builtin.service_facts:
 
-  - name: Open Ports in firewalld
-    ansible.posix.firewalld:
-      port: "{{ item }}"
-      permanent: true
-      state: enabled
-    loop:
-    - 23443/tcp
-    when:
-    - services['firewalld.service'] is defined
-    - services['firewalld.service']['state'] == 'running'
+    - name: Open Ports in firewalld
+      ansible.posix.firewalld:
+        port: "{{ item }}"
+        permanent: true
+        state: enabled
+      loop:
+        - 23443/tcp
+      when:
+        - services['firewalld.service'] is defined
+        - services['firewalld.service']['state'] == 'running'

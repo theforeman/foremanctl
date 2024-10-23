@@ -7,8 +7,8 @@
     group: root
     mode: '0755'
   loop:
-  - /var/log/candlepin
-  - /var/log/tomcat
+    - /var/log/candlepin
+    - /var/log/tomcat
 
 - ansible.builtin.include_tasks:
     file: certs.yml

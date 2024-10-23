@@ -20,4 +20,4 @@
         -out "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}.crt"
         -infiles "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}.csr"
   args:
-      creates: "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}.crt"
+    creates: "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}.crt"
