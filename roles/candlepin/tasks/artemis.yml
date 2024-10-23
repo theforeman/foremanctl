@@ -1,6 +1,7 @@
 ---
 - name: Extract the DN from the client certificate
   ansible.builtin.command: "openssl x509 -in {{ candlepin_client_certificate }} -noout -subject -nameopt rfc2253,sep_comma_plus_space"
+  changed_when: false
   register: openssl_response
 
 - name: Set candlepin_artemis_client_dn
