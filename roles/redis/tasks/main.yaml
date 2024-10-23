@@ -11,7 +11,7 @@
     state: started
 
 - name: Wait for Redis service to be accessible
-  wait_for:
+  ansible.builtin.wait_for:
     host: "localhost"
     port: 6379
     timeout: 300

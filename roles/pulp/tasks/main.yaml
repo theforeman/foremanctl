@@ -41,7 +41,7 @@
     state: restarted
 
 - name: Wait for Pulp service to be accessible
-  wait_for:
+  ansible.builtin.wait_for:
     host: "{{ ansible_hostname }}"
     port: 8080
     timeout: 300
