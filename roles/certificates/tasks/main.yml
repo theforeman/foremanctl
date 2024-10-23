@@ -117,7 +117,8 @@
   args:
     creates: "{{ certificates_ca_directory_certs }}/{{ certificates_client }}.crt"
 
-- include_tasks: issue.yml
+- name: 'Issue other certificates'
+  include_tasks: issue.yml
   when: certificates_hostnames is defined
   with_items: "{{ certificates_hostnames }}"
   loop_control:
