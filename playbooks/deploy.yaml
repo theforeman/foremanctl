@@ -49,7 +49,7 @@
     - geerlingguy.postgresql
     - candlepin
     - pulp
-    - foreman-proxy
+    - foreman_proxy
     - redis
     - foreman
     - httpd
