@@ -31,17 +31,3 @@
     - name: Install postgresql-evr
       ansible.builtin.package:
         name: postgresql-evr
-
-    - name: Populate service facts
-      ansible.builtin.service_facts:
-
-    - name: Open Ports in firewalld
-      ansible.posix.firewalld:
-        port: "{{ item }}"
-        permanent: true
-        state: enabled
-      loop:
-        - 23443/tcp
-      when:
-        - services['firewalld.service'] is defined
-        - services['firewalld.service']['state'] == 'running'
