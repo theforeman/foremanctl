@@ -24,6 +24,10 @@
     volumes: "{{ pulp_volumes }}"
     secrets:
       - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:

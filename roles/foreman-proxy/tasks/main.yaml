@@ -62,6 +62,10 @@
       - 'foreman-proxy-ca-cert,type=mount,target=/etc/foreman-proxy/ssl_ca.pem'
       - 'foreman-proxy-server-cert,type=mount,target=/etc/foreman-proxy/ssl_cert.pem'
       - 'foreman-proxy-server-key,type=mount,target=/etc/foreman-proxy/ssl_key.pem'
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:

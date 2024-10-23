@@ -72,6 +72,10 @@
     volumes:
       - /var/log/candlepin:/var/log/candlepin:Z
       - /var/log/tomcat:/var/log/tomcat:Z
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
