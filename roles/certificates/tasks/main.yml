@@ -1,6 +1,6 @@
 ---
 - name: 'Install openssl'
-  ansible.builtin.yum:
+  ansible.builtin.package:
     name: openssl
     state: present
 
