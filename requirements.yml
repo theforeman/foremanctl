@@ -1,11 +1,11 @@
 collections:
-- community.general
-- community.postgresql
-- community.crypto
-- ansible.posix
-- name: containers.podman
-  version: ">=1.14.0"
-- name: theforeman.foreman
+  - community.general
+  - community.postgresql
+  - community.crypto
+  - ansible.posix
+  - name: containers.podman
+    version: ">=1.14.0"
+  - name: theforeman.foreman
 
 roles:
-- geerlingguy.postgresql
+  - geerlingguy.postgresql
