@@ -1,0 +1,36 @@
+name: Container build
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'container-images/**'
+      - '.github/workflows/container.yml'
+  pull_request:
+    paths:
+      - 'container-images/**'
+      - '.github/workflows/container.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.ref_name }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  container:
+    name: ${{ matrix.container }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        container:
+          - candlepin
+          - foreman
+          - foreman-proxy
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build ${{ matrix.container }} container
+        run: make -C container-images/${{ matrix.container }} build
