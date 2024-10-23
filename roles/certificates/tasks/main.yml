@@ -42,7 +42,7 @@
   template:
     src: serial.j2
     dest: "{{ certificates_ca_directory }}/serial"
-    force: no
+    force: false
     owner: root
     group: root
     mode: 0644
