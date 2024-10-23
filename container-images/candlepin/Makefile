@@ -1,5 +1,5 @@
 build:
-	podman build -t quay.io/ehelms/candlepin:${VERSION} .
+	podman build -t quay.io/ehelms/candlepin:nightly .
 
 push:
-	podman push quay.io/ehelms/candlepin:${VERSION}
+	podman push quay.io/ehelms/candlepin:nightly
