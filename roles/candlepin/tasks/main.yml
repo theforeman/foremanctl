@@ -10,7 +10,8 @@
     - /var/log/candlepin
     - /var/log/tomcat
 
-- ansible.builtin.include_tasks:
+- name: Configure certificates
+  ansible.builtin.include_tasks:
     file: certs.yml
 
 - name: Create Candlepin configuration
