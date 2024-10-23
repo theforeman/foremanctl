@@ -4,7 +4,7 @@
   become: true
   pre_tasks:
     - name: Upgrade all packages
-      ansible.builtin.package:
+      ansible.builtin.package: # noqa: package-latest
         name: "*"
         state: latest
       register: result
