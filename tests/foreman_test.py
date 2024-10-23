@@ -47,3 +47,10 @@ def test_katello_services_status(foreman_status, katello_service):
     if katello_service == 'foreman_tasks':
         pytest.xfail("Foreman Tasks needs to boot workers, we don't wait enough")
     assert foreman_status['results']['katello']['services'][katello_service]['status'] == 'ok'
+
+
+@pytest.mark.parametrize("dynflow_service", ['orchestrator', 'worker', 'worker-hosts-queue'])
+def test_foreman_dynflow_service(host, dynflow_service):
+    service = host.service(f"dynflow-sidekiq@{dynflow_service}")
+    assert service.is_running
+    assert service.is_enabled
