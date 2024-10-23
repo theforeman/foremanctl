@@ -56,6 +56,10 @@
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
     env:
       SEED_ADMIN_PASSWORD: changeme
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
 
 - name: Deploy Dynflow Container
   containers.podman.podman_container:
