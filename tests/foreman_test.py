@@ -49,8 +49,15 @@ def test_katello_services_status(foreman_status, katello_service):
     assert foreman_status['results']['katello']['services'][katello_service]['status'] == 'ok'
 
 
-@pytest.mark.parametrize("dynflow_service", ['orchestrator', 'worker', 'worker-hosts-queue'])
-def test_foreman_dynflow_service(host, dynflow_service):
-    service = host.service(f"dynflow-sidekiq@{dynflow_service}")
+@pytest.mark.parametrize("dynflow_instance", ['orchestrator', 'worker', 'worker-hosts-queue'])
+def test_foreman_dynflow_container_instances(host, dynflow_instance):
+    file = host.file(f"/etc/containers/systemd/dynflow-sidekiq@{dynflow_instance}.container")
+    assert file.exists
+    assert file.is_symlink
+
+
+@pytest.mark.parametrize("dynflow_instance", ['orchestrator', 'worker', 'worker-hosts-queue'])
+def test_foreman_dynflow_service_instances(host, dynflow_instance):
+    service = host.service(f"dynflow-sidekiq@{dynflow_instance}")
     assert service.is_running
     assert service.is_enabled

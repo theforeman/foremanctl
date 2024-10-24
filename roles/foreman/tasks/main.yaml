@@ -87,6 +87,20 @@
       DYNFLOW_REDIS_URL: "redis://localhost:6379/6"
       REDIS_PROVIDER: "DYNFLOW_REDIS_URL"
     command: "/usr/libexec/foreman/sidekiq-selinux -e production -r /usr/share/foreman/extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yml"
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
+
+- name: Create Dynflow Container instances
+  ansible.builtin.file:
+    state: link
+    src: "/etc/containers/systemd/dynflow-sidekiq@.container"
+    dest: "/etc/containers/systemd/dynflow-sidekiq@{{ item }}.container"
+  loop:
+    - orchestrator
+    - worker
+    - worker-hosts-queue
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
