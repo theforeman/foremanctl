@@ -77,6 +77,7 @@
     hostname: "{{ ansible_fqdn }}"
     secrets:
       - 'foreman-database-url,type=env,target=DATABASE_URL'
+      - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
       - 'foreman-katello-yaml,type=mount,target=/etc/foreman/plugins/katello.yaml'
       - 'foreman-ca-cert,type=mount,target=/etc/foreman/katello-default-ca.crt'
       - 'foreman-client-cert,type=mount,target=/etc/foreman/client_cert.pem'
