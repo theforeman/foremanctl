@@ -4,7 +4,7 @@ This repository is testing a deployment of Foreman and Katello using Podman quad
 
 ## Deployment
 
-This setup usess Vagrant to create a basic VM for running the deployment on:
+This setup uses Vagrant to create a basic VM for running the deployment on:
 
 ```
 vagrant up quadlet
