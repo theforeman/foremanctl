@@ -33,7 +33,13 @@ def product(organization, foremanapi):
     foremanapi.delete('products', prod)
 
 @pytest.fixture
-def repository(product, organization, foremanapi):
-    repo = foremanapi.create('repositories', {'name': str(uuid.uuid4()), 'product_id': product['id'], 'content_type': 'yum'})
+def yum_repository(product, organization, foremanapi):
+    repo = foremanapi.create('repositories', {'name': str(uuid.uuid4()), 'product_id': product['id'], 'content_type': 'yum', 'url': 'https://fixtures.pulpproject.org/rpm-no-comps/'})
+    yield repo
+    foremanapi.delete('repositories', repo)
+
+@pytest.fixture
+def file_repository(product, organization, foremanapi):
+    repo = foremanapi.create('repositories', {'name': str(uuid.uuid4()), 'product_id': product['id'], 'content_type': 'file', 'url': 'https://fixtures.pulpproject.org/file/'})
     yield repo
     foremanapi.delete('repositories', repo)
