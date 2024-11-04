@@ -40,11 +40,16 @@
   args:
     creates: /var/lib/pulp/database_fields.symmetric.key
 
+- name: Load database symmetric key
+  ansible.builtin.slurp:
+    src: /var/lib/pulp/database_fields.symmetric.key
+  register: pulp_key
+
 - name: Create database symmetric key secret
   containers.podman.podman_secret:
     state: present
     name: pulp-symmetric-key
-    data: "{{ lookup('file', '/var/lib/pulp/database_fields.symmetric.key') }}"
+    data: "{{ pulp_key['content'] | b64decode }}"
 
 - name: Wait for PostgreSQL to be ready
   ansible.builtin.wait_for:
