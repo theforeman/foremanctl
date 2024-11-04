@@ -1,9 +1,8 @@
-CONTENT_ORIGIN="http://{{ ansible_hostname }}:8080"
-API_CONTENT_ORIGIN="http://{{ ansible_hostname }}:24817"
-CONTENT_SERVICE_ORIGIN="http://{{ ansible_hostname }}:24816"
+CONTENT_ORIGIN="http://{{ ansible_hostname }}:24816"
 CACHE_ENABLED=True
 REDIS_HOST="localhost"
 REDIS_PORT=6379
+REDIS_DB=8
 
 DATABASES = {
 	'default': {

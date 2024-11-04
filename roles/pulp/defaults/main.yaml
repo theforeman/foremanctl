@@ -1,7 +1,8 @@
 ---
-pulp_api_image: quay.io/pulp/pulp-minimal:stable
-pulp_content_image: quay.io/pulp/pulp-minimal:stable
-pulp_worker_image: quay.io/pulp/pulp-minimal:stable
+pulp_image: quay.io/pulp/pulp-minimal:stable
+pulp_api_image: "{{ pulp_image }}"
+pulp_content_image: "{{ pulp_image }}"
+pulp_worker_image: "{{ pulp_image }}"
 
 pulp_api_ports:
   - "24817:80"
@@ -11,7 +12,6 @@ pulp_worker_count: 2
 
 pulp_volumes:
   - /var/lib/pulp/pulp_storage:/var/lib/pulp
-  - /var/lib/pulp/containers:/var/lib/containers
 
 pulp_api_container_name: pulp-api
 pulp_content_container_name: pulp-content

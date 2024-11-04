@@ -74,6 +74,7 @@
       - |
         [Install]
         WantedBy=default.target
+        Wants=postgresql.service
 
 - name: Deploy Pulp Content Container
   containers.podman.podman_container:
@@ -92,6 +93,7 @@
       - |
         [Install]
         WantedBy=default.target
+        Wants=postgresql.service
 
 - name: Deploy Pulp Worker Container
   containers.podman.podman_container:
@@ -110,6 +112,7 @@
       - |
         [Install]
         WantedBy=default.target
+        Wants=postgresql.service
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
@@ -121,7 +124,7 @@
     enabled: true
     state: started
 
-- name: Migrate the Pylp database
+- name: Migrate the Pulp database
   containers.podman.podman_container_exec:
     name: "{{ pulp_api_container_name }}"
     command: pulpcore-manager migrate --noinput
