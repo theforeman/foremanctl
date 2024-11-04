@@ -51,6 +51,8 @@
     command: pulp-api
     ports: "{{ pulp_api_ports }}"
     volumes: "{{ pulp_volumes }}"
+    security_opt:
+      - "label=disable"
     secrets:
       - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
@@ -67,6 +69,8 @@
     command: pulp-content
     ports: "{{ pulp_content_ports }}"
     volumes: "{{ pulp_volumes }}"
+    security_opt:
+      - "label=disable"
     secrets:
       - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
@@ -88,6 +92,8 @@
     state: quadlet
     command: pulp-worker
     volumes: "{{ pulp_volumes }}"
+    security_opt:
+      - "label=disable"
     secrets:
       - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
