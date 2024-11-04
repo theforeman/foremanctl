@@ -20,6 +20,15 @@
     mode: "0755"
   loop: "{{ pulp_volumes }}"
 
+- name: Create Pulp storage subdirs
+  ansible.builtin.file:
+    path: "/var/lib/pulp/pulp_storage/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - tmp
+    - assets
+
 - name: Create settings config secret
   containers.podman.podman_secret:
     state: present
