@@ -10,10 +10,8 @@ pulp_content_ports:
 pulp_worker_count: 2
 
 pulp_volumes:
-  - /var/lib/pulp/settings:/etc/pulp:Z
-  - /var/lib/pulp/pulp_storage:/var/lib/pulp:Z
-  - /var/lib/pulp/pgsql:/var/lib/pgsql:Z
-  - /var/lib/pulp/containers:/var/lib/containers:Z
+  - /var/lib/pulp/pulp_storage:/var/lib/pulp
+  - /var/lib/pulp/containers:/var/lib/containers
 
 pulp_api_container_name: pulp-api
 pulp_content_container_name: pulp-content
