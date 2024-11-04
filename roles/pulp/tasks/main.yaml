@@ -63,7 +63,7 @@
     image: "{{ pulp_api_image }}"
     state: quadlet
     command: pulp-api
-    ports: "{{ pulp_api_ports }}"
+    network: host
     volumes: "{{ pulp_volumes }}"
     security_opt:
       - "label=disable"
@@ -81,7 +81,7 @@
     image: "{{ pulp_content_image }}"
     state: quadlet
     command: pulp-content
-    ports: "{{ pulp_content_ports }}"
+    network: host
     volumes: "{{ pulp_volumes }}"
     security_opt:
       - "label=disable"
@@ -105,6 +105,7 @@
     image: "{{ pulp_worker_image }}"
     state: quadlet
     command: pulp-worker
+    network: host
     volumes: "{{ pulp_volumes }}"
     security_opt:
       - "label=disable"
