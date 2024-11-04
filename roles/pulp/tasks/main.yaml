@@ -127,6 +127,11 @@
     enabled: true
     state: started
 
+- name: Migrate the Pylp database
+  containers.podman.podman_container_exec:
+    name: "{{ pulp_api_container_name }}"
+    command: pulpcore-manager migrate --noinput
+
 - name: Start the Pulp Content services
   ansible.builtin.systemd:
     name: pulp-content
