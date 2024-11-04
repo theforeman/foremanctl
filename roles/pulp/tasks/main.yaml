@@ -149,6 +149,12 @@
     port: 24817
     timeout: 300
 
+- name: Wait for Pulp API service to be accessible
+  ansible.builtin.wait_for:
+    host: "{{ ansible_hostname }}"
+    port: 24817
+    timeout: 300
+
 - name: Start the Pulp Content services
   ansible.builtin.systemd:
     name: pulp-content
