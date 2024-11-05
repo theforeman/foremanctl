@@ -110,6 +110,11 @@
       - |
         [Install]
         WantedBy=default.target
+        [Service]
+        # This provides reconnect support for PostgreSQL and Redis. Without reconnect support, if either
+        # is not available at startup or becomes disconnected, this process will die and not respawn.
+        Restart=always
+        RestartSec=3
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
