@@ -75,6 +75,9 @@
         [Install]
         WantedBy=default.target
         Wants=postgresql.service
+        [Service]
+        Restart=always
+        RestartSec=3
 
 - name: Deploy Pulp Content Container
   containers.podman.podman_container:
@@ -94,6 +97,9 @@
         [Install]
         WantedBy=default.target
         Wants=postgresql.service
+        [Service]
+        Restart=always
+        RestartSec=3
 
 - name: Deploy Pulp Worker Container
   containers.podman.podman_container:
@@ -113,6 +119,9 @@
         [Install]
         WantedBy=default.target
         Wants=postgresql.service
+        [Service]
+        Restart=always
+        RestartSec=3
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
