@@ -27,10 +27,9 @@ def test_pulp_content_service(host):
     assert pulp_content.is_enabled
 
 def test_pulp_worker_services(host):
-    for i in range(1, 3):
-        pulp_worker = host.service(f"pulp-worker@{i}")
-        assert pulp_worker.is_running
-        assert pulp_worker.is_enabled
+    pulp_worker = host.service("pulp-worker")
+    assert pulp_worker.is_running
+    assert pulp_worker.is_enabled
 
 def test_pulp_api_port(host):
     pulp_api = host.addr(PULP_HOST)
