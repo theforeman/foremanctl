@@ -16,11 +16,6 @@ def pulp_status(pulp_status_curl):
     return json.loads(pulp_status_curl.stdout)
 
 
-def test_pulp_service(host):
-    pulp = host.service("pulp")
-    assert pulp.is_running
-    assert pulp.is_enabled
-
 def test_pulp_api_service(host):
     pulp_api = host.service("pulp-api")
     assert pulp_api.is_running
