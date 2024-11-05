@@ -9,7 +9,8 @@ Vagrant.configure("2") do |config|
     override.vm.hostname = "quadlet.example.com"
 
     override.vm.provider "libvirt" do |libvirt, provider|
-      libvirt.memory = "4096"
+      libvirt.memory = 10240
+      libvirt.cpus = 4
       provider.vm.box_url = CENTOS_9_BOX_URL
     end
   end

@@ -1,2 +1,3 @@
 pytest-testinfra
 paramiko
+apypie @ git+https://github.com/Apipie/apypie.git@foreman

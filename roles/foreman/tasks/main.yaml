@@ -113,6 +113,14 @@
     enabled: true
     state: started
 
+- name: Wait for Foreman service to be accessible
+  ansible.builtin.uri:
+    url: 'http://{{ ansible_hostname }}:3000/api/v2/ping'
+  until: foreman_status.status == 200
+  retries: 60
+  delay: 5
+  register: foreman_status
+
 - name: Start the Dynflow Services
   ansible.builtin.systemd:
     name: "dynflow-sidekiq@{{ item }}"
@@ -122,14 +130,6 @@
     - orchestrator
     - worker
     - worker-hosts-queue
-
-- name: Wait for Foreman service to be accessible
-  ansible.builtin.uri:
-    url: 'http://{{ ansible_hostname }}:3000/api/v2/ping'
-  until: foreman_status.status == 200
-  retries: 60
-  delay: 5
-  register: foreman_status
 
 - name: Wait for Foreman tasks to be ready
   ansible.builtin.uri:
