@@ -36,6 +36,10 @@ def test_pulp_content_port(host):
     pulp_content = host.addr(PULP_HOST)
     assert pulp_content.port(PULP_CONTENT_PORT).is_reachable
 
+def test_pulp_status(pulp_status_curl):
+    assert pulp_status_curl.succeeded
+    assert pulp_status_curl.stderr == '200'
+
 def test_pulp_status_database_connection(pulp_status):
     assert pulp_status['database_connection']['connected']
 
