@@ -22,7 +22,7 @@
 
 - name: Create Pulp storage subdirs
   ansible.builtin.file:
-    path: "/var/lib/pulp/pulp_storage/{{ item }}"
+    path: "/var/lib/pulp/{{ item }}"
     state: directory
     mode: "0755"
   loop:

@@ -11,7 +11,7 @@ pulp_content_ports:
 pulp_worker_count: 2
 
 pulp_volumes:
-  - /var/lib/pulp/pulp_storage:/var/lib/pulp
+  - /var/lib/pulp:/var/lib/pulp
 
 pulp_api_container_name: pulp-api
 pulp_content_container_name: pulp-content
