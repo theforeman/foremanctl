@@ -1,6 +1,7 @@
 ---
 - name: Setup quadlet demo machine
-  hosts: all
+  hosts:
+    - quadlet
   become: true
   vars:
     certificates_hostnames:
