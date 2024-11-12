@@ -12,6 +12,11 @@ def server():
 
 
 @pytest.fixture(scope="module")
+def client():
+    yield testinfra.get_host('paramiko://client', sudo=True, ssh_config='./.vagrant/ssh-config')
+
+
+@pytest.fixture(scope="module")
 def ssh_config():
     config = paramiko.SSHConfig.from_path('./.vagrant/ssh-config')
     return config.lookup('quadlet')
@@ -74,3 +79,23 @@ def activation_key(organization, foremanapi):
     ak = foremanapi.create('activation_keys', {'name': str(uuid.uuid4()), 'organization_id': organization['id']})
     yield ak
     foremanapi.delete('activation_keys', ak)
+
+@pytest.fixture
+def client_environment(activation_key, content_view, lifecycle_environment, yum_repository, organization, foremanapi):
+    foremanapi.resource_action('repositories', 'sync', {'id': yum_repository['id']})
+    foremanapi.update('content_views', {'id': content_view['id'], 'repository_ids': [yum_repository['id']]})
+    foremanapi.resource_action('content_views', 'publish', {'id': content_view['id']})
+
+    library = foremanapi.list('lifecycle_environments', 'name=Library', {'organization_id': organization['id']})[0]
+    foremanapi.update('activation_keys', {'id': activation_key['id'], 'organization_id': organization['id'], 'environment_id': library['id'], 'content_view_id': content_view['id']})
+
+    yield activation_key
+
+    foremanapi.update('activation_keys', {'id': activation_key['id'], 'organization_id': organization['id'], 'environment_id': None, 'content_view_id': None})
+
+    versions = foremanapi.list('content_view_versions', params={'content_view_id': content_view['id']})
+    for version in versions:
+        current_environment_ids = {environment['id'] for environment in version['environments']}
+        for environment_id in current_environment_ids:
+            foremanapi.resource_action('content_views', 'remove_from_environment', params={'id': content_view['id'], 'environment_id': environment_id})
+        foremanapi.delete('content_view_versions', version)
