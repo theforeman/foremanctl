@@ -49,8 +49,10 @@ jobs:
         run: pip install -r requirements.txt
       - name: Install collection dependencies
         run: ansible-galaxy install -r requirements.yml
-      - name: Start VM
-        run: vagrant up quadlet
+      - name: Start VMs
+        run: |
+          vagrant up quadlet
+          vagrant up client
       - name: Run deployment
         run: |
           ansible-playbook playbooks/setup.yaml
