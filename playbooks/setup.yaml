@@ -1,4 +1,10 @@
 ---
+- name: Setup basic stuff
+  hosts: all
+  become: true
+  roles:
+    - theforeman.forklift.etc_hosts
+
 - name: Setup quadlet demo machine
   hosts:
     - quadlet
