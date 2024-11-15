@@ -4,10 +4,6 @@ pulp_api_image: "{{ pulp_image }}"
 pulp_content_image: "{{ pulp_image }}"
 pulp_worker_image: "{{ pulp_image }}"
 
-pulp_api_ports:
-  - "24817:80"
-pulp_content_ports:
-  - "24816:80"
 pulp_worker_count: 2
 
 pulp_volumes:
