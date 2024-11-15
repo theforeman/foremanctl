@@ -127,16 +127,21 @@
   ansible.builtin.systemd:
     daemon_reload: true
 
+- name: Migrate the Pulp database
+  containers.podman.podman_container:
+    name: pulpcore-manager-migrate
+    image: "{{ pulp_api_image }}"
+    command: pulpcore-manager migrate --noinput
+    network: host
+    secrets:
+      - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
+      - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
+
 - name: Start the Pulp API services
   ansible.builtin.systemd:
     name: pulp-api
     enabled: true
     state: started
-
-- name: Migrate the Pulp database
-  containers.podman.podman_container_exec:
-    name: "{{ pulp_api_container_name }}"
-    command: pulpcore-manager migrate --noinput
 
 - name: Wait for Pulp API service to be accessible
   ansible.builtin.wait_for:
