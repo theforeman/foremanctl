@@ -1,6 +1,16 @@
-- name: Pull the Pulp container image
+- name: Pull the Pulp API container image
   containers.podman.podman_image:
-    name: "{{ pulp_image }}"
+    name: "{{ pulp_api_image }}"
+    state: present
+
+- name: Pull the Pulp Content container image
+  containers.podman.podman_image:
+    name: "{{ pulp_content_image }}"
+    state: present
+
+- name: Pull the Pulp Worker container image
+  containers.podman.podman_image:
+    name: "{{ pulp_worker_image }}"
     state: present
 
 - name: Create Pulp storage
@@ -10,44 +20,155 @@
     mode: "0755"
   loop: "{{ pulp_volumes }}"
 
+- name: Create Pulp storage subdirs
+  ansible.builtin.file:
+    path: "/var/lib/pulp/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - tmp
+    - assets
+
 - name: Create settings config secret
   containers.podman.podman_secret:
     state: present
     name: pulp-settings-py
     data: "{{ lookup('ansible.builtin.template', 'settings.py.j2') }}"
 
-- name: Deploy Pulp Container
+- name: Generate database symmetric key
+  ansible.builtin.command: "bash -c 'openssl rand -base64 32 | tr \"+/\" \"-_\" > /var/lib/pulp/database_fields.symmetric.key'"
+  args:
+    creates: /var/lib/pulp/database_fields.symmetric.key
+
+- name: Load database symmetric key
+  ansible.builtin.slurp:
+    src: /var/lib/pulp/database_fields.symmetric.key
+  register: pulp_key
+
+- name: Create database symmetric key secret
+  containers.podman.podman_secret:
+    state: present
+    name: pulp-symmetric-key
+    data: "{{ pulp_key['content'] | b64decode }}"
+
+- name: Wait for PostgreSQL to be ready
+  ansible.builtin.wait_for:
+    host: "localhost"
+    port: 5432
+    timeout: 300
+
+- name: Deploy Pulp API Container
   containers.podman.podman_container:
-    name: "{{ pulp_container_name }}"
-    image: "{{ pulp_image }}"
+    name: "{{ pulp_api_container_name }}"
+    image: "{{ pulp_api_image }}"
     state: quadlet
-    ports: "{{ pulp_ports }}"
+    command: pulp-api
+    network: host
     volumes: "{{ pulp_volumes }}"
+    security_opt:
+      - "label=disable"
     secrets:
       - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
+      - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
     quadlet_options:
       - |
         [Install]
         WantedBy=default.target
+        Wants=postgresql.service
+        [Service]
+        Restart=always
+        RestartSec=3
+
+- name: Deploy Pulp Content Container
+  containers.podman.podman_container:
+    name: "{{ pulp_content_container_name }}"
+    image: "{{ pulp_content_image }}"
+    state: quadlet
+    command: pulp-content
+    network: host
+    volumes: "{{ pulp_volumes }}"
+    security_opt:
+      - "label=disable"
+    secrets:
+      - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
+      - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
+        Wants=postgresql.service
+        [Service]
+        Restart=always
+        RestartSec=3
+
+- name: Deploy Pulp Worker Container
+  containers.podman.podman_container:
+    name: "{{ pulp_worker_container_name }}"
+    image: "{{ pulp_worker_image }}"
+    state: quadlet
+    command: pulp-worker
+    network: host
+    volumes: "{{ pulp_volumes }}"
+    security_opt:
+      - "label=disable"
+    secrets:
+      - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
+      - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
+        Wants=postgresql.service
+        [Service]
+        Restart=always
+        RestartSec=3
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
     daemon_reload: true
 
-- name: Start the Pulp Service
-  ansible.builtin.systemd:
-    name: pulp
-    enabled: true
-    state: restarted
+- name: Migrate the Pulp database
+  containers.podman.podman_container:
+    name: pulpcore-manager-migrate
+    image: "{{ pulp_api_image }}"
+    command: pulpcore-manager migrate --noinput
+    network: host
+    secrets:
+      - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
+      - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
 
-- name: Wait for Pulp service to be accessible
+- name: Start the Pulp API services
+  ansible.builtin.systemd:
+    name: pulp-api
+    enabled: true
+    state: started
+
+- name: Wait for Pulp API service to be accessible
   ansible.builtin.wait_for:
     host: "{{ ansible_hostname }}"
-    port: 8080
+    port: 24817
     timeout: 300
+
+- name: Start the Pulp Content services
+  ansible.builtin.systemd:
+    name: pulp-content
+    enabled: true
+    state: started
+
+- name: Wait for Pulp Content service to be accessible
+  ansible.builtin.wait_for:
+    host: "{{ ansible_hostname }}"
+    port: 24816
+    timeout: 600
+
+- name: Start the Pulp Worker service
+  ansible.builtin.systemd:
+    name: pulp-worker
+    enabled: true
+    state: started
 
 # Only needed until we have cert auth configured
 - name: Set Pulp admin password
   containers.podman.podman_container_exec:
-    name: "{{ pulp_container_name }}"
+    name: "{{ pulp_api_container_name }}"
     command: pulpcore-manager reset-admin-password --password CHANGEME
