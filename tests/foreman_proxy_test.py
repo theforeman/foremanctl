@@ -8,23 +8,23 @@ FOREMAN_PROXY_PORT = 9090
 
 
 @pytest.fixture(scope="module")
-def foreman_proxy_version_curl(host):
-    return host.run(f"curl -k -s -w '%{{stderr}}%{{http_code}}' https://{FOREMAN_PROXY_HOST}:{FOREMAN_PROXY_PORT}/version")
+def foreman_proxy_version_curl(server):
+    return server.run(f"curl -k -s -w '%{{stderr}}%{{http_code}}' https://{FOREMAN_PROXY_HOST}:{FOREMAN_PROXY_PORT}/version")
 
 
 @pytest.fixture(scope="module")
-def foreman_proxy_features_curl(host):
-    return host.run(f"curl -k -s -w '%{{stderr}}%{{http_code}}' --cert /root/certificates/certs/quadlet.example.com-client.crt --key /root/certificates/private/quadlet.example.com-client.key https://{FOREMAN_PROXY_HOST}:{FOREMAN_PROXY_PORT}/v2/features")
+def foreman_proxy_features_curl(server):
+    return server.run(f"curl -k -s -w '%{{stderr}}%{{http_code}}' --cert /root/certificates/certs/quadlet.example.com-client.crt --key /root/certificates/private/quadlet.example.com-client.key https://{FOREMAN_PROXY_HOST}:{FOREMAN_PROXY_PORT}/v2/features")
 
 
-def test_foreman_proxy_service(host):
-    foreman_proxy = host.service("foreman-proxy")
+def test_foreman_proxy_service(server):
+    foreman_proxy = server.service("foreman-proxy")
     assert foreman_proxy.is_running
     assert foreman_proxy.is_enabled
 
 
-def test_foreman_proxy_port(host):
-    foreman_proxy = host.addr(FOREMAN_PROXY_HOST)
+def test_foreman_proxy_port(server):
+    foreman_proxy = server.addr(FOREMAN_PROXY_HOST)
     assert foreman_proxy.port(FOREMAN_PROXY_PORT).is_reachable
 
 
