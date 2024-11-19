@@ -4,10 +4,8 @@ HTTPS_PORT = 443
 
 
 def test_httpd_service(server):
-    httpd = server.service("httpd")
-    assert httpd.is_running
-    assert httpd.is_enabled
-
+    apache = server.podman_container("apache")
+    assert apache.is_running
 
 def test_http_port(server):
     httpd = server.addr(HTTP_HOST)

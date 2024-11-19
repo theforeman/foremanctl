@@ -20,12 +20,12 @@
 
   ## SSL directives
   SSLEngine on
-  SSLCertificateFile      "{{ httpd_ssl_dir }}/certs/katello-apache.crt"
-  SSLCertificateKeyFile   "{{ httpd_ssl_dir }}/private/katello-apache.key"
-  SSLCertificateChainFile "{{ httpd_ssl_dir }}/certs/katello-server-ca.crt"
+  SSLCertificateFile      "/etc/httpd/ssl/certs/katello-apache.crt"
+  SSLCertificateKeyFile   "/etc/httpd/ssl/private/katello-apache.key"
+  SSLCertificateChainFile "/etc/httpd/ssl/certs/katello-server-ca.crt"
   SSLVerifyClient         optional
   SSLVerifyDepth          3
-  SSLCACertificateFile    "{{ httpd_ssl_dir }}/certs/katello-default-ca.crt"
+  SSLCACertificateFile    "/etc/httpd/ssl/certs/katello-default-ca.crt"
   SSLOptions +StdEnvVars +ExportCertData
 
   # SSL Proxy directives

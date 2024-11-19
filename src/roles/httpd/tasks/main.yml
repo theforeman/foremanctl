@@ -1,21 +1,8 @@
 ---
-- name: Install Apache httpd
-  ansible.builtin.package:
-    name:
-      - httpd
-      - mod_ssl
+- name: Pull Apache container image
+  containers.podman.podman_image:
+    name: registry.access.redhat.com/ubi9/httpd-24:latest
     state: present
-
-- name: Set httpd_can_network_connect so Apache can connect to Puma and Gunicorn
-  ansible.posix.seboolean:
-    name: httpd_can_network_connect
-    state: true
-    persistent: true
-
-- name: Disable welcome page
-  ansible.builtin.file:
-    path: /etc/httpd/conf.d/welcome.conf
-    state: absent
 
 - name: Create cert directories
   ansible.builtin.file:
@@ -48,8 +35,15 @@
     dest: /etc/httpd/conf.d/foreman-ssl.conf
     mode: "0644"
 
-- name: Start Apache httpd
-  ansible.builtin.service:
-    name: httpd
+- name: Run Apache as a container
+  containers.podman.podman_container:
+    name: apache
+    image: registry.access.redhat.com/ubi9/httpd-24:latest
     state: started
-    enabled: true
+    volumes:
+      - "{{ httpd_ssl_dir }}:/etc/httpd/ssl"
+      - "/etc/httpd/conf.d:/usr/local/apache2/conf.d"
+      - "/var/log/httpd:/usr/local/apache2/logs"
+    ports:
+      - "80:80"
+      - "443:443"
