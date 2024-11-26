@@ -1,8 +1,13 @@
 ---
 - name: Pull Apache container image
   containers.podman.podman_image:
-    name: registry.access.redhat.com/ubi9/httpd-24:latest
+    name: "{{ httpd_container_image }}"
     state: present
+
+- name: Disable welcome page in container
+  containers.podman.podman_container_exec:
+    container: httpd
+    command: rm -f /etc/httpd/conf.d/welcome.conf
 
 - name: Create cert directories
   ansible.builtin.file:
@@ -12,6 +17,8 @@
   loop:
     - "{{ httpd_ssl_dir }}/certs"
     - "{{ httpd_ssl_dir }}/private"
+    - "{{ httpd_conf_dir }}"
+    - "{{ httpd_log_dir }}"
 
 - name: Deploy certificates
   ansible.builtin.copy:
@@ -37,13 +44,13 @@
 
 - name: Run Apache as a container
   containers.podman.podman_container:
-    name: apache
-    image: registry.access.redhat.com/ubi9/httpd-24:latest
+    name: httpd
+    image: "{{ httpd_container_image }}"
     state: started
     volumes:
       - "{{ httpd_ssl_dir }}:/etc/httpd/ssl"
-      - "/etc/httpd/conf.d:/usr/local/apache2/conf.d"
-      - "/var/log/httpd:/usr/local/apache2/logs"
+      - "{{ httpd_conf_dir }}:/etc/httpd/conf.d"
+      - "{{ httpd_log_dir }}:/usr/local/apache2/logs"
     ports:
       - "80:80"
       - "443:443"

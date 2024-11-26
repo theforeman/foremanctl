@@ -1,4 +1,7 @@
-httpd_ssl_dir: /etc/pki/httpd
+httpd_ssl_dir: /etc/httpd/ssl
+httpd_conf_dir: /etc/foreman-quadlet/httpd
+httpd_log_dir: /var/log/httpd
+httpd_container_image: registry.access.redhat.com/ubi9/httpd-24:latest
 httpd_pulp_api_backend: http://localhost:24817
 httpd_pulp_content_backend: http://localhost:24816
 httpd_foreman_backend: http://localhost:3000
