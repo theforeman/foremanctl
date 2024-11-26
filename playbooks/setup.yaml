@@ -19,3 +19,4 @@
           - python3-requests
           - bash-completion
           - nmap
+          - python3-psycopg2
