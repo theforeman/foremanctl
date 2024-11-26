@@ -1,0 +1,65 @@
+---
+- name: Pull PostgreSQL container image
+  containers.podman.podman_image:
+    name: "{{ postgresql_image }}"
+    state: present
+
+- name: Create PostgreSQL storage directory
+  ansible.builtin.file:
+    path: "{{ postgresql_data_dir }}"
+    state: directory
+    mode: "0700"
+    owner: 26
+    group: 26
+
+- name: Create Podman secret for PostgreSQL admin password
+  containers.podman.podman_secret:
+    name: postgresql_admin_password
+    data: "{{ postgresql_admin_password }}"
+
+- name: Deploy PostgreSQL container
+  containers.podman.podman_container:
+    name: "{{ postgresql_container_name }}"
+    image: "{{ postgresql_image }}"
+    state: quadlet
+    healthcheck: pg_isready
+    sdnotify: healthy
+    network: host
+    volumes:
+      - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
+    secrets:
+      - 'postgresql_admin_password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
+
+- name: Run daemon reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start the PostgreSQL Service
+  ansible.builtin.systemd:
+    name: "{{ postgresql_container_name }}"
+    enabled: true
+    state: started
+
+- name: Create PostgreSQL users
+  community.postgresql.postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+    login_host: localhost
+    state: present
+  loop: "{{ postgresql_users }}"
+
+- name: Create PostgreSQL databases
+  community.postgresql.postgresql_db:
+    name: "{{ item.name }}"
+    owner: "{{ item.owner }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+    login_host: localhost
+    state: present
+  loop: "{{ postgresql_databases }}"

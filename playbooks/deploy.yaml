@@ -54,13 +54,6 @@
         password: "{{ foreman_db_password }}"
       - name: pulp
         password: "{{ pulp_db_password }}"
-    postgresql_hba_entries:
-      - { type: local, database: all, user: postgres, auth_method: ident }
-      - { type: local, database: all, user: all, auth_method: ident }
-      - { type: host, database: all, user: postgres, address: '127.0.0.1/32', auth_method: md5 }
-      - { type: host, database: all, user: postgres, address: '0.0.0.0/0', auth_method: reject }
-      - { type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: md5 }
-      - { type: host, database: all, user: all, address: '::1/128', auth_method: md5 }
   roles:
     - role: certificates
       when: "certificate_source == 'default'"
@@ -71,7 +64,7 @@
         certificate_checks_certificate: "{{ server_certificate }}"
         certificate_checks_key: "{{ server_key }}"
         certificate_checks_ca: "{{ ca_certificate }}"
-    - geerlingguy.postgresql
+    - postgresql
     - redis
     - candlepin
     - httpd

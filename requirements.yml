@@ -9,6 +9,3 @@ collections:
   - name: theforeman.operations
   - name: https://github.com/theforeman/forklift
     type: git
-
-roles:
-  - name: geerlingguy.postgresql
