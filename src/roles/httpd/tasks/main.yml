@@ -34,8 +34,13 @@
 - name: Configure foreman-ssl vhost
   ansible.builtin.template:
     src: foreman-ssl-vhost.conf.j2
-    dest: /etc/httpd/conf.d/foreman-ssl.conf
+    dest: "{{ httpd_conf_dir }}/foreman-ssl.conf"
     mode: "0644"
+
+- name: Disable welcome page in container
+  ansible.builtin.file:
+    path: "{{ httpd_conf_dir }}/welcome.conf"
+    state: absent
 
 - name: Run Apache as a container
   containers.podman.podman_container:
@@ -49,8 +54,3 @@
     ports:
       - "80:80"
       - "443:443"
-
-- name: Disable welcome page in container
-  containers.podman.podman_container_exec:
-    name: httpd
-    command: rm -f /etc/httpd/conf.d/welcome.conf
