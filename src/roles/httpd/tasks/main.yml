@@ -4,11 +4,6 @@
     name: "{{ httpd_container_image }}"
     state: present
 
-- name: Disable welcome page in container
-  containers.podman.podman_container_exec:
-    container: httpd
-    command: rm -f /etc/httpd/conf.d/welcome.conf
-
 - name: Create cert directories
   ansible.builtin.file:
     path: "{{ item }}"
@@ -54,3 +49,8 @@
     ports:
       - "80:80"
       - "443:443"
+
+- name: Disable welcome page in container
+  containers.podman.podman_container_exec:
+    name: httpd
+    command: rm -f /etc/httpd/conf.d/welcome.conf
