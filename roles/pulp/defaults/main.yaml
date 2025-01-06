@@ -14,3 +14,5 @@ pulp_content_container_name: pulp-content
 pulp_worker_container_name: pulp-worker
 
 pulp_content_origin: "http://{{ ansible_fqdn }}:24816"
+
+pulp_enable_analytics: false
