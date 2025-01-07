@@ -19,7 +19,6 @@
     state: started
     volumes:
       - /var/lib/redis:/data:Z
-      - /var/lib/redis/redis.conf:/usr/local/etc/redis/redis.conf:Z
     ports:
       - "6379:6379"
     quadlet_options:
