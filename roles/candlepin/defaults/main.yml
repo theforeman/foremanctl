@@ -15,6 +15,7 @@ candlepin_ciphers:
 candlepin_container_image: quay.io/ehelms/candlepin
 candlepin_container_tag: 4.4.14
 
+candlepin_db_user: candlepin
 candlepin_db_host: localhost
 candlepin_db_port: 5432
 candlepin_db_ssl: false

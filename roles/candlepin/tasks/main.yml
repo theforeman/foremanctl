@@ -23,6 +23,14 @@
       filename: candlepin.conf
       app: candlepin
 
+- name: Create Katello oauth secret
+  containers.podman.podman_secret:
+    state: present
+    name: candlepin-auth-oauth-consumer-katello-secret
+    data: "{{ candlepin_oauth_secret }}"
+    labels:
+      app: candlepin
+
 - name: Create Tomcat server.xml
   containers.podman.podman_secret:
     state: present
@@ -70,6 +78,7 @@
       - 'candlepin-artemis-cert-roles-properties,target=/etc/tomcat/cert-roles.properties,mode=440,type=mount'
       - 'candlepin-artemis-cert-users-properties,target=/etc/tomcat/cert-users.properties,mode=440,type=mount'
       - 'candlepin-artemis-jaas-conf,target=/etc/tomcat/conf.d/jaas.conf,mode=440,type=mount'
+      - 'candlepin-auth-oauth-consumer-katello-secret,target=CANDLEPIN_AUTH_OAUTH_CONSUMER_KATELLO_SECRET,type=env'
     volumes:
       - /var/log/candlepin:/var/log/candlepin:Z
       - /var/log/tomcat:/var/log/tomcat:Z
