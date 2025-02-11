@@ -16,7 +16,7 @@
   containers.podman.podman_container:
     name: redis
     image: "{{ redis_image }}"
-    state: started
+    state: quadlet
     volumes:
       - /var/lib/redis:/data:Z
     ports:
