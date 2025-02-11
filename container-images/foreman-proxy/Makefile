@@ -1,5 +1,8 @@
+IMAGE_NAME=quay.io/evgeni/foreman-proxy-rpm
+IMAGE_TAG=nightly
+
 build:
-	podman build -t quay.io/ehelms/foreman-proxy:nightly .
+	podman build -t ${IMAGE_NAME}:${IMAGE_TAG} .
 
 push:
-	podman push quay.io/ehelms/foreman-proxy:nightly
+	podman push ${IMAGE_NAME}:${IMAGE_TAG}
