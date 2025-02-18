@@ -144,7 +144,7 @@
 - name: Configure Foreman Proxy
   theforeman.foreman.smart_proxy:
     name: "{{ ansible_fqdn }}"
-    url: "https://{{ ansible_fqdn }}:9090"
+    url: "https://{{ ansible_fqdn }}/pulp/api/v3/smart_proxy"
     server_url: "http://{{ ansible_fqdn }}:3000"
     username: admin
     password: changeme
