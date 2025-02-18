@@ -1,3 +1,4 @@
-pytest-testinfra
-paramiko
 apypie>=0.5.0
+paramiko
+pytest-testinfra
+pytest-durations
