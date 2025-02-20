@@ -35,6 +35,7 @@
     pulp_db_password: "CHANGEME"
     pulp_content_origin: "https://{{ ansible_fqdn }}"
     postgresql_restarted_state: started
+    pulp_pulp_url: "https://{{ ansible_fqdn }}"
     postgresql_databases:
       - name: candlepin
         owner: candlepin

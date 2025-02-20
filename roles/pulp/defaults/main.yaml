@@ -15,5 +15,6 @@ pulp_worker_container_name: pulp-worker
 
 pulp_content_origin: "http://{{ ansible_fqdn }}:24816"
 pulp_rhsm_url: "https://{{ ansible_fqdn }}/rhsm"
+pulp_pulp_url: "http://{{ ansible_fqdn }}:24817"
 
 pulp_enable_analytics: false
