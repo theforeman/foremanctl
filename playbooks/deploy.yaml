@@ -33,6 +33,7 @@
     httpd_server_key: "{{ server_key }}"
     pulp_db_password: "CHANGEME"
     pulp_content_origin: "https://{{ ansible_fqdn }}"
+    pulp_pulp_url: "https://{{ ansible_fqdn }}"
     postgresql_databases:
       - name: candlepin
         owner: candlepin

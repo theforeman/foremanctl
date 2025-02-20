@@ -20,3 +20,4 @@ REST_FRAMEWORK__DEFAULT_AUTHENTICATION_CLASSES=('rest_framework.authentication.S
 ANALYTICS = {{ pulp_enable_analytics | ternary('True', 'False') }}
 
 SMART_PROXY_RHSM_URL="{{ pulp_rhsm_url }}"
+SMART_PROXY_PULP_URL="{{ pulp_pulp_url }}"
