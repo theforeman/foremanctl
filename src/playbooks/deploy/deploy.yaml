@@ -22,11 +22,6 @@
     candlepin_tomcat_certificate: "{{ localhost_certificate }}"
     candlepin_client_key: "{{ client_key }}"
     candlepin_client_certificate: "{{ client_certificate }}"
-    foreman_proxy_ca_certificate: "{{ client_ca_certificate }}"
-    foreman_proxy_server_key: "{{ server_key }}"
-    foreman_proxy_server_certificate: "{{ server_certificate }}"
-    foreman_proxy_client_key: "{{ client_key }}"
-    foreman_proxy_client_certificate: "{{ client_certificate }}"
     foreman_ca_certificate: "{{ server_ca_certificate }}"
     foreman_client_key: "{{ client_key }}"
     foreman_client_certificate: "{{ client_certificate }}"
@@ -67,5 +62,4 @@
     - candlepin
     - httpd
     - pulp
-    - foreman_proxy
     - foreman
