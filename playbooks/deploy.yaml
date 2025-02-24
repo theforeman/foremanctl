@@ -1,7 +1,7 @@
 ---
 - name: Setup quadlet demo machine
   hosts:
-    - quadlet
+    - localhost
   become: true
   vars_files:
     - "../vars/{{ certificate_source }}_certificates.yml"
