@@ -65,6 +65,37 @@ foremanctl deploy \
 
 When CNAMEs are specified, certificates will include all names in the Subject Alternative Name field, allowing the same certificate to be valid for multiple hostnames.
 
+### Generating Certificate Bundles
+
+foremanctl can generate certificate bundles for additional hostnames (e.g. proxies). A certificate bundle is a tarball containing all the certificate files a host needs, structured in the format expected by foremanctl.
+
+```bash
+# Generate a certificate bundle using the default (self-signed) CA
+foremanctl certificate-bundle proxy.example.com
+
+# Generate a certificate bundle using installer certificates
+foremanctl certificate-bundle --certificate-source=installer proxy.example.com
+```
+
+The generated tarball is written to `/root/<hostname>.tar.gz` and contains:
+
+```
+ssl-build/
+├── katello-server-ca.crt
+├── katello-default-ca.crt
+└── <hostname>/
+    ├── <hostname>-apache.crt
+    ├── <hostname>-apache.key
+    ├── <hostname>-foreman-proxy.crt
+    ├── <hostname>-foreman-proxy.key
+    ├── <hostname>-foreman-proxy-client.crt
+    ├── <hostname>-foreman-proxy-client.key
+    ├── <hostname>-puppet-client.crt
+    └── <hostname>-puppet-client.key
+```
+
+The bundle uses the server certificate and key for both apache and foreman-proxy, and the client certificate and key for both foreman-proxy-client and puppet-client.
+
 ### Current Limitations
 
 - Cannot provide custom certificate files during deployment
