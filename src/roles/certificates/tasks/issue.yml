@@ -1,4 +1,14 @@
 ---
+- name: Ensure certificate directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ certificates_ca_directory_certs }}"
+    - "{{ certificates_ca_directory_keys }}"
+    - "{{ certificates_ca_directory_requests }}"
+
 - name: Issue server certificate
   when:
     - (certificates_source != 'custom_server') or (certificates_hostname == 'localhost')
@@ -29,8 +39,8 @@
         path: "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}.crt"
         csr_path: "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}.csr"
         provider: ownca
-        ownca_path: "{{ certificates_ca_directory_certs }}/ca.crt"
-        ownca_privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
+        ownca_path: "{{ certificates_signing_ca_directory }}/certs/ca.crt"
+        ownca_privatekey_path: "{{ certificates_signing_ca_directory }}/private/ca.key"
         ownca_privatekey_passphrase: "{{ certificates_ca_password }}"
         ownca_not_after: "+{{ certificates_validity_days }}d"
         force: "{{ certificates_renew | bool }}"
@@ -60,8 +70,8 @@
     path: "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}-client.crt"
     csr_path: "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}-client.csr"
     provider: ownca
-    ownca_path: "{{ certificates_ca_directory_certs }}/ca.crt"
-    ownca_privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
+    ownca_path: "{{ certificates_signing_ca_directory }}/certs/ca.crt"
+    ownca_privatekey_path: "{{ certificates_signing_ca_directory }}/private/ca.key"
     ownca_privatekey_passphrase: "{{ certificates_ca_password }}"
     ownca_not_after: "+{{ certificates_validity_days }}d"
     force: "{{ certificates_renew | bool }}"

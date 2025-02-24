@@ -1,0 +1,8 @@
+---
+help: |
+  Generate custom certificates for testing
+
+variables:
+  hostname:
+    help: Additional hostname to generate certificates for.
+    parameter: --hostname
