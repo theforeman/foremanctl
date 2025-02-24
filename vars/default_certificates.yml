@@ -1,0 +1,10 @@
+---
+ca_key_password: "{{ certificates_ca_directory }}/private/ca.pwd"
+ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
+ca_key: "{{ certificates_ca_directory }}/private/ca.key"
+server_certificate: "{{ certificates_ca_directory }}/certs/{{ ansible_fqdn }}.crt"
+server_key: "{{ certificates_ca_directory }}/private/{{ ansible_fqdn }}.key"
+client_certificate: "{{ certificates_ca_directory }}/certs/{{ ansible_fqdn }}-client.crt"
+client_key: "{{ certificates_ca_directory }}/private/{{ ansible_fqdn }}-client.key"
+localhost_key: "{{ certificates_ca_directory }}/private/localhost.key"
+localhost_certificate: "{{ certificates_ca_directory }}/certs/localhost.crt"

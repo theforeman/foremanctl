@@ -1,0 +1,71 @@
+---
+- name: 'Install openssl'
+  ansible.builtin.package:
+    name: openssl
+    state: present
+
+- name: 'Create certs directory'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_certs }}"
+    state: directory
+    mode: '0755'
+
+- name: 'Create keys directory'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_keys }}"
+    state: directory
+    mode: '0755'
+
+- name: 'Create requests directory'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_requests }}"
+    state: directory
+    mode: '0755'
+
+- name: 'Deploy configuration file'
+  ansible.builtin.template:
+    src: openssl.cnf.j2
+    dest: "{{ certificates_ca_directory }}/openssl.cnf"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: 'Create index file'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory }}/index.txt"
+    state: touch
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: 'Ensure serial starting number'
+  ansible.builtin.template:
+    src: serial.j2
+    dest: "{{ certificates_ca_directory }}/serial"
+    force: false
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: 'Create CA key password file'
+  ansible.builtin.copy:
+    content: "{{ certificates_ca_password }}"
+    dest: "{{ certificates_ca_directory_keys }}/ca.pwd"
+    owner: root
+    group: root
+    mode: '0600'
+  no_log: true
+
+- name: 'Creating CA certificate and key'
+  ansible.builtin.command: >
+    openssl req -new
+      -x509
+      -nodes
+      -extensions v3_ca
+      -config "{{ certificates_ca_directory }}/openssl.cnf"
+      -subj "/CN=Foreman Self-signed CA"
+      -keyout "{{ certificates_ca_directory_keys }}/ca.key"
+      -out "{{ certificates_ca_directory_certs }}/ca.crt"
+      -passout "file:{{ certificates_ca_directory_keys }}/ca.pwd"
+  args:
+    creates: "{{ certificates_ca_directory_certs }}/ca.crt"
