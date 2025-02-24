@@ -1,3 +1,4 @@
+import os
 import subprocess
 import uuid
 from functools import cached_property
@@ -15,6 +16,8 @@ from jinja2 import select_autoescape
 from requests.adapters import HTTPAdapter
 
 SSH_CONFIG = './.tmp/ssh-config'
+OBSAH_STATE = os.environ.get('OBSAH_STATE', '.var/lib/foremanctl')
+PARAMETERS_FILE = os.path.join(OBSAH_STATE, 'parameters.yaml')
 
 
 class UserParameters:
@@ -42,7 +45,6 @@ class UserParameters:
 
 
 def pytest_addoption(parser):
-    parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'custom_server'), help="Certificate source used during deployment")
     parser.addoption("--database-mode", action="store", default="internal", choices=('internal', 'external'), help="Whether the database is internal or external")
 
 
@@ -87,8 +89,10 @@ def certificates(server_fqdn):
 
 
 @pytest.fixture(scope="module")
-def certificate_source(pytestconfig):
-    return pytestconfig.getoption("certificate_source")
+def certificate_source():
+    with open(PARAMETERS_FILE) as f:
+        params = yaml.safe_load(f)
+    return params.get('certificates_source', 'default')
 
 
 @pytest.fixture(scope="module")

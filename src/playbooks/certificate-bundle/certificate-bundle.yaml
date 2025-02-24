@@ -1,0 +1,30 @@
+---
+- name: Generate a certificate bundle for a hostname
+  hosts:
+    - quadlet
+  become: true
+  vars_files:
+    - "../../vars/base.yaml"
+    - "../../vars/certificates.yml"
+  roles:
+    - role: certificate_checks
+      when: certificates_source == 'custom_server'
+      vars:
+        certificate_checks_certificate: "{{ certificates_custom_server_certificate }}"
+        certificate_checks_key: "{{ certificates_custom_server_key }}"
+        certificate_checks_ca: "{{ server_ca_certificate }}"
+    - role: certificates
+      vars:
+        certificates_ca: false
+        certificates_output_directory: "{{ certificates_ca_directory }}/hosts/{{ hostname }}"
+        certificates_hostnames:
+          - "{{ hostname }}"
+    - role: certificate_bundle
+      vars:
+        certificate_bundle_hostname: "{{ hostname }}"
+        certificate_bundle_ca_certificate: "{{ ca_certificate }}"
+        certificate_bundle_server_ca_certificate: "{{ server_ca_certificate }}"
+        certificate_bundle_server_certificate: "{{ certificates_ca_directory }}/hosts/{{ hostname }}/certs/{{ hostname }}.crt"
+        certificate_bundle_server_key: "{{ certificates_ca_directory }}/hosts/{{ hostname }}/private/{{ hostname }}.key"
+        certificate_bundle_client_certificate: "{{ certificates_ca_directory }}/hosts/{{ hostname }}/certs/{{ hostname }}-client.crt"
+        certificate_bundle_client_key: "{{ certificates_ca_directory }}/hosts/{{ hostname }}/private/{{ hostname }}-client.key"
