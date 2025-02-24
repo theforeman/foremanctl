@@ -1,0 +1,34 @@
+---
+help: |
+  Generate a certificate bundle
+
+variables:
+  hostname:
+    parameter: hostname
+    help: Hostname to generate a certificate bundle for that will be the common name.
+  certificates_custom_server_certificate:
+    help: Path to a custom server certificate for the proxy.
+    type: AbsolutePath
+    parameter: --certificate-server-certificate
+    persist: false
+  certificates_custom_server_key:
+    help: Path to the private key for the custom server certificate.
+    type: AbsolutePath
+    parameter: --certificate-server-key
+    persist: false
+  certificates_renew:
+    help: Regenerate certificates for this hostname.
+    parameter: --certificate-renew
+    action: store_true
+    persist: false
+
+constraints:
+  required_together:
+    - [certificates_custom_server_certificate, certificates_custom_server_key]
+  required_if:
+    - ['certificates_source', 'custom_server', ['certificates_custom_server_certificate', 'certificates_custom_server_key']]
+  forbidden_if:
+    - ['certificates_source', 'default', ['certificates_custom_server_certificate', 'certificates_custom_server_key']]
+
+include:
+  - _certificate_source

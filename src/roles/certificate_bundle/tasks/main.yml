@@ -1,0 +1,87 @@
+---
+- name: Create output directory
+  ansible.builtin.file:
+    path: "{{ certificate_bundle_output_directory }}"
+    state: directory
+    mode: '0755'
+
+- name: Check for existing certificate bundle
+  ansible.builtin.stat:
+    path: "{{ certificate_bundle_output_directory }}/{{ certificate_bundle_hostname }}.tar.gz"
+  register: _certificate_bundle_tarball
+
+- name: Build certificate bundle
+  when: not _certificate_bundle_tarball.stat.exists or (certificates_renew | default(false) | bool)
+  block:
+    - name: Create temporary directory
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: certificate-bundle-build
+      register: certificate_bundle_build_directory
+
+    - name: Create directory structure
+      ansible.builtin.file:
+        state: directory
+        path: "{{ certificate_bundle_build_directory.path }}/certs/{{ item }}"
+        mode: '0755'
+      loop:
+        - certs
+        - private
+
+    - name: Copy default CA certificate
+      ansible.builtin.copy:
+        src: "{{ certificate_bundle_ca_certificate }}"
+        dest: "{{ certificate_bundle_build_directory.path }}/certs/certs/ca.crt"
+        remote_src: true
+        mode: '0444'
+
+    - name: Copy server CA certificate
+      ansible.builtin.copy:
+        src: "{{ certificate_bundle_server_ca_certificate }}"
+        dest: "{{ certificate_bundle_build_directory.path }}/certs/certs/server-ca.crt"
+        remote_src: true
+        mode: '0444'
+
+    - name: Copy server certificate
+      ansible.builtin.copy:
+        src: "{{ certificate_bundle_server_certificate }}"
+        dest: "{{ certificate_bundle_build_directory.path }}/certs/certs/{{ certificate_bundle_hostname }}.crt"
+        remote_src: true
+        mode: '0444'
+
+    - name: Copy server key
+      ansible.builtin.copy:
+        src: "{{ certificate_bundle_server_key }}"
+        dest: "{{ certificate_bundle_build_directory.path }}/certs/private/{{ certificate_bundle_hostname }}.key"
+        remote_src: true
+        mode: '0600'
+
+    - name: Copy client certificate
+      ansible.builtin.copy:
+        src: "{{ certificate_bundle_client_certificate }}"
+        dest: "{{ certificate_bundle_build_directory.path }}/certs/certs/{{ certificate_bundle_hostname }}-client.crt"
+        remote_src: true
+        mode: '0444'
+
+    - name: Copy client key
+      ansible.builtin.copy:
+        src: "{{ certificate_bundle_client_key }}"
+        dest: "{{ certificate_bundle_build_directory.path }}/certs/private/{{ certificate_bundle_hostname }}-client.key"
+        remote_src: true
+        mode: '0600'
+
+    - name: Create tarball
+      community.general.archive:
+        path: "{{ certificate_bundle_build_directory.path }}/certs"
+        dest: "{{ certificate_bundle_output_directory }}/{{ certificate_bundle_hostname }}.tar.gz"
+        format: gz
+        mode: '0640'
+
+    - name: Remove temporary directory
+      ansible.builtin.file:
+        path: "{{ certificate_bundle_build_directory.path }}"
+        state: absent
+
+- name: Report certificate bundle location
+  ansible.builtin.debug:
+    msg: "Certificate bundle created: {{ certificate_bundle_output_directory }}/{{ certificate_bundle_hostname }}.tar.gz"

@@ -8,6 +8,6 @@
     certificates_ca_password: "CUSTOMCA"
     certificates_ca_subject: 'Custom Test CA'
     certificates_hostnames:
-      - "{{ ansible_facts['fqdn'] }}"
+      - "{{ hostname | default(ansible_facts['fqdn']) }}"
   roles:
     - role: certificates
