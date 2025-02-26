@@ -10,3 +10,9 @@
   :options:
     :compress: true
     :namespace: foreman
+
+{% if foreman_oauth_consumer_key is defined and foreman_oauth_consumer_secret is defined %}
+:oauth_active: true
+:oauth_consumer_key: {{ foreman_oauth_consumer_key }}
+:oauth_consumer_secret: {{ foreman_oauth_consumer_secret }}
+{% endif %}

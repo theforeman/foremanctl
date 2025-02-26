@@ -26,6 +26,8 @@
     foreman_client_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}-client.key"
     foreman_client_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}-client.crt"
     foreman_db_password: "CHANGEME"
+    foreman_oauth_consumer_key: abcdefghijklmnopqrstuvwxyz123456
+    foreman_oauth_consumer_secret: abcdefghijklmnopqrstuvwxyz123456
     httpd_server_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
     httpd_client_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
     httpd_server_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}.crt"
