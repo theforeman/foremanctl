@@ -47,15 +47,24 @@
     group: root
     mode: '0644'
 
+- name: 'Create CA key password file'
+  ansible.builtin.copy:
+    content: "{{ certificates_ca_password }}"
+    dest: "{{ certificates_ca_directory_keys }}/ca.pwd"
+    owner: root
+    group: root
+    mode: '0600'
+  no_log: true
+
 - name: 'Creating CA certificate and key'
   ansible.builtin.command: >
     openssl req -new
       -x509
-      -nodes
       -extensions v3_ca
       -config "{{ certificates_ca_directory }}/openssl.cnf"
       -keyout "{{ certificates_ca_directory_keys }}/ca.key"
       -out "{{ certificates_ca_directory_certs }}/ca.crt"
+      -passout "file:{{ certificates_ca_directory_keys }}/ca.pwd"
   args:
     creates: "{{ certificates_ca_directory_certs }}/ca.crt"
 
@@ -82,6 +91,7 @@
       -create_serial
       -batch
       -extensions ssl_server
+      -passin "file:{{ certificates_ca_directory_keys }}/ca.pwd"
       -config "{{ certificates_ca_directory }}/openssl.cnf"
       -in "{{ certificates_ca_directory_requests }}/{{ certificates_server }}.csr"
       -out "{{ certificates_ca_directory_certs }}/{{ certificates_server }}.crt"
@@ -111,6 +121,7 @@
       -create_serial
       -batch
       -extensions ssl_client
+      -passin "file:{{ certificates_ca_directory_keys }}/ca.pwd"
       -config "{{ certificates_ca_directory }}/openssl.cnf"
       -in "{{ certificates_ca_directory_requests }}/{{ certificates_client }}.csr"
       -out "{{ certificates_ca_directory_certs }}/{{ certificates_client }}.crt"

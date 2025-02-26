@@ -17,6 +17,7 @@
         -batch
         -policy signing_policy
         -extensions signing_req
+        -passin "file:{{ certificates_ca_directory_keys }}/ca.pwd"
         -out "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}.crt"
         -infiles "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}.csr"
   args:

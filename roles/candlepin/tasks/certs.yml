@@ -37,6 +37,14 @@
     labels:
       app: candlepin
 
+- name: Create the podman secret for Candlepin CA key password
+  containers.podman.podman_secret:
+    state: present
+    name: candlepin-ca-key-password
+    path: "{{ candlepin_ca_key_password }}"
+    labels:
+      app: candlepin
+
 - name: Create the podman secret for Tomcat keystore
   containers.podman.podman_secret:
     state: present
