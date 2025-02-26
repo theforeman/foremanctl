@@ -60,7 +60,6 @@
     secrets:
       - 'candlepin-ca-cert,target=/etc/candlepin/certs/candlepin-ca.crt,mode=0440,type=mount'
       - 'candlepin-ca-key,target=/etc/candlepin/certs/candlepin-ca.key,mode=0440,type=mount'
-      - 'candlepin-ca-key-password,target=CANDLEPIN_CA_KEY_PASSWORD,type=env'
       - 'candlepin-tomcat-keystore,target=/etc/candlepin/certs/keystore,mode=0440,type=mount'
       - 'candlepin-tomcat-truststore,target=/etc/candlepin/certs/truststore,mode=0440,type=mount'
       - 'candlepin-candlepin-conf,target=/etc/candlepin/candlepin.conf,mode=0440,type=mount'

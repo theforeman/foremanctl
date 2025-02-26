@@ -29,19 +29,16 @@
     labels:
       app: candlepin
 
+- name: Decrypt Candlepin CA key
+  ansible.builtin.command: openssl pkey -in "{{ candlepin_ca_key }}" -passin "file:{{ candlepin_ca_key_password }}"
+  register: _candlepin_ca_key
+  changed_when: false
+
 - name: Create the podman secret for Candlepin CA key
   containers.podman.podman_secret:
     state: present
     name: candlepin-ca-key
-    path: "{{ candlepin_ca_key }}"
-    labels:
-      app: candlepin
-
-- name: Create the podman secret for Candlepin CA key password
-  containers.podman.podman_secret:
-    state: present
-    name: candlepin-ca-key-password
-    path: "{{ candlepin_ca_key_password }}"
+    data: "{{ _candlepin_ca_key.stdout }}"
     labels:
       app: candlepin
 
