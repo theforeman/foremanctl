@@ -30,6 +30,7 @@ jobs:
           - candlepin
           - foreman
           - foreman-proxy
+          - redis
     steps:
       - uses: actions/checkout@v4
       - name: Build ${{ matrix.container }} container
