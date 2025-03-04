@@ -1,1 +1,1 @@
-redis_image: docker.io/redis:6
+redis_image: quay.io/sclorg/redis-6-c9s:latest
