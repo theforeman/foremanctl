@@ -25,7 +25,7 @@ def ssh_config():
 @pytest.fixture(scope="module")
 def foremanapi(ssh_config):
     return apypie.ForemanApi(
-        uri=f'https://{ssh_config['hostname']}',
+        uri=f'https://{ssh_config["hostname"]}',
         username='admin',
         password='changeme',
         verify_ssl=False,
