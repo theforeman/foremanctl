@@ -3,7 +3,7 @@
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/theforeman/foreman-installer/refs/heads/develop/bin/katello-certs-check
     dest: /usr/bin/katello-certs-check
-    mode: '0744'
+    mode: '0755'
 
 - name: Check certificates
   ansible.builtin.command:
