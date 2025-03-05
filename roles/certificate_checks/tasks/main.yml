@@ -1,0 +1,20 @@
+---
+- name: Fetch katello_certs_check
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/theforeman/foreman-installer/refs/heads/develop/bin/katello-certs-check
+    dest: /usr/bin/katello-certs-check
+    mode: '0755'
+
+- name: Check certificates
+  ansible.builtin.command:
+    argv:
+      - "/usr/bin/katello-certs-check"
+      - "-t"
+      - "foreman"
+      - "-c"
+      - "{{ certificate_checks_certificate }}"
+      - "-k"
+      - "{{ certificate_checks_key }}"
+      - "-b"
+      - "{{ certificate_checks_ca }}"
+  changed_when: false

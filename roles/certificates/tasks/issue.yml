@@ -1,24 +1,66 @@
 ---
-- name: 'Creating signing request'
+- name: 'Create server key'
   ansible.builtin.command: >
-    openssl req -new
-      -newkey rsa:2048
-      -nodes
-      -out    "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}.csr"
-      -keyout "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}.key"
-      -subj "/C=US/ST=North Carolina/L=Raleigh/O=Foreman/OU=Katello/CN={{ certificates_hostname }}"
+    openssl genrsa
+      -out "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}.key"
+      4096
+  args:
+    creates: "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}.key"
+
+- name: 'Creating server signing request'
+  ansible.builtin.command: >
+    openssl req
+      -new
+      -config "{{ certificates_ca_directory }}/openssl.cnf"
+      -key "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}.key"
+      -subj "/CN={{ certificates_hostname }}"
+      -addext "subjectAltName = DNS:{{ certificates_hostname }}"
+      -out "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}.csr"
   args:
     creates: "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}.csr"
 
-- name: 'Sign signing request'
+- name: 'Sign server signing request'
   ansible.builtin.command: >
-      openssl ca
-        -config "{{ certificates_ca_directory }}/openssl.cnf"
-        -batch
-        -policy signing_policy
-        -extensions signing_req
-        -passin "file:{{ certificates_ca_directory_keys }}/ca.pwd"
-        -out "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}.crt"
-        -infiles "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}.csr"
+    openssl ca
+      -create_serial
+      -batch
+      -extensions ssl_server
+      -config "{{ certificates_ca_directory }}/openssl.cnf"
+      -passin "file:{{ certificates_ca_directory_keys }}/ca.pwd"
+      -in "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}.csr"
+      -out "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}.crt"
   args:
     creates: "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}.crt"
+
+- name: 'Create client key'
+  ansible.builtin.command: >
+    openssl genrsa
+      -out "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}-client.key"
+      4096
+  args:
+    creates: "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}-client.key"
+
+- name: 'Creating client signing request'
+  ansible.builtin.command: >
+    openssl req
+      -new
+      -config "{{ certificates_ca_directory }}/openssl.cnf"
+      -key "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}-client.key"
+      -addext "subjectAltName = DNS:{{ certificates_hostname }}"
+      -subj "/CN={{ certificates_hostname }}"
+      -out "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}-client.csr"
+  args:
+    creates: "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}-client.csr"
+
+- name: 'Sign client signing request'
+  ansible.builtin.command: >
+    openssl ca
+      -create_serial
+      -batch
+      -extensions ssl_client
+      -config "{{ certificates_ca_directory }}/openssl.cnf"
+      -passin "file:{{ certificates_ca_directory_keys }}/ca.pwd"
+      -in "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}-client.csr"
+      -out "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}-client.crt"
+  args:
+    creates: "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}-client.crt"

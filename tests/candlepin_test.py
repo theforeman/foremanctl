@@ -35,7 +35,7 @@ def test_artemis_auth(server):
 
 
 def test_certs_users_file(server):
-    assert_secret_content(server, 'candlepin-artemis-cert-users-properties', 'katelloUser=CN=quadlet.example.com, O=Foreman, ST=NC, C=US')
+    assert_secret_content(server, 'candlepin-artemis-cert-users-properties', 'katelloUser=CN=quadlet.example.com')
 
 
 def test_tls(server):

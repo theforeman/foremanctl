@@ -3,35 +3,39 @@
   hosts:
     - quadlet
   become: true
+  vars_files:
+    - "../vars/{{ certificate_source }}_certificates.yml"
   vars:
+    certificate_source: default
     certificates_hostnames:
+      - "{{ ansible_fqdn }}"
       - localhost
     certificates_ca_password: "CHANGEME"
     candlepin_db_password: "CHANGEME"
     candlepin_keystore_password: "CHANGEME"
     candlepin_oauth_secret: "CHANGEME"
-    candlepin_ca_key: "{{ certificates_ca_directory }}/private/ca.key"
-    candlepin_ca_key_password: "{{ certificates_ca_directory }}/private/ca.pwd"
-    candlepin_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
-    candlepin_tomcat_key: "{{ certificates_ca_directory }}/private/localhost.key"
-    candlepin_tomcat_certificate: "{{ certificates_ca_directory }}/certs/localhost.crt"
-    candlepin_client_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}-client.key"
-    candlepin_client_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}-client.crt"
-    foreman_proxy_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
-    foreman_proxy_server_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}.key"
-    foreman_proxy_server_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}.crt"
-    foreman_proxy_client_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}-client.key"
-    foreman_proxy_client_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}-client.crt"
-    foreman_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
-    foreman_client_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}-client.key"
-    foreman_client_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}-client.crt"
+    candlepin_ca_key_password: "{{ ca_key_password }}"
+    candlepin_ca_key: "{{ ca_key }}"
+    candlepin_ca_certificate: "{{ ca_certificate }}"
+    candlepin_tomcat_key: "{{ localhost_key }}"
+    candlepin_tomcat_certificate: "{{ localhost_certificate }}"
+    candlepin_client_key: "{{ client_key }}"
+    candlepin_client_certificate: "{{ client_certificate }}"
+    foreman_proxy_ca_certificate: "{{ ca_certificate }}"
+    foreman_proxy_server_key: "{{ server_key }}"
+    foreman_proxy_server_certificate: "{{ server_certificate }}"
+    foreman_proxy_client_key: "{{ client_key }}"
+    foreman_proxy_client_certificate: "{{ client_certificate }}"
+    foreman_ca_certificate: "{{ ca_certificate }}"
+    foreman_client_key: "{{ client_key }}"
+    foreman_client_certificate: "{{ client_certificate }}"
     foreman_db_password: "CHANGEME"
     foreman_oauth_consumer_key: abcdefghijklmnopqrstuvwxyz123456
     foreman_oauth_consumer_secret: abcdefghijklmnopqrstuvwxyz123456
-    httpd_server_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
-    httpd_client_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
-    httpd_server_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}.crt"
-    httpd_server_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}.key"
+    httpd_server_ca_certificate: "{{ ca_certificate }}"
+    httpd_client_ca_certificate: "{{ ca_certificate }}"
+    httpd_server_certificate: "{{ server_certificate }}"
+    httpd_server_key: "{{ server_key }}"
     pulp_db_password: "CHANGEME"
     pulp_content_origin: "https://{{ ansible_fqdn }}"
     postgresql_databases:
@@ -56,7 +60,13 @@
       - { type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: md5 }
       - { type: host, database: all, user: all, address: '::1/128', auth_method: md5 }
   roles:
-    - certificates
+    - role: certificates
+      when: "certificate_source == 'default'"
+    - role: certificate_checks
+      vars:
+        certificate_checks_certificate: "{{ server_certificate }}"
+        certificate_checks_key: "{{ server_key }}"
+        certificate_checks_ca: "{{ ca_certificate }}"
     - geerlingguy.postgresql
     - redis
     - candlepin
