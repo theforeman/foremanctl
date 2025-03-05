@@ -4,6 +4,23 @@ import apypie
 import paramiko
 import pytest
 import testinfra
+import yaml
+
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+
+def pytest_addoption(parser):
+    parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'installer'), help="Where to obtain certificates from")
+
+
+@pytest.fixture(scope="module")
+def certificates(pytestconfig):
+    source = pytestconfig.getoption("certificate_source")
+    env = Environment(loader=FileSystemLoader("."), autoescape=select_autoescape())
+    template = env.get_template(f"./vars/{source}_certificates.yml")
+    context = {'certificates_ca_directory': '/root/certificates',
+               'ansible_fqdn': 'quadlet.example.com'}
+    return yaml.safe_load(template.render(context))
 
 
 @pytest.fixture(scope="module")
