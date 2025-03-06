@@ -18,8 +18,8 @@ def test_candlepin_port(server):
     assert candlepin.port("23443").is_reachable
 
 
-def test_candlepin_status(server):
-    status = server.run('curl --cacert /root/certificates/certs/ca.crt --silent --output /dev/null --write-out \'%{http_code}\' https://localhost:23443/candlepin/status')
+def test_candlepin_status(server, certificates):
+    status = server.run(f"curl --cacert {certificates['ca_certificate']} --silent --output /dev/null --write-out '%{{http_code}}' https://localhost:23443/candlepin/status")
     assert status.succeeded
     assert status.stdout == '200'
 
@@ -29,8 +29,8 @@ def test_artemis_port(server):
     assert candlepin.port("61613").is_reachable
 
 
-def test_artemis_auth(server):
-    cmd = server.run('echo "" | openssl s_client -CAfile /root/certificates/certs/ca.crt -cert /root/certificates/certs/quadlet.example.com-client.crt -key /root/certificates/private/quadlet.example.com-client.key -connect localhost:61613')
+def test_artemis_auth(server, certificates):
+    cmd = server.run(f'echo "" | openssl s_client -CAfile {certificates["ca_certificate"]} -cert {certificates["client_certificate"]} -key {certificates["client_key"]} -connect localhost:61613')
     assert cmd.succeeded, f"exit: {cmd.rc}\n\nstdout:\n{cmd.stdout}\n\nstderr:\n{cmd.stderr}"
 
 
