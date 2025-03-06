@@ -1,7 +1,7 @@
 FROM quay.io/centos/centos:stream9
 RUN dnf -y update && \
     dnf clean all
-RUN dnf -y --nodocs install \
+RUN dnf -y --nodocs --setopt install_weak_deps=False install \
     https://yum.theforeman.org/candlepin/4.4/el9/x86_64/candlepin-4.4.14-1.el9.noarch.rpm \
     https://yum.theforeman.org/candlepin/4.4/el9/x86_64/candlepin-selinux-4.4.14-1.el9.noarch.rpm && \ 
     dnf clean all
