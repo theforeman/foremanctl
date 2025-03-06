@@ -13,8 +13,8 @@ def foreman_proxy_version_curl(server):
 
 
 @pytest.fixture(scope="module")
-def foreman_proxy_features_curl(server):
-    return server.run(f"curl -k -s -w '%{{stderr}}%{{http_code}}' --cert /root/certificates/certs/quadlet.example.com-client.crt --key /root/certificates/private/quadlet.example.com-client.key https://{FOREMAN_PROXY_HOST}:{FOREMAN_PROXY_PORT}/v2/features")
+def foreman_proxy_features_curl(server, certificates):
+    return server.run(f"curl -k -s -w '%{{stderr}}%{{http_code}}' --cert {certificates['client_certificate']} --key {certificates['client_key']} https://{FOREMAN_PROXY_HOST}:{FOREMAN_PROXY_PORT}/v2/features")
 
 
 def test_foreman_proxy_service(server):
