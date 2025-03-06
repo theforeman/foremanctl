@@ -56,6 +56,9 @@ jobs:
       - name: Run setup
         run: |
           ansible-playbook playbooks/setup.yaml
+      - name: Run image pull
+        run: |
+          ansible-playbook playbooks/images.yaml
       - name: Run deployment
         run: |
           ansible-playbook playbooks/deploy.yaml
