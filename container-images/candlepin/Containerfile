@@ -2,8 +2,19 @@ FROM quay.io/centos/centos:stream9
 RUN dnf -y update && \
     dnf clean all
 RUN dnf -y --nodocs --setopt install_weak_deps=False install \
+    gettext \
     https://yum.theforeman.org/candlepin/4.4/el9/x86_64/candlepin-4.4.14-1.el9.noarch.rpm \
     https://yum.theforeman.org/candlepin/4.4/el9/x86_64/candlepin-selinux-4.4.14-1.el9.noarch.rpm && \ 
     dnf clean all
 
-CMD ["/usr/libexec/tomcat/server", "start"]
+ENV CANDLEPIN_KEYSTORE_PATH=/etc/candlepin/certs/truststore
+ENV CANDLEPIN_KEYSTORE_PASSWORD=
+ENV CANDLEPIN_TRUSTSTORE_PATH=/etc/candlepin/certs/truststore
+# Optional - if unset, CANDLEPIN_KEYSTORE_PASSWORD is used
+ENV CANDLEPIN_TRUSTSTORE_PASSWORD=
+
+ADD broker.xml.tpl /etc/candlepin/
+
+ADD start /usr/libexec/candlepin/
+
+CMD ["/usr/libexec/candlepin/start"]

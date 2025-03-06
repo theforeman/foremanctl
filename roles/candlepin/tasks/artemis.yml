@@ -8,14 +8,11 @@
   ansible.builtin.set_fact:
     candlepin_artemis_client_dn: "{{ openssl_response.stdout | replace('subject=', '') }}"
 
-- name: Create Candlepin broker.xml
+- name: Create Candlepin keystore password secret
   containers.podman.podman_secret:
     state: present
-    name: candlepin-artemis-broker-xml
-    data: "{{ lookup('ansible.builtin.template', 'broker.xml.j2') }}"
-    labels:
-      filename: broker.xml
-      app: artemis
+    name: candlepin-keystore-password
+    data: "{{ candlepin_keystore_password }}"
 
 - name: Create Tomcat login config
   containers.podman.podman_secret:

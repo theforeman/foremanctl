@@ -63,7 +63,7 @@
       - 'candlepin-tomcat-keystore,target=/etc/candlepin/certs/keystore,mode=0440,type=mount'
       - 'candlepin-tomcat-truststore,target=/etc/candlepin/certs/truststore,mode=0440,type=mount'
       - 'candlepin-candlepin-conf,target=/etc/candlepin/candlepin.conf,mode=0440,type=mount'
-      - 'candlepin-artemis-broker-xml,target=/etc/candlepin/broker.xml,mode=440,type=mount'
+      - 'candlepin-keystore-password,target=CANDLEPIN_KEYSTORE_PASSWORD,type=env'
       - 'candlepin-tomcat-server-xml,target=/etc/tomcat/server.xml,mode=440,type=mount'
       - 'candlepin-tomcat-conf,target=/etc/tomcat/tomcat.conf,mode=440,type=mount'
       - 'candlepin-artemis-login-config,target=/etc/tomcat/login.config,mode=440,type=mount'

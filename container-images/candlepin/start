@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+
+if [[ -z $CANDLEPIN_TRUSTSTORE_PASSWORD ]] ; then
+	CANDLEPIN_TRUSTSTORE_PASSWORD=$CANDLEPIN_KEYSTORE_PASSWORD
+	export CANDLEPIN_TRUSTSTORE_PASSWORD
+fi
+
+for template in /etc/candlepin/*.tpl ; do
+	destination=${template%%.tpl}
+	if [[ ! -f "$destination" ]] ; then
+		envsubst < "$template" > "$destination"
+	fi
+done
+
+exec /usr/libexec/tomcat/server start
