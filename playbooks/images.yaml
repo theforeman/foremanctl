@@ -1,0 +1,12 @@
+---
+- name: Pull images
+  hosts:
+    - quadlet
+  vars_files:
+    - "../vars/images.yml"
+  become: true
+  tasks:
+    - name: Pull an image
+      containers.podman.podman_image:
+        name: "{{ item }}"
+      loop: "{{ images }}"

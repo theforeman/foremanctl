@@ -5,6 +5,7 @@
   become: true
   vars_files:
     - "../vars/{{ certificate_source }}_certificates.yml"
+    - "../vars/images.yml"
   vars:
     certificate_source: default
     certificates_hostnames:
