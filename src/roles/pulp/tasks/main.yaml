@@ -52,6 +52,7 @@
     name: "{{ pulp_api_container_name }}"
     image: "{{ pulp_api_image }}"
     state: quadlet
+    sdnotify: true
     command: pulp-api
     network: host
     volumes: "{{ pulp_volumes }}"
@@ -76,6 +77,7 @@
     name: "{{ pulp_content_container_name }}"
     image: "{{ pulp_content_image }}"
     state: quadlet
+    sdnotify: true
     command: pulp-content
     network: host
     volumes: "{{ pulp_volumes }}"
@@ -141,23 +143,11 @@
     enabled: true
     state: started
 
-- name: Wait for Pulp API service to be accessible
-  ansible.builtin.wait_for:
-    host: "{{ ansible_fqdn}}"
-    port: 24817
-    timeout: 300
-
 - name: Start the Pulp Content services
   ansible.builtin.systemd:
     name: pulp-content
     enabled: true
     state: started
-
-- name: Wait for Pulp Content service to be accessible
-  ansible.builtin.wait_for:
-    host: "{{ ansible_fqdn }}"
-    port: 24816
-    timeout: 600
 
 - name: Start the Pulp Worker service
   ansible.builtin.systemd:

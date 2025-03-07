@@ -51,6 +51,7 @@
     name: "foreman"
     image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
     state: quadlet
+    sdnotify: true
     network: host
     hostname: "{{ ansible_fqdn }}"
     secrets:
@@ -73,6 +74,7 @@
     quadlet_filename: "dynflow-sidekiq@"
     image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
     state: quadlet
+    sdnotify: true
     network: host
     hostname: "{{ ansible_fqdn }}"
     secrets:
