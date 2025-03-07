@@ -1,5 +1,5 @@
-candlepin_container_image: quay.io/ehelms/candlepin
-candlepin_container_tag: 4.4.14
+candlepin_container_image: quay.io/candlepin/candlepin
+candlepin_container_tag: 4.4.20-1
 foreman_container_image: "quay.io/evgeni/foreman-rpm"
 foreman_container_tag: "nightly"
 foreman_proxy_container_image: "quay.io/evgeni/foreman-proxy-rpm"

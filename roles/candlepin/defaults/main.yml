@@ -12,11 +12,13 @@ candlepin_ciphers:
   - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
   - TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256
   - TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256
-candlepin_container_image: quay.io/ehelms/candlepin
-candlepin_container_tag: 4.4.14
+candlepin_container_image: quay.io/candlepin/candlepin
+candlepin_container_tag: 4.4.20-1
 
 candlepin_db_host: localhost
 candlepin_db_port: 5432
 candlepin_db_ssl: false
 candlepin_db_ssl_ca: None
 candlepin_db_ssl_verify: true
+
+candlepin_tomcat_home: /opt/tomcat

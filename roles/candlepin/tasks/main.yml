@@ -57,22 +57,21 @@
     state: quadlet
     network: host
     hostname: "{{ ansible_fqdn }}"
+    expose:
+      - 23443
+      - 61613
     secrets:
-      - 'candlepin-ca-cert,target=/etc/candlepin/certs/candlepin-ca.crt,mode=0440,type=mount'
-      - 'candlepin-ca-key,target=/etc/candlepin/certs/candlepin-ca.key,mode=0440,type=mount'
-      - 'candlepin-tomcat-keystore,target=/etc/candlepin/certs/keystore,mode=0440,type=mount'
-      - 'candlepin-tomcat-truststore,target=/etc/candlepin/certs/truststore,mode=0440,type=mount'
-      - 'candlepin-candlepin-conf,target=/etc/candlepin/candlepin.conf,mode=0440,type=mount'
-      - 'candlepin-artemis-broker-xml,target=/etc/candlepin/broker.xml,mode=440,type=mount'
-      - 'candlepin-tomcat-server-xml,target=/etc/tomcat/server.xml,mode=440,type=mount'
-      - 'candlepin-tomcat-conf,target=/etc/tomcat/tomcat.conf,mode=440,type=mount'
-      - 'candlepin-artemis-login-config,target=/etc/tomcat/login.config,mode=440,type=mount'
-      - 'candlepin-artemis-cert-roles-properties,target=/etc/tomcat/cert-roles.properties,mode=440,type=mount'
-      - 'candlepin-artemis-cert-users-properties,target=/etc/tomcat/cert-users.properties,mode=440,type=mount'
-      - 'candlepin-artemis-jaas-conf,target=/etc/tomcat/conf.d/jaas.conf,mode=440,type=mount'
-    volumes:
-      - /var/log/candlepin:/var/log/candlepin:Z
-      - /var/log/tomcat:/var/log/tomcat:Z
+      - "candlepin-ca-cert,target=/etc/candlepin/certs/candlepin-ca.crt,mode=0440,type=mount,uid=10001,gid=10000"
+      - "candlepin-ca-key,target=/etc/candlepin/certs/candlepin-ca.key,mode=0440,type=mount,uid=10001,gid=10000"
+      - "candlepin-tomcat-keystore,target=/etc/candlepin/certs/keystore,mode=0440,type=mount,uid=10001,gid=10000"
+      - "candlepin-tomcat-truststore,target=/etc/candlepin/certs/truststore,mode=0440,type=mount,uid=10001,gid=10000"
+      - "candlepin-candlepin-conf,target=/etc/candlepin/candlepin.conf,mode=0440,type=mount,uid=10001,gid=10000"
+      - "candlepin-artemis-broker-xml,target=/etc/candlepin/broker.xml,mode=440,type=mount,uid=10001,gid=10000"
+      - "candlepin-tomcat-server-xml,target={{ candlepin_tomcat_home }}/conf/server.xml,mode=440,type=mount,uid=10001,gid=10000"
+      - "candlepin-artemis-login-config,target={{ candlepin_tomcat_home }}/conf/login.config,mode=440,type=mount,uid=10001,gid=10000"
+      - "candlepin-artemis-cert-roles-properties,target={{ candlepin_tomcat_home }}/conf/cert-roles.properties,mode=440,type=mount,uid=10001,gid=10000"
+      - "candlepin-artemis-cert-users-properties,target={{ candlepin_tomcat_home }}/conf/cert-users.properties,mode=440,type=mount,uid=10001,gid=10000"
+      - "candlepin-artemis-catalina-opts,type=env,target=CATALINA_OPTS"
     quadlet_options:
       - |
         [Install]

@@ -26,13 +26,12 @@
       filename: login.config
       app: artemis
 
-- name: Create Tomcat jaas.conf
+- name: Create the podman secret for the catalina_opts
   containers.podman.podman_secret:
     state: present
-    name: candlepin-artemis-jaas-conf
-    data: "{{ lookup('ansible.builtin.template', 'jaas.conf') }}"
+    name: candlepin-artemis-catalina-opts
+    data: "-Djava.security.auth.login.config=/opt/tomcat/conf/login.config"
     labels:
-      filename: jaas.conf
       app: artemis
 
 - name: Create Tomcat cert-roles.properties
