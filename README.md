@@ -56,8 +56,3 @@ Each shall contain labels that provide additional metadata:
         - app: <name of application that uses the configuration file>
     * Strings:
         - app: <name of application that uses the string>
-
-## TODOs:
-
- * scram-sha-256 for the postgresql configuration
- * Add in truststore for Candlepin? I removed it to reduce complexity
