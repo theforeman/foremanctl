@@ -12,19 +12,9 @@ ansible-playbook playbooks/setup.yaml
 ansible-playbook playbooks/deploy.yaml
 ```
 
-
 ## Testing
 
-To run tests:
-
-Ensure you have a deployment
-```
-vagrant up quadlet
-ansible-playbook playbooks/setup.yaml
-ansible-playbook playbooks/deploy.yaml
-```
-
-Now run the tests:
+Ensure you have a deployment. Now run the tests:
 
 ```
 ./run_tests
