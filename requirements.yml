@@ -6,6 +6,7 @@ collections:
   - name: containers.podman
     version: ">=1.14.0"
   - name: theforeman.foreman
+  - name: theforeman.operations
   - name: https://github.com/theforeman/forklift
     type: git
 

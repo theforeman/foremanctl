@@ -58,6 +58,8 @@
       - { type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: md5 }
       - { type: host, database: all, user: all, address: '::1/128', auth_method: md5 }
   roles:
+    - role: foreman_certs
+      when: "certificate_source == 'installer'"
     - role: certificates
       when: "certificate_source == 'default'"
     - role: certificate_checks
@@ -71,3 +73,12 @@
     - httpd
     - pulp
     - foreman
+    - role: theforeman.operations.installer
+      vars:
+        foreman_installer_scenario: katello
+        foreman_installer_package: foreman-installer-katello
+        foreman_installer_options:
+          - '--foreman-proxy-oauth-consumer-key {{ foreman_oauth_consumer_key }}'
+          - '--foreman-proxy-oauth-consumer-secret {{ foreman_oauth_consumer_secret }}'
+          - '--tuning development'
+      when: "certificate_source == 'installer'"
