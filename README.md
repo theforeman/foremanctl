@@ -8,6 +8,7 @@ This setup uses Vagrant to create a basic VM for running the deployment on:
 
 ```
 vagrant up quadlet
+ansible-galaxy install -r requirements.yml
 ansible-playbook playbooks/setup.yaml
 ansible-playbook playbooks/deploy.yaml
 ```
