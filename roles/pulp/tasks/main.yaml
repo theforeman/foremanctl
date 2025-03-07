@@ -28,6 +28,7 @@
   loop:
     - tmp
     - assets
+    - media
 
 - name: Create settings config secret
   containers.podman.podman_secret:
