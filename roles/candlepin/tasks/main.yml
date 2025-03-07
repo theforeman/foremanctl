@@ -77,6 +77,8 @@
       - |
         [Install]
         WantedBy=default.target
+    healthcheck: curl --fail --insecure https://localhost:23443/candlepin/status
+    sdnotify: healthy
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
@@ -86,12 +88,3 @@
   ansible.builtin.systemd:
     name: candlepin
     state: restarted
-
-- name: Wait for Candlepin service to be accessible
-  ansible.builtin.uri:
-    url: 'https://localhost:23443/candlepin/status'
-    validate_certs: false
-  until: candlepin_status.status == 200
-  retries: 60
-  delay: 5
-  register: candlepin_status
