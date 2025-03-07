@@ -10,14 +10,6 @@
     - quadlet
   become: true
   pre_tasks:
-    - name: Upgrade all packages
-      ansible.builtin.package: # noqa: package-latest
-        name: "*"
-        state: latest
-      register: result
-      retries: 5
-      until: result is success
-
     - name: Install packages
       ansible.builtin.package:
         name:
