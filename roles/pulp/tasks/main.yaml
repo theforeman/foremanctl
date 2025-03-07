@@ -74,6 +74,7 @@
       - |
         [Install]
         WantedBy=default.target
+        [Unit]
         Wants=postgresql.service
         [Service]
         Restart=always
@@ -96,6 +97,7 @@
       - |
         [Install]
         WantedBy=default.target
+        [Unit]
         Wants=postgresql.service
         [Service]
         Restart=always
@@ -118,6 +120,7 @@
       - |
         [Install]
         WantedBy=default.target
+        [Unit]
         Wants=postgresql.service
         [Service]
         Restart=always
