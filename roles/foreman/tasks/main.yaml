@@ -92,6 +92,10 @@
       - |
         [Install]
         WantedBy=default.target
+      - |
+        [Service]
+        RestartPolicy="on-failure"
+        Restart=1
 
 - name: Create Dynflow Container instances
   ansible.builtin.file:
