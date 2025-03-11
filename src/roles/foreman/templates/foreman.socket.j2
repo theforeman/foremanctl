@@ -3,6 +3,12 @@ Description=Foreman socket
 
 [Socket]
 ListenStream={{ foreman_listen_stream }}
+SocketUser=apache
+SocketMode=0600
+
+NoDelay=false
+ReusePort=true
+Backlog=1024
 
 [Install]
 WantedBy=sockets.target
