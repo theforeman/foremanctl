@@ -61,6 +61,6 @@ jobs:
           ansible-playbook playbooks/images.yaml
       - name: Run deployment
         run: |
-          ansible-playbook playbooks/deploy.yaml
+          ansible-playbook playbooks/3-stage-deploy.yaml
       - name: Run tests
         run: ./run_tests

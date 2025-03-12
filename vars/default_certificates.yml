@@ -1,4 +1,5 @@
 ---
+certificates_ca_directory: "/root/certificates"
 ca_key_password: "{{ certificates_ca_directory }}/private/ca.pwd"
 ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
 ca_key: "{{ certificates_ca_directory }}/private/ca.key"
