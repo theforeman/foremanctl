@@ -1,0 +1,8 @@
+[Unit]
+Description=Foreman socket
+
+[Socket]
+ListenStream={{ foreman_listen_stream }}
+
+[Install]
+WantedBy=sockets.target
