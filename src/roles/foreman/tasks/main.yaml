@@ -46,6 +46,12 @@
     name: foreman-client-key
     path: "{{ foreman_client_key }}"
 
+- name: Deploy Foreman socket
+  ansible.builtin.template:
+    src: foreman.socket.j2
+    dest: /etc/systemd/system/foreman.socket
+    mode: '0644'
+
 - name: Deploy Foreman Container
   containers.podman.podman_container:
     name: "foreman"
@@ -64,6 +70,8 @@
       SEED_ADMIN_PASSWORD: changeme
     quadlet_options:
       - |
+        [Unit]
+        Requires=foreman.socket
         [Install]
         WantedBy=default.target
 

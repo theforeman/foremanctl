@@ -1,7 +1,8 @@
 ---
 foreman_container_image: "quay.io/evgeni/foreman-rpm"
 foreman_container_tag: "nightly"
-foreman_url: "http://localhost:3000"
+foreman_listen_stream: localhost:3000
+foreman_url: "http://{{ foreman_listen_stream }}"
 
 foreman_database_name: foreman
 foreman_database_user: foreman
