@@ -119,7 +119,7 @@
 
 - name: Wait for Foreman service to be accessible
   ansible.builtin.uri:
-    url: 'http://{{ ansible_hostname }}:3000/api/v2/ping'
+    url: '{{ foreman_url }}/api/v2/ping'
   until: foreman_status.status == 200
   retries: 60
   delay: 5
@@ -137,7 +137,7 @@
 
 - name: Wait for Foreman tasks to be ready
   ansible.builtin.uri:
-    url: 'http://{{ ansible_hostname }}:3000/api/v2/ping'
+    url: '{{ foreman_url }}/api/v2/ping'
   until: foreman_tasks_status.json['results']['katello']['services']['foreman_tasks']['status'] == 'ok'
   retries: 60
   delay: 5
@@ -149,6 +149,6 @@
   theforeman.foreman.smart_proxy:
     name: "{{ ansible_fqdn }}"
     url: "https://{{ ansible_fqdn }}:9090"
-    server_url: "http://{{ ansible_fqdn }}:3000"
+    server_url: "{{ foreman_url }}"
     username: admin
     password: changeme
