@@ -59,6 +59,9 @@ jobs:
       - name: Run image pull
         run: |
           ansible-playbook playbooks/images.yaml
+      - name: Setup certificates
+        run: |
+          ansible-playbook playbooks/certificates.yaml
       - name: Run deployment
         run: |
           ansible-playbook playbooks/deploy.yaml

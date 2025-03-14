@@ -8,10 +8,6 @@
     - "../vars/images.yml"
   vars:
     certificate_source: default
-    certificates_hostnames:
-      - "{{ ansible_fqdn }}"
-      - localhost
-    certificates_ca_password: "CHANGEME"
     candlepin_db_password: "CHANGEME"
     candlepin_keystore_password: "CHANGEME"
     candlepin_oauth_secret: "CHANGEME"
@@ -62,15 +58,6 @@
       - { type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: md5 }
       - { type: host, database: all, user: all, address: '::1/128', auth_method: md5 }
   roles:
-    - role: certificates
-      when: "certificate_source == 'default'"
-    - role: foreman_installer_certs
-      when: "certificate_source == 'installer'"
-    - role: certificate_checks
-      vars:
-        certificate_checks_certificate: "{{ server_certificate }}"
-        certificate_checks_key: "{{ server_key }}"
-        certificate_checks_ca: "{{ ca_certificate }}"
     - geerlingguy.postgresql
     - redis
     - candlepin

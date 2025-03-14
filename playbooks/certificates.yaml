@@ -1,0 +1,23 @@
+---
+- name: Setup quadlet demo machine
+  hosts:
+    - quadlet
+  become: true
+  vars_files:
+    - "../vars/{{ certificate_source }}_certificates.yml"
+  vars:
+    certificates_ca_password: "CHANGEME"
+    certificate_source: default
+    certificates_hostnames:
+      - "{{ ansible_fqdn }}"
+      - localhost
+  roles:
+    - role: certificates
+      when: "certificate_source == 'default'"
+    - role: foreman_installer_certs
+      when: "certificate_source == 'installer'"
+    - role: certificate_checks
+      vars:
+        certificate_checks_certificate: "{{ server_certificate }}"
+        certificate_checks_key: "{{ server_key }}"
+        certificate_checks_ca: "{{ ca_certificate }}"
