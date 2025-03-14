@@ -1,0 +1,29 @@
+---
+- name: Enable foreman-installer PR 935 Copr repo
+  community.general.copr:
+    host: copr.fedorainfracloud.org
+    state: enabled
+    name: packit/theforeman-foreman-installer-935
+    chroot: rhel-9-x86_64
+
+- name: Setup Puppet repositories
+  ansible.builtin.include_role:
+    name: theforeman.operations.puppet_repositories
+  vars:
+    foreman_puppet_repositories_version: "8"
+
+- name: Setup Foreman repositories
+  ansible.builtin.include_role:
+    name: theforeman.operations.foreman_repositories
+  vars:
+    foreman_repositories_version: nightly
+    foreman_repositories_katello_version: nightly
+
+- name: Install foreman-installer package
+  ansible.builtin.package:
+    name: foreman-installer-katello
+
+# utilize https://github.com/theforeman/foreman-installer/pull/935
+- name: Generate certs
+  ansible.builtin.command: foreman-certs --apache true --foreman true --candlepin true
+  changed_when: false

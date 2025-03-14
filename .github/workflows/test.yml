@@ -30,6 +30,12 @@ jobs:
           requirements_file: requirements.yml
 
   tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        certificate_source:
+          - default
+          - installer
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -61,6 +67,6 @@ jobs:
           ansible-playbook playbooks/images.yaml
       - name: Run deployment
         run: |
-          ansible-playbook playbooks/deploy.yaml
+          ansible-playbook playbooks/deploy.yaml -e certificate_source=${{ matrix.certificate_source }}
       - name: Run tests
-        run: ./run_tests
+        run: ./run_tests --certificate-source=${{ matrix.certificate_source }}

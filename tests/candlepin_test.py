@@ -34,8 +34,10 @@ def test_artemis_auth(server, certificates):
     assert cmd.succeeded, f"exit: {cmd.rc}\n\nstdout:\n{cmd.stdout}\n\nstderr:\n{cmd.stderr}"
 
 
-def test_certs_users_file(server):
-    assert_secret_content(server, 'candlepin-artemis-cert-users-properties', 'katelloUser=CN=quadlet.example.com')
+def test_certs_users_file(server, certificates):
+    cmd = server.run(f'openssl x509 -noout -subject -in {certificates["client_certificate"]} -nameopt rfc2253,sep_comma_plus_space')
+    subject = cmd.stdout.replace("subject=", "").rstrip()
+    assert_secret_content(server, 'candlepin-artemis-cert-users-properties', f'katelloUser={subject}')
 
 
 def test_tls(server):
