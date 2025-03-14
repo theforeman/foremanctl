@@ -64,6 +64,8 @@
   roles:
     - role: certificates
       when: "certificate_source == 'default'"
+    - role: foreman_installer_certs
+      when: "certificate_source == 'installer'"
     - role: certificate_checks
       vars:
         certificate_checks_certificate: "{{ server_certificate }}"
