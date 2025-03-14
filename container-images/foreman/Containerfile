@@ -10,6 +10,7 @@ ENV MALLOC_ARENA_MAX=2
 ENV FOREMAN_BIND=0.0.0.0
 ENV RAILS_SERVE_STATIC_FILES=true
 ENV RAILS_ENV=production
+ENV RAILS_LOG_TO_STDOUT=true
 CMD /usr/share/foreman/bin/rails db:migrate && /usr/share/foreman/bin/rails db:seed && /usr/share/foreman/bin/rails server --environment production
 EXPOSE 3000/tcp
 
