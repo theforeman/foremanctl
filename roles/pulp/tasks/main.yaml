@@ -30,11 +30,11 @@
     - assets
     - media
 
-- name: Create settings config secret
+- name: Create DB password secret
   containers.podman.podman_secret:
     state: present
-    name: pulp-settings-py
-    data: "{{ lookup('ansible.builtin.template', 'settings.py.j2') }}"
+    name: pulp-db-password
+    data: "{{ pulp_db_password }}"
 
 - name: Generate database symmetric key
   ansible.builtin.command: "bash -c 'openssl rand -base64 32 | tr \"+/\" \"-_\" > /var/lib/pulp/database_fields.symmetric.key'"
@@ -69,8 +69,9 @@
     security_opt:
       - "label=disable"
     secrets:
-      - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
+      - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+    env: "{{ pulp_settings_env }}"
     quadlet_options:
       - |
         [Install]
@@ -92,8 +93,9 @@
     security_opt:
       - "label=disable"
     secrets:
-      - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
+      - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+    env: "{{ pulp_settings_env }}"
     quadlet_options:
       - |
         [Install]
@@ -115,8 +117,9 @@
     security_opt:
       - "label=disable"
     secrets:
-      - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
+      - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+    env: "{{ pulp_settings_env }}"
     quadlet_options:
       - |
         [Install]
@@ -138,8 +141,9 @@
     command: pulpcore-manager migrate --noinput
     network: host
     secrets:
-      - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
+      - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+    env: "{{ pulp_settings_env }}"
 
 - name: Start the Pulp API services
   ansible.builtin.systemd:
