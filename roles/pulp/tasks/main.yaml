@@ -143,7 +143,7 @@
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
-    env: "{{ pulp_settings_env }}"
+    env: "{{ pulp_settings_db_env }}"
 
 - name: Start the Pulp API services
   ansible.builtin.systemd:
