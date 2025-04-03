@@ -52,12 +52,6 @@
     name: pulp-symmetric-key
     data: "{{ pulp_key['content'] | b64decode }}"
 
-- name: Wait for PostgreSQL to be ready
-  ansible.builtin.wait_for:
-    host: "localhost"
-    port: 5432
-    timeout: 300
-
 - name: Deploy Pulp API Container
   containers.podman.podman_container:
     name: "{{ pulp_api_container_name }}"
