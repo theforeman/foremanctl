@@ -3,9 +3,14 @@
   hosts:
     - quadlet
   vars_files:
-    - "../vars/images.yml"
+    - "../../vars/images.yml"
   become: true
   tasks:
+    - name: Install podman
+      ansible.builtin.package:
+        name:
+          - podman
+
     - name: Pull an image
       containers.podman.podman_image:
         name: "{{ item }}"

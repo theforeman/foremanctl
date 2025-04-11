@@ -1,6 +1,0 @@
-#!/bin/bash
-
-mkdir -p inventories
-vagrant up $@
-
-./vagrant.py --yaml > inventories/local_vagrant

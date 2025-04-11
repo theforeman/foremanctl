@@ -1,4 +1,0 @@
-#!/bin/bash
-
-vagrant destroy -f $@
-rm -f inventories/local_vagrant

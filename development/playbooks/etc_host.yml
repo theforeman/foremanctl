@@ -1,0 +1,7 @@
+---
+- name: Set up etc_hosts for each host
+  become: true
+  hosts:
+    - all
+  roles:
+    - theforeman.forklift.etc_hosts

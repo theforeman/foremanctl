@@ -1,0 +1,14 @@
+---
+help: |
+  Manage development and testing virtual machines.
+
+variables:
+  vm_action:
+    parameter: vm_action
+    help: Start the virtual machines
+    choices:
+      - start
+      - stop
+  vms:
+    help: Which VMs to manage, defaults to all.
+    action: store
