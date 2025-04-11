@@ -1,0 +1,36 @@
+---
+- name: Manage virtual machines for development and testing
+  gather_facts: false
+  hosts:
+    - localhost
+  tasks:
+    - when: vm_action == 'start'
+      block:
+        - name: Run vagrant up
+          ansible.builtin.command:
+            cmd: "vagrant up {{ vms | default() }}"
+          args:
+            chdir: "{{ inventory_dir }}/../"
+
+        - name: Create local_vagrant inventory
+          ansible.builtin.command:
+            cmd: ../../scripts/vagrant.py --yaml
+          register: inventory_output
+
+        - name: Write inventory
+          ansible.builtin.copy:
+            dest: "{{ inventory_dir }}/local_vagrant"
+            content: "{{ inventory_output.stdout }}\n"
+
+    - when: vm_action == 'stop'
+      block:
+        - name: Run vagrant destroy
+          ansible.builtin.command:
+            cmd: "vagrant destroy -f {{ vms | default() }}"
+          args:
+            chdir: "{{ inventory_dir }}/../"
+
+        - name: Remove vagrant inventory
+          ansible.builtin.file:
+            state: absent
+            path: "{{ inventory_dir }}/local_vagrant"

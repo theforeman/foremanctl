@@ -1,0 +1,7 @@
+---
+help: |
+  Execute tests
+
+variables:
+  args:
+    help: Pass arguments to pytest.

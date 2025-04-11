@@ -1,0 +1,33 @@
+---
+- name: Install test dependencies
+  hosts:
+    - quadlet
+  become: true
+  tasks:
+    - name: Install testing dependencies
+      ansible.builtin.package:
+        name:
+          - nmap
+
+- name: Execute tests
+  gather_facts: false
+  hosts:
+    - localhost
+  tasks:
+    - name: Capture vagrant ssh-config
+      ansible.builtin.command:
+        cmd: vagrant ssh-config
+      args:
+        chdir: "{{ inventory_dir }}/../"
+      register: ssh_config
+
+    - name: Write ssh_config
+      ansible.builtin.copy:
+        dest: "{{ inventory_dir }}/../.vagrant/ssh-config"
+        content: "{{ ssh_config.stdout }}"
+
+    - name: Run pytest
+      ansible.builtin.command:
+        cmd: "python -m pytest --durations=10 -vv {{ args | default() }}"
+      args:
+        chdir: "{{ inventory_dir }}/../"

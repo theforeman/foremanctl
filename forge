@@ -1,0 +1,8 @@
+#!/bin/bash
+
+OBSAH_NAME=forge
+OBSAH_DATA=development
+OBSAH_INVENTORY=./inventories/
+export OBSAH_NAME OBSAH_DATA OBSAH_INVENTORY
+
+exec obsah "$@"
