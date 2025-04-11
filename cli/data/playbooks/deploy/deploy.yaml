@@ -4,9 +4,9 @@
     - quadlet
   become: true
   vars_files:
-    - "../vars/{{ certificate_source }}_certificates.yml"
-    - "../vars/images.yml"
-    - "../vars/database.yml"
+    - "../../vars/{{ certificate_source }}_certificates.yml"
+    - "../../vars/images.yml"
+    - "../../vars/database.yml"
   vars:
     certificate_source: default
     certificates_hostnames:
@@ -41,6 +41,19 @@
     - name: Deploy debug_tools
       ansible.builtin.include_role:
         name: debug_tools
+    - name: Install podman
+      ansible.builtin.package:
+        name:
+          - podman
+    - name: Install other dependencies
+      ansible.builtin.package:
+        name:
+          - bash-completion
+          - nmap
+          - python3-cryptography
+          - python3-libsemanage
+          - python3-psycopg2
+          - python3-requests
   roles:
     - role: certificates
       when: "certificate_source == 'default'"

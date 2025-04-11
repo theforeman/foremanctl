@@ -4,3 +4,4 @@ paramiko
 pytest-testinfra
 pytest-durations
 pyyaml
+-e .

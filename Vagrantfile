@@ -5,6 +5,10 @@ Vagrant.configure("2") do |config|
   config.vm.box = "centos/stream9"
   config.vm.synced_folder ".", "/vagrant"
 
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "fixtures/etc_host.yml"
+  end
+
   config.vm.define "quadlet" do |override|
     override.vm.hostname = "quadlet.example.com"
 

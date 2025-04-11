@@ -17,7 +17,7 @@ def pytest_addoption(parser):
 def certificates(pytestconfig):
     source = pytestconfig.getoption("certificate_source")
     env = Environment(loader=FileSystemLoader("."), autoescape=select_autoescape())
-    template = env.get_template(f"./vars/{source}_certificates.yml")
+    template = env.get_template(f"./cli/data/vars/{source}_certificates.yml")
     context = {'certificates_ca_directory': '/root/certificates',
                'ansible_fqdn': 'quadlet.example.com'}
     return yaml.safe_load(template.render(context))

@@ -29,7 +29,8 @@ jobs:
       - name: Run ansible-lint
         uses: ansible/ansible-lint@main
         with:
-          requirements_file: requirements.yml
+          requirements_file: ../../requirements.yml
+          working_directory: cli/data
 
   tests:
     strategy:
@@ -60,14 +61,12 @@ jobs:
       - name: Start VMs
         run: |
           ./start-vms
-      - name: Run setup
-        run: |
-          ansible-playbook playbooks/setup.yaml
       - name: Run image pull
         run: |
-          ansible-playbook playbooks/images.yaml
+          rop pull-images
       - name: Run deployment
         run: |
-          ansible-playbook playbooks/deploy.yaml -e certificate_source=${{ matrix.certificate_source }}
+          rop deploy --certificate-source=${{ matrix.certificate_source }}
       - name: Run tests
-        run: ./run_tests --certificate-source=${{ matrix.certificate_source }}
+        run: |
+          ./run_tests --certificate-source=${{ matrix.certificate_source }}
