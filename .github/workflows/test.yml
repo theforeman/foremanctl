@@ -29,7 +29,8 @@ jobs:
       - name: Run ansible-lint
         uses: ansible/ansible-lint@main
         with:
-          requirements_file: requirements.yml
+          requirements_file: ../requirements.yml
+          working_directory: src
 
   tests:
     strategy:
@@ -59,15 +60,13 @@ jobs:
         run: ansible-galaxy install -r requirements.yml
       - name: Start VMs
         run: |
-          ./start-vms
-      - name: Run setup
-        run: |
-          ansible-playbook playbooks/setup.yaml
+          ./forge vms start
       - name: Run image pull
         run: |
-          ansible-playbook playbooks/images.yaml
+          ./rop pull-images
       - name: Run deployment
         run: |
-          ansible-playbook playbooks/deploy.yaml -e certificate_source=${{ matrix.certificate_source }}
+          ./rop deploy --certificate-source=${{ matrix.certificate_source }}
       - name: Run tests
-        run: ./run_tests --certificate-source=${{ matrix.certificate_source }}
+        run: |
+          ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }}"

@@ -1,4 +1,0 @@
-#!/bin/bash
-
-vagrant ssh-config > .vagrant/ssh-config
-py.test --durations=10 -vv "$@"

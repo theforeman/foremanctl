@@ -2,21 +2,30 @@
 
 This repository is testing a deployment of Foreman and Katello using Podman quadlet's and Ansible.
 
+## Development
+
+To setup the environment, run the setup script which will create a virtualenv and populate all of the dependencies:
+
+```
+./setup-environment
+source .venv/bin/activate
+```
+
 ## Deployment
 
 This setup uses Vagrant to create a basic VM for running the deployment on:
 
 ```
-./start-vms
-ansible-galaxy install -r requirements.yml
-ansible-playbook playbooks/setup.yaml
-ansible-playbook playbooks/deploy.yaml
+./setup-environment
+source .venv/bin/activate
+./forge vms start
+./rop deploy
 ```
 
 To teardown the environment:
 
 ```
-./stop-vms
+./forge vms stop
 ```
 
 ## Testing
@@ -24,7 +33,7 @@ To teardown the environment:
 Ensure you have a deployment. Now run the tests:
 
 ```
-./run_tests
+./forge test
 ```
 
 ## Service Configuration

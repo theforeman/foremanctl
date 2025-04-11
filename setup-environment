@@ -1,0 +1,10 @@
+#!/bin/bash
+
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+ansible-galaxy install -r requirements.yml
+
+printf "\n\nSetup complete.\n"
+printf "Activate the virtualenv 'source .venv/bin/activate'.\n"
+printf "Then run the cli using './rop'.\n"
