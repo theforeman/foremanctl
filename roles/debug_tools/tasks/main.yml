@@ -1,0 +1,6 @@
+---
+- name: Install podman-print-secret tool
+  ansible.builtin.copy:
+    src: podman-print-secret
+    dest: /usr/local/bin/podman-print-secret
+    mode: '0755'

@@ -54,6 +54,10 @@
         password: "{{ foreman_db_password }}"
       - name: pulp
         password: "{{ pulp_db_password }}"
+  pre_tasks:
+    - name: Deploy debug_tools
+      ansible.builtin.include_role:
+        name: debug_tools
   roles:
     - role: certificates
       when: "certificate_source == 'default'"
