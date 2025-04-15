@@ -9,6 +9,7 @@ import json
 import os
 import subprocess
 import sys
+import yaml
 
 try:
     from StringIO import StringIO  # pyright: reportMissingImports=false
@@ -28,6 +29,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Vagrant inventory script")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--list', action='store_true')
+    group.add_argument('--yaml', action='store_true')
     group.add_argument('--host')
     return parser.parse_args()
 
@@ -109,11 +111,25 @@ def get_configs(hosts):
         yield host, details
 
 
+def format_inventory():
+    hosts = list(get_running_hosts())
+    variables = dict(get_configs(hosts))
+
+    return {
+        "all": {
+            "hosts": variables,
+        },
+    }
+
+
 def main():
     args = parse_args()
     if args.list:
         hosts = list_running_hosts()
         json.dump(hosts, sys.stdout)
+    elif args.yaml:
+        inventory = format_inventory()
+        print(yaml.dump(inventory))
     elif args.host:
         details = dict(get_configs([args.host]))
         json.dump(details[args.host], sys.stdout)

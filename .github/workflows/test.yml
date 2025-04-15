@@ -57,8 +57,7 @@ jobs:
         run: ansible-galaxy install -r requirements.yml
       - name: Start VMs
         run: |
-          vagrant up quadlet
-          vagrant up client
+          ./start-vms
       - name: Run setup
         run: |
           ansible-playbook playbooks/setup.yaml
