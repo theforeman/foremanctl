@@ -34,7 +34,7 @@
   containers.podman.podman_secret:
     state: present
     name: pulp-db-password
-    data: "{{ pulp_db_password }}"
+    data: "{{ pulp_database_password }}"
 
 - name: Generate database symmetric key
   ansible.builtin.command: "bash -c 'openssl rand -base64 32 | tr \"+/\" \"-_\" > /var/lib/pulp/database_fields.symmetric.key'"
@@ -132,7 +132,7 @@
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
-    env: "{{ pulp_settings_db_env }}"
+    env: "{{ pulp_settings_database_env }}"
 
 - name: Start the Pulp API services
   ansible.builtin.systemd:
