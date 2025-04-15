@@ -7,10 +7,16 @@ This repository is testing a deployment of Foreman and Katello using Podman quad
 This setup uses Vagrant to create a basic VM for running the deployment on:
 
 ```
-vagrant up quadlet
+./start-vms
 ansible-galaxy install -r requirements.yml
 ansible-playbook playbooks/setup.yaml
 ansible-playbook playbooks/deploy.yaml
+```
+
+To teardown the environment:
+
+```
+./stop-vms
 ```
 
 ## Testing
