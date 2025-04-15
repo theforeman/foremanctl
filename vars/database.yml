@@ -1,0 +1,46 @@
+---
+database_mode: internal
+database_host: localhost
+database_port: 5432
+database_ssl_mode: disable
+database_ssl_ca: None
+
+foreman_database_name: foreman
+foreman_database_user: foreman
+foreman_database_password: CHANGEME
+candlepin_database_name: candlepin
+candlepin_database_user: candlepin
+candlepin_database_password: CHANGEME
+pulp_database_name: pulp
+pulp_database_user: pulp
+pulp_database_password: CHANGEME
+
+candlepin_database_host: "{{ database_host }}"
+candlepin_database_port: "{{ database_port }}"
+candlepin_database_ssl_mode: "{{ database_ssl_mode }}"
+candlepin_database_ssl_ca: "{{ database_ssl_ca }}"
+
+pulp_database_host: "{{ database_host }}"
+pulp_database_port: "{{ database_port }}"
+pulp_database_ssl_mode: "{{ database_ssl_mode }}"
+pulp_database_ssl_ca: "{{ database_ssl_ca }}"
+
+foreman_database_host: "{{ database_host }}"
+foreman_database_port: "{{ database_port }}"
+foreman_database_sslmode: "{{ database_ssl_mode }}"
+foreman_database_sslrootcert: "{{ database_ssl_ca }}"
+
+postgresql_databases:
+  - name: "{{ candlepin_database_name }}"
+    owner: "{{ candlepin_database_user }}"
+  - name: "{{ foreman_database_name }}"
+    owner: "{{ foreman_database_user }}"
+  - name: "{{ pulp_database_name }}"
+    owner: "{{ pulp_database_user }}"
+postgresql_users:
+  - name: "{{ candlepin_database_name }}"
+    password: "{{ candlepin_database_password }}"
+  - name: "{{ foreman_database_name }}"
+    password: "{{ foreman_database_password }}"
+  - name: "{{ pulp_database_name }}"
+    password: "{{ pulp_database_password }}"

@@ -17,11 +17,20 @@ pulp_content_origin: "http://{{ ansible_fqdn }}:24816"
 
 pulp_enable_analytics: false
 
-pulp_settings_db_env:
-  PULP_DATABASES__default__HOST: "localhost"
-  PULP_DATABASES__default__NAME: "pulp"
-  PULP_DATABASES__default__PORT: 5432
-  PULP_DATABASES__default__USER: "pulp"
+pulp_database_name: pulp
+pulp_database_user: pulp
+pulp_database_host: localhost
+pulp_database_port: 5432
+pulp_database_ssl_mode: disabled
+pulp_database_ssl_ca: None
+
+pulp_settings_database_env:
+  PULP_DATABASES__default__NAME: "{{ pulp_database_name }}"
+  PULP_DATABASES__default__USER: "{{ pulp_database_user }}"
+  PULP_DATABASES__default__HOST: "{{ pulp_database_host }}"
+  PULP_DATABASES__default__PORT: "{{ pulp_database_port }}"
+  PULP_DATABASES__default__OPTIONS__sslmode: "{{ pulp_database_ssl_mode }}"
+  PULP_DATABASES__default__OPTIONS__sslrootcert: "{{ pulp_database_ssl_ca }}"
 
 # The arrays (AUTH_BACKENDS, AUTH_CLASSES) need to contain literal quotes
 # to workaround https://github.com/containers/ansible-podman-collections/issues/807
@@ -37,4 +46,4 @@ pulp_settings_other_env:
   PULP_REST_FRAMEWORK__DEFAULT_AUTHENTICATION_CLASSES: >-
     "['rest_framework.authentication.SessionAuthentication', 'pulpcore.app.authentication.PulpRemoteUserAuthentication']"
 
-pulp_settings_env: "{{ pulp_settings_db_env | ansible.builtin.combine(pulp_settings_other_env) }}"
+pulp_settings_env: "{{ pulp_settings_database_env | ansible.builtin.combine(pulp_settings_other_env) }}"

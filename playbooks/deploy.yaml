@@ -6,13 +6,13 @@
   vars_files:
     - "../vars/{{ certificate_source }}_certificates.yml"
     - "../vars/images.yml"
+    - "../vars/database.yml"
   vars:
     certificate_source: default
     certificates_hostnames:
       - "{{ ansible_fqdn }}"
       - localhost
     certificates_ca_password: "CHANGEME"
-    candlepin_db_password: "CHANGEME"
     candlepin_keystore_password: "CHANGEME"
     candlepin_oauth_secret: "CHANGEME"
     candlepin_ca_key_password: "{{ ca_key_password }}"
@@ -30,30 +30,13 @@
     foreman_ca_certificate: "{{ ca_certificate }}"
     foreman_client_key: "{{ client_key }}"
     foreman_client_certificate: "{{ client_certificate }}"
-    foreman_db_password: "CHANGEME"
     foreman_oauth_consumer_key: abcdefghijklmnopqrstuvwxyz123456
     foreman_oauth_consumer_secret: abcdefghijklmnopqrstuvwxyz123456
     httpd_server_ca_certificate: "{{ ca_certificate }}"
     httpd_client_ca_certificate: "{{ ca_certificate }}"
     httpd_server_certificate: "{{ server_certificate }}"
     httpd_server_key: "{{ server_key }}"
-    pulp_db_password: "CHANGEME"
     pulp_content_origin: "https://{{ ansible_fqdn }}"
-    postgresql_restarted_state: started
-    postgresql_databases:
-      - name: candlepin
-        owner: candlepin
-      - name: foreman
-        owner: foreman
-      - name: pulp
-        owner: pulp
-    postgresql_users:
-      - name: candlepin
-        password: "{{ candlepin_db_password }}"
-      - name: foreman
-        password: "{{ foreman_db_password }}"
-      - name: pulp
-        password: "{{ pulp_db_password }}"
   pre_tasks:
     - name: Deploy debug_tools
       ansible.builtin.include_role:
