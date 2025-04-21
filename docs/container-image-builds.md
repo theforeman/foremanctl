@@ -21,7 +21,7 @@ Container files will be stored in repositories for each service that mimic packa
 
   * foreman-oci-images
   * pulpcore-oci-images
-  * candlepin-oci-images
+  * [candlepin-oci-images](https://github.com/theforeman/candlepin-oci-images)
 
 ## Container Image Tagging
 
