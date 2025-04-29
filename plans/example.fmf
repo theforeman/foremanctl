@@ -1,0 +1,42 @@
+summary: Basic smoke test
+provision:
+  how: virtual
+  image: centos-stream-9
+  memory: 10240
+  disk: 30
+  cpu: 4
+prepare:
+  - name: Set hostname
+    how: shell
+    script: hostnamectl set-hostname quadlet.example.com
+  - name: Install initial packages
+    how: install
+    package:
+      - pip
+      - git
+      - podman
+      - python3-psycopg2
+  - name: Setup virtualenv
+    how: shell
+    script: ./setup-environment
+  - name: Create local inventory
+    how: shell
+    script: ./local_inventory
+  - name: Run setup
+    how: ansible
+    script: |
+      source .venv/bin/activate
+      rop setup
+  - name: Pull images
+    how: shell
+    script: |
+      source .venv/bin/activate
+      rop pull-images
+  - name: Run deploy
+    how: shell
+    script: |
+      source .venv/bin/activate
+      rop deploy
+execute:
+  how: tmt
+  script: ./run_tests

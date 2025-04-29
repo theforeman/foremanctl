@@ -1,0 +1,6 @@
+#!/bin/bash
+
+tee -a inventories/local_inventory <<EOF
+[quadlet]
+localhost ansible_connection=local
+EOF
