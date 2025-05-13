@@ -33,18 +33,24 @@
     name: foreman-ca-cert
     path: "{{ foreman_ca_certificate }}"
     state: present
+  notify:
+    - Restart foreman service
 
 - name: Create the podman secret for Foreman client certificate
   containers.podman.podman_secret:
     state: present
     name: foreman-client-cert
     path: "{{ foreman_client_certificate }}"
+  notify:
+    - Restart foreman service
 
 - name: Create the podman secret for Foreman client key
   containers.podman.podman_secret:
     state: present
     name: foreman-client-key
     path: "{{ foreman_client_key }}"
+  notify:
+    - Restart foreman service
 
 - name: Deploy Foreman Container
   containers.podman.podman_container:
