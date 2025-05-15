@@ -1,0 +1,6 @@
+collections:
+  - ansible.posix
+  - community.general
+  - name: https://github.com/theforeman/forklift
+    type: git
+  - name: theforeman.operations
