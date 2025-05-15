@@ -1,4 +1,4 @@
 httpd_ssl_dir: /etc/pki/httpd
 httpd_pulp_api_backend: http://localhost:24817
 httpd_pulp_content_backend: http://localhost:24816
-httpd_foreman_backend: http://localhost:3000
+httpd_foreman_backend: http://localhost:3000/

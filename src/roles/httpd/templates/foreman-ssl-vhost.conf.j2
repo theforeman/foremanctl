@@ -70,8 +70,8 @@
   ProxyPass /pulp !
   ProxyPass /icons !
   ProxyPass /server-status !
-  ProxyPass / {{ httpd_foreman_backend }}/ retry=0 timeout=900
-  ProxyPassReverse / {{ httpd_foreman_backend }}/
+  ProxyPass / {{ httpd_foreman_backend }} retry=0 timeout=900
+  ProxyPassReverse / {{ httpd_foreman_backend }}
 
   AddDefaultCharset UTF-8
 </VirtualHost>

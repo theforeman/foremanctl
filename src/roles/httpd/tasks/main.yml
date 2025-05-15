@@ -12,6 +12,13 @@
     state: true
     persistent: true
 
+# TODO: probably not the right boolean
+- name: Set daemons_enable_cluster_mode so Apache can connect to unix sockets
+  ansible.posix.seboolean:
+    name: daemons_enable_cluster_mode
+    state: true
+    persistent: true
+
 - name: Disable welcome page
   ansible.builtin.file:
     path: /etc/httpd/conf.d/welcome.conf

@@ -32,6 +32,9 @@
     foreman_client_certificate: "{{ client_certificate }}"
     foreman_oauth_consumer_key: abcdefghijklmnopqrstuvwxyz123456
     foreman_oauth_consumer_secret: abcdefghijklmnopqrstuvwxyz123456
+    foreman_listen_stream: /run/httpd.foreman.sock
+    foreman_url: "https://{{ ansible_fqdn }}"
+    httpd_foreman_backend: "unix://{{ foreman_listen_stream }}|http://%{HTTP_HOST}/"
     httpd_server_ca_certificate: "{{ server_ca_certificate }}"
     httpd_client_ca_certificate: "{{ client_ca_certificate }}"
     httpd_server_certificate: "{{ server_certificate }}"

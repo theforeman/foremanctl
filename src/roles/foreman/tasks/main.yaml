@@ -46,6 +46,12 @@
     name: foreman-client-key
     path: "{{ foreman_client_key }}"
 
+- name: Deploy Foreman socket
+  ansible.builtin.template:
+    src: foreman.socket.j2
+    dest: /etc/systemd/system/foreman.socket
+    mode: '0644'
+
 - name: Deploy Foreman Container
   containers.podman.podman_container:
     name: "foreman"
@@ -64,6 +70,8 @@
       SEED_ADMIN_PASSWORD: changeme
     quadlet_options:
       - |
+        [Unit]
+        Requires=foreman.socket
         [Install]
         WantedBy=default.target
 
@@ -119,7 +127,8 @@
 
 - name: Wait for Foreman service to be accessible
   ansible.builtin.uri:
-    url: 'http://{{ ansible_hostname }}:3000/api/v2/ping'
+    url: '{{ foreman_url }}/api/v2/ping'
+    ca_path: '{{ ca_certificate }}'
   until: foreman_status.status == 200
   retries: 60
   delay: 5
@@ -137,7 +146,8 @@
 
 - name: Wait for Foreman tasks to be ready
   ansible.builtin.uri:
-    url: 'http://{{ ansible_hostname }}:3000/api/v2/ping'
+    url: '{{ foreman_url }}/api/v2/ping'
+    ca_path: '{{ ca_certificate }}'
   until: foreman_tasks_status.json['results']['katello']['services']['foreman_tasks']['status'] == 'ok'
   retries: 60
   delay: 5
@@ -149,6 +159,9 @@
   theforeman.foreman.smart_proxy:
     name: "{{ ansible_fqdn }}"
     url: "https://{{ ansible_fqdn }}:9090"
-    server_url: "http://{{ ansible_fqdn }}:3000"
+    server_url: "{{ foreman_url }}"
+    # TODO: requires https://github.com/theforeman/foreman-ansible-modules/commit/03298a74e6096c370a932de37aa62dbece3f452f
+    validate_certs: false
+    #ca_path: '{{ ca_certificate }}'
     username: admin
     password: changeme
