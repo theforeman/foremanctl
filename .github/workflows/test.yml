@@ -56,17 +56,21 @@ jobs:
         run: pip install --upgrade ansible-core
       - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: Install collection dependencies
-        run: ansible-galaxy install -r requirements.yml
+      - name: Install testing collection dependencies
+        run: ansible-galaxy install -r requirements-dev.yml
       - name: Start VMs
         run: |
           ./forge vms start
+      - name: Install collection dependencies
+        run: ansible-galaxy install -r requirements.yml
       - name: Run image pull
         run: |
           ./rop pull-images
       - name: Run deployment
         run: |
           ./rop deploy --certificate-source=${{ matrix.certificate_source }}
+      - name: Install testing dependencies
+        run: pip install -r requirements-dev.txt
       - name: Run tests
         run: |
           ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }}"

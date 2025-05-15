@@ -2,8 +2,8 @@
 
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-ansible-galaxy install -r requirements.yml
+pip install -r requirements.txt - requirements-dev.txt
+ansible-galaxy install -r requirements.yml -r requirements-dev.yml
 
 printf "\n\nSetup complete.\n"
 printf "Activate the virtualenv 'source .venv/bin/activate'.\n"

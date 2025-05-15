@@ -1,7 +1,4 @@
 apypie>=0.5.0
 jinja2
-paramiko
-pytest-testinfra
-pytest-durations
 pyyaml
 obsah >= 1.1
