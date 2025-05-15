@@ -38,3 +38,9 @@ org.quartz.dataSource.myDS.user={{ candlepin_database_user }}
 org.quartz.dataSource.myDS.password={{ candlepin_database_password }}
 org.quartz.dataSource.myDS.maxConnections=5
 org.quartz.dataSource.myDS.URL=jdbc:postgresql://{{ candlepin_database_host }}:{{ candlepin_database_port }}/{{ candlepin_database_name }}?sslmode={{ candlepin_database_ssl_mode }}{% if candlepin_database_ssl_ca is defined %}&sslrootcert={{ candlepin_database_ssl_ca }}{% endif %}
+
+{% if candlepin_loggers %}
+  {% for logger, log_level in candlepin_loggers.items() %}
+log4j.logger.{{ logger }}= {{ log_level }}
+  {% endfor %}
+{% endif %}
