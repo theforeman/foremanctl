@@ -1,11 +1,7 @@
 collections:
-  - community.general
   - community.postgresql
   - community.crypto
   - ansible.posix
   - name: containers.podman
     version: ">=1.14.0"
   - name: theforeman.foreman
-  - name: theforeman.operations
-  - name: https://github.com/theforeman/forklift
-    type: git

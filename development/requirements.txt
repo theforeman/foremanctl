@@ -4,4 +4,3 @@ paramiko
 pytest-testinfra
 pytest-durations
 pyyaml
-obsah >= 1.1
