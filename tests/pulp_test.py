@@ -59,11 +59,6 @@ def test_pulp_status_content(pulp_status):
 def test_pulp_status_workers(pulp_status):
     assert pulp_status['online_workers']
 
-@pytest.mark.xfail(reason='password auth is deactivated when we use cert auth')
-def test_pulp_admin_auth(server):
-    cmd = server.run(f"curl --silent --write-out '%{{stderr}}%{{http_code}}' --user admin:CHANGEME http://{PULP_HOST}:{PULP_API_PORT}/pulp/api/v3/users/")
-    assert cmd.succeeded
-    assert cmd.stderr == '200'
 
 def test_pulp_volumes(server):
     assert server.file("/var/lib/pulp").is_directory
