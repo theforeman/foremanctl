@@ -142,7 +142,7 @@
 
 - name: Wait for Pulp API service to be accessible
   ansible.builtin.wait_for:
-    host: "{{ ansible_hostname }}"
+    host: "{{ ansible_fqdn}}"
     port: 24817
     timeout: 300
 
@@ -154,7 +154,7 @@
 
 - name: Wait for Pulp Content service to be accessible
   ansible.builtin.wait_for:
-    host: "{{ ansible_hostname }}"
+    host: "{{ ansible_fqdn }}"
     port: 24816
     timeout: 600
 

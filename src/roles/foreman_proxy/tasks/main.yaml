@@ -79,6 +79,6 @@
 
 - name: Wait for Foreman Proxy service to be accessible
   ansible.builtin.wait_for:
-    host: "{{ ansible_hostname }}"
+    host: "{{ ansible_fqdn }}"
     port: 9090
     timeout: 300
