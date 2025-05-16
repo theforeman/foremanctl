@@ -164,8 +164,7 @@
     enabled: true
     state: started
 
-# Only needed until we have cert auth configured
-- name: Set Pulp admin password
+- name: Ensure Pulp admin user exists
   containers.podman.podman_container_exec:
     name: "{{ pulp_api_container_name }}"
-    command: pulpcore-manager reset-admin-password --password CHANGEME
+    command: pulpcore-manager reset-admin-password --random
