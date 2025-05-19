@@ -61,6 +61,10 @@ jobs:
       - name: Start VMs
         run: |
           ./forge vms start
+      - name: Create installer certificates
+        if: contains(matrix.certificate_source, 'installer')
+        run: |
+          ./forge installer-certs
       - name: Run image pull
         run: |
           ./rop pull-images

@@ -1,0 +1,7 @@
+---
+- name: Deploy certificates based on foreman-installer
+  hosts:
+    - quadlet
+  become: true
+  roles:
+    - foreman_installer_certs
