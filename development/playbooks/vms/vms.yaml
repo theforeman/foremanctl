@@ -4,31 +4,37 @@
   hosts:
     - localhost
   tasks:
-    - when: vm_action == 'start'
+    - name: Start virtual machines
+      when: vm_action == 'start'
       block:
         - name: Run vagrant up
           ansible.builtin.command:
             cmd: "vagrant up {{ vms | default() }}"
           args:
             chdir: "{{ inventory_dir }}/../"
+          changed_when: false
 
         - name: Create local_vagrant inventory
           ansible.builtin.command:
             cmd: ../../scripts/vagrant.py --yaml
           register: inventory_output
+          changed_when: false
 
         - name: Write inventory
           ansible.builtin.copy:
             dest: "{{ inventory_dir }}/local_vagrant"
             content: "{{ inventory_output.stdout }}\n"
+            mode: "0664"
 
-    - when: vm_action == 'stop'
+    - name: Stop virtual machines
+      when: vm_action == 'stop'
       block:
         - name: Run vagrant destroy
           ansible.builtin.command:
             cmd: "vagrant destroy -f {{ vms | default() }}"
           args:
             chdir: "{{ inventory_dir }}/../"
+          changed_when: false
 
         - name: Remove vagrant inventory
           ansible.builtin.file:
