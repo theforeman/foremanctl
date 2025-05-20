@@ -20,14 +20,17 @@
       args:
         chdir: "{{ inventory_dir }}/../"
       register: ssh_config
+      changed_when: false
 
     - name: Write ssh_config
       ansible.builtin.copy:
         dest: "{{ inventory_dir }}/../.vagrant/ssh-config"
         content: "{{ ssh_config.stdout }}"
+        mode: "0755"
 
     - name: Run pytest
       ansible.builtin.command:
         cmd: "python -m pytest --durations=10 -vv {{ pytest_args | default() }}"
       args:
         chdir: "{{ inventory_dir }}/../"
+      changed_when: false

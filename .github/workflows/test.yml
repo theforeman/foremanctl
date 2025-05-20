@@ -31,6 +31,11 @@ jobs:
         with:
           requirements_file: requirements.yml
           working_directory: src
+      - name: Run ansible-lint on development
+        uses: ansible/ansible-lint@main
+        with:
+          requirements_file: requirements.yml
+          working_directory: development
 
   tests:
     strategy:
