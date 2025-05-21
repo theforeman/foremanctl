@@ -17,6 +17,8 @@
     name: redis
     image: "{{ redis_image }}"
     state: quadlet
+    sdnotify: true
+    command: ["run-redis", "--supervised", "systemd"]
     volumes:
       - /var/lib/redis:/data:Z
     ports:
@@ -35,9 +37,3 @@
     name: redis
     enabled: true
     state: started
-
-- name: Wait for Redis service to be accessible
-  ansible.builtin.wait_for:
-    host: "localhost"
-    port: 6379
-    timeout: 300
