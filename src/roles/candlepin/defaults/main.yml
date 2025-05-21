@@ -12,7 +12,7 @@ candlepin_ciphers:
   - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
   - TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256
   - TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256
-candlepin_container_image: quay.io/ehelms/candlepin
+candlepin_container_image: quay.io/foreman/candlepin
 candlepin_container_tag: 4.4.14
 
 candlepin_database_host: localhost

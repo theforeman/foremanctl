@@ -27,7 +27,6 @@ jobs:
       fail-fast: false
       matrix:
         container:
-          - candlepin
           - foreman
           - foreman-proxy
     steps:
