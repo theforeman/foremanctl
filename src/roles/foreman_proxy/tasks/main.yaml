@@ -51,6 +51,7 @@
     name: "foreman-proxy"
     image: "{{ foreman_proxy_container_image }}:{{ foreman_proxy_container_tag }}"
     state: quadlet
+    sdnotify: true
     network: host
     hostname: "{{ ansible_fqdn }}"
     secrets:
@@ -76,9 +77,3 @@
     name: foreman-proxy
     enabled: true
     state: started
-
-- name: Wait for Foreman Proxy service to be accessible
-  ansible.builtin.wait_for:
-    host: "{{ ansible_fqdn }}"
-    port: 9090
-    timeout: 300
