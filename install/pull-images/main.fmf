@@ -1,0 +1,3 @@
+summary: Pull images using foremanctl
+test: foremanctl pull-images
+require: foremanctl

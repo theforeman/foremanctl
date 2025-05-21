@@ -1,7 +1,21 @@
 summary: Installation
 provision:
-  hardware:
-    memory: ">= 8 GB"
+  - name: quadlet
+    how: virtual
+    image: centos-stream-9
+    connection: system
+    hardware:
+      memory: ">= 8 GB"
+discover:
+  - how: fmf
+    test: /install/pull-images
+  - how: fmf
+    test: /install/deploy
+  - name: smoker
+    how: fmf
+    url: https://github.com/ekohl/smoker
+    ref: tmt
+    test: /
 prepare:
   # Work around packit builds being installed unconditionally
   - how: install
@@ -14,7 +28,3 @@ prepare:
       done
 execute:
   how: tmt
-  require: foremanctl
-  script:
-    - foremanctl pull-images
-    - foremanctl deploy
