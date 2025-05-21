@@ -71,6 +71,7 @@
     name: "foreman"
     image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
     state: quadlet
+    sdnotify: true
     network: host
     hostname: "{{ ansible_fqdn }}"
     secrets:
@@ -94,6 +95,7 @@
     quadlet_filename: "dynflow-sidekiq@"
     image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
     state: quadlet
+    sdnotify: true
     network: host
     hostname: "{{ ansible_fqdn }}"
     secrets:
@@ -153,11 +155,18 @@
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers
 
-- name: Start the Foreman Service
+- name: Start services
   ansible.builtin.systemd:
-    name: foreman
+    name: "{{ item }}"
     enabled: true
     state: started
+  async: 60
+  poll: 0
+  loop:
+    - dynflow-sidekiq@orchestrator
+    - dynflow-sidekiq@worker
+    - dynflow-sidekiq@worker-hosts-queue
+    - foreman
 
 - name: Wait for Foreman service to be accessible
   ansible.builtin.uri:
@@ -167,16 +176,6 @@
   retries: 60
   delay: 5
   register: foreman_status
-
-- name: Start the Dynflow Services
-  ansible.builtin.systemd:
-    name: "dynflow-sidekiq@{{ item }}"
-    enabled: true
-    state: started
-  loop:
-    - orchestrator
-    - worker
-    - worker-hosts-queue
 
 - name: Wait for Foreman tasks to be ready
   ansible.builtin.uri:
