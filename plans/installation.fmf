@@ -1,20 +1,46 @@
 summary: Installation
+
 provision:
-  hardware:
-    memory: ">= 8 GB"
+  - name: quadlet
+    how: virtual
+    image: centos-stream-9
+    connection: system
+    hardware:
+      memory: ">= 8 GB"
+  - name: smoker
+    how: container
+
+discover:
+  - how: fmf
+    test: /install/pull-images
+    where: quadlet
+  - how: fmf
+    test: /install/deploy
+    where: quadlet
+  - name: smoker
+    how: fmf
+    url: https://github.com/ekohl/smoker
+    ref: tmt
+    test: /
+    where: smoker
+
 prepare:
   # Work around packit builds being installed unconditionally
   - how: install
     exclude:
       - ".*"
+
+  # Set up quadlet machine
   - how: shell
+    where:
+      - quadlet
     script: |
       for copr in ekohl/rop $PACKIT_COPR_PROJECT ; do
         sudo dnf copr enable -y $copr
       done
+
+      # TODO: HACK because epel feature appears broken
+      dnf -y install epel-release
+
 execute:
   how: tmt
-  require: rop
-  script:
-    - rop pull-images
-    - rop deploy
