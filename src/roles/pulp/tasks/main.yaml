@@ -128,6 +128,7 @@
     name: pulpcore-manager-migrate
     image: "{{ pulp_api_image }}"
     command: pulpcore-manager migrate --noinput
+    detach: false
     network: host
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
