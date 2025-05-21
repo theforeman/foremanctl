@@ -27,13 +27,13 @@ Container files will be stored in repositories for each service that mimic packa
 
 The tagging rules for release containers images:
 
-  * Project version - X.Y.Z
-  * Project version - X.Y
-  * Foreman version - X.Y
-  * Foreman version - X.Y.Z
+  * Project version: X.Y.Z
+  * Project version: X.Y
+  * Foreman version: foreman-X.Y
+  * Foreman version: foreman-X.Y.Z
 
 The tagging rules for nightly container images:
 
   * nightly
-  * Project version X.Y.Z
+  * Project version: X.Y.Z
 
