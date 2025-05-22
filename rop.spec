@@ -38,18 +38,22 @@ localhost ansible_connection=local
 INVENTORY
 
 sed -i '/^OBSAH_BASE=/ s|=.\+|=%{_datadir}/%{name}|' rop
+sed -i '/^OBSAH_INVENTORY=/ s|=.\+|=%{_sysconfdir}/%{name}/inventory|' rop
 
 %install
+install -d -m0755 %{buildroot}%{_sysconfdir}/%{name}
 install -d -m0755 %{buildroot}%{_datadir}/%{name}
 install -d -m0755 %{buildroot}%{_bindir}
 
-cp -r inventories src %{buildroot}%{_datadir}/%{name}
+cp inventories/quadlet %{buildroot}%{_sysconfdir}/%{name}/inventory
+cp -r src %{buildroot}%{_datadir}/%{name}
 cp -r rop %{buildroot}%{_bindir}/%{name}
 
 
 %files
 %{_bindir}/rop
 %{_datadir}/%{name}
+%config(noreplace) %{_sysconfdir}/%{name}
 
 
 %changelog
