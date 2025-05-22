@@ -21,3 +21,8 @@ jobs:
     trigger: pull_request
     targets:
       - epel-9
+
+  - job: tests
+    trigger: pull_request
+    targets:
+      - epel-9

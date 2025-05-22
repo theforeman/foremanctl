@@ -1,0 +1,20 @@
+summary: Installation
+provision:
+  hardware:
+    memory: ">= 8 GB"
+prepare:
+  # Work around packit builds being installed unconditionally
+  - how: install
+    exclude:
+      - ".*"
+  - how: shell
+    script: |
+      for copr in @theforeman/foremanctl $PACKIT_COPR_PROJECT ; do
+        sudo dnf copr enable -y $copr
+      done
+execute:
+  how: tmt
+  require: foremanctl
+  script:
+    - foremanctl pull-images
+    - foremanctl deploy
