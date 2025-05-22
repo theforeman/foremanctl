@@ -1,8 +1,9 @@
 #!/bin/bash
 
 OBSAH_NAME=rop
-OBSAH_DATA=src
-OBSAH_INVENTORY=./inventories/
+OBSAH_BASE=.
+OBSAH_DATA=${OBSAH_BASE}/src
+OBSAH_INVENTORY=${OBSAH_BASE}/inventories
 export OBSAH_NAME OBSAH_DATA OBSAH_INVENTORY
 
 exec obsah "$@"
