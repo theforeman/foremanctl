@@ -31,3 +31,6 @@ jobs:
     branch: master
     owner: '@theforeman'
     project: develop
+
+  - <<: *copr
+    job: tests
