@@ -14,7 +14,6 @@ Requires:  ansible-collection-community-general
 Requires:  ansible-collection-community-postgresql
 Requires:  ansible-collection-containers-podman >= 1.14.0
 Requires:  ansible-collection-theforeman-foreman
-Requires:  ansible-collection-theforeman-operations
 Requires:  python3-obsah >= 1.1
 
 # These are needed on the target host, which is usually localhost
