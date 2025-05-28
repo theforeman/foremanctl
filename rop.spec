@@ -14,7 +14,7 @@ Requires:  ansible-collection-community-general
 Requires:  ansible-collection-community-postgresql
 Requires:  ansible-collection-containers-podman >= 1.14.0
 Requires:  ansible-collection-theforeman-foreman
-Requires:  python3-obsah >= 1.1
+Requires:  python3-obsah >= 1.3
 
 # These are needed on the target host, which is usually localhost
 Recommends:  podman
@@ -39,11 +39,13 @@ INVENTORY
 
 sed -i '/^OBSAH_BASE=/ s|=.\+|=%{_datadir}/%{name}|' rop
 sed -i '/^OBSAH_INVENTORY=/ s|=.\+|=%{_sysconfdir}/%{name}/inventory|' rop
+sed -i '/^OBSAH_STATE=/ s|=.\+|=%{_sharedstatedir}/%{name}|' rop
 
 %install
 install -d -m0755 %{buildroot}%{_sysconfdir}/%{name}
 install -d -m0755 %{buildroot}%{_datadir}/%{name}
 install -d -m0755 %{buildroot}%{_bindir}
+install -d -m0750 %{buildroot}%{_sharedstatedir}/%{name}
 
 cp inventories/quadlet %{buildroot}%{_sysconfdir}/%{name}/inventory
 cp -r src %{buildroot}%{_datadir}/%{name}
@@ -54,6 +56,7 @@ cp -r rop %{buildroot}%{_bindir}/%{name}
 %{_bindir}/rop
 %{_datadir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}
+%{_sharedstatedir}/%{name}
 
 
 %changelog
