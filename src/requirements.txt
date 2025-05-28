@@ -1,2 +1,2 @@
-obsah >= 1.1
+obsah >= 1.3
 requests
