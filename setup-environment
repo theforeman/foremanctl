@@ -1,7 +1,9 @@
 #!/bin/bash
 
-python -m venv .venv
-source .venv/bin/activate
+if [[ -z "${GITHUB_ACTIONS}" ]]; then
+  python -m venv .venv
+  source .venv/bin/activate
+fi
 pip install -r src/requirements.txt
 pip install -r development/requirements.txt
 ANSIBLE_COLLECTIONS_PATH=./build/collections/foremanctl ansible-galaxy install -r src/requirements.yml
