@@ -6,7 +6,12 @@ if [[ -z "${GITHUB_ACTIONS}" ]]; then
 fi
 pip install -r src/requirements.txt
 pip install -r development/requirements.txt
-ANSIBLE_COLLECTIONS_PATH=./build/collections/foremanctl ansible-galaxy install -r src/requirements.yml
+if [[ -f src/requirements-lock.yml ]]; then
+  REQUIREMENTS=src/requirements-lock.yml
+else
+  REQUIREMENTS=src/requirements.yml
+fi
+ANSIBLE_COLLECTIONS_PATH=./build/collections/foremanctl ansible-galaxy install -r ${REQUIREMENTS}
 ANSIBLE_COLLECTIONS_PATH=./build/collections/forge ansible-galaxy install -r development/requirements.yml
 
 printf "\n\nSetup complete.\n"
