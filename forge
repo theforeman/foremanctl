@@ -5,4 +5,7 @@ OBSAH_DATA=development
 OBSAH_INVENTORY=./inventories/
 export OBSAH_NAME OBSAH_DATA OBSAH_INVENTORY
 
+ANSIBLE_COLLECTIONS_PATH=./build/collections/forge
+export ANSIBLE_COLLECTIONS_PATH
+
 exec obsah "$@"
