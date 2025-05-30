@@ -1,0 +1,19 @@
+---
+- name: Lock production collections
+  hosts: localhost
+  tasks:
+    - name: Get list of installed collections
+      ansible.builtin.command: ansible-galaxy collection list --format yaml
+      changed_when: false
+      environment:
+        ANSIBLE_COLLECTIONS_PATH: "{{ inventory_dir }}/../build/collections/foremanctl"
+      register: _collection_list
+
+    - name: Format collection list as requirements.yml
+      ansible.builtin.copy:
+        dest: "{{ inventory_dir }}/../src/requirements-lock.yml"
+        content: "{{ {'collections': _collections} | to_nice_yaml }}"
+        mode: '0644'
+      vars:
+        _collections: "{{ _collection_list.stdout | regex_replace('^/.*/ansible_collections:', '') | regex_replace('version:', '') | from_yaml
+          | dict2items(key_name='name', value_name='version') }}"
