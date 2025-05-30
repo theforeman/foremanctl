@@ -63,6 +63,8 @@ jobs:
         run: pip install -r src/requirements.txt
       - name: Install testing collection dependencies
         run: ansible-galaxy install -r development/requirements.yml
+        env:
+          ANSIBLE_COLLECTIONS_PATH: ./build/collections/forge
       - name: Start VMs
         run: |
           ./forge vms start
@@ -72,6 +74,8 @@ jobs:
           ./forge installer-certs
       - name: Install collection dependencies
         run: ansible-galaxy install -r src/requirements.yml
+        env:
+          ANSIBLE_COLLECTIONS_PATH: ./build/collections/rop
       - name: Run image pull
         run: |
           ./foremanctl pull-images
