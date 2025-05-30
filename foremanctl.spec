@@ -1,3 +1,5 @@
+%global __brp_mangle_shebangs_exclude_from ^%{_datadir}/%{name}/collections/.*$
+
 Name:      foremanctl
 Version:   0.0.1
 Release:   0%{?dist}
@@ -8,12 +10,6 @@ URL:       https://github.com/theforeman/foreman-quadlet
 Source:    https://github.com/theforeman/foreman-quadlet/releases/download/%{version}/%{name}-%{version}.tar.gz
 
 BuildArch: noarch
-Requires:  ansible-collection-ansible-posix
-Requires:  ansible-collection-community-crypto
-Requires:  ansible-collection-community-general
-Requires:  ansible-collection-community-postgresql
-Requires:  ansible-collection-containers-podman >= 1.14.0
-Requires:  ansible-collection-theforeman-foreman
 Requires:  python3-obsah >= 1.3
 
 # These are needed on the target host, which is usually localhost
@@ -51,6 +47,7 @@ install -d -m0750 %{buildroot}%{_sharedstatedir}/%{name}
 cp inventories/quadlet %{buildroot}%{_sysconfdir}/%{name}/inventory
 cp -r src %{buildroot}%{_datadir}/%{name}
 cp -r %{name} %{buildroot}%{_bindir}/%{name}
+cp -r build/collections/%{name} %{buildroot}%{_datadir}/%{name}/collections
 
 
 %files
