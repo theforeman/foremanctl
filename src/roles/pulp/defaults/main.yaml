@@ -1,5 +1,5 @@
 ---
-pulp_image: quay.io/pulp/pulp-minimal:3.63
+pulp_image: quay.io/pulp/pulp-minimal:3.73
 pulp_api_image: "{{ pulp_image }}"
 pulp_content_image: "{{ pulp_image }}"
 pulp_worker_image: "{{ pulp_image }}"

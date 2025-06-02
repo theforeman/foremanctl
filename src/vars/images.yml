@@ -4,7 +4,7 @@ foreman_container_image: "quay.io/evgeni/foreman-rpm"
 foreman_container_tag: "nightly"
 foreman_proxy_container_image: "quay.io/evgeni/foreman-proxy-rpm"
 foreman_proxy_container_tag: "nightly"
-pulp_image: quay.io/pulp/pulp-minimal:3.63
+pulp_image: quay.io/pulp/pulp-minimal:3.73
 redis_image: quay.io/sclorg/redis-6-c9s:latest
 
 images:
