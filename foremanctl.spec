@@ -1,4 +1,4 @@
-Name:      rop
+Name:      foremanctl
 Version:   0.0.1
 Release:   0%{?dist}
 Summary:   Install Foreman using containers
@@ -37,9 +37,9 @@ cat > inventories/quadlet <<INVENTORY
 localhost ansible_connection=local
 INVENTORY
 
-sed -i '/^OBSAH_BASE=/ s|=.\+|=%{_datadir}/%{name}|' rop
-sed -i '/^OBSAH_INVENTORY=/ s|=.\+|=%{_sysconfdir}/%{name}/inventory|' rop
-sed -i '/^OBSAH_STATE=/ s|=.\+|=%{_sharedstatedir}/%{name}|' rop
+sed -i '/^OBSAH_BASE=/ s|=.\+|=%{_datadir}/%{name}|' %{name}
+sed -i '/^OBSAH_INVENTORY=/ s|=.\+|=%{_sysconfdir}/%{name}/inventory|' %{name}
+sed -i '/^OBSAH_STATE=/ s|=.\+|=%{_sharedstatedir}/%{name}|' %{name}
 
 %install
 install -d -m0755 %{buildroot}%{_sysconfdir}/%{name}
@@ -49,11 +49,11 @@ install -d -m0750 %{buildroot}%{_sharedstatedir}/%{name}
 
 cp inventories/quadlet %{buildroot}%{_sysconfdir}/%{name}/inventory
 cp -r src %{buildroot}%{_datadir}/%{name}
-cp -r rop %{buildroot}%{_bindir}/%{name}
+cp -r %{name} %{buildroot}%{_bindir}/%{name}
 
 
 %files
-%{_bindir}/rop
+%{_bindir}/%{name}
 %{_datadir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}
 %{_sharedstatedir}/%{name}
