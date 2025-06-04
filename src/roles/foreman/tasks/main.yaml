@@ -8,7 +8,7 @@
   containers.podman.podman_secret:
     state: present
     name: foreman-database-url
-    data: "postgresql://{{ foreman_database_user }}:{{ foreman_database_password }}@{{ foreman_database_host }}:{{ foreman_database_port }}/{{ foreman_database_name }}?pool={{ foreman_database_pool }}&sslmode={{ foreman_database_sslmode }}{% if foreman_database_ssl_ca is defined %}&sslrootcert={{ foreman_database_ssl_ca }}{% endif %}" # yamllint disable-line rule:line-length
+    data: "postgresql://{{ foreman_database_name }}?host={{ foreman_database_host }}{% if foreman_database_port is defined %}&port={{ foreman_database_port }}{% endif %}&user={{ foreman_database_user }}&password={{ foreman_database_password }}&pool={{ foreman_database_pool }}&sslmode={{ foreman_database_sslmode }}{% if foreman_database_ssl_ca is defined %}&sslrootcert={{ foreman_database_ssl_ca }}{% endif %}" # yamllint disable-line rule:line-length
 
 - name: Create settings config secret
   containers.podman.podman_secret:
