@@ -40,7 +40,7 @@ def test_filename_matches_directory(playbook):
 
 
 def test_help(playbook, capsys, help_dir):
-    os.system(f'./rop {playbook.name} --help')
+    os.system(f'./foremanctl {playbook.name} --help')
 
     captured = capsys.readouterr()
 

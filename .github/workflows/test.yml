@@ -74,10 +74,10 @@ jobs:
         run: ansible-galaxy install -r src/requirements.yml
       - name: Run image pull
         run: |
-          ./rop pull-images
+          ./foremanctl pull-images
       - name: Run deployment
         run: |
-          ./rop deploy --certificate-source=${{ matrix.certificate_source }}
+          ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }}
       - name: Install testing dependencies
         run: pip install -r development/requirements.txt
       - name: Run tests

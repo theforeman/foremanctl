@@ -1,10 +1,10 @@
 # See the documentation for more information:
 # https://packit.dev/docs/configuration/
 
-specfile_path: rop.spec
+specfile_path: foremanctl.spec
 
-upstream_package_name: rop
-downstream_package_name: rop
+upstream_package_name: foremanctl
+downstream_package_name: foremanctl
 
 jobs:
   - job: copr_build
