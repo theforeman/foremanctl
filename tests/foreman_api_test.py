@@ -1,7 +1,6 @@
 import urllib.parse
 
 import requests
-import time
 
 
 def _repo_url(repo, ssh_config):
@@ -26,7 +25,6 @@ def test_foreman_file_repository(file_repository, foremanapi, ssh_config):
     assert file_repository
     foremanapi.resource_action('repositories', 'sync', {'id': file_repository['id']})
     repo_url = _repo_url(file_repository, ssh_config)
-    time.sleep(10) # Allow metadata generate to finish
     assert requests.get(f'{repo_url}/1.iso', verify=False)
 
 
@@ -40,7 +38,6 @@ def test_foreman_lifecycle_environment(lifecycle_environment):
 
 
 def test_foreman_content_view(content_view, yum_repository, foremanapi):
-    time.sleep(10)
     assert content_view
     foremanapi.update('content_views', {'id': content_view['id'], 'repository_ids': [yum_repository['id']]})
     foremanapi.resource_action('content_views', 'publish', {'id': content_view['id']})
