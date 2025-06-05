@@ -1,0 +1,3 @@
+summary: Deploy using rop
+test: rop deploy
+require: rop

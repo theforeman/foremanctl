@@ -1,0 +1,3 @@
+summary: Pull images using rop
+test: rop pull-images
+require: rop
