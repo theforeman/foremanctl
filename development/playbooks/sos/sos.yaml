@@ -1,0 +1,10 @@
+---
+- name: Generate sos report
+  hosts:
+    - quadlet
+    - client
+  become: true
+  roles:
+    - role: theforeman.forklift.sos_report
+      vars:
+        sosreport_local_dir: "{{ inventory_dir }}/../sos/"
