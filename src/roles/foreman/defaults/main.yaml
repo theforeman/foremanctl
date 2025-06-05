@@ -1,5 +1,5 @@
 ---
-foreman_container_image: "quay.io/evgeni/foreman-rpm"
+foreman_container_image: "quay.io/foreman/foreman"
 foreman_container_tag: "nightly"
 
 foreman_database_name: foreman

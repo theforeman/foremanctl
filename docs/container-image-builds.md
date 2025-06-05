@@ -19,7 +19,7 @@ The base image will be `quay.io/centos/centos:stream9`.
 
 Container files will be stored in repositories for each service that mimic packaging.
 
-  * foreman-oci-images
+  * [foreman-oci-images](https://github.com/theforeman/foreman-oci-images)
   * pulpcore-oci-images
   * [candlepin-oci-images](https://github.com/theforeman/candlepin-oci-images)
 
