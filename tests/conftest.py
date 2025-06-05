@@ -63,18 +63,21 @@ def product(organization, foremanapi):
 @pytest.fixture
 def yum_repository(product, organization, foremanapi):
     repo = foremanapi.create('repositories', {'name': str(uuid.uuid4()), 'product_id': product['id'], 'content_type': 'yum', 'url': 'https://fixtures.pulpproject.org/rpm-no-comps/'})
+    wait_for_metadata_generate(foremanapi)
     yield repo
     foremanapi.delete('repositories', repo)
 
 @pytest.fixture
 def file_repository(product, organization, foremanapi):
     repo = foremanapi.create('repositories', {'name': str(uuid.uuid4()), 'product_id': product['id'], 'content_type': 'file', 'url': 'https://fixtures.pulpproject.org/file/'})
+    wait_for_metadata_generate(foremanapi)
     yield repo
     foremanapi.delete('repositories', repo)
 
 @pytest.fixture
 def container_repository(product, organization, foremanapi):
     repo = foremanapi.create('repositories', {'name': str(uuid.uuid4()), 'product_id': product['id'], 'content_type': 'docker', 'url': 'https://quay.io/', 'docker_upstream_name': 'foreman/busybox-test'})
+    wait_for_metadata_generate(foremanapi)
     yield repo
     foremanapi.delete('repositories', repo)
 
@@ -116,3 +119,11 @@ def client_environment(activation_key, content_view, lifecycle_environment, yum_
         for environment_id in current_environment_ids:
             foremanapi.resource_action('content_views', 'remove_from_environment', params={'id': content_view['id'], 'environment_id': environment_id})
         foremanapi.delete('content_view_versions', version)
+
+def wait_for_tasks(foremanapi, search=None):
+    tasks = foremanapi.list('foreman_tasks', search=search)
+    for task in tasks:
+        foremanapi.wait_for_task(task)
+
+def wait_for_metadata_generate(foremanapi):
+    wait_for_tasks(foremanapi, 'label = Actions::Katello::Repository::MetadataGenerate')
