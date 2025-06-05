@@ -3,5 +3,5 @@ collections:
   - community.crypto
   - ansible.posix
   - name: containers.podman
-    version: ">=1.14.0"
+    version: ">=1.16.4"
   - name: theforeman.foreman

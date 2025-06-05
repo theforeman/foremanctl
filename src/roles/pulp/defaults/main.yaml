@@ -32,18 +32,17 @@ pulp_settings_database_env:
   PULP_DATABASES__default__OPTIONS__sslmode: "{{ pulp_database_ssl_mode }}"
   PULP_DATABASES__default__OPTIONS__sslrootcert: "{{ pulp_database_ssl_ca }}"
 
-# The arrays (AUTH_BACKENDS, AUTH_CLASSES) need to contain literal quotes
-# to workaround https://github.com/containers/ansible-podman-collections/issues/807
-# until https://github.com/containers/ansible-podman-collections/pull/920 is merged
+# The arrays (AUTH_BACKENDS, AUTH_CLASSES) need to be strings
+# that get parsed to array by dynaconf, so we're using block scalars for them
 pulp_settings_other_env:
   PULP_ANALYTICS: "{{ pulp_enable_analytics | ternary('true', 'false') }}"
   PULP_AUTHENTICATION_BACKENDS: >-
-    "['pulpcore.app.authentication.PulpNoCreateRemoteUserBackend']"
+    ['pulpcore.app.authentication.PulpNoCreateRemoteUserBackend']
   PULP_CACHE_ENABLED: "true"
   PULP_CONTENT_ORIGIN: "{{ pulp_content_origin }}"
   PULP_REDIS_URL: "redis://localhost:6379/8"
   PULP_REMOTE_USER_ENVIRON_NAME: "HTTP_REMOTE_USER"
   PULP_REST_FRAMEWORK__DEFAULT_AUTHENTICATION_CLASSES: >-
-    "['rest_framework.authentication.SessionAuthentication', 'pulpcore.app.authentication.PulpRemoteUserAuthentication']"
+    ['rest_framework.authentication.SessionAuthentication', 'pulpcore.app.authentication.PulpRemoteUserAuthentication']
 
 pulp_settings_env: "{{ pulp_settings_database_env | ansible.builtin.combine(pulp_settings_other_env) }}"
