@@ -83,3 +83,12 @@ jobs:
       - name: Run tests
         run: |
           ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }}"
+      - name: Generate sos reports
+        if: ${{ always() }}
+        run: ./forge sos
+      - name: Archive sos reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sosreport-${{ matrix.certificate_source }}
+          path: sos/
