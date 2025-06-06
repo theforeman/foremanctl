@@ -1,11 +1,18 @@
 #!/bin/bash
 
-python -m venv .venv
-source .venv/bin/activate
+if [[ -z "${GITHUB_ACTIONS}" ]]; then
+  python -m venv .venv
+  source .venv/bin/activate
+fi
 pip install -r src/requirements.txt
 pip install -r development/requirements.txt
-ansible-galaxy install -r src/requirements.yml
-ansible-galaxy install -r development/requirements.yml
+if [[ -f src/requirements-lock.yml ]]; then
+  REQUIREMENTS=src/requirements-lock.yml
+else
+  REQUIREMENTS=src/requirements.yml
+fi
+ANSIBLE_COLLECTIONS_PATH=./build/collections/foremanctl ansible-galaxy install -r ${REQUIREMENTS}
+ANSIBLE_COLLECTIONS_PATH=./build/collections/forge ansible-galaxy install -r development/requirements.yml
 
 printf "\n\nSetup complete.\n"
 printf "Activate the virtualenv 'source .venv/bin/activate'.\n"
