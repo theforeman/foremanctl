@@ -60,6 +60,23 @@ There are multiple use cases from the users perspective that dictate what parame
 | foreman-installer Parameter | Description | Reason |
 | --------------------------- | ----------- | ------ |
 
+#### Logging
+
+##### Mapped
+
+| Parameter | Description | foreman-installer Parameter |
+| ----------| ----------- | --------------------------- |
+| `--foreman-logging-level` | Allows setting the level of the Foreman logs | `--foreman-logging-level` |
+| `--foreman-loggers` | Allows enabling specific loggers in Foreman | `--foreman-loggers` |
+| `--candlepin-loggers` | Allows enabling specific loggers in Candlepin | `--candlepin-loggers` |
+
+##### Unmapped
+
+| foreman-installer Parameter | Description | Reason |
+| --------------------------- | ----------- | ------ |
+| `--foreman-logging-type` | The type of logging - syslog, file, journald | For containers logging should be to stdout |
+| `--foreman-logging-layout` | Allow defining a different style of structured output for Foreman logs | For now this should be hardcoded to a single style |
+
 #### Undetermined
 
 | foreman-installer Parameter | Description | Module | Puppet Parameter | Keep |
@@ -69,7 +86,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-foreman-service-puma-threads-max` | | foreman | foreman_service_puma_threads_max | `--foreman-puma-threads-max` |
 | `--foreman-dynflow-worker-instances` | | foreman | dynflow_worker_instances |
 | `--foreman-dynflow-worker-concurrency` | | foreman | dynflow_worker_concurrency |
-| `--foreman-loggers` | | foreman | loggers |
 | `--foreman-plugin-tasks-cron-line` | | foreman::plugin::tasks | cron_line |
 | `--foreman-plugin-tasks-automatic-cleanup` | | foreman::plugin::tasks | automatic_cleanup |
 | `--tuning` | Sets the tuning profile | foreman-installer | |
@@ -90,9 +106,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-keycloak` | | |
 | `--foreman-keycloak-app-name` | | |
 | `--foreman-keycloak-realm` | | |
-| `--foreman-logging-layout` | | |
-| `--foreman-logging-level` | | |
-| `--foreman-logging-type` | | |
 | `--foreman-oauth-map-users` | | |
 | `--foreman-plugin-remote-execution-cockpit-ensure` | | |
 | `--foreman-telemetry-prometheus-enabled` | | |
