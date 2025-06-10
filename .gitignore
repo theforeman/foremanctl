@@ -42,3 +42,5 @@ packer/build.*
 
 # mkdocs
 /site
+build/
+foremanctl-*.tar.gz

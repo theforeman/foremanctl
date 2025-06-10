@@ -8,13 +8,12 @@ downstream_package_name: foremanctl
 
 srpm_build_deps:
   - ansible-core
+  - make
 
 actions:
   create-archive:
-    - bash -c 'ANSIBLE_COLLECTIONS_PATH=./build/collections/foremanctl ansible-galaxy install -r src/requirements.yml'
-    - git archive --prefix foremanctl-0.0.1/ --output foremanctl.tar HEAD
-    - tar --append --file foremanctl.tar --transform='s#^#foremanctl-0.0.1/#' build/collections/foremanctl
-    - echo foremanctl.tar
+    - make dist
+    - bash -c 'ls -1t foremanctl-*.tar.gz | head -n1'
 
 jobs:
   - job: copr_build
