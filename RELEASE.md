@@ -1,12 +1,10 @@
 # Release
 
-To create a release, bump `VERSION`, create a commit and tag.
+To create a release, create a tag.
 It must follow the x.y.z pattern without any prefix.
 
 ```
 VERSION=x.y.z
-echo $VERSION > VERSION
-git commit -m "Release $VERSION" VERSION
 git tag -s "$VERSION" -m "Release $VERSION"
 git push --follow-tags
 ```
