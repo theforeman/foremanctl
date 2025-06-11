@@ -36,6 +36,21 @@ Ensure you have a deployment. Now run the tests:
 ./forge test
 ```
 
+## Release
+
+To create a release, bump `VERSION`, create a commit and tag.
+It must follow the x.y.z pattern without any prefix.
+
+```
+VERSION=x.y.z
+echo $VERSION > VERSION
+git commit -m "Release $VERSION" VERSION
+git tag -s "$VERSION" -m "Release $VERSION"
+git push --follow-tags
+```
+
+This will create a GitHub release and attach the created tarball to it.
+
 ## Service Configuration
 
 Configuration files for services are stored as [podman secrets](https://docs.podman.io/en/latest/markdown/podman-secret-create.1.html) and mounted into the container at the expected locations. These configuration files can be listed:
