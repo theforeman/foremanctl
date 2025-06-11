@@ -1,0 +1,44 @@
+---
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions: {}
+
+jobs:
+  build-release:
+    # Prevent releases from forked repositories
+    if: github.repository_owner == 'theforeman'
+    name: Build the tarball
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build tarball
+        run: make dist
+      - name: Upload tarball to GitHub cache
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-tarball
+          path: 'foremanctl-*.tar.gz'
+          retention-days: 1
+          compression-level: 0
+
+  create-release:
+    needs: build-release
+    name: Create GitHub release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write  # clone repo and create release
+    steps:
+      - name: Download tarball from GitHub cache
+        uses: actions/download-artifact@v4
+        with:
+          name: release-tarball
+      - name: Create Release Page
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create ${{ github.ref_name }} --generate-notes foremanctl-*.tar.gz
