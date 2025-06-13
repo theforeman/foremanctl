@@ -1,0 +1,23 @@
+:foreman:
+  # Enable/disable foreman commands
+  :enable_module: true
+
+  # Your foreman server address
+  :host: '{{ hammer_foreman_server_url }}'
+
+  # Enable using sessions
+  # When sessions are enabled, hammer ignores credentials stored in the config file
+  # and asks for them interactively at the begining of each session.
+  :use_sessions: false
+
+  # Check API documentation cache status on each request
+  :refresh_cache: false
+
+  # API request timeout in seconds, set -1 for infinity
+  :request_timeout: 120
+
+
+{% if hammer_ca_certificate is defined and hammer_ca_certificate != "" %}
+:ssl:
+  :ssl_ca_file: '{{ hammer_ca_certificate }}'
+{% endif %}

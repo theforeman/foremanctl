@@ -1,0 +1,8 @@
+---
+hammer_foreman_server_url: "https://{{ ansible_fqdn }}"
+hammer_ca_certificate: ""
+hammer_packages:
+  - hammer-cli-plugin-foreman
+  - hammer-cli-plugin-foreman_tasks
+  - hammer-cli-plugin-foreman_remote_execution
+  - hammer-cli-plugin-katello
