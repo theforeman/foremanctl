@@ -64,6 +64,9 @@ jobs:
       - name: Start VMs
         run: |
           ./forge vms start
+      - name: Configure repositories
+        run: |
+          ./forge setup-repositories
       - name: Create installer certificates
         if: contains(matrix.certificate_source, 'installer')
         run: |
