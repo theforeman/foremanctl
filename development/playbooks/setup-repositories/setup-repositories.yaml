@@ -1,0 +1,18 @@
+---
+- name: Configure Puppet and Foreman repositories
+  hosts:
+    - quadlet
+  become: true
+  tasks:
+    - name: Setup Puppet repositories
+      ansible.builtin.include_role:
+        name: theforeman.operations.puppet_repositories
+      vars:
+        foreman_puppet_repositories_version: "8"
+
+    - name: Setup Foreman repositories
+      ansible.builtin.include_role:
+        name: theforeman.operations.foreman_repositories
+      vars:
+        foreman_repositories_version: nightly
+        foreman_repositories_katello_version: nightly
