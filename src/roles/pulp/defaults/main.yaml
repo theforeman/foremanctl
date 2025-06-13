@@ -1,5 +1,5 @@
 ---
-pulp_container_image: quay.io/pulp/pulp-minimal
+pulp_container_image: quay.io/foreman/pulp
 pulp_container_tag: "3.73"
 pulp_api_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
 pulp_content_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
