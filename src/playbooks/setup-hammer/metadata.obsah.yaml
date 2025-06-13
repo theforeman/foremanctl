@@ -1,0 +1,10 @@
+---
+help: |
+  Setup hammer
+
+variables:
+  certificate_source:
+    help: Where certificates are coming from. Currently default Ansible role or the foreman-installer.
+    choices:
+      - default
+      - installer

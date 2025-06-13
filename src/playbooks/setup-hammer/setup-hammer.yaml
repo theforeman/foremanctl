@@ -1,0 +1,11 @@
+---
+- name: Setup hammer on the quadlet machine
+  hosts:
+    - quadlet
+  become: true
+  vars_files:
+    - "../../vars/{{ certificate_source }}_certificates.yml"
+  vars:
+    hammer_ca_certificate: "{{ server_ca_certificate }}"
+  roles:
+    - hammer

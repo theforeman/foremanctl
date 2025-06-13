@@ -74,6 +74,9 @@ jobs:
       - name: Run deployment
         run: |
           ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }}
+      - name: Setup hammer
+        run: |
+          ./foremanctl setup-hammer
       - name: Run tests
         run: |
           ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }}"

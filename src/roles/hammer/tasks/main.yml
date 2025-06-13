@@ -1,0 +1,12 @@
+---
+- name: Install Hammer and plugins
+  ansible.builtin.package:
+    name: "{{ hammer_packages }}"
+
+- name: Configure Hammer Foreman plugin
+  ansible.builtin.template:
+    src: cli.modules.d-foreman.yml.j2
+    dest: /etc/hammer/cli.modules.d/foreman.yml
+    owner: root
+    group: root
+    mode: '0644'
