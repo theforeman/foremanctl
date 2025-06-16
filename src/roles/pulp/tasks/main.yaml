@@ -132,6 +132,7 @@
     command: pulpcore-manager migrate --noinput
     detach: false
     network: host
+    volumes: "{{ pulp_volumes }}"
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
