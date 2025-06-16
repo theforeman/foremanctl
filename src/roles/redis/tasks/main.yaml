@@ -1,7 +1,7 @@
 ---
 - name: Pull Redis container image
   containers.podman.podman_image:
-    name: "{{ redis_image }}"
+    name: "{{ redis_container_image }}:{{ redis_container_tag }}"
     state: present
 
 - name: Create directory for Redis data
@@ -15,7 +15,7 @@
 - name: Run Redis as a container
   containers.podman.podman_container:
     name: redis
-    image: "{{ redis_image }}"
+    image: "{{ redis_container_image }}:{{ redis_container_tag }}"
     state: quadlet
     sdnotify: true
     command: ["run-redis", "--supervised", "systemd"]

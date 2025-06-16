@@ -6,11 +6,12 @@ foreman_proxy_container_image: quay.io/foreman/foreman-proxy
 foreman_proxy_container_tag: nightly
 pulp_container_image: quay.io/pulp/pulp-minimal
 pulp_container_tag: "3.73"
-redis_image: quay.io/sclorg/redis-6-c9s:latest
+redis_container_image: quay.io/sclorg/redis-6-c9s
+redis_container_tag: "latest"
 
 images:
  - "{{ candlepin_container_image }}:{{ candlepin_container_tag }}"
  - "{{ foreman_container_image }}:{{ foreman_container_tag }}"
  - "{{ foreman_proxy_container_image }}:{{ foreman_proxy_container_tag }}"
  - "{{ pulp_container_image }}:{{ pulp_container_tag }}"
- - "{{ redis_image }}"
+ - "{{ redis_container_image }}:{{ redis_container_tag }}"
