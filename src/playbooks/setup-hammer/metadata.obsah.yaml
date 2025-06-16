@@ -1,6 +1,0 @@
----
-help: |
-  Setup hammer
-
-include:
-  - _certificate_source
