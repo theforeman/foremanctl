@@ -1,5 +1,5 @@
 candlepin_container_image: quay.io/foreman/candlepin
-candlepin_container_tag: 4.4.14
+candlepin_container_tag: "4.4.14"
 foreman_container_image: quay.io/foreman/foreman
 foreman_container_tag: nightly
 foreman_proxy_container_image: quay.io/foreman/foreman-proxy
