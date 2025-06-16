@@ -1,5 +1,6 @@
 NAME := foremanctl
 VERSION := $(shell cat VERSION)
+REQUIREMENTS_YML := $(firstword $(wildcard src/requirements-lock.yml src/requirements.yml))
 
 dist: $(NAME)-$(VERSION).tar.gz
 
@@ -10,4 +11,4 @@ $(NAME)-$(VERSION).tar.gz: build/collections/foremanctl
 
 
 build/collections/foremanctl:
-	ANSIBLE_COLLECTIONS_PATH=$@ ansible-galaxy install -r src/requirements.yml
+	ANSIBLE_COLLECTIONS_PATH=$@ ansible-galaxy install -r $(REQUIREMENTS_YML)
