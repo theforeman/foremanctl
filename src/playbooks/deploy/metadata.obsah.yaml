@@ -9,6 +9,10 @@ variables:
     help: Initial password for the admin user.
   foreman_puma_workers:
     help: Number of workers for Puma.
+  plugins:
+    parameter: --plugin
+    help: Plugins to enable in this deployment.
+    action: append
 
 include:
   - _certificate_source
