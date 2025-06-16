@@ -1,0 +1,5 @@
+---
+plugins:
+  - foreman-tasks
+  - foreman_remote_execution
+  - katello
