@@ -11,6 +11,10 @@ variables:
     help: Number of workers for Puma.
   pulp_worker_count:
     help: Number of Pulp workers. Defaults to 8 or the number of CPU cores, whichever is smaller.
+  plugins:
+    parameter: --plugin
+    help: Plugins to enable in this deployment.
+    action: append
 
 include:
   - _certificate_source

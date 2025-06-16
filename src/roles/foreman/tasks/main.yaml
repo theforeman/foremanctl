@@ -105,6 +105,7 @@
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
     env:
       FOREMAN_PUMA_WORKERS: "{{ foreman_puma_workers }}"
+      FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
     quadlet_options:
       - |
         [Install]
@@ -136,6 +137,7 @@
       DYNFLOW_SIDEKIQ_SCRIPT: "/usr/share/foreman/extras/dynflow-sidekiq.rb"
       DYNFLOW_REDIS_URL: "redis://localhost:6379/6"
       REDIS_PROVIDER: "DYNFLOW_REDIS_URL"
+      FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
     command: "/usr/libexec/foreman/sidekiq-selinux -e production -r /usr/share/foreman/extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yml"
     quadlet_options:
       - |
@@ -175,6 +177,8 @@
     detach: false
     working_dir: /usr/share/foreman
     network: host
+    env:
+      FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
     secrets:
       - 'foreman-database-url,type=env,target=DATABASE_URL'
       - 'foreman-seed-admin-user,type=env,target=SEED_ADMIN_USER'
