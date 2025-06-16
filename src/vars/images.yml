@@ -21,3 +21,6 @@ images:
 
 database_images:
  - "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
+
+foreman_proxy_images:
+ - "{{ foreman_proxy_container_image }}:{{ foreman_proxy_container_tag }}"

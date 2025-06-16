@@ -1,0 +1,13 @@
+---
+variables:
+  flavor:
+    help: Base flavor to use in this deployment.
+  features:
+    parameter: --add-feature
+    help: Additional features to enable in this deployment.
+    action: append_unique
+  remove_features:
+    parameter: --remove-feature
+    help: Additional features to disable in this deployment.
+    action: remove
+    dest: features

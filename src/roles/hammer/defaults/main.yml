@@ -1,8 +1,7 @@
 ---
 hammer_foreman_server_url: "https://{{ ansible_facts['fqdn'] }}"
 hammer_ca_certificate: ""
-hammer_packages:
-  - hammer-cli-plugin-foreman
-  - hammer-cli-plugin-foreman_tasks
-  - hammer-cli-plugin-foreman_remote_execution
-  - hammer-cli-plugin-katello
+hammer_default_plugins:
+  - foreman
+hammer_plugins: []
+hammer_packages: "{{ (hammer_default_plugins+hammer_plugins) | map('regex_replace', '^', 'hammer-cli-plugin-') }}"
