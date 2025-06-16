@@ -1,8 +1,9 @@
 ---
-pulp_image: quay.io/pulp/pulp-minimal:3.73
-pulp_api_image: "{{ pulp_image }}"
-pulp_content_image: "{{ pulp_image }}"
-pulp_worker_image: "{{ pulp_image }}"
+pulp_container_image: quay.io/pulp/pulp-minimal
+pulp_container_tag: "3.73"
+pulp_api_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
+pulp_content_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
+pulp_worker_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
 
 pulp_worker_count: 2
 
