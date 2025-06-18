@@ -11,4 +11,4 @@ $(NAME)-$(VERSION).tar.gz: build/collections/foremanctl
 
 
 build/collections/foremanctl:
-	ANSIBLE_COLLECTIONS_PATH=$@ ansible-galaxy install -r $(REQUIREMENTS_YML)
+	ANSIBLE_COLLECTIONS_PATH=$@ ANSIBLE_COLLECTIONS_SCAN_SYS_PATH=false ansible-galaxy install -r $(REQUIREMENTS_YML)
