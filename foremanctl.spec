@@ -1,7 +1,7 @@
 %global __brp_mangle_shebangs_exclude_from ^%{_datadir}/%{name}/collections/.*$
 
 Name:      foremanctl
-Version:   0.0.2
+Version:   0.0.3
 Release:   0%{?dist}
 Summary:   Install Foreman using containers
 
