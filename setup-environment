@@ -6,8 +6,7 @@ if [[ -z "${GITHUB_ACTIONS}" ]]; then
 fi
 pip install -r src/requirements.txt
 pip install -r development/requirements.txt
-make build/collections/foremanctl
-make build/collections/forge
+make build/collections/foremanctl build/collections/forge
 
 printf "\n\nSetup complete.\n"
 printf "Activate the virtualenv 'source .venv/bin/activate'.\n"
