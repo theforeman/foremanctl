@@ -1,13 +1,13 @@
 %global __brp_mangle_shebangs_exclude_from ^%{_datadir}/%{name}/collections/.*$
 
 Name:      foremanctl
-Version:   0.0.1
+Version:   0.0.2
 Release:   0%{?dist}
 Summary:   Install Foreman using containers
 
 License:   GPL-2-only
-URL:       https://github.com/theforeman/foreman-quadlet
-Source:    https://github.com/theforeman/foreman-quadlet/releases/download/%{version}/%{name}-%{version}.tar.gz
+URL:       https://github.com/theforeman/foremanctl
+Source:    https://github.com/theforeman/foremanctl/releases/download/%{version}/%{name}-%{version}.tar.gz
 
 BuildArch: noarch
 Requires:  python3-obsah >= 1.3
