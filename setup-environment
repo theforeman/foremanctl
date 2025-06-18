@@ -4,8 +4,7 @@ if [[ -z "${GITHUB_ACTIONS}" ]] && [[ -z "${VIRTUAL_ENV}" ]]; then
   python -m venv .venv
   source .venv/bin/activate
 fi
-pip install -r src/requirements.txt
-pip install -r development/requirements.txt
+pip install -r src/requirements.txt -r development/requirements.txt
 make build/collections/foremanctl build/collections/forge
 
 printf "\n\nSetup complete.\n"
