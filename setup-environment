@@ -11,8 +11,8 @@ if [[ -f src/requirements-lock.yml ]]; then
 else
   REQUIREMENTS=src/requirements.yml
 fi
-ANSIBLE_COLLECTIONS_PATH=./build/collections/foremanctl ansible-galaxy install -r ${REQUIREMENTS}
-ANSIBLE_COLLECTIONS_PATH=./build/collections/forge ansible-galaxy install -r development/requirements.yml
+ANSIBLE_COLLECTIONS_PATH=./build/collections/foremanctl ANSIBLE_COLLECTIONS_SCAN_SYS_PATH=false ansible-galaxy install -r ${REQUIREMENTS}
+ANSIBLE_COLLECTIONS_PATH=./build/collections/forge ANSIBLE_COLLECTIONS_SCAN_SYS_PATH=false ansible-galaxy install -r development/requirements.yml
 
 printf "\n\nSetup complete.\n"
 printf "Activate the virtualenv 'source .venv/bin/activate'.\n"
