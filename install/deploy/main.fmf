@@ -1,0 +1,3 @@
+summary: Deploy using foremanctl
+test: foremanctl deploy
+require: foremanctl
