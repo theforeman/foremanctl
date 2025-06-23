@@ -19,4 +19,4 @@ jobs:
   - job: copr_build
     trigger: pull_request
     targets:
-      - epel-9
+      - rhel-9
