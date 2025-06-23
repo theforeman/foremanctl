@@ -15,6 +15,8 @@ pulp_content_container_name: pulp-content
 pulp_worker_container_name: pulp-worker
 
 pulp_content_origin: "http://{{ ansible_fqdn }}:24816"
+pulp_rhsm_url: "https://{{ ansible_fqdn }}/rhsm"
+pulp_pulp_url: "http://{{ ansible_fqdn }}:24817"
 
 pulp_enable_analytics: false
 
@@ -45,5 +47,7 @@ pulp_settings_other_env:
   PULP_REMOTE_USER_ENVIRON_NAME: "HTTP_REMOTE_USER"
   PULP_REST_FRAMEWORK__DEFAULT_AUTHENTICATION_CLASSES: >-
     ['rest_framework.authentication.SessionAuthentication', 'pulpcore.app.authentication.PulpRemoteUserAuthentication']
+  PULP_SMART_PROXY_RHSM_URL: "{{ pulp_rhsm_url }}"
+  PULP_SMART_PROXY_PULP_URL: "{{ pulp_pulp_url }}"
 
 pulp_settings_env: "{{ pulp_settings_database_env | ansible.builtin.combine(pulp_settings_other_env) }}"
