@@ -37,6 +37,7 @@
     httpd_server_certificate: "{{ server_certificate }}"
     httpd_server_key: "{{ server_key }}"
     pulp_content_origin: "https://{{ ansible_fqdn }}"
+    pulp_pulp_url: "https://{{ ansible_fqdn }}"
   pre_tasks:
     - name: Deploy debug_tools
       ansible.builtin.include_role:
