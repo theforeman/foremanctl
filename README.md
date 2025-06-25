@@ -89,3 +89,7 @@ Each shall contain labels that provide additional metadata:
         - app: <name of application that uses the configuration file>
     * Strings:
         - app: <name of application that uses the string>
+
+### Trivia
+
+The correct pronunciation of foremanctl is "Foreman Cuddle." So, if you've been saying "See-Tee-Ell" or "Control," you're not alone, but now you know the right way to say it!
