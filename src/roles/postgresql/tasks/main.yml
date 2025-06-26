@@ -53,6 +53,7 @@
     login_host: localhost
     state: present
   loop: "{{ postgresql_users }}"
+  no_log: true
 
 - name: Create PostgreSQL databases
   community.postgresql.postgresql_db:
