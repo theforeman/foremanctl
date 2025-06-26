@@ -1,7 +1,7 @@
 ---
 - name: Pull PostgreSQL container image
   containers.podman.podman_image:
-    name: "{{ postgresql_image }}"
+    name: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
     state: present
 
 - name: Create PostgreSQL storage directory
@@ -20,7 +20,7 @@
 - name: Deploy PostgreSQL container
   containers.podman.podman_container:
     name: "{{ postgresql_container_name }}"
-    image: "{{ postgresql_image }}"
+    image: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
     state: quadlet
     healthcheck: pg_isready
     sdnotify: healthy
