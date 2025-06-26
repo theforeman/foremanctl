@@ -1,5 +1,6 @@
 ---
-postgresql_image: quay.io/sclorg/postgresql-13-c9s
+postgresql_container_image: quay.io/sclorg/postgresql-13-c9s
+postgresql_container_tag: "latest"
 postgresql_container_name: postgresql
 postgresql_network: host
 postgresql_restart_policy: always
