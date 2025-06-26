@@ -1,2 +1,6 @@
 ---
 certificate_source: default
+plugins:
+  - foreman-tasks
+  - foreman_remote_execution
+  - katello
