@@ -54,6 +54,10 @@ This will create a GitHub release and attach the created tarball to it.
 
 Once that is done, you can upload `foremanctl.spec` to the [@theforeman/foremanctl COPR](https://copr.fedorainfracloud.org/coprs/g/theforeman/foremanctl/).
 
+```
+copr build @theforeman/foremanctl foremanctl.spec
+```
+
 ## Service Configuration
 
 Configuration files for services are stored as [podman secrets](https://docs.podman.io/en/latest/markdown/podman-secret-create.1.html) and mounted into the container at the expected locations. These configuration files can be listed:
