@@ -1,0 +1,10 @@
+---
+- name: Run preflight checks
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Run IPv6 check script
+      command: "{{ playbook_dir }}/../../roles/ipv6_check/files/foreman_ipv6_check"
+      register: ipv6_check
+      failed_when: ipv6_check.rc != 0
+
