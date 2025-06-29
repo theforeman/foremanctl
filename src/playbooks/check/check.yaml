@@ -1,0 +1,9 @@
+---
+- name: Run preflight checks
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Run hostname check script
+      command: "{{ playbook_dir }}/../../roles/hostname_check/files/foreman-hostname-check"
+      register: hostname_check
+      failed_when: hostname_check.rc != 0
