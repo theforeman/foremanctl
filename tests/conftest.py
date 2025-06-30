@@ -11,6 +11,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 def pytest_addoption(parser):
     parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'installer'), help="Where to obtain certificates from")
+    parser.addoption("--database-mode", action="store", default="internal", choices=('internal', 'external'), help="Whether the database is internal or external")
 
 
 @pytest.fixture(scope="module")
@@ -24,6 +25,11 @@ def certificates(pytestconfig):
 
 
 @pytest.fixture(scope="module")
+def database_mode(pytestconfig):
+    return pytestconfig.getoption("database_mode")
+
+
+@pytest.fixture(scope="module")
 def server():
     yield testinfra.get_host('paramiko://quadlet', sudo=True, ssh_config='./.vagrant/ssh-config')
 
@@ -31,6 +37,14 @@ def server():
 @pytest.fixture(scope="module")
 def client():
     yield testinfra.get_host('paramiko://client', sudo=True, ssh_config='./.vagrant/ssh-config')
+
+
+@pytest.fixture(scope="module")
+def database(database_mode, server):
+    if database_mode == 'external':
+        yield testinfra.get_host('paramiko://database', sudo=True, ssh_config='./.vagrant/ssh-config')
+    else:
+        yield server
 
 
 @pytest.fixture(scope="module")
