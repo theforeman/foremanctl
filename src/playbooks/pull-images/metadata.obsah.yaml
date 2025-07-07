@@ -2,9 +2,5 @@
 help: |
   Pull necessary container images
 
-variables:
-  database_mode:
-    help: Defaults to internal. Set to 'external' if using an external database.
-    choices:
-      - internal
-      - external
+include:
+  - _database_mode
