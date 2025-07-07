@@ -3,6 +3,7 @@
   hosts:
     - quadlet
   vars_files:
+    - "../../vars/defaults.yml"
     - "../../vars/images.yml"
   become: true
   tasks:
@@ -15,3 +16,10 @@
       containers.podman.podman_image:
         name: "{{ item }}"
       loop: "{{ images }}"
+
+    - name: Pull database images
+      containers.podman.podman_image:
+        name: "{{ item }}"
+      loop: "{{ database_images }}"
+      when:
+        - database_mode == 'internal'
