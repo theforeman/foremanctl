@@ -1,0 +1,68 @@
+---
+- name: Create temporary directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: certificate-build
+  register: build_directory
+
+- name: Create directory structure
+  ansible.builtin.file:
+    state: directory
+    path: "{{ build_directory.path }}/ssl-build/{{ certificate_bundle_hostname }}"
+    mode: '0755'
+
+- name: Copy CA certificate
+  ansible.builtin.copy:
+    src: "{{ certificate_bundle_ca_certificate }}"
+    dest: "{{ build_directory.path }}/ssl-build/{{ item }}"
+    remote_src: true
+    mode: '0444'
+  loop:
+    - katello-server-ca.crt
+    - katello-default-ca.crt
+
+- name: Copy server certificate
+  ansible.builtin.copy:
+    src: "{{ certificate_bundle_server_certificate }}"
+    dest: "{{ build_directory.path }}/ssl-build/{{ certificate_bundle_hostname }}/{{ certificate_bundle_hostname }}-{{ item }}"
+    remote_src: true
+    mode: '0444'
+  loop:
+    - apache.crt
+    - foreman-proxy.crt
+
+- name: Copy server key
+  ansible.builtin.copy:
+    src: "{{ certificate_bundle_server_key }}"
+    dest: "{{ build_directory.path }}/ssl-build/{{ certificate_bundle_hostname }}/{{ certificate_bundle_hostname }}-{{ item }}"
+    remote_src: true
+    mode: '0440'
+  loop:
+    - apache.key
+    - foreman-proxy.key
+
+- name: Copy client certificate
+  ansible.builtin.copy:
+    src: "{{ certificate_bundle_client_certificate }}"
+    dest: "{{ build_directory.path }}/ssl-build/{{ certificate_bundle_hostname }}/{{ certificate_bundle_hostname }}-{{ item }}"
+    remote_src: true
+    mode: '0444'
+  loop:
+    - foreman-proxy-client.crt
+    - puppet-client.crt
+
+- name: Copy client key
+  ansible.builtin.copy:
+    src: "{{ certificate_bundle_client_key }}"
+    dest: "{{ build_directory.path }}/ssl-build/{{ certificate_bundle_hostname }}/{{ certificate_bundle_hostname }}-{{ item }}"
+    remote_src: true
+    mode: '0440'
+  loop:
+    - foreman-proxy-client.key
+    - puppet-client.key
+
+- name: Create tarball
+  community.general.archive:
+    path: "{{ build_directory.path }}/ssl-build"
+    dest: "/root/{{ certificate_bundle_hostname }}.tar.gz"
+    mode: '0640'
