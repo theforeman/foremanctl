@@ -1,0 +1,24 @@
+---
+- name: Setup remote database
+  hosts:
+    - database
+  become: true
+  vars_files:
+    - "../../../src/vars/database.yml"
+  pre_tasks:
+    - name: Deploy debug_tools
+      ansible.builtin.include_role:
+        name: debug_tools
+    - name: Install packages
+      ansible.builtin.package:
+        name:
+          - podman
+          - python3-cryptography
+          - python3-libsemanage
+          - python3-requests
+          - bash-completion
+          - nmap
+          - python3-psycopg2
+  roles:
+    - theforeman.forklift.etc_hosts
+    - postgresql

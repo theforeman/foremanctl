@@ -28,4 +28,13 @@ Vagrant.configure("2") do |config|
       provider.vm.box_url = CENTOS_9_BOX_URL
     end
   end
+
+  config.vm.define "database" do |override|
+    override.vm.hostname = "database.example.com"
+
+    override.vm.provider "libvirt" do |libvirt, provider|
+      libvirt.memory = 2048
+      provider.vm.box_url = CENTOS_9_BOX_URL
+    end
+  end
 end
