@@ -47,6 +47,18 @@ variables:
     help: User of the Pulp database.
   pulp_database_password:
     help: Password for the Pulp database.
+  foreman_logging_level:
+    help: Set the log level for Foreman.
+    choices:
+      - fatal
+      - error
+      - warn
+      - info
+      - debug
+  foreman_loggers:
+    help: Enable specific loggers for debugging Foreman.
+  candlepin_loggers:
+    help: Set the log level for Candlepin loggers.
 constraints:
   required_together:
     - [database_ssl_mode, database_ssl_ca]
