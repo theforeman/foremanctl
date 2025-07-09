@@ -1,9 +1,6 @@
 ---
 - name: Run preflight checks
-  hosts: localhost
+  hosts: quadlet
   gather_facts: false
-  tasks:
-    - name: Run Subuid/Subgid check script
-      command: "{{ playbook_dir }}/../../roles/subuid_subgid_check/files/foreman-subuid-subgid-check"
-      register: subuid_subgid_check
-      failed_when: subuid_subgid_check.rc != 0
+  roles:
+    - subuid_subgid_check

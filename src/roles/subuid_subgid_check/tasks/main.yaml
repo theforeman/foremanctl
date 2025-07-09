@@ -1,0 +1,26 @@
+---
+- name: Get current user
+  command: whoami
+  register: current_user
+
+- name: Check /etc/subuid for current user
+  command: grep "^{{ current_user.stdout }}:" /etc/subuid
+  register: subuid_check
+  ignore_errors: true
+
+- name: Assert /etc/subuid has entry
+  assert:
+    that:
+      - subuid_check.rc == 0
+    fail_msg: "/etc/subuid is missing entry for user {{ current_user.stdout }}"
+
+- name: Check /etc/subgid for current user
+  command: grep "^{{ current_user.stdout }}:" /etc/subgid
+  register: subgid_check
+  ignore_errors: true
+
+- name: Assert /etc/subgid has entry
+  assert:
+    that:
+      - subgid_check.rc == 0
+    fail_msg: "/etc/subgid is missing entry for user {{ current_user.stdout }}"

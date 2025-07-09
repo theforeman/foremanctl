@@ -1,0 +1,20 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: default
+
+platforms:
+  - name: instance
+    image: docker.io/library/fedora:latest
+    command: /sbin/init
+    privileged: true
+    pre_build_image: true
+
+provisioner:
+  name: ansible
+  log: true
+
+verifier:
+  name: ansible

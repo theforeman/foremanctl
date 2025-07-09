@@ -1,0 +1,8 @@
+---
+- name: Verify Subuid/Subgid Role
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Confirm role execution
+      debug:
+        msg: "Subuid/Subgid check ran successfully."

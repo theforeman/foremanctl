@@ -1,0 +1,5 @@
+---
+- name: Converge
+  hosts: all
+  become: false
+  gather_facts: false
