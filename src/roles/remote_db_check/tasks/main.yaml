@@ -1,0 +1,21 @@
+---
+- name: Define database host and port (fallback if not set)
+  set_fact:
+    db_host: "{{ db_host | default('db.example.com') }}"
+    db_port: "{{ db_port | default(5432) }}"
+
+- name: Check if remote database port is reachable
+  wait_for:
+    host: "{{ db_host }}"
+    port: "{{ db_port }}"
+    timeout: 5
+    state: started
+  register: db_connection_check
+  ignore_errors: true
+
+- name: Assert database is reachable
+  assert:
+    that:
+      - db_connection_check is defined
+      - db_connection_check.elapsed < 5
+    fail_msg: "Cannot connect to the database at {{ db_host }}:{{ db_port }}. Please verify the host and port."
