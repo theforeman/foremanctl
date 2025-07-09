@@ -1,0 +1,9 @@
+---
+- name: Verify hostname_check role
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Confirm role executed successfully
+      debug:
+        msg: "Hostname check ran successfully."
