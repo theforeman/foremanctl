@@ -3,6 +3,7 @@
   ansible.builtin.include_tasks: execute_check.yml
   loop:
     - check_hostname
+    - check_database_connection
 
 - name: Report status of checks
   ansible.builtin.fail:
