@@ -1,6 +1,0 @@
----
-- name: Run preflight checks
-  hosts: quadlet
-  gather_facts: false
-  roles:
-    - subuid_subgid_check
