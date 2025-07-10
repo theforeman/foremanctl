@@ -1,8 +1,5 @@
-help_text: |
-  Run all preflight checks before installing Foreman with containers.
-  This includes subuid/subgid, and other system checks.
+---
 
-playbook:
   - name: Run preflight checks
     hosts: quadlet
     gather_facts: true

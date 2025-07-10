@@ -3,3 +3,5 @@
   hosts: all
   become: false
   gather_facts: false
+  roles:
+    - role: subuid_subgid_check

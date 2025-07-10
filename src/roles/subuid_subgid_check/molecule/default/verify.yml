@@ -1,8 +1,16 @@
 ---
 - name: Verify Subuid/Subgid Role
   hosts: all
-  gather_facts: false
+  gather_facts: true
   tasks:
-    - name: Confirm role execution
-      debug:
-        msg: "Subuid/Subgid check ran successfully."
+    - name: Check subuid entry exists
+      ansible.builtin.command: grep "^{{ ansible_user_id }}:" /etc/subuid
+      register: subuid_check
+      changed_when: false
+      failed_when: subuid_check.rc != 0
+
+    - name: Check subgid entry exists
+      ansible.builtin.command: grep "^{{ ansible_user_id }}:" /etc/subgid
+      register: subgid_check
+      changed_when: false
+      failed_when: subgid_check.rc != 0
