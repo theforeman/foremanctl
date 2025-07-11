@@ -1,0 +1,9 @@
+---
+- name: Verify remote_db_check role
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Confirm role executed successfully
+      debug:
+        msg: "Remote Database check ran successfully."

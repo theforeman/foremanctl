@@ -1,0 +1,4 @@
+- name: Run hostname check
+  hosts: quadlets
+  include_role:
+    name: remote_db_check

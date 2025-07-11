@@ -1,0 +1,4 @@
+---
+- name: Converge
+  hosts: quadlets
+  become: true
