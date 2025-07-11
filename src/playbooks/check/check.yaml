@@ -1,4 +1,0 @@
-- name: Run hostname check
-  hosts: quadlets
-  include_role:
-    name: hostname_check
