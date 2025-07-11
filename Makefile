@@ -1,5 +1,5 @@
 NAME := foremanctl
-VERSION := $(shell cat VERSION)
+VERSION := $(shell git describe)
 REQUIREMENTS_YML := $(firstword $(wildcard src/requirements-lock.yml src/requirements.yml))
 
 dist: $(NAME)-$(VERSION).tar.gz
