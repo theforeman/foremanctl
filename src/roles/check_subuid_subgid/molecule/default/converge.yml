@@ -1,7 +1,0 @@
----
-- name: Converge
-  hosts: all
-  become: false
-  gather_facts: false
-  roles:
-    - role: check_subuid_subgid
