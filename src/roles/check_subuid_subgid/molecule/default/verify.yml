@@ -5,12 +5,12 @@
   tasks:
     - name: Check subuid entry exists
       ansible.builtin.command: grep "^{{ ansible_user_id }}:" /etc/subuid
-      register: subuid_check
+      register: check_subuid_subgid_subuid
       changed_when: false
-      failed_when: subuid_check.rc != 0
+      failed_when: check_subuid_subgid_subuid.rc != 0
 
     - name: Check subgid entry exists
       ansible.builtin.command: grep "^{{ ansible_user_id }}:" /etc/subgid
-      register: subgid_check
+      register: check_subuid_subgid_subgid
       changed_when: false
-      failed_when: subgid_check.rc != 0
+      failed_when: check_subuid_subgid_subgid.rc != 0

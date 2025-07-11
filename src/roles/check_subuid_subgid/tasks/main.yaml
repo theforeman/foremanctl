@@ -1,19 +1,19 @@
 ---
 - name: Check /etc/subuid for current user
   ansible.builtin.command: grep "^{{ ansible_user_id }}:" /etc/subuid
-  register: subuid_check
+  register: check_subuid_subgid_subuid
   ignore_errors: true
   changed_when: false
 
 - name: Check /etc/subgid for current user
   ansible.builtin.command: grep "^{{ ansible_user_id }}:" /etc/subgid
-  register: subgid_check
+  register: check_subuid_subgid_subgid
   ignore_errors: true
   changed_when: false
 
-- name: Assert /etc/subuid and /etc/subgid has entry
+- name: Assert /etc/subuid and /etc/subgid have entries for {{ ansible_user_id }}
   ansible.builtin.assert:
     that:
-      - subuid_check is success
-      - subgid_check is success
+      - check_subuid_subgid_subuid is success
+      - check_subuid_subgid_subgid is success
     fail_msg: "Entries for user {{ ansible_user_id }} are missing in /etc/subuid or /etc/subgid"

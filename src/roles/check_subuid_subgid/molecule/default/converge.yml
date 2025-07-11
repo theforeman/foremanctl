@@ -4,4 +4,4 @@
   become: false
   gather_facts: false
   roles:
-    - role: subuid_subgid_check
+    - role: check_subuid_subgid
