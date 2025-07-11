@@ -154,8 +154,8 @@
 - name: Wait for Pulp services
   ansible.builtin.async_status:
     jid: "{{ item.ansible_job_id }}"
-  register: job_result
-  until: job_result is finished
+  register: _pulp_job_result
+  until: _pulp_job_result is finished
   retries: 100
   delay: 1
   loop: "{{ pulp_services.results }}"
