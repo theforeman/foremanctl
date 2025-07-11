@@ -2,11 +2,11 @@
 - name: Extract the DN from the client certificate
   ansible.builtin.command: "openssl x509 -in {{ candlepin_client_certificate }} -noout -subject -nameopt rfc2253,sep_comma_plus_space"
   changed_when: false
-  register: openssl_response
+  register: candlepin_openssl_response
 
 - name: Set candlepin_artemis_client_dn
   ansible.builtin.set_fact:
-    candlepin_artemis_client_dn: "{{ openssl_response.stdout | replace('subject=', '') }}"
+    candlepin_artemis_client_dn: "{{ candlepin_openssl_response.stdout | replace('subject=', '') }}"
 
 - name: Create Candlepin broker.xml
   containers.podman.podman_secret:
