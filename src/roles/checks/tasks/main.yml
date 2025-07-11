@@ -1,0 +1,6 @@
+---
+- name: Execute checks
+  ansible.builtin.include_role:
+    name: "{{ item }}"
+  loop:
+    - check_subuid_subgid

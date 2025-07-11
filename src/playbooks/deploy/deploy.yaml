@@ -50,6 +50,7 @@
           - python3-psycopg2
           - python3-requests
   roles:
+    - role: checks
     - role: certificates
       when: "certificate_source == 'default'"
     - role: certificate_checks
