@@ -3,16 +3,6 @@ help: |
   Install
 
 variables:
-  certificate_source:
-    help: Where certificates are coming from. Currently default Ansible role or the foreman-installer.
-    choices:
-      - default
-      - installer
-  database_mode:
-    help: Defaults to internal. Set to 'external' if using an external database.
-    choices:
-      - internal
-      - external
   database_host:
     help: Host of the PostgreSQL database.
   database_port:
@@ -52,3 +42,6 @@ constraints:
     - [database_ssl_mode, database_ssl_ca]
   required_if:
     - ['database_mode', 'external', ['database_host']]
+include:
+  - _certificate_source
+  - _database_mode
