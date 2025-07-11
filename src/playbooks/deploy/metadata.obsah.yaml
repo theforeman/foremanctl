@@ -47,6 +47,10 @@ variables:
     help: User of the Pulp database.
   pulp_database_password:
     help: Password for the Pulp database.
+  plugins:
+    parameter: --plugin
+    help: Plugins to enable in this deployment.
+    action: append
 constraints:
   required_together:
     - [database_ssl_mode, database_ssl_ca]
