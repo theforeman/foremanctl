@@ -3,5 +3,4 @@
   hosts: quadlet
   gather_facts: true
   roles:
-    - check_subuid_subgid
-    - check_hostname
+    - checks

@@ -1,0 +1,9 @@
+- name: Check role block
+  block:
+    - name: Execute check role
+      ansible.builtin.include_role:
+        name: "{{ item }}"
+  rescue:
+    - name: Record check result
+      ansible.builtin.set_fact:
+        checks_results: "{{ (checks_results | default([])) + [ansible_failed_result] }}"
