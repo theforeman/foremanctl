@@ -6,7 +6,7 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant"
 
   config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "development/playbooks/etc_host.yml"
+    ansible.playbook = "development/playbooks/etc_host.yaml"
     ansible.compatibility_mode = "2.0"
   end
 

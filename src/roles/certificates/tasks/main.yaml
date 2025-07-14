@@ -1,10 +1,10 @@
 ---
 - name: 'Generate CA certificate'
-  ansible.builtin.include_tasks: ca.yml
+  ansible.builtin.include_tasks: ca.yaml
   when: certificates_ca
 
 - name: 'Issue other certificates'
-  ansible.builtin.include_tasks: issue.yml
+  ansible.builtin.include_tasks: issue.yaml
   when: certificates_hostnames is defined
   with_items: "{{ certificates_hostnames }}"
   loop_control:

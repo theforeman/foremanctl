@@ -26,7 +26,7 @@
   containers.podman.podman_secret:
     state: present
     name: foreman-dynflow-worker-hosts-queue-yaml
-    data: "{{ lookup('ansible.builtin.template', 'dynflow-worker-hosts-queue.yml') }}"
+    data: "{{ lookup('ansible.builtin.template', 'dynflow-worker-hosts-queue.yaml') }}"
 
 - name: Create the podman secret for Foreman CA certificate
   containers.podman.podman_secret:
@@ -82,12 +82,12 @@
       - 'foreman-ca-cert,type=mount,target=/etc/foreman/katello-default-ca.crt'
       - 'foreman-client-cert,type=mount,target=/etc/foreman/client_cert.pem'
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
-      - 'foreman-dynflow-worker-hosts-queue-yaml,type=mount,target=/etc/foreman/dynflow/worker-hosts-queue.yml'
+      - 'foreman-dynflow-worker-hosts-queue-yaml,type=mount,target=/etc/foreman/dynflow/worker-hosts-queue.yaml'
     env:
       DYNFLOW_SIDEKIQ_SCRIPT: "/usr/share/foreman/extras/dynflow-sidekiq.rb"
       DYNFLOW_REDIS_URL: "redis://localhost:6379/6"
       REDIS_PROVIDER: "DYNFLOW_REDIS_URL"
-    command: "/usr/libexec/foreman/sidekiq-selinux -e production -r /usr/share/foreman/extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yml"
+    command: "/usr/libexec/foreman/sidekiq-selinux -e production -r /usr/share/foreman/extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yaml"
     quadlet_options:
       - |
         [Install]

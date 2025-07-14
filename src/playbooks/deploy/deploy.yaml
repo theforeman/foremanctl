@@ -4,10 +4,10 @@
     - quadlet
   become: true
   vars_files:
-    - "../../vars/defaults.yml"
-    - "../../vars/{{ certificate_source }}_certificates.yml"
-    - "../../vars/images.yml"
-    - "../../vars/database.yml"
+    - "../../vars/defaults.yaml"
+    - "../../vars/{{ certificate_source }}_certificates.yaml"
+    - "../../vars/images.yaml"
+    - "../../vars/database.yaml"
   vars:
     certificates_hostnames:
       - "{{ ansible_fqdn }}"

@@ -5,8 +5,8 @@
 
 - name: Configure Hammer Foreman plugin
   ansible.builtin.template:
-    src: cli.modules.d-foreman.yml.j2
-    dest: /etc/hammer/cli.modules.d/foreman.yml
+    src: cli.modules.d-foreman.yaml.j2
+    dest: /etc/hammer/cli.modules.d/foreman.yaml
     owner: root
     group: root
     mode: '0644'

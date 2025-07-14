@@ -1,6 +1,6 @@
 ---
 - name: Execute checks
-  ansible.builtin.include_tasks: execute_check.yml
+  ansible.builtin.include_tasks: execute_check.yaml
   loop:
     - check_hostname
 

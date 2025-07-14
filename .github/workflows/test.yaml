@@ -7,12 +7,12 @@ on:
       - master
     paths-ignore:
       - 'container-images/**'
-      - '.github/workflows/container.yml'
+      - '.github/workflows/container.yaml'
       - 'docs/**'
   pull_request:
     paths-ignore:
       - 'container-images/**'
-      - '.github/workflows/container.yml'
+      - '.github/workflows/container.yaml'
       - 'docs/**'
 
 
@@ -29,12 +29,12 @@ jobs:
       - name: Run ansible-lint on src
         uses: ansible/ansible-lint@main
         with:
-          requirements_file: requirements.yml
+          requirements_file: requirements.yaml
           working_directory: src
       - name: Run ansible-lint on development
         uses: ansible/ansible-lint@main
         with:
-          requirements_file: requirements.yml
+          requirements_file: requirements.yaml
           working_directory: development
 
   tests:

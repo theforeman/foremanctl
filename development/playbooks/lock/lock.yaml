@@ -10,9 +10,9 @@
         ANSIBLE_COLLECTIONS_SCAN_SYS_PATH: "false"
       register: _collection_list
 
-    - name: Format collection list as requirements.yml
+    - name: Format collection list as requirements.yaml
       ansible.builtin.copy:
-        dest: "{{ inventory_dir }}/../src/requirements-lock.yml"
+        dest: "{{ inventory_dir }}/../src/requirements-lock.yaml"
         content: "{{ {'collections': _collections} | to_nice_yaml }}"
         mode: '0644'
       vars:

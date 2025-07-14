@@ -12,7 +12,7 @@
 
 - name: Configure certificates
   ansible.builtin.include_tasks:
-    file: certs.yml
+    file: certs.yaml
 
 - name: Create Candlepin configuration
   containers.podman.podman_secret:
@@ -43,7 +43,7 @@
 
 - name: Setup artemis
   ansible.builtin.include_tasks:
-    file: artemis.yml
+    file: artemis.yaml
 
 - name: Pull the Candlepin container image
   containers.podman.podman_image:
