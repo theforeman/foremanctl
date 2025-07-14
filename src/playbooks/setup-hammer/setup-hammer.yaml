@@ -4,8 +4,8 @@
     - quadlet
   become: true
   vars_files:
-    - "../../vars/defaults.yml"
-    - "../../vars/{{ certificate_source }}_certificates.yml"
+    - "../../vars/defaults.yaml"
+    - "../../vars/{{ certificate_source }}_certificates.yaml"
   vars:
     hammer_ca_certificate: "{{ server_ca_certificate }}"
   roles:

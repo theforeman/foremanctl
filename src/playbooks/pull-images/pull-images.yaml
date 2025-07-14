@@ -3,8 +3,8 @@
   hosts:
     - quadlet
   vars_files:
-    - "../../vars/defaults.yml"
-    - "../../vars/images.yml"
+    - "../../vars/defaults.yaml"
+    - "../../vars/images.yaml"
   become: true
   tasks:
     - name: Install podman
