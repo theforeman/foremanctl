@@ -6,8 +6,8 @@
 
 The installer should aim to support a minimal happy path for default deployment.
 
-  1. Configure RPM repository
-  2. Install installer RPM
+  1. Configure packaging repository
+  2. Install installer package
   3. Run installer
 
 ### Advanced Path
