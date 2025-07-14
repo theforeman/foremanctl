@@ -1,0 +1,25 @@
+---
+- name: Assert FQDN is not 'localhost' or 'localhost.localdomain'
+  ansible.builtin.assert:
+    that:
+      - ansible_fqdn != "localhost"
+      - ansible_fqdn != "localhost.localdomain"
+    fail_msg: "FQDN {{ ansible_fqdn }} is invalid: it must not be 'localhost' or 'localhost.localdomain'"
+
+- name: Assert FQDN contains a dot
+  ansible.builtin.assert:
+    that:
+      - ansible_fqdn.count('.') >= 1
+    fail_msg: "FQDN {{ ansible_fqdn }} must contain at least one dot."
+
+- name: Assert FQDN has no underscores
+  ansible.builtin.assert:
+    that:
+      - ansible_fqdn.count('_') == 0
+    fail_msg: "FQDN {{ ansible_fqdn }} must not contain underscores"
+
+- name: Assert FQDN is lowercase
+  ansible.builtin.assert:
+    that:
+      - ansible_fqdn == ansible_fqdn | lower
+    fail_msg: "FQDN {{ ansible_fqdn }} must be lowercase"
