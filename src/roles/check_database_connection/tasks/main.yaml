@@ -6,12 +6,14 @@
     login_password: "{{ foreman_database_password }}"
     login_db: "{{ foreman_database_name }}"
   register: check_database_connection_ping_result
+  when: (foreman_database_host | default("localhost")) not in ["localhost", "127.0.0.1", "::1"]
   ignore_errors: true
 
 - name: Assert Foreman database is reachable
   ansible.builtin.assert:
     that:
-      - check_database_connection_ping_result.ping | default(false)
+      - check_database_connection_ping_result.is_available
     fail_msg: |
       Cannot connect to Foreman database '{{ foreman_database_name }}' at {{ foreman_database_host }}.
       Please verify the database host, port, name, user, and password.
+  when: (foreman_database_host | default("localhost")) not in ["localhost", "127.0.0.1", "::1"]
