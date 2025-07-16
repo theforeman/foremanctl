@@ -1,3 +1,7 @@
 ---
 help: |
   Run preflight checks before installing Foreman
+
+include:
+  - _database_mode
+  - _database_connection

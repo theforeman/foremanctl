@@ -2,46 +2,7 @@
 help: |
   Install
 
-variables:
-  database_host:
-    help: Host of the PostgreSQL database.
-  database_port:
-    help: Port of the PostgreSQL database.
-  database_ssl_mode:
-    help: If using an SSL connection to the database, define how it should be verified.
-    choices:
-      - disable
-      - allow
-      - prefer
-      - require
-      - verify-ca
-      - verify-full
-  database_ssl_ca:
-    help: Path to the database SSL CA certificate.
-    type: AbsolutePath
-  foreman_database_name:
-    help: Name of the Foreman database.
-  foreman_database_user:
-    help: User of the Foreman database.
-  foreman_database_password:
-    help: Password for the Foreman database.
-  candlepin_database_name:
-    help: Name of the Candlepin database.
-  candlepin_database_user:
-    help: User of the Candlepin database.
-  candlepin_database_password:
-    help: Password for the Candlepin database.
-  pulp_database_name:
-    help: Name of the Pulp database.
-  pulp_database_user:
-    help: User of the Pulp database.
-  pulp_database_password:
-    help: Password for the Pulp database.
-constraints:
-  required_together:
-    - [database_ssl_mode, database_ssl_ca]
-  required_if:
-    - ['database_mode', 'external', ['database_host']]
 include:
   - _certificate_source
   - _database_mode
+  - _database_connection
