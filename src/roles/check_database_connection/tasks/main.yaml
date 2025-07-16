@@ -5,13 +5,13 @@
     login_user: "{{ foreman_database_user }}"
     login_password: "{{ foreman_database_password }}"
     login_db: "{{ foreman_database_name }}"
-  register: db_ping_result
+  register: check_database_connection_ping_result
   ignore_errors: true
 
 - name: Assert Foreman database is reachable
   ansible.builtin.assert:
     that:
-      - db_ping_result.ping | default(false)
+      - check_database_connection_ping_result.ping | default(false)
     fail_msg: |
       Cannot connect to Foreman database '{{ foreman_database_name }}' at {{ foreman_database_host }}.
       Please verify the database host, port, name, user, and password.
