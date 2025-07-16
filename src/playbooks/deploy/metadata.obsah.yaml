@@ -3,10 +3,6 @@ help: |
   Install
 
 variables:
-  database_host:
-    help: Host of the PostgreSQL database.
-  database_port:
-    help: Port of the PostgreSQL database.
   database_ssl_mode:
     help: If using an SSL connection to the database, define how it should be verified.
     choices:
@@ -45,3 +41,4 @@ constraints:
 include:
   - _certificate_source
   - _database_mode
+  - _database_connection
