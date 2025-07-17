@@ -1,0 +1,14 @@
+---
+variables:
+  database_host:
+    help: Host of the PostgreSQL database.
+  database_port:
+    help: Port of the PostgreSQL database.
+  foreman_database_host:
+    help: Hostname of the PostgreSQL server.
+  foreman_database_user:
+    help: Username for the Foreman DB.
+  foreman_database_password:
+    help: Password for the Foreman DB.
+  foreman_database_name:
+    help: Name of the Foreman DB.
