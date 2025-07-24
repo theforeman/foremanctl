@@ -25,5 +25,5 @@ jobs:
   - <<: *copr
     trigger: commit
     branch: develop
-    owner: theforeman
+    owner: '@theforeman'
     project: foremanctl
