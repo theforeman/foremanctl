@@ -24,6 +24,6 @@ jobs:
 
   - <<: *copr
     trigger: commit
-    branch: develop
+    branch: master
     owner: '@theforeman'
     project: foremanctl
