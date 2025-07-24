@@ -16,7 +16,14 @@ actions:
     - bash -c 'ls -1t foremanctl-*.tar.gz | head -n1'
 
 jobs:
-  - job: copr_build
+  - &copr
+    job: copr_build
     trigger: pull_request
     targets:
       - rhel-9
+
+  - <<: *copr
+    trigger: commit
+    branch: develop
+    owner: theforeman
+    project: foremanctl
