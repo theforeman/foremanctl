@@ -4,6 +4,7 @@
   loop:
     - check_hostname
     - check_database_connection
+    - check_system_requirements
 
 - name: Report status of checks
   ansible.builtin.fail:

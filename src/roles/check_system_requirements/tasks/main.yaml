@@ -1,0 +1,12 @@
+---
+- name: Check if system has at least 4 CPU cores
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.processor_cores >= 4
+    fail_msg: "System must have at least 4 CPU cores."
+
+- name: Check if system has at least 10 GB RAM
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.memtotal_mb >= 10240
+    fail_msg: "System must have at least 10 GB RAM."
