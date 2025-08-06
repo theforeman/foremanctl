@@ -1,12 +1,24 @@
----
-- name: Check if system has at least 4 CPU cores
-  ansible.builtin.assert:
-    that:
-      - ansible_facts.processor_cores >= 4
-    fail_msg: "System must have at least 4 CPU cores."
+- name: Skip system requirements if user requested
+  ansible.builtin.debug:
+    msg: "System requirements check skipped."
+  when: skip_system_requirements | default(false)
 
-- name: Check if system has at least 10 GB RAM
+- name: Load tuning thresholds based on deployment_mode
+  ansible.builtin.include_vars:
+    file: "../../vars/tuning/{{ deployment_mode | default('medium') }}.yaml"
+    name: tuning_vars
+  when: not skip_system_requirements | default(false)
+
+- name: Check if system has enough CPU cores
   ansible.builtin.assert:
     that:
-      - ansible_facts.memtotal_mb >= 10240
-    fail_msg: "System must have at least 10 GB RAM."
+      - ansible_facts.processor_nproc >= tuning_vars.min_cpu_cores
+    fail_msg: "System must have at least {{ tuning_vars.min_cpu_cores }} CPU cores."
+  when: not skip_system_requirements | default(false)
+
+- name: Check if system has enough RAM
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.memtotal_mb >= tuning_vars.min_ram_mb
+    fail_msg: "System must have at least {{ tuning_vars.min_ram_mb }} MB RAM."
+  when: not skip_system_requirements | default(false)

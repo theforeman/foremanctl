@@ -1,3 +1,4 @@
 ---
 certificate_source: default
 database_mode: internal
+deployment_mode: medium
