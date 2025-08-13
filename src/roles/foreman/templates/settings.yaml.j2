@@ -16,3 +16,17 @@
 :oauth_consumer_key: {{ foreman_oauth_consumer_key }}
 :oauth_consumer_secret: {{ foreman_oauth_consumer_secret }}
 {% endif %}
+
+:logging:
+  :level: "{{ foreman_logging_level }}"
+  :production:
+    :type: stdout
+    :layout: "{{ foreman_logging_layout }}"
+
+{% if foreman_loggers %}
+:loggers:
+{% for logger, enabled in foreman_loggers.items() %}
+  :{{ logger }}:
+    :enabled: {{ enabled }}
+{% endfor %}
+{% endif %}

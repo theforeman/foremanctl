@@ -22,3 +22,5 @@ candlepin_database_ssl_mode: disable
 candlepin_database_ssl_ca:
 candlepin_database_ssl_cert:
 candlepin_database_ssl_key:
+
+candlepin_loggers:

@@ -9,3 +9,7 @@ foreman_database_port: 5432
 foreman_database_pool: 9
 foreman_database_sslmode: disable
 foreman_database_sslrootcert:
+
+foreman_logging_level: info
+foreman_logging_layout: multiline_request_pattern
+foreman_loggers: {}
