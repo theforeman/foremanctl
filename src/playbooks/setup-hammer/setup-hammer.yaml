@@ -9,6 +9,6 @@
     - "../../vars/foreman.yml"
   vars:
     hammer_ca_certificate: "{{ server_ca_certificate }}"
-    hammer_plugins: "{{ plugins | map('replace', 'foreman-tasks', 'foreman_tasks') }}"
+    hammer_plugins: "{{ features | reject('contains', 'content/') | map('replace', 'foreman-tasks', 'foreman_tasks') | list }}"
   roles:
     - hammer

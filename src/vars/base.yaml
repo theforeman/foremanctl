@@ -20,7 +20,7 @@ foreman_client_key: "{{ client_key }}"
 foreman_client_certificate: "{{ client_certificate }}"
 foreman_oauth_consumer_key: abcdefghijklmnopqrstuvwxyz123456
 foreman_oauth_consumer_secret: abcdefghijklmnopqrstuvwxyz123456
-foreman_plugins: "{{ plugins }}"
+foreman_plugins: "{{ features | reject('contains', 'content/') }}"
 foreman_url: "https://{{ ansible_facts['fqdn'] }}"
 
 httpd_server_ca_certificate: "{{ server_ca_certificate }}"
@@ -30,3 +30,4 @@ httpd_server_key: "{{ server_key }}"
 
 pulp_content_origin: "https://{{ ansible_facts['fqdn'] }}"
 pulp_pulp_url: "https://{{ ansible_facts['fqdn'] }}"
+pulp_plugins: "{{ features | select('contains', 'content/') | map('replace', 'content/', 'pulp_') | list }}"
