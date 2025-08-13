@@ -7,9 +7,9 @@ variables:
     help: Initial username for the admin user.
   foreman_initial_admin_password:
     help: Initial password for the admin user.
-  plugins:
-    parameter: --plugin
-    help: Plugins to enable in this deployment.
+  features:
+    parameter: --feature
+    help: Features to enable in this deployment.
     action: append
 include:
   - _certificate_source
