@@ -1,7 +1,9 @@
 ---
 certificate_source: default
 database_mode: internal
-plugins:
+features:
   - foreman-tasks
   - foreman_remote_execution
   - katello
+  - content/container
+  - content/rpm

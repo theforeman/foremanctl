@@ -37,9 +37,9 @@ variables:
     help: User of the Pulp database.
   pulp_database_password:
     help: Password for the Pulp database.
-  plugins:
-    parameter: --plugin
-    help: Plugins to enable in this deployment.
+  features:
+    parameter: --feature
+    help: Features to enable in this deployment.
     action: append
 constraints:
   required_together:
