@@ -1,0 +1,4 @@
+---
+foreman_admin_passwd_file: "{{ obsah_state_path }}/foreman-admin-init-passwd"
+foreman_initial_admin_username: admin
+foreman_initial_admin_password: "{{ lookup('ansible.builtin.password', lookup('ansible.builtin.vars', 'foreman_admin_passwd_file'), chars=['ascii_letters']) }}"
