@@ -2,5 +2,8 @@
 - name: Run preflight checks
   hosts: quadlet
   gather_facts: true
+  vars_files:
+    - "../../vars/defaults.yml"
+    - "../../vars/database.yml"
   roles:
     - checks

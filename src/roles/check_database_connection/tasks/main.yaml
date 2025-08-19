@@ -1,0 +1,21 @@
+---
+- name: Check Foreman database connectivity and credentials
+  community.postgresql.postgresql_ping:
+    login_host: "{{ foreman_database_host }}"
+    login_user: "{{ foreman_database_user }}"
+    login_password: "{{ foreman_database_password }}"
+    login_db: "{{ foreman_database_name }}"
+    ca_cert: "{{ foreman_database_sslrootcert | default(omit) }}"
+    ssl_mode: "{{ foreman_database_sslmode | default(omit) }}"
+  register: check_database_connection_ping_result
+  when: database_mode == 'external'
+  ignore_errors: true
+
+- name: Assert Foreman database is reachable
+  ansible.builtin.assert:
+    that:
+      - check_database_connection_ping_result.is_available
+    fail_msg: |
+      Cannot connect to Foreman database '{{ foreman_database_name }}' at {{ foreman_database_host }}.
+      Please verify the database host, port, name, user, and password.
+  when: database_mode == 'external'
