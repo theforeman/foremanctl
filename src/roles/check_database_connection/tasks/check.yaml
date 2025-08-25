@@ -1,0 +1,19 @@
+- name: Check database connectivity to {{ db_item.name }}
+  community.postgresql.postgresql_ping:
+    login_host: "{{ db_item.host }}"
+    login_user: "{{ db_item.user }}"
+    login_password: "{{ db_item.password }}"
+    login_db: "{{ db_item.dbname }}"
+    ca_cert: "{{ db_item.ca | default(omit) }}"
+    ssl_mode: "{{ db_item.sslmode | default(omit) }}"
+  register: check_database_connection_ping_result
+  ignore_errors: true
+
+- name: Assert database is reachable for  {{ db_item.name }}
+  ansible.builtin.assert:
+    that:
+      - check_database_connection_ping_result.is_available
+    fail_msg: >
+      Cannot connect to {{ db_item.name }} database '{{ db_item.dbname }}' at {{ db_item.host }}.
+      Please verify the database host, port, name, user, and password.
+      Error: {{ check_database_connection_ping_result.conn_err_msg | default('No error message available.') }}

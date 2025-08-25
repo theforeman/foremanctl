@@ -1,66 +1,31 @@
 ---
-- name: Check Foreman database connectivity and credentials
-  community.postgresql.postgresql_ping:
-    login_host: "{{ foreman_database_host }}"
-    login_user: "{{ foreman_database_user }}"
-    login_password: "{{ foreman_database_password }}"
-    login_db: "{{ foreman_database_name }}"
-    ca_cert: "{{ foreman_database_sslrootcert | default(omit) }}"
-    ssl_mode: "{{ foreman_database_sslmode | default(omit) }}"
-  register: check_database_connection_ping_result
-  when: database_mode == 'external'
-  ignore_errors: true
+- name: Check DB
+  ansible.builtin.include_tasks: check.yaml
+  no_log: true
+  loop:
+    - name: Foreman
+      host: "{{ foreman_database_host }}"
+      user: "{{ foreman_database_user }}"
+      password: "{{ foreman_database_password }}"
+      dbname: "{{ foreman_database_name }}"
+      ca_cert: "{{ foreman_database_sslrootcert | default(omit) }}"
+      sslmode: "{{ foreman_database_sslmode | default(omit) }}"
 
-- name: Assert Foreman database is reachable
-  ansible.builtin.assert:
-    that:
-      - check_database_connection_ping_result.is_available
-    fail_msg: >
-      Cannot connect to Foreman database '{{ foreman_database_name }}' at {{ foreman_database_host }}.
-      Please verify the database host, port, name, user, and password.
-      Error: {{ check_database_connection_ping_result.msg | default('No error message available.') }}
-  when: database_mode == 'external'
+    - name: Candlepin
+      host: "{{ candlepin_database_host }}"
+      user: "{{ candlepin_database_user }}"
+      password: "{{ candlepin_database_password }}"
+      dbname: "{{ candlepin_database_name }}"
+      ca_cert: "{{ candlepin_database_ssl_ca | default(omit) }}"
+      sslmode: "{{ candlepin_database_ssl_mode | default(omit) }}"
 
-- name: Check Candlepin database connectivity and credentials
-  community.postgresql.postgresql_ping:
-    login_host: "{{ candlepin_database_host }}"
-    login_user: "{{ candlepin_database_user }}"
-    login_password: "{{ candlepin_database_password }}"
-    login_db: "{{ candlepin_database_name }}"
-    ca_cert: "{{ candlepin_database_ssl_ca | default(omit) }}"
-    ssl_mode: "{{ candlepin_database_ssl_mode | default(omit) }}"
-  register: check_database_connection_candlepin_ping_result
-  when: database_mode == 'external'
-  ignore_errors: true
-
-- name: Assert Candlepin database is reachable
-  ansible.builtin.assert:
-    that:
-      - check_candlepin_db_ping_result.is_available
-    fail_msg: >
-      Cannot connect to Candlepin database '{{ candlepin_database_name }}' at {{ candlepin_database_host }}.
-      Please verify the database host, port, name, user, and password.
-      Error: {{ check_database_connection_candlepin_ping_result.msg | default('No error message available.') }}
-  when: database_mode == 'external'
-
-- name: Check Pulp database connectivity and credentials
-  community.postgresql.postgresql_ping:
-    login_host: "{{ pulp_database_host }}"
-    login_user: "{{ pulp_database_user }}"
-    login_password: "{{ pulp_database_password }}"
-    login_db: "{{ pulp_database_name }}"
-    ca_cert: "{{ pulp_database_ssl_ca | default(omit) }}"
-    ssl_mode: "{{ pulp_database_ssl_mode | default(omit) }}"
-  register: check_database_connection_pulp_ping_result
-  when: database_mode == 'external'
-  ignore_errors: true
-
-- name: Assert Pulp database is reachable
-  ansible.builtin.assert:
-    that:
-      - check_pulp_db_ping_result.is_available
-    fail_msg: >
-      Cannot connect to Pulp database '{{ pulp_database_name }}' at {{ pulp_database_host }}.
-      Please verify the database host, port, name, user, and password.
-      Error: {{ check_database_connection_pulp_ping_result.msg | default('No error message available.') }}
+    - name: Pulp
+      host: "{{ pulp_database_host }}"
+      user: "{{ pulp_database_user }}"
+      password: "{{ pulp_database_password }}"
+      dbname: "{{ pulp_database_name }}"
+      ca_cert: "{{ pulp_database_ssl_ca | default(omit) }}"
+      sslmode: "{{ pulp_database_ssl_mode | default(omit) }}"
+  loop_control:
+    loop_var: db_item
   when: database_mode == 'external'
