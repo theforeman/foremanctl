@@ -76,7 +76,7 @@ jobs:
           ./foremanctl pull-images
       - name: Run deployment
         run: |
-          ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }}
+          ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} --foreman-initial-admin-password=changeme
       - name: Setup hammer
         run: |
           ./foremanctl setup-hammer
