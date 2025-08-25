@@ -1,21 +1,31 @@
 ---
-- name: Check Foreman database connectivity and credentials
-  community.postgresql.postgresql_ping:
-    login_host: "{{ foreman_database_host }}"
-    login_user: "{{ foreman_database_user }}"
-    login_password: "{{ foreman_database_password }}"
-    login_db: "{{ foreman_database_name }}"
-    ca_cert: "{{ foreman_database_sslrootcert | default(omit) }}"
-    ssl_mode: "{{ foreman_database_sslmode | default(omit) }}"
-  register: check_database_connection_ping_result
-  when: database_mode == 'external'
-  ignore_errors: true
+- name: Check DB
+  ansible.builtin.include_tasks: check.yaml
+  no_log: true
+  loop:
+    - name: Foreman
+      host: "{{ foreman_database_host }}"
+      user: "{{ foreman_database_user }}"
+      password: "{{ foreman_database_password }}"
+      dbname: "{{ foreman_database_name }}"
+      ca_cert: "{{ foreman_database_sslrootcert | default(omit) }}"
+      sslmode: "{{ foreman_database_sslmode | default(omit) }}"
 
-- name: Assert Foreman database is reachable
-  ansible.builtin.assert:
-    that:
-      - check_database_connection_ping_result.is_available
-    fail_msg: |
-      Cannot connect to Foreman database '{{ foreman_database_name }}' at {{ foreman_database_host }}.
-      Please verify the database host, port, name, user, and password.
+    - name: Candlepin
+      host: "{{ candlepin_database_host }}"
+      user: "{{ candlepin_database_user }}"
+      password: "{{ candlepin_database_password }}"
+      dbname: "{{ candlepin_database_name }}"
+      ca_cert: "{{ candlepin_database_ssl_ca | default(omit) }}"
+      sslmode: "{{ candlepin_database_ssl_mode | default(omit) }}"
+
+    - name: Pulp
+      host: "{{ pulp_database_host }}"
+      user: "{{ pulp_database_user }}"
+      password: "{{ pulp_database_password }}"
+      dbname: "{{ pulp_database_name }}"
+      ca_cert: "{{ pulp_database_ssl_ca | default(omit) }}"
+      sslmode: "{{ pulp_database_ssl_mode | default(omit) }}"
+  loop_control:
+    loop_var: db_item
   when: database_mode == 'external'
