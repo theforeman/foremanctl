@@ -83,8 +83,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--certs-server-ca-cert` | | certs | server_ca_cert |
 | `--certs-update-server` | Parameter to mark server certs for update | foreman-installer | No |
 | `--certs-reset` | Parameter to reset all certificates to default | foreman-installer | No |
-| `--foreman-initial-admin-password` | | |
-| `--foreman-initial-admin-username` | | |
 | `--foreman-initial-location` | | |
 | `--foreman-initial-organization` | | |
 | `--foreman-ipa-authentication` | | |
