@@ -2,6 +2,12 @@
 help: |
   Install
 
+variables:
+  foreman_initial_admin_username:
+    help: Initial username for the admin user.
+  foreman_initial_admin_password:
+    help: Initial password for the admin user.
+
 include:
   - _certificate_source
   - _database_mode

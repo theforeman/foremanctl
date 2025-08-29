@@ -47,6 +47,8 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--pulp-database-name` | Name of the Pulp database | `--foreman-proxy-content-pulpcore-postgresql-db-name` |
 | `--pulp-database-user` | Owner of the Pulp database | `--foreman-proxy-content-pulpcore-postgresql-user` |
 | `--pulp-database-password` | Password for Pulp database | `--foreman-proxy-content-pulpcore-postgresql-password` |
+| `--foreman-initial-admin-username` | Initial username for the admin user | `--foreman-initial-admin-username` |
+| `--foreman-initial-admin-password` | Initial password for the admin user | `--foreman-initial-admin-password` |
 
 #### Certs
 
@@ -81,8 +83,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--certs-server-ca-cert` | | certs | server_ca_cert |
 | `--certs-update-server` | Parameter to mark server certs for update | foreman-installer | No |
 | `--certs-reset` | Parameter to reset all certificates to default | foreman-installer | No |
-| `--foreman-initial-admin-password` | | |
-| `--foreman-initial-admin-username` | | |
 | `--foreman-initial-location` | | |
 | `--foreman-initial-organization` | | |
 | `--foreman-ipa-authentication` | | |

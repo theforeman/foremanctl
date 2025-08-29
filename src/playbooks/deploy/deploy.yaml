@@ -8,6 +8,8 @@
     - "../../vars/{{ certificate_source }}_certificates.yml"
     - "../../vars/images.yml"
     - "../../vars/database.yml"
+    - "../../vars/foreman.yml"
+
   vars:
     certificates_hostnames:
       - "{{ ansible_fqdn }}"
@@ -66,3 +68,7 @@
     - httpd
     - pulp
     - foreman
+  post_tasks:
+    - name: Admin credentials
+      ansible.builtin.debug:
+        msg: "Admin credentials: {{ foreman_initial_admin_username }}:{{ foreman_initial_admin_password }}"
