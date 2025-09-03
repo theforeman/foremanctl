@@ -1,24 +1,16 @@
-- name: Skip system requirements if user requested
-  ansible.builtin.debug:
-    msg: "System requirements check skipped."
-  when: skip_system_requirements | default(false)
-
 - name: Load tuning thresholds based on deployment_mode
   ansible.builtin.include_vars:
     file: "../../vars/tuning/{{ deployment_mode | default('medium') }}.yaml"
     name: tuning_vars
-  when: not skip_system_requirements | default(false)
 
 - name: Check if system has enough CPU cores
   ansible.builtin.assert:
     that:
       - ansible_facts.processor_nproc >= tuning_vars.min_cpu_cores
     fail_msg: "System must have at least {{ tuning_vars.min_cpu_cores }} CPU cores."
-  when: not skip_system_requirements | default(false)
 
 - name: Check if system has enough RAM
   ansible.builtin.assert:
     that:
       - ansible_facts.memtotal_mb >= tuning_vars.min_ram_mb
     fail_msg: "System must have at least {{ tuning_vars.min_ram_mb }} MB RAM."
-  when: not skip_system_requirements | default(false)
