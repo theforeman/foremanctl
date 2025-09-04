@@ -1,6 +1,6 @@
 - name: Load tuning thresholds based on tuning_profile
   ansible.builtin.include_vars:
-    file: "../../vars/tuning/{{ tuning_profile | default('medium') }}.yaml"
+    file: "../../vars/tuning/{{ tuning_profile }}.yaml"
     name: tuning_vars
 
 - name: Check if system has enough CPU cores
