@@ -1,4 +1,4 @@
 ---
 certificate_source: default
 database_mode: internal
-deployment_mode: development
+tuning_profile: development
