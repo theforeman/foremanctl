@@ -1,0 +1,1 @@
+post_install_done_flag: "{{ obsah_state_path }}/.installed"
