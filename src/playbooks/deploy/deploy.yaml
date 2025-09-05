@@ -68,7 +68,4 @@
     - httpd
     - pulp
     - foreman
-  post_tasks:
-    - name: Admin credentials
-      ansible.builtin.debug:
-        msg: "Admin credentials: {{ foreman_initial_admin_username }}:{{ foreman_initial_admin_password }}"
+    - post_install
