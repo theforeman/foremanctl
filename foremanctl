@@ -4,7 +4,7 @@ OBSAH_NAME=foremanctl
 OBSAH_BASE=.
 OBSAH_DATA=${OBSAH_BASE}/src
 OBSAH_INVENTORY=${OBSAH_BASE}/inventories
-OBSAH_STATE=.var/lib/foremanctl
+OBSAH_STATE=$(dirname $(readlink -f foremanctl))/.var/lib/foremanctl
 OBSAH_PERSIST_PARAMS=true
 export OBSAH_NAME OBSAH_DATA OBSAH_INVENTORY OBSAH_STATE OBSAH_PERSIST_PARAMS
 
