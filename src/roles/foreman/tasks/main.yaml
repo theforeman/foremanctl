@@ -120,7 +120,8 @@
 
 - name: Wait for Foreman service to be accessible
   ansible.builtin.uri:
-    url: 'http://{{ ansible_fqdn }}:3000/api/v2/ping'
+    url: '{{ foreman_url }}/api/v2/ping'
+    validate_certs: false
   until: foreman_status.status == 200
   retries: 60
   delay: 5
@@ -138,7 +139,8 @@
 
 - name: Wait for Foreman tasks to be ready
   ansible.builtin.uri:
-    url: 'http://{{ ansible_fqdn }}:3000/api/v2/ping'
+    url: '{{ foreman_url }}/api/v2/ping'
+    validate_certs: false
   until:
     - foreman_tasks_status.status == 200
     - foreman_tasks_status.json['results']['katello']['services']['foreman_tasks']['status'] == 'ok'
@@ -152,6 +154,7 @@
   theforeman.foreman.smart_proxy:
     name: "{{ ansible_fqdn }}-pulp"
     url: "https://{{ ansible_fqdn }}/pulp/api/v3/smart_proxy"
-    server_url: "http://{{ ansible_fqdn }}:3000"
+    server_url: "{{ foreman_url }}"
     username: "{{ foreman_initial_admin_username }}"
     password: "{{ foreman_initial_admin_password }}"
+    validate_certs: false

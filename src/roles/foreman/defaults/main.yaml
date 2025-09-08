@@ -9,3 +9,5 @@ foreman_database_port: 5432
 foreman_database_pool: 9
 foreman_database_sslmode: disable
 foreman_database_sslrootcert:
+
+foreman_url: "http://{{ ansible_fqdn }}:3000"

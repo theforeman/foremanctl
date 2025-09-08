@@ -5,7 +5,7 @@
       - "{{ _post_install_url_msg }}"
       - "{{ _post_install_cred_msg if (post_install_done_flag is not exists) else '' }}"
   vars:
-    _post_install_url_msg: "Foreman is running at https://{{ ansible_fqdn }}"
+    _post_install_url_msg: "Foreman is running at {{ foreman_url }}"
     _post_install_cred_msg: "Admin credentials: {{ foreman_initial_admin_username }}:{{ foreman_initial_admin_password }}"
 - name: Mark installation as complete
   ansible.builtin.copy:
