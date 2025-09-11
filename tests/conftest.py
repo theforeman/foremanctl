@@ -41,12 +41,14 @@ def ssh_config():
 
 @pytest.fixture(scope="module")
 def foremanapi(ssh_config):
-    return apypie.ForemanApi(
+    api = apypie.ForemanApi(
         uri=f'https://{ssh_config["hostname"]}',
         username='admin',
         password='changeme',
         verify_ssl=False,
     )
+    api._session.headers['Host'] = 'quadlet.example.com'
+    return api
 
 @pytest.fixture
 def organization(foremanapi):
