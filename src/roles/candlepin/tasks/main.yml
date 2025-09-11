@@ -77,6 +77,8 @@
       - |
         [Install]
         WantedBy=default.target
+        [Service]
+        TimeoutStartSec=300
     healthcheck: curl --fail --insecure https://localhost:23443/candlepin/status
     sdnotify: healthy
 
