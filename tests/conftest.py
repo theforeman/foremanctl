@@ -14,17 +14,17 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(scope="module")
-def server_hostname():
+def server_fqdn():
     return 'quadlet.example.com'
 
 
 @pytest.fixture(scope="module")
-def certificates(pytestconfig, server_hostname):
+def certificates(pytestconfig, server_fqdn):
     source = pytestconfig.getoption("certificate_source")
     env = Environment(loader=FileSystemLoader("."), autoescape=select_autoescape())
     template = env.get_template(f"./src/vars/{source}_certificates.yml")
     context = {'certificates_ca_directory': '/root/certificates',
-               'ansible_fqdn': server_hostname}
+               'ansible_fqdn': server_fqdn}
     return yaml.safe_load(template.render(context))
 
 
@@ -45,14 +45,14 @@ def ssh_config():
 
 
 @pytest.fixture(scope="module")
-def foremanapi(ssh_config, server_hostname):
+def foremanapi(ssh_config, server_fqdn):
     api = apypie.ForemanApi(
         uri=f'https://{ssh_config["hostname"]}',
         username='admin',
         password='changeme',
         verify_ssl=False,
     )
-    api._session.headers['Host'] = server_hostname
+    api._session.headers['Host'] = server_fqdn
     return api
 
 @pytest.fixture
