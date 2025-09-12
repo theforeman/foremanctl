@@ -9,6 +9,9 @@ import yaml
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
+VAGRANT_SSH_CONFIG='./.vagrant/ssh-config'
+
+
 def pytest_addoption(parser):
     parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'installer'), help="Where to obtain certificates from")
 
@@ -35,17 +38,17 @@ def certificates(pytestconfig, server_fqdn):
 
 @pytest.fixture(scope="module")
 def server(server_hostname):
-    yield testinfra.get_host(f'paramiko://{server_hostname}', sudo=True, ssh_config='./.vagrant/ssh-config')
+    yield testinfra.get_host(f'paramiko://{server_hostname}', sudo=True, ssh_config=VAGRANT_SSH_CONFIG)
 
 
 @pytest.fixture(scope="module")
 def client():
-    yield testinfra.get_host('paramiko://client', sudo=True, ssh_config='./.vagrant/ssh-config')
+    yield testinfra.get_host('paramiko://client', sudo=True, ssh_config=VAGRANT_SSH_CONFIG)
 
 
 @pytest.fixture(scope="module")
 def ssh_config(server_hostname):
-    config = paramiko.SSHConfig.from_path('./.vagrant/ssh-config')
+    config = paramiko.SSHConfig.from_path(VAGRANT_SSH_CONFIG)
     return config.lookup(server_hostname)
 
 
