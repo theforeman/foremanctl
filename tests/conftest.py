@@ -14,8 +14,13 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(scope="module")
-def server_fqdn():
-    return 'quadlet.example.com'
+def server_hostname():
+    return 'quadlet'
+
+
+@pytest.fixture(scope="module")
+def server_fqdn(server_hostname):
+    return f'{server_hostname}.example.com'
 
 
 @pytest.fixture(scope="module")
@@ -29,8 +34,8 @@ def certificates(pytestconfig, server_fqdn):
 
 
 @pytest.fixture(scope="module")
-def server():
-    yield testinfra.get_host('paramiko://quadlet', sudo=True, ssh_config='./.vagrant/ssh-config')
+def server(server_hostname):
+    yield testinfra.get_host(f'paramiko://{server_hostname}', sudo=True, ssh_config='./.vagrant/ssh-config')
 
 
 @pytest.fixture(scope="module")
@@ -39,9 +44,9 @@ def client():
 
 
 @pytest.fixture(scope="module")
-def ssh_config():
+def ssh_config(server_hostname):
     config = paramiko.SSHConfig.from_path('./.vagrant/ssh-config')
-    return config.lookup('quadlet')
+    return config.lookup(server_hostname)
 
 
 @pytest.fixture(scope="module")
