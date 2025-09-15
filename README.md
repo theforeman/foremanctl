@@ -11,3 +11,14 @@ Foreman 3.16 (with Katello 4.18, Pulp 3.73 and Candlepin 4.6).
 ### Ansible
 
 `ansible-core` 2.14 as present in CentOS Stream 9.
+
+## Packages
+
+### RPM
+
+Snapshot RPM packages of `foremanctl` and its dependencies can be found in the [`@theforeman/foremanctl` copr](https://copr.fedorainfracloud.org/coprs/g/theforeman/foremanctl/).
+
+```
+dnf copr enable @theforeman/foremanctl rhel-9-x86_64
+dnf install foremanctl
+```
