@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "quadlet" do |override|
-    override.vm.box = "centos/stream9"
+    override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream9")
     override.vm.hostname = "quadlet.example.com"
 
     override.vm.provider "libvirt" do |libvirt, provider|
