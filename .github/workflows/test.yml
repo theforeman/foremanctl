@@ -46,16 +46,28 @@ jobs:
           - none
         database:
           - internal
+        box:
+          - centos/stream9
+          - centos/stream10
+        exclude:
+          - certificate_source: installer
+            box: centos/stream10
         include:
           - certificate_source: default
             security: fapolicyd
             database: internal
+            box: centos/stream9
           - certificate_source: default
             security: none
             database: external
+            box: centos/stream9
     runs-on: ubuntu-24.04
-    name: "Tests (certificates: ${{ matrix.certificate_source }}, database: ${{ matrix.database }}, security: ${{ matrix.security }})"
+    env:
+      FOREMANCTL_BASE_BOX: ${{ matrix.box }}
+    name: "Tests (certificates: ${{ matrix.certificate_source }}, database: ${{ matrix.database }}, security: ${{ matrix.security }}, box: ${{ matrix.box }})"
     steps:
+      - name: generate artifact suffix
+        run: echo "ARTIFACT_SUFFIX=$(echo '${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.database }}-${{ matrix.box }}' | tr -cd '[:alnum:]-')" >> "${GITHUB_ENV}"
       - uses: actions/checkout@v6
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -118,7 +130,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v7
         with:
-          name: smoker-${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.database }}
+          name: smoker-${{ env.ARTIFACT_SUFFIX }}
           path: "/home/runner/smoker/report/"
       - name: Generate sos reports
         if: ${{ always() }}
@@ -127,7 +139,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v7
         with:
-          name: sosreport-${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.database }}
+          name: sosreport-${{ env.ARTIFACT_SUFFIX }}
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}
