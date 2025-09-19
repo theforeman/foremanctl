@@ -89,4 +89,4 @@
 - name: Start the Candlepin Service
   ansible.builtin.systemd:
     name: candlepin
-    state: restarted
+    state: started
