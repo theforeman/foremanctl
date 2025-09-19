@@ -1,5 +1,4 @@
 Vagrant.configure("2") do |config|
-  config.vm.box = "centos/stream9"
   config.vm.synced_folder ".", "/vagrant"
 
   config.vm.provision("etc_hosts", type: 'ansible') do |ansible|
@@ -12,6 +11,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "quadlet" do |override|
+    override.vm.box = "centos/stream9"
     override.vm.hostname = "quadlet.example.com"
 
     override.vm.provider "libvirt" do |libvirt, provider|
@@ -22,6 +22,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "client" do |override|
+    override.vm.box = "centos/stream9"
     override.vm.hostname = "client.example.com"
 
     override.vm.provider "libvirt" do |libvirt, provider|
@@ -30,6 +31,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "database" do |override|
+    override.vm.box = "centos/stream9"
     override.vm.hostname = "database.example.com"
 
     override.vm.provider "libvirt" do |libvirt, provider|
