@@ -1,6 +1,3 @@
-CENTOS_8_BOX_URL = "https://cloud.centos.org/centos/8-stream/x86_64/images/CentOS-Stream-Vagrant-8-20220913.0.x86_64.vagrant-libvirt.box"
-CENTOS_9_BOX_URL = "https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-Vagrant-9-latest.x86_64.vagrant-libvirt.box"
-
 Vagrant.configure("2") do |config|
   config.vm.box = "centos/stream9"
   config.vm.synced_folder ".", "/vagrant"
@@ -16,7 +13,6 @@ Vagrant.configure("2") do |config|
     override.vm.provider "libvirt" do |libvirt, provider|
       libvirt.memory = 10240
       libvirt.cpus = 4
-      provider.vm.box_url = CENTOS_9_BOX_URL
     end
   end
 
@@ -25,7 +21,6 @@ Vagrant.configure("2") do |config|
 
     override.vm.provider "libvirt" do |libvirt, provider|
       libvirt.memory = 1024
-      provider.vm.box_url = CENTOS_9_BOX_URL
     end
   end
 end
