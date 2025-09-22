@@ -47,9 +47,12 @@ jobs:
         box:
           - centos/stream9
           - centos/stream10
+          - alvistack/debian-13
         exclude:
           - certificate_source: installer
             box: centos/stream10
+          - certificate_source: installer
+            box: alvistack/debian-13
     runs-on: ubuntu-24.04
     env:
       FOREMANCTL_BASE_BOX: ${{ matrix.box }}
