@@ -66,6 +66,7 @@ jobs:
           sudo add-apt-repository --yes ppa:evgeni/vagrant
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends vagrant vagrant-libvirt libvirt-clients libvirt-daemon-system libvirt-daemon qemu-system-x86 qemu-utils dnsmasq
+          sudo adduser libvirt-qemu runner
           sudo chmod 666 /var/run/libvirt/libvirt-sock
       - name: Install Ansible
         run: pip install --upgrade ansible-core
