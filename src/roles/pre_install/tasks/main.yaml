@@ -7,6 +7,7 @@
   ansible.builtin.package:
     name:
       - podman
+      - netavark
 
 - name: Install other dependencies
   ansible.builtin.package:
