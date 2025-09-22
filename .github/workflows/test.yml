@@ -49,9 +49,12 @@ jobs:
         box:
           - centos/stream9
           - centos/stream10
+          - alvistack/debian-13
         exclude:
           - certificate_source: installer
             box: centos/stream10
+          - certificate_source: installer
+            box: alvistack/debian-13
         include:
           - certificate_source: default
             security: fapolicyd
