@@ -19,6 +19,7 @@
     name:
       - podman
       - skopeo
+      - netavark
 
 - name: Install other dependencies
   ansible.builtin.package:
