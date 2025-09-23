@@ -1,9 +1,10 @@
 ---
+- name: Set OS dependent variables
+  ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yaml"
+
 - name: Install Apache httpd
   ansible.builtin.package:
-    name:
-      - httpd
-      - mod_ssl
+    name: "{{ httpd_packages }}"
     state: present
 
 - name: Set daemons_enable_cluster_mode so Apache can connect to unix sockets
@@ -22,9 +23,14 @@
     - ansible_facts['selinux']['status'] == "enabled"
     - not httpd_with_foreman
 
+- name: Enable required modules
+  community.general.apache2_module:
+    name: "{{ item }}"
+  loop: "{{ httpd_modules }}"
+
 - name: Disable welcome page
   ansible.builtin.file:
-    path: /etc/httpd/conf.d/welcome.conf
+    path: "{{ httpd_conf_path }}/welcome.conf"
     state: absent
 
 - name: Create cert directories
@@ -40,8 +46,8 @@
   ansible.builtin.file:
     path: "{{ httpd_pub_dir }}"
     state: directory
-    group: apache
-    owner: apache
+    group: "{{ httpd_group }}"
+    owner: "{{ httpd_user }}"
     mode: "0755"
 
 - name: Deploy certificates
@@ -72,7 +78,7 @@
 - name: Configure MPM event module
   ansible.builtin.template:
     src: event.conf.j2
-    dest: /etc/httpd/conf.modules.d/event.conf
+    dest: "{{ httpd_modules_path }}/event.conf"
     mode: "0644"
     setype: httpd_config_t
   notify:
@@ -94,7 +100,7 @@
 - name: Configure vhost
   ansible.builtin.template:
     src: foreman-vhost.conf.j2
-    dest: /etc/httpd/conf.d/{{ 'foreman' if httpd_with_foreman else 'pulpcore' }}.conf
+    dest: "{{ httpd_conf_path}}/{{ 'foreman' if httpd_with_foreman else 'pulpcore' }}.conf"
     mode: "0644"
     setype: httpd_config_t
   notify:
@@ -103,7 +109,7 @@
 - name: Configure SSL vhost
   ansible.builtin.template:
     src: foreman-ssl-vhost.conf.j2
-    dest: /etc/httpd/conf.d/{{ 'foreman-ssl' if httpd_with_foreman else 'pulpcore-ssl' }}.conf
+    dest: "{{ httpd_conf_path }}/{{ 'foreman-ssl' if httpd_with_foreman else 'pulpcore-ssl' }}.conf"
     mode: "0644"
     setype: httpd_config_t
   notify:
@@ -111,13 +117,13 @@
 
 - name: Create systemd drop-in directory for httpd
   ansible.builtin.file:
-    path: /etc/systemd/system/httpd.service.d
+    path: /etc/systemd/system/{{ httpd_service }}.service.d
     state: directory
     mode: "0755"
 
 - name: Add httpd to foreman.target
   ansible.builtin.copy:
-    dest: /etc/systemd/system/httpd.service.d/foreman-target.conf
+    dest: /etc/systemd/system/{{ httpd_service }}.service.d/foreman-target.conf
     mode: "0644"
     content: |
       [Install]
@@ -127,7 +133,7 @@
 
 - name: Ensure httpd starts after foreman.socket
   ansible.builtin.copy:
-    dest: /etc/systemd/system/httpd.service.d/foreman-socket.conf
+    dest: /etc/systemd/system/{{ httpd_service }}.service.d/foreman-socket.conf
     mode: "0644"
     content: |
       [Unit]
@@ -144,6 +150,6 @@
 
 - name: Start Apache httpd
   ansible.builtin.service:
-    name: httpd
+    name: "{{ httpd_service }}"
     state: started
     enabled: true
