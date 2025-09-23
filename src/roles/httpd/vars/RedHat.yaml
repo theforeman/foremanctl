@@ -1,0 +1,8 @@
+---
+httpd_packages:
+  - httpd
+  - mod_ssl
+httpd_conf_path: /etc/httpd/conf.d
+httpd_service: httpd
+httpd_log_path: /var/log/httpd
+httpd_modules: []
