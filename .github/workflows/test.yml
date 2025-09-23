@@ -92,6 +92,7 @@ jobs:
         run: |
           ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} --foreman-initial-admin-password=changeme
       - name: Setup hammer
+        if: contains(matrix.box, 'centos')
         run: |
           ./foremanctl setup-hammer
       - name: Run tests
