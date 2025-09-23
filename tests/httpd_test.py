@@ -4,7 +4,11 @@ HTTPS_PORT = 443
 
 
 def test_httpd_service(server):
-    httpd = server.service("httpd")
+    if server.system_info.distribution == 'debian':
+        service_name = 'apache2'
+    else:
+        service_name = 'httpd'
+    httpd = server.service(service_name)
     assert httpd.is_running
     assert httpd.is_enabled
 
