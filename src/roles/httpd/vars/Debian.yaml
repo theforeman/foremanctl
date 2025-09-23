@@ -1,0 +1,15 @@
+---
+httpd_packages:
+  - apache2
+httpd_etc_path: /etc/apache2
+httpd_conf_path: "{{ httpd_etc_path }}/conf-enabled"
+httpd_modules_path: "{{ httpd_etc_path }}/mods-enabled"
+httpd_service: apache2
+httpd_log_path: /var/log/apache2
+httpd_user: www-data
+httpd_group: www-data
+httpd_modules:
+  - ssl
+  - headers
+  - proxy
+  - proxy_http
