@@ -15,6 +15,11 @@
   when:
     - ansible_selinux.status == 'enabled'
 
+- name: Enable required modules
+  community.general.apache2_module:
+    name: "{{ item }}"
+  loop: "{{ httpd_modules }}"
+
 - name: Disable welcome page
   ansible.builtin.file:
     path: "{{ httpd_conf_path }}/welcome.conf"
