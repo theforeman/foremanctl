@@ -115,6 +115,7 @@ jobs:
         run: |
           ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com' || '' }}  --foreman-initial-admin-password=changeme --tuning development
       - name: Add optional feature - hammer
+        if: contains(matrix.box, 'centos')
         run: |
           ./foremanctl deploy --add-feature hammer
       - name: Add optional feature - foreman-proxy
