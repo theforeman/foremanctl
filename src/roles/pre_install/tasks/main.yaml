@@ -14,6 +14,6 @@
     name:
       - bash-completion
       - python3-cryptography
-      - python3-libsemanage
+      - "{{ 'python3-semanage' if ansible_facts['os_family'] == 'Debian' else 'python3-libsemanage' }}"
       - python3-psycopg2
       - python3-requests
