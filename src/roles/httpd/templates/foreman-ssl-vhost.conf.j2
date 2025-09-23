@@ -2,12 +2,12 @@
   ServerName {{ ansible_facts['fqdn'] }}
 
   ## Load additional static includes
-  IncludeOptional "/etc/httpd/conf.d/05-foreman-ssl.d/*.conf"
+  IncludeOptional "{{ httpd_conf_path }}/05-foreman-ssl.d/*.conf"
 
   ## Logging
-  ErrorLog "/var/log/httpd/foreman-ssl_error_ssl.log"
+  ErrorLog "{{ httpd_log_path }}/foreman-ssl_error_ssl.log"
   ServerSignature Off
-  CustomLog "/var/log/httpd/foreman-ssl_access_ssl.log" combined
+  CustomLog "{{ httpd_log_path }}/foreman-ssl_access_ssl.log" combined
 
   ## Request header rules
   ## as per http://httpd.apache.org/docs/2.4/mod/mod_headers.html#requestheader

@@ -1,3 +1,5 @@
+import pytest
+
 HTTP_HOST = 'localhost'
 HTTP_PORT = 80
 HTTPS_PORT = 443
@@ -5,8 +7,30 @@ HTTPD_PUB_DIR = '/var/www/html/pub'
 CURL_CMD = "curl --silent --output /dev/null"
 
 
-def test_httpd_service(server):
-    httpd = server.service("httpd")
+@pytest.fixture(scope="module")
+def httpd_paths(server):
+    if server.system_info.distribution == 'debian':
+        base = '/etc/apache2'
+        conf = f'{base}/conf-enabled'
+        modules = f'{base}/mods-enabled'
+    else:
+        base = '/etc/httpd'
+        conf = f'{base}/conf.d'
+        modules = f'{base}/conf.modules.d'
+    return {'conf': conf, 'modules': modules}
+
+
+@pytest.fixture(scope="module")
+def httpd_service(server):
+    if server.system_info.distribution == 'debian':
+        service_name = 'apache2'
+    else:
+        service_name = 'httpd'
+    return service_name
+
+
+def test_httpd_service(server, httpd_service):
+    httpd = server.service(httpd_service)
     assert httpd.is_running
     assert httpd.is_enabled
 
@@ -114,39 +138,39 @@ def test_https_foreman_login(server, certificates, server_fqdn):
     assert cmd.stdout == '200'
 
 
-def test_httpd_event_conf_exists(server):
-    event_conf = server.file("/etc/httpd/conf.modules.d/event.conf")
+def test_httpd_event_conf_exists(server, httpd_paths):
+    event_conf = server.file(f"{httpd_paths['modules']}/event.conf")
     assert event_conf.exists
     assert event_conf.is_file
 
 
-def test_httpd_event_conf_contains_server_limit(server):
-    event_conf = server.file("/etc/httpd/conf.modules.d/event.conf")
+def test_httpd_event_conf_contains_server_limit(server, httpd_paths):
+    event_conf = server.file(f"{httpd_paths['modules']}/event.conf")
     assert event_conf.contains("ServerLimit")
 
 
-def test_httpd_event_conf_contains_threads_per_child(server):
-    event_conf = server.file("/etc/httpd/conf.modules.d/event.conf")
+def test_httpd_event_conf_contains_threads_per_child(server, httpd_paths):
+    event_conf = server.file(f"{httpd_paths['modules']}/event.conf")
     assert event_conf.contains("ThreadsPerChild")
 
 
 def test_httpd_config_syntax(server):
-    cmd = server.run("httpd -t")
+    cmd = server.run("apachectl -t")
     assert cmd.succeeded
 
 
-def test_httpd_headers_use_dashes(server):
-    cmd = server.run("grep -rPn 'RequestHeader\\s+set\\s+\\S*_\\S*\\s' /etc/httpd/conf.d/foreman.conf /etc/httpd/conf.d/foreman-ssl.conf /etc/httpd/conf.d/05-foreman.d/ /etc/httpd/conf.d/05-foreman-ssl.d/ 2>/dev/null")
+def test_httpd_headers_use_dashes(server, httpd_paths):
+    cmd = server.run(f"grep -rPn 'RequestHeader\\s+set\\s+\\S*_\\S*\\s' {httpd_paths['conf']}/foreman.conf {httpd_paths['conf']}/foreman-ssl.conf {httpd_paths['conf']}/05-foreman.d/ {httpd_paths['conf']}/05-foreman-ssl.d/ 2>/dev/null")
     assert cmd.stdout.strip() == '', f"HTTP header names should use dashes, not underscores:\n{cmd.stdout}"
 
 
-def test_httpd_foreman_target_config(server):
-    drop_in = server.file("/etc/systemd/system/httpd.service.d/foreman-target.conf")
+def test_httpd_foreman_target_config(server, httpd_service):
+    drop_in = server.file(f"/etc/systemd/system/{httpd_service}.service.d/foreman-target.conf")
     assert drop_in.exists
     assert drop_in.is_file
     assert drop_in.contains("PartOf=foreman.target")
     assert drop_in.contains(r"WantedBy=default\.target foreman\.target")
 
-    wants_link = server.file("/etc/systemd/system/foreman.target.wants/httpd.service")
+    wants_link = server.file(f"/etc/systemd/system/foreman.target.wants/{httpd_service}.service")
     assert wants_link.exists
     assert wants_link.is_symlink
