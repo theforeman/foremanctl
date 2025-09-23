@@ -14,6 +14,13 @@
             chdir: "{{ inventory_dir }}/../"
           changed_when: false
 
+        - name: Force vagrant provision
+          ansible.builtin.command:
+            cmd: "vagrant provision {{ vms | default() }}"
+          args:
+            chdir: "{{ inventory_dir }}/../"
+          changed_when: false
+
         - name: Create local_vagrant inventory
           ansible.builtin.command:
             cmd: ../../scripts/vagrant.py --yaml
