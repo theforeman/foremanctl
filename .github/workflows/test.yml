@@ -148,10 +148,14 @@ jobs:
             --tuning development \
             --content-import-path /custom/import \
             --content-export-path /custom/export
-      - name: Deploy features
+      - name: Deploy hammer
+        if: contains(matrix.box, 'centos')
         run: |
           ./foremanctl deploy \
             --add-feature hammer \
+      - name: Deploy features
+        run: |
+          ./foremanctl deploy \
             --add-feature foreman-proxy \
             --add-feature azure-rm \
             --add-feature google \
