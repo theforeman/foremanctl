@@ -1,0 +1,12 @@
+---
+httpd_packages:
+  - httpd
+  - mod_ssl
+httpd_etc_path: /etc/httpd
+httpd_conf_path: "{{ httpd_etc_path }}/conf.d"
+httpd_modules_path: "{{ httpd_etc_path }}/conf.modules.d"
+httpd_service: httpd
+httpd_log_path: /var/log/httpd
+httpd_user: apache
+httpd_group: apache
+httpd_modules: []
