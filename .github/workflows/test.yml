@@ -44,8 +44,21 @@ jobs:
         certificate_source:
           - default
           - installer
+        box:
+          - centos/stream9
+          - centos/stream10
+          - alvistack/debian-13
+        exclude:
+          - certificate_source: installer
+            box: centos/stream10
+          - certificate_source: installer
+            box: alvistack/debian-13
     runs-on: ubuntu-24.04
+    env:
+      FOREMANCTL_BASE_BOX: ${{ matrix.box }}
     steps:
+      - name: generate artifact suffix
+        run: echo "ARTIFACT_SUFFIX=$(echo '${{ matrix.certificate_source }}-${{ matrix.box }}' | tr -cd '[:alnum:]-')" >> "${GITHUB_ENV}"
       - uses: actions/checkout@v5
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -56,6 +69,7 @@ jobs:
           sudo add-apt-repository --yes ppa:evgeni/vagrant
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends vagrant vagrant-libvirt libvirt-clients libvirt-daemon-system libvirt-daemon qemu-system-x86 qemu-utils dnsmasq
+          sudo adduser libvirt-qemu runner
           sudo chmod 666 /var/run/libvirt/libvirt-sock
       - name: Install Ansible
         run: pip install --upgrade ansible-core
@@ -78,6 +92,7 @@ jobs:
         run: |
           ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} --foreman-initial-admin-password=changeme
       - name: Setup hammer
+        if: contains(matrix.box, 'centos')
         run: |
           ./foremanctl setup-hammer
       - name: Run tests
@@ -90,7 +105,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: sosreport-${{ matrix.certificate_source }}
+          name: sosreport-${{ env.ARTIFACT_SUFFIX }}
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}
