@@ -1,3 +1,3 @@
 ---
 min_cpu_cores: 4
-min_ram_mb: 10240
+min_ram_mb: 9216 # We document 10240, but check for lower to allow kdump and friends to steal a bit.
