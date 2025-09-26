@@ -1,0 +1,23 @@
+---
+- name: Generate a certificate bundle for a hostname
+  hosts:
+    - quadlet
+  become: true
+  vars:
+    certificates_ca: false
+    certificates_hostnames:
+      - "{{ hostname }}"
+    certificate_source: default
+  roles:
+    - role: certificates
+      when: "certificate_source == 'default'"
+    - role: foreman_installer_certs
+      when: "certificate_source == 'installer'"
+    - role: certificate_bundle
+      vars:
+        certificate_bundle_hostname: "{{ hostname }}"
+        certificate_bundle_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
+        certificate_bundle_server_certificate: "{{ certificates_ca_directory }}/certs/{{ hostname }}.crt"
+        certificate_bundle_server_key: "{{ certificates_ca_directory }}/private/{{ hostname }}.key"
+        certificate_bundle_client_certificate: "{{ certificates_ca_directory }}/certs/{{ hostname }}-client.crt"
+        certificate_bundle_client_key: "{{ certificates_ca_directory }}/private/{{ hostname }}-client.key"
