@@ -7,10 +7,10 @@
   ansible.builtin.assert:
     that:
       - ansible_facts.processor_nproc >= tuning_vars.min_cpu_cores
-    fail_msg: "System must have at least {{ tuning_vars.min_cpu_cores }} CPU cores."
+    fail_msg: "System must have at least {{ tuning_vars.min_cpu_cores }} CPU cores, but only {{ ansible_facts.processor_nproc }} available."
 
 - name: Check if system has enough RAM
   ansible.builtin.assert:
     that:
       - ansible_facts.memtotal_mb >= tuning_vars.min_ram_mb
-    fail_msg: "System must have at least {{ tuning_vars.min_ram_mb }} MB RAM."
+    fail_msg: "System must have at least {{ tuning_vars.min_ram_mb }} MB RAM, but only {{ ansible_facts.memtotal_mb }} available."
