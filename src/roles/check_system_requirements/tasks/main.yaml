@@ -9,8 +9,10 @@
       - ansible_facts.processor_nproc >= tuning_vars.min_cpu_cores
     fail_msg: "System must have at least {{ tuning_vars.min_cpu_cores }} CPU cores, but only {{ ansible_facts.processor_nproc }} available."
 
+# Check if it's actually 90% of the required. If a crash kernel is enabled
+# then the reported total memory is lower than in reality.
 - name: Check if system has enough RAM
   ansible.builtin.assert:
     that:
-      - ansible_facts.memtotal_mb >= tuning_vars.min_ram_mb
+      - ansible_facts.memtotal_mb >= (tuning_vars.min_ram_mb * 0.9)
     fail_msg: "System must have at least {{ tuning_vars.min_ram_mb }} MB RAM, but only {{ ansible_facts.memtotal_mb }} available."
