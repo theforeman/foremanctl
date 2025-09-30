@@ -50,8 +50,8 @@ Ensure you have a deployment. Now run the tests:
 ./forge test
 ```
 
-[!NOTE]
-This will trigger all the tests so hammer tests will fail if you don't have [hammer setup](#deploy-hammeroptional)
+> [!NOTE]
+> This will trigger all the tests so hammer tests will fail if you don't have [hammer setup](#deploy-hammeroptional)
 
 ## Service Configuration
 
