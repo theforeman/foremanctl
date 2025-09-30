@@ -1,9 +1,10 @@
 ---
+- name: Set OS dependent variables
+  ansible.builtin.include_vars: "{{ ansible_os_family }}.yaml"
+
 - name: Install Apache httpd
   ansible.builtin.package:
-    name:
-      - httpd
-      - mod_ssl
+    name: "{{ httpd_packages }}"
     state: present
 
 - name: Set httpd_can_network_connect so Apache can connect to Puma and Gunicorn
@@ -11,10 +12,17 @@
     name: httpd_can_network_connect
     state: true
     persistent: true
+  when:
+    - ansible_selinux.status == 'enabled'
+
+- name: Enable required modules
+  community.general.apache2_module:
+    name: "{{ item }}"
+  loop: "{{ httpd_modules }}"
 
 - name: Disable welcome page
   ansible.builtin.file:
-    path: /etc/httpd/conf.d/welcome.conf
+    path: "{{ httpd_conf_path }}/welcome.conf"
     state: absent
 
 - name: Create cert directories
@@ -45,11 +53,11 @@
 - name: Configure foreman-ssl vhost
   ansible.builtin.template:
     src: foreman-ssl-vhost.conf.j2
-    dest: /etc/httpd/conf.d/foreman-ssl.conf
+    dest: "{{ httpd_conf_path }}/foreman-ssl.conf"
     mode: "0644"
 
 - name: Start Apache httpd
   ansible.builtin.service:
-    name: httpd
-    state: started
+    name: "{{ httpd_service }}"
+    state: restarted
     enabled: true
