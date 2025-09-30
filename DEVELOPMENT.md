@@ -3,7 +3,7 @@
 ## Requirements
 
 * Vagrant - 2.2+
-* Ansible - 2.12+
+* Ansible - 2.14+
 * [Vagrant Libvirt provider plugin](https://github.com/vagrant-libvirt/vagrant-libvirt)
 * Virtualization enabled in BIOS
 
@@ -30,7 +30,7 @@ source .venv/bin/activate
 ./foremanctl deploy --foreman-initial-admin-password=changeme
 ```
 
-## Deploy hammer(optional)
+## Deploy hammer (optional)
 
 ```
 ./forge setup-repositories
@@ -49,7 +49,9 @@ Ensure you have a deployment. Now run the tests:
 ```
 ./forge test
 ```
-Note:- this will trigger all the tests so hammer tests will fail if you don't have [hammer setup](#deploy-hammeroptional)
+
+[!NOTE]
+This will trigger all the tests so hammer tests will fail if you don't have [hammer setup](#deploy-hammeroptional)
 
 ## Service Configuration
 
