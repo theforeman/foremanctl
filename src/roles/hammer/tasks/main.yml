@@ -10,3 +10,20 @@
     owner: root
     group: root
     mode: '0644'
+
+- name: 'Add hammer module config directory'
+  ansible.builtin.file:
+    path: '/root/.hammer/cli.modules.d'
+    state: directory
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: 'Configure Hammer Root Credentials file'
+  ansible.builtin.template:
+    src: hammer-root.yml.j2
+    dest: /root/.hammer/cli.modules.d/foreman.yml
+    owner: root
+    group: root
+    mode: '0600'
+
