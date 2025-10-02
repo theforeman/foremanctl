@@ -9,7 +9,6 @@
     - "../../vars/images.yml"
     - "../../vars/database.yml"
     - "../../vars/foreman.yml"
-
   vars:
     certificates_hostnames:
       - "{{ ansible_fqdn }}"
@@ -54,6 +53,7 @@
           - python3-requests
   roles:
     - role: checks
+    - pre_install
     - role: certificates
       when: "certificate_source == 'default'"
     - role: certificate_checks

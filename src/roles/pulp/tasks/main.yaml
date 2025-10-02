@@ -1,17 +1,31 @@
+- name: Check if auth file exists
+  ansible.builtin.stat:
+    path: "{{ pulp_registry_auth_file }}"
+  register: pulp_auth_file_stat
+  when: pulp_registry_auth_file is defined and pulp_registry_auth_file | length > 0
+
+- name: Set auth file variable if exists
+  ansible.builtin.set_fact:
+    pulp_auth_file: "{{ pulp_registry_auth_file }}"
+  when: pulp_registry_auth_file is defined and pulp_auth_file_stat.stat.exists | default(false)
+
 - name: Pull the Pulp API container image
   containers.podman.podman_image:
     name: "{{ pulp_api_image }}"
     state: present
+    auth_file: "{{ pulp_auth_file | default(omit) }}"
 
 - name: Pull the Pulp Content container image
   containers.podman.podman_image:
     name: "{{ pulp_content_image }}"
     state: present
+    auth_file: "{{ pulp_auth_file | default(omit) }}"
 
 - name: Pull the Pulp Worker container image
   containers.podman.podman_image:
     name: "{{ pulp_worker_image }}"
     state: present
+    auth_file: "{{ pulp_auth_file | default(omit) }}"
 
 - name: Create Pulp storage
   ansible.builtin.file:
@@ -61,7 +75,7 @@
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
-    env: "{{ pulp_settings_env }}"
+    env: "{{ pulp_settings_env | combine({'REGISTRY_AUTH_FILE': pulp_auth_file}) if pulp_auth_file is defined else pulp_settings_env }}"
     quadlet_options:
       - |
         [Install]
@@ -86,7 +100,7 @@
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
-    env: "{{ pulp_settings_env }}"
+    env: "{{ pulp_settings_env | combine({'REGISTRY_AUTH_FILE': pulp_auth_file}) if pulp_auth_file is defined else pulp_settings_env }}"
     quadlet_options:
       - |
         [Install]
@@ -110,7 +124,7 @@
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
-    env: "{{ pulp_settings_env }}"
+    env: "{{ pulp_settings_env | combine({'REGISTRY_AUTH_FILE': pulp_auth_file}) if pulp_auth_file is defined else pulp_settings_env }}"
     quadlet_options:
       - |
         [Install]

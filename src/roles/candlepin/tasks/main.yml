@@ -45,10 +45,22 @@
   ansible.builtin.include_tasks:
     file: artemis.yml
 
+- name: Check if auth file exists
+  ansible.builtin.stat:
+    path: "{{ candlepin_registry_auth_file }}"
+  register: candlepin_auth_file_stat
+  when: candlepin_registry_auth_file is defined and candlepin_registry_auth_file | length > 0
+
+- name: Set auth file variable if exists
+  ansible.builtin.set_fact:
+    candlepin_auth_file: "{{ candlepin_registry_auth_file }}"
+  when: candlepin_registry_auth_file is defined and candlepin_auth_file_stat.stat.exists | default(false)
+
 - name: Pull the Candlepin container image
   containers.podman.podman_image:
     name: "{{ candlepin_container_image }}:{{ candlepin_container_tag }}"
     state: present
+    auth_file: "{{ candlepin_auth_file | default(omit) }}"
 
 - name: Deploy Candlepin quadlet
   containers.podman.podman_container:
@@ -57,6 +69,8 @@
     state: quadlet
     network: host
     hostname: "{{ ansible_fqdn }}"
+    env:
+      REGISTRY_AUTH_FILE: "{{ candlepin_auth_file | default(omit) }}"
     secrets:
       - 'candlepin-ca-cert,target=/etc/candlepin/certs/candlepin-ca.crt,mode=0440,type=mount'
       - 'candlepin-ca-key,target=/etc/candlepin/certs/candlepin-ca.key,mode=0440,type=mount'
