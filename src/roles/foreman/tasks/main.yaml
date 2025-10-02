@@ -1,8 +1,20 @@
 ---
+- name: Check if auth file exists
+  ansible.builtin.stat:
+    path: "{{ foreman_registry_auth_file }}"
+  register: foreman_auth_file_stat
+  when: foreman_registry_auth_file is defined and foreman_registry_auth_file | length > 0
+
+- name: Set auth file variable if exists
+  ansible.builtin.set_fact:
+    foreman_auth_file: "{{ foreman_registry_auth_file }}"
+  when: foreman_registry_auth_file is defined and foreman_auth_file_stat.stat.exists | default(false)
+
 - name: Pull the Foreman container image
   containers.podman.podman_image:
     name: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
     state: present
+    auth_file: "{{ foreman_auth_file | default(omit) }}"
 
 - name: Create secret for DATABASE_URL
   containers.podman.podman_secret:
@@ -63,6 +75,7 @@
     env:
       SEED_ADMIN_USER: "{{ foreman_initial_admin_username }}"
       SEED_ADMIN_PASSWORD: "{{ foreman_initial_admin_password }}"
+      REGISTRY_AUTH_FILE: "{{ foreman_auth_file | default(omit) }}"
     quadlet_options:
       - |
         [Install]
@@ -88,6 +101,7 @@
       DYNFLOW_SIDEKIQ_SCRIPT: "/usr/share/foreman/extras/dynflow-sidekiq.rb"
       DYNFLOW_REDIS_URL: "redis://localhost:6379/6"
       REDIS_PROVIDER: "DYNFLOW_REDIS_URL"
+      REGISTRY_AUTH_FILE: "{{ foreman_auth_file | default(omit) }}"
     command: "/usr/libexec/foreman/sidekiq-selinux -e production -r /usr/share/foreman/extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yml"
     quadlet_options:
       - |

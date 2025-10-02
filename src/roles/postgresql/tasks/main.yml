@@ -1,8 +1,20 @@
 ---
+- name: Check if auth file exists
+  ansible.builtin.stat:
+    path: "{{ postgresql_registry_auth_file }}"
+  register: postgresql_auth_file_stat
+  when: postgresql_registry_auth_file is defined and postgresql_registry_auth_file | length > 0
+
+- name: Set auth file variable if exists
+  ansible.builtin.set_fact:
+    postgresql_auth_file: "{{ postgresql_registry_auth_file }}"
+  when: postgresql_registry_auth_file is defined and postgresql_auth_file_stat.stat.exists | default(false)
+
 - name: Pull PostgreSQL container image
   containers.podman.podman_image:
     name: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
     state: present
+    auth_file: "{{ postgresql_auth_file | default(omit) }}"
 
 - name: Create PostgreSQL storage directory
   ansible.builtin.file:
@@ -29,6 +41,8 @@
       - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
     secrets:
       - 'postgresql_admin_password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
+    env:
+      REGISTRY_AUTH_FILE: "{{ postgresql_auth_file | default(omit) }}"
     quadlet_options:
       - |
         [Install]

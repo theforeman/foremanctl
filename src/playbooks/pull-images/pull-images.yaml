@@ -12,14 +12,27 @@
         name:
           - podman
 
+    - name: Check if auth file exists
+      ansible.builtin.stat:
+        path: "{{ registry_auth_file }}"
+      register: registry_auth_file_stat
+      when: registry_auth_file is defined and registry_auth_file | length > 0
+
+    - name: Set auth file variable if exists
+      ansible.builtin.set_fact:
+        auth_file: "{{ registry_auth_file }}"
+      when: registry_auth_file is defined and registry_auth_file_stat.stat.exists | default(false)
+
     - name: Pull an image
       containers.podman.podman_image:
         name: "{{ item }}"
+        auth_file: "{{ auth_file | default(omit) }}"
       loop: "{{ images }}"
 
     - name: Pull database images
       containers.podman.podman_image:
         name: "{{ item }}"
+        auth_file: "{{ auth_file | default(omit) }}"
       loop: "{{ database_images }}"
       when:
         - database_mode == 'internal'
