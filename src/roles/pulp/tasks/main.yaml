@@ -36,6 +36,26 @@
     name: pulp-db-password
     data: "{{ pulp_database_password }}"
 
+- name: Generate Django secret key
+  ansible.builtin.shell: |
+    python3 -c 'import secrets; chars = "abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)"; \
+    print("".join(secrets.choice(chars) for i in range(50)))' > /var/lib/pulp/secret_key
+  args:
+    creates: /var/lib/pulp/secret_key
+
+- name: Set secret key file permissions
+  ansible.builtin.file:
+    path: /var/lib/pulp/secret_key
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Create django pulp secret key secret
+  containers.podman.podman_secret:
+    state: present
+    name: pulp-secret-key
+    path: /var/lib/pulp/secret_key
+
 - name: Generate database symmetric key
   ansible.builtin.command: "bash -c 'openssl rand -base64 32 | tr \"+/\" \"-_\" > /var/lib/pulp/database_fields.symmetric.key'"
   args:
@@ -61,6 +81,7 @@
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+      - 'pulp-secret-key,type=env,target=PULP_SECRET_KEY'
     env: "{{ pulp_settings_env }}"
     quadlet_options:
       - |
@@ -86,6 +107,7 @@
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+      - 'pulp-secret-key,type=env,target=PULP_SECRET_KEY'
     env: "{{ pulp_settings_env }}"
     quadlet_options:
       - |
@@ -110,6 +132,7 @@
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+      - 'pulp-secret-key,type=env,target=PULP_SECRET_KEY'
     env: "{{ pulp_settings_env }}"
     quadlet_options:
       - |
