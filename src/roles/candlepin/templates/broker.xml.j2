@@ -128,12 +128,8 @@
                 <exclusive>false</exclusive>
                 <address>event.default</address>
                 <filter string="
-                    (EVENT_TARGET='COMPLIANCE' and EVENT_TYPE='CREATED') OR
-                    (EVENT_TARGET='SYSTEM_PURPOSE_COMPLIANCE' and EVENT_TYPE='CREATED') OR
                     (EVENT_TARGET='POOL' and EVENT_TYPE='CREATED') OR
                     (EVENT_TARGET='POOL' and EVENT_TYPE='DELETED') OR
-                    (EVENT_TARGET='ENTITLEMENT' and EVENT_TYPE='CREATED') OR
-                    (EVENT_TARGET='ENTITLEMENT' and EVENT_TYPE='DELETED') OR
                     (EVENT_TARGET='OWNER_CONTENT_ACCESS_MODE' and EVENT_TYPE='MODIFIED')
                 "/>
                 <forwarding-address>katello.candlepin</forwarding-address>
