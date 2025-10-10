@@ -2,6 +2,7 @@ import uuid
 
 import apypie
 import paramiko
+import py.path
 import pytest
 import testinfra
 import yaml
@@ -14,6 +15,11 @@ VAGRANT_SSH_CONFIG='./.vagrant/ssh-config'
 
 def pytest_addoption(parser):
     parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'installer'), help="Where to obtain certificates from")
+
+
+@pytest.fixture(scope="module")
+def fixture_dir():
+    return py.path.local(__file__).realpath() / '..' / 'fixtures'
 
 
 @pytest.fixture(scope="module")
