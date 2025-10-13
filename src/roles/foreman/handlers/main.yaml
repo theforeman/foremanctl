@@ -1,0 +1,5 @@
+---
+- name: Restart foreman service
+  ansible.builtin.systemd:
+    name: foreman
+    state: restarted
