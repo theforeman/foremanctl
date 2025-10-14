@@ -132,6 +132,24 @@
   ansible.builtin.systemd:
     daemon_reload: true
 
+- name: Migrate and seed the Foreman database
+  containers.podman.podman_container:
+    name: foreman-db-migrate
+    image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
+    command:
+      - bash
+      - -c
+      - bin/rails db:migrate && bin/rails db:seed
+    detach: false
+    working_dir: /usr/share/foreman
+    network: host
+    secrets:
+      - 'foreman-database-url,type=env,target=DATABASE_URL'
+      - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
+    env:
+      SEED_ADMIN_USER: "{{ foreman_initial_admin_username }}"
+      SEED_ADMIN_PASSWORD: "{{ foreman_initial_admin_password }}"
+
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers
 
