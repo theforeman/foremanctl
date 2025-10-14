@@ -49,6 +49,18 @@
     enabled: true
     state: started
 
+# SCRAM-SHA-256 is default for PostgreSQL 14+,
+# after the upgrade, we can drop this task.
+- name: Use scram-sha-256 for password encryption
+  community.postgresql.postgresql_set:
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+    login_host: localhost
+    name: password_encryption
+    value: "scram-sha-256"
+  notify:
+    - Restart postgresql
+
 - name: Create PostgreSQL users
   community.postgresql.postgresql_user:
     name: "{{ item.name }}"
