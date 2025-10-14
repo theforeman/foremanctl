@@ -47,6 +47,11 @@
     src: foreman-ssl-vhost.conf.j2
     dest: /etc/httpd/conf.d/foreman-ssl.conf
     mode: "0644"
+  notify:
+    - Restart httpd
+
+- name: Flush handlers to restart services
+  ansible.builtin.meta: flush_handlers
 
 - name: Start Apache httpd
   ansible.builtin.service:

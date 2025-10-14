@@ -1,0 +1,14 @@
+---
+- name: Restart foreman
+  ansible.builtin.systemd:
+    name: foreman
+    state: restarted
+
+- name: Restart dynflow-sidekiq@
+  ansible.builtin.systemd:
+    name: "dynflow-sidekiq@{{ item }}"
+    state: restarted
+  loop:
+    - orchestrator
+    - worker
+    - worker-hosts-queue

@@ -35,6 +35,10 @@
     state: present
     name: pulp-db-password
     data: "{{ pulp_database_password }}"
+  notify:
+    - Restart pulp-api
+    - Restart pulp-content
+    - Restart pulp-worker
 
 - name: Generate Django secret key
   ansible.builtin.command: "bash -c 'openssl rand -base64 50 | tr -d \"\\n\" | tr \"+/\" \"-_\" > /var/lib/pulp/django_secret_key'"
@@ -53,6 +57,10 @@
     state: present
     name: pulp-django-secret-key
     path: /var/lib/pulp/django_secret_key
+  notify:
+    - Restart pulp-api
+    - Restart pulp-content
+    - Restart pulp-worker
 
 - name: Generate database symmetric key
   ansible.builtin.command: "bash -c 'openssl rand -base64 32 | tr \"+/\" \"-_\" > /var/lib/pulp/database_fields.symmetric.key'"
@@ -64,6 +72,10 @@
     state: present
     name: pulp-symmetric-key
     path: /var/lib/pulp/database_fields.symmetric.key
+  notify:
+    - Restart pulp-api
+    - Restart pulp-content
+    - Restart pulp-worker
 
 - name: Deploy Pulp API Container
   containers.podman.podman_container:
@@ -158,6 +170,9 @@
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
     env: "{{ pulp_settings_database_env }}"
+
+- name: Flush handlers to restart services
+  ansible.builtin.meta: flush_handlers
 
 - name: Start Pulp services
   ansible.builtin.systemd:

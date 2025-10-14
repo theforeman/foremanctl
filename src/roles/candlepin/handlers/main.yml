@@ -1,0 +1,5 @@
+---
+- name: Restart candlepin
+  ansible.builtin.systemd:
+    name: candlepin
+    state: restarted
