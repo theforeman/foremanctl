@@ -28,6 +28,8 @@
     path: "{{ candlepin_ca_certificate }}"
     labels:
       app: candlepin
+  notify:
+    - Restart candlepin
 
 - name: Decrypt Candlepin CA key
   ansible.builtin.command: openssl pkey -in "{{ candlepin_ca_key }}" -passin "file:{{ candlepin_ca_key_password }}"
@@ -41,6 +43,8 @@
     data: "{{ _candlepin_ca_key.stdout }}"
     labels:
       app: candlepin
+  notify:
+    - Restart candlepin
 
 - name: Create the podman secret for Tomcat keystore
   containers.podman.podman_secret:
@@ -50,6 +54,8 @@
     labels:
       filename: candlepin.keystore
       app: tomcat
+  notify:
+    - Restart candlepin
 
 - name: Create the podman secret for Tomcat truststore
   containers.podman.podman_secret:
@@ -59,6 +65,8 @@
     labels:
       filename: candlepin.truststore
       app: tomcat
+  notify:
+    - Restart candlepin
 
 - name: Create the podman secret for the keystore password
   containers.podman.podman_secret:
@@ -67,3 +75,5 @@
     data: "{{ candlepin_keystore_password }}"
     labels:
       app: tomcat
+  notify:
+    - Restart candlepin

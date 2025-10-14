@@ -16,6 +16,8 @@
   containers.podman.podman_secret:
     name: postgresql_admin_password
     data: "{{ postgresql_admin_password }}"
+  notify:
+    - Restart postgresql
 
 - name: Deploy PostgreSQL container
   containers.podman.podman_container:
@@ -37,6 +39,9 @@
 - name: Run daemon reload
   ansible.builtin.systemd:
     daemon_reload: true
+
+- name: Flush handlers to restart services
+  ansible.builtin.meta: flush_handlers
 
 - name: Start the PostgreSQL Service
   ansible.builtin.systemd:

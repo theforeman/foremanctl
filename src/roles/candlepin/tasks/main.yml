@@ -22,6 +22,8 @@
     labels:
       filename: candlepin.conf
       app: candlepin
+  notify:
+    - Restart candlepin
 
 - name: Create Tomcat server.xml
   containers.podman.podman_secret:
@@ -31,6 +33,8 @@
     labels:
       filename: server.xml
       app: tomcat
+  notify:
+    - Restart candlepin
 
 - name: Create Tomcat server configuration
   containers.podman.podman_secret:
@@ -40,6 +44,8 @@
     labels:
       filename: tomcat.conf
       app: tomcat
+  notify:
+    - Restart candlepin
 
 - name: Setup artemis
   ansible.builtin.include_tasks:
@@ -85,6 +91,9 @@
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
     daemon_reload: true
+
+- name: Flush handlers to restart services
+  ansible.builtin.meta: flush_handlers
 
 - name: Start the Candlepin Service
   ansible.builtin.systemd:

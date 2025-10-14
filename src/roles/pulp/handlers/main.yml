@@ -1,0 +1,15 @@
+---
+- name: Restart pulp-api
+  ansible.builtin.systemd:
+    name: pulp-api
+    state: restarted
+
+- name: Restart pulp-content
+  ansible.builtin.systemd:
+    name: pulp-content
+    state: restarted
+
+- name: Restart pulp-worker
+  ansible.builtin.systemd:
+    name: pulp-worker
+    state: restarted

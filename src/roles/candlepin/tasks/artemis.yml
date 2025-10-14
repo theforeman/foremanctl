@@ -16,6 +16,8 @@
     labels:
       filename: broker.xml
       app: artemis
+  notify:
+    - Restart candlepin
 
 - name: Create Tomcat login config
   containers.podman.podman_secret:
@@ -25,6 +27,8 @@
     labels:
       filename: login.config
       app: artemis
+  notify:
+    - Restart candlepin
 
 - name: Create Tomcat jaas.conf
   containers.podman.podman_secret:
@@ -34,6 +38,8 @@
     labels:
       filename: jaas.conf
       app: artemis
+  notify:
+    - Restart candlepin
 
 - name: Create Tomcat cert-roles.properties
   containers.podman.podman_secret:
@@ -43,6 +49,8 @@
     labels:
       filename: cert-roles.properties
       app: artemis
+  notify:
+    - Restart candlepin
 
 - name: Create Tomcat cert-users.properties
   containers.podman.podman_secret:
@@ -52,3 +60,5 @@
     labels:
       filename: cert-users.properties
       app: artemis
+  notify:
+    - Restart candlepin

@@ -9,42 +9,62 @@
     state: present
     name: foreman-database-url
     data: "postgresql://{{ foreman_database_user }}:{{ foreman_database_password }}@{{ foreman_database_host }}:{{ foreman_database_port }}/{{ foreman_database_name }}?pool={{ foreman_database_pool }}&sslmode={{ foreman_database_sslmode }}{% if foreman_database_ssl_ca is defined %}&sslrootcert={{ foreman_database_ssl_ca }}{% endif %}" # yamllint disable-line rule:line-length
+  notify:
+    - Restart foreman
+    - Restart dynflow-sidekiq@
 
 - name: Create settings config secret
   containers.podman.podman_secret:
     state: present
     name: foreman-settings-yaml
     data: "{{ lookup('ansible.builtin.template', 'settings.yaml.j2') }}"
+  notify:
+    - Restart foreman
+    - Restart dynflow-sidekiq@
 
 - name: Create katello config secret
   containers.podman.podman_secret:
     state: present
     name: foreman-katello-yaml
     data: "{{ lookup('ansible.builtin.template', 'katello.yaml.j2') }}"
+  notify:
+    - Restart foreman
+    - Restart dynflow-sidekiq@
 
 - name: Create dynflow hosts_queue worker config secret
   containers.podman.podman_secret:
     state: present
     name: foreman-dynflow-worker-hosts-queue-yaml
     data: "{{ lookup('ansible.builtin.template', 'dynflow-worker-hosts-queue.yml') }}"
+  notify:
+    - Restart dynflow-sidekiq@
 
 - name: Create the podman secret for Foreman CA certificate
   containers.podman.podman_secret:
     name: foreman-ca-cert
     path: "{{ foreman_ca_certificate }}"
     state: present
+  notify:
+    - Restart foreman
+    - Restart dynflow-sidekiq@
 
 - name: Create the podman secret for Foreman client certificate
   containers.podman.podman_secret:
     state: present
     name: foreman-client-cert
     path: "{{ foreman_client_certificate }}"
+  notify:
+    - Restart foreman
+    - Restart dynflow-sidekiq@
 
 - name: Create the podman secret for Foreman client key
   containers.podman.podman_secret:
     state: present
     name: foreman-client-key
     path: "{{ foreman_client_key }}"
+  notify:
+    - Restart foreman
+    - Restart dynflow-sidekiq@
 
 - name: Deploy Foreman Container
   containers.podman.podman_container:
@@ -111,6 +131,9 @@
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
     daemon_reload: true
+
+- name: Flush handlers to restart services
+  ansible.builtin.meta: flush_handlers
 
 - name: Start the Foreman Service
   ansible.builtin.systemd:
