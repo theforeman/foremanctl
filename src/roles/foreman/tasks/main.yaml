@@ -199,3 +199,28 @@
     username: "{{ foreman_initial_admin_username }}"
     password: "{{ foreman_initial_admin_password }}"
     validate_certs: false
+
+- name: Deploy Quadlet container and timer for Foreman reports:daily
+  # when: foreman_recurring_tasks_enabled | default(true)
+  block:
+    - name: Create Quadlet container definitions
+      ansible.builtin.template:
+        src: foreman-recurring-daily.container.j2
+        dest: "/etc/containers/systemd/foreman-reports-daily.container"
+        mode: "0644"
+
+    - name: Create Quadlet timer definitions
+      ansible.builtin.template:
+        src: foreman-recurring-daily.timer.j2
+        dest: "/etc/containers/systemd/foreman-reports-daily.timer"
+        mode: "0644"
+
+    - name: Reload systemd to register new Quadlet units
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Enable and start Foreman reports:daily timer
+      ansible.builtin.systemd:
+        name: "foreman-reports-daily.timer"
+        enabled: true
+        state: started
