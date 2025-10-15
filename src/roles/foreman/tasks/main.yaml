@@ -66,6 +66,28 @@
     - Restart foreman
     - Restart dynflow-sidekiq@
 
+- name: Create directory for Foreman public assets
+  ansible.builtin.file:
+    path: "{{ foreman_public_assets_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Create temporary container for asset extraction
+  containers.podman.podman_container:
+    name: foreman-extract-temp
+    image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
+    state: present
+
+- name: Extract public assets using podman cp
+  ansible.builtin.command:
+    cmd: podman cp foreman-extract-temp:/usr/share/foreman/public/. {{ foreman_public_assets_dir }}/
+  changed_when: false
+
+- name: Remove temporary container
+  containers.podman.podman_container:
+    name: foreman-extract-temp
+    state: absent
+
 - name: Deploy Foreman Container
   containers.podman.podman_container:
     name: "foreman"
