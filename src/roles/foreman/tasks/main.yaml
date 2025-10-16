@@ -74,6 +74,8 @@
     sdnotify: true
     network: host
     hostname: "{{ ansible_fqdn }}"
+    volume:
+      - 'foreman-data-run:/var/run/foreman:z'
     secrets:
       - 'foreman-database-url,type=env,target=DATABASE_URL'
       - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
@@ -98,6 +100,8 @@
     sdnotify: true
     network: host
     hostname: "{{ ansible_fqdn }}"
+    volume:
+      - 'foreman-data-run:/var/run/foreman:z'
     secrets:
       - 'foreman-database-url,type=env,target=DATABASE_URL'
       - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'

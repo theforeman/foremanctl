@@ -48,3 +48,11 @@ def test_foreman_content_view(content_view, yum_repository, foremanapi):
         for environment_id in current_environment_ids:
             foremanapi.resource_action('content_views', 'remove_from_environment', params={'id': content_view['id'], 'environment_id': environment_id})
         foremanapi.delete('content_view_versions', version)
+
+
+def test_foreman_manifest(organization, foremanapi, fixture_dir):
+    manifest_path = fixture_dir / 'manifest.zip'
+    with open(manifest_path, 'rb') as manifest_file:
+        files = {'content': (str(manifest_path), manifest_file, 'application/zip')}
+        params = {'organization_id': organization['id']}
+        foremanapi.resource_action('subscriptions', 'upload', params, files=files)

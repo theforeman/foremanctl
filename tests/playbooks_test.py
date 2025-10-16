@@ -1,18 +1,12 @@
 import os
 import sys
 
-import py.path
 import pytest
 
 import obsah
 
 
 os.environ['OBSAH_DATA'] = 'src'
-
-
-@pytest.fixture
-def fixture_dir():
-    return py.path.local(__file__).realpath() / '..' / 'fixtures'
 
 
 @pytest.fixture
