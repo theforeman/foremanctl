@@ -17,3 +17,9 @@
     name: https://yum.voxpupuli.org/openvox{{ setup_repositories_openvox_version }}-release-el-{{ ansible_facts['distribution_major_version'] }}.noarch.rpm
     disable_gpg_check: true
     state: present
+
+- name: Refresh package cache
+  ansible.builtin.package:
+    update_cache: true
+  when:
+    - ansible_facts['os_family'] == 'Debian'
