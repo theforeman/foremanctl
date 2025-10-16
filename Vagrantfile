@@ -14,6 +14,8 @@ Vagrant.configure("2") do |config|
       libvirt.memory = 10240
       libvirt.cpus = 4
     end
+
+    override.vm.provision "shell", inline: "sudo dnf update -y"
   end
 
   config.vm.define "client" do |override|
