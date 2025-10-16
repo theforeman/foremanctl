@@ -11,6 +11,7 @@
       ansible.builtin.package:
         name:
           - podman
+          - netavark
 
     - name: Pull an image
       containers.podman.podman_image:
