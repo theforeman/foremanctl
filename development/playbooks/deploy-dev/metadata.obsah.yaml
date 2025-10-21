@@ -1,0 +1,14 @@
+---
+help: |
+  Deploy and manage Foreman development environment with git-based Foreman and containerized backend services.
+
+variables:
+  foreman_development_enabled_plugins:
+    help: List of plugins to enable from registry (comma-separated)
+    default: katello,foreman_remote_execution
+  target_host:
+    help: Target hostname or IP address for deployment
+    action: store
+  foreman_development_user:
+    help: Username for the development user account
+    action: store

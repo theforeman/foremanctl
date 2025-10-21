@@ -1,0 +1,17 @@
+development:
+  adapter: postgresql
+  database: {{ foreman_development_database_name }}
+  username: {{ foreman_development_database_user }}
+  password: {{ foreman_development_database_password }}
+  host: {{ foreman_development_database_host }}
+  port: {{ foreman_development_database_port }}
+  pool: 25
+
+test:
+  adapter: postgresql
+  database: {{ foreman_development_database_name }}_test
+  username: {{ foreman_development_database_user }}
+  password: {{ foreman_development_database_password }}
+  host: {{ foreman_development_database_host }}
+  port: {{ foreman_development_database_port }}
+  pool: 25

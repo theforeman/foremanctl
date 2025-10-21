@@ -1,0 +1,57 @@
+---
+- name: Deploy Foreman Development Environment
+  hosts: "{{ target_host if target_host is defined and target_host != '' else 'quadlet' }}"
+  become: true
+  vars_files:
+    - "../../../src/vars/defaults.yml"
+    - "../../../src/vars/{{ certificate_source }}_certificates.yml"
+    - "../../../src/vars/images.yml"
+    - "../../../src/vars/database.yml"
+    - "../../../src/vars/foreman.yml"
+    - "../../../src/vars/base.yaml"
+  vars:
+    httpd_foreman_backend: "http://localhost:3000"
+  roles:
+    - pre_install
+    - role: certificates
+    - role: postgresql
+      vars:
+        postgresql_databases:
+          - name: "{{ candlepin_database_name }}"
+            owner: "{{ candlepin_database_user }}"
+          - name: "foreman_development"
+            owner: "{{ foreman_database_user }}"
+          - name: "foreman_development_test"
+            owner: "{{ foreman_database_user }}"
+          - name: "{{ pulp_database_name }}"
+            owner: "{{ pulp_database_user }}"
+        postgresql_users:
+          - name: "{{ candlepin_database_name }}"
+            password: "{{ candlepin_database_password }}"
+          - name: "{{ foreman_database_name }}"
+            password: "{{ foreman_database_password }}"
+          - name: "{{ pulp_database_name }}"
+            password: "{{ pulp_database_password }}"
+    - role: redis
+    - role: candlepin
+    - role: httpd
+    - role: pulp
+    - role: foreman_development
+  post_tasks:
+    - name: Display development environment information
+      ansible.builtin.debug:
+        msg: |
+          Foreman development environment deployed successfully!
+
+          Access URLs:
+            - Foreman UI: https://{{ ansible_fqdn }}
+            - Direct Rails: http://localhost:3000 (when running)
+
+          Credentials:
+            - Username: {{ foreman_development_admin_user | default('admin') }}
+            - Password: {{ foreman_development_admin_password | default('changeme') }}
+
+          Next steps:
+            - SSH into the VM
+            - Navigate to /home/{{ foreman_development_user }}/foreman
+            - Run: bundle exec foreman start

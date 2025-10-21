@@ -1,0 +1,63 @@
+---
+name: Devel Test
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'container-images/**'
+      - '.github/workflows/container.yml'
+      - 'docs/**'
+  pull_request:
+    paths-ignore:
+      - 'container-images/**'
+      - '.github/workflows/container.yml'
+      - 'docs/**'
+
+
+concurrency:
+  group: ${{ github.ref_name }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        certificate_source:
+          - default
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Setup libvirt for Vagrant
+        run: |
+          sudo add-apt-repository --yes ppa:evgeni/vagrant
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends vagrant vagrant-libvirt libvirt-clients libvirt-daemon-system libvirt-daemon qemu-system-x86 qemu-utils dnsmasq
+          sudo chmod 666 /var/run/libvirt/libvirt-sock
+      - name: Install Ansible
+        run: pip install --upgrade ansible-core
+      - name: Setup environment
+        run: ./setup-environment
+      - name: Start VMs
+        run: |
+          ./forge vms start
+      - name: Configure repositories
+        run: |
+          ./forge setup-repositories
+      - name: Run deployment
+        run: |
+          ./forge deploy-dev
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: owenthereal/action-upterm@v1
+        with:
+          ## limits ssh access and adds the ssh public key for the user which triggered the workflow
+          limit-access-to-actor: true
+          ## If no one connects after 5 minutes, shut down server.
+          wait-timeout-minutes: 5

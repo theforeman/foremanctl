@@ -1,0 +1,190 @@
+---
+- name: Enable nodejs module stream
+  ansible.builtin.command:
+    cmd: dnf module enable -y nodejs:{{ foreman_development_nodejs_stream | default('22') }}
+  register: foreman_development_nodejs_module_result
+  changed_when: "'CHANGED' in foreman_development_nodejs_module_result.stdout"
+  failed_when:
+    - foreman_development_nodejs_module_result.rc != 0
+    - "'Nothing to do' not in foreman_development_nodejs_module_result.stdout"
+    - "'already enabled' not in foreman_development_nodejs_module_result.stdout"
+
+- name: Install nodejs from enabled module
+  ansible.builtin.package:
+    name: nodejs
+    state: present
+
+- name: Install development packages
+  ansible.builtin.package:
+    name: "{{ foreman_development_packages }}"
+    state: present
+
+- name: Create development user
+  ansible.builtin.user:
+    name: "{{ foreman_development_user }}"
+    home: "{{ foreman_development_deployment_dir }}"
+    create_home: true
+    state: present
+
+- name: Create certificate directory
+  ansible.builtin.file:
+    path: "{{ foreman_development_cert_dir }}"
+    state: directory
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0775"
+
+- name: Copy certificates to development directory
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: true
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0640"
+  loop:
+    - src: "{{ foreman_development_ca_certificate }}"
+      dest: "{{ foreman_development_cert_dir }}/proxy_ca.pem"
+    - src: "{{ foreman_development_client_certificate }}"
+      dest: "{{ foreman_development_cert_dir }}/client_cert.pem"
+    - src: "{{ foreman_development_client_key }}"
+      dest: "{{ foreman_development_cert_dir }}/client_key.pem"
+
+- name: Clone Foreman repository
+  ansible.builtin.git:
+    repo: "{{ foreman_development_git_repo }}"
+    dest: "{{ foreman_development_foreman_dir }}"
+    version: "{{ foreman_development_git_revision }}"
+    force: true
+  become: true
+  become_user: "{{ foreman_development_user }}"
+
+- name: Create database configuration
+  ansible.builtin.template:
+    src: database.yml.j2
+    dest: "{{ foreman_development_foreman_dir }}/config/database.yml"
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0644"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+
+- name: Create development settings
+  ansible.builtin.template:
+    src: settings.yaml.j2
+    dest: "{{ foreman_development_foreman_dir }}/config/settings.yaml"
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0644"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+
+- name: Create environment file
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ foreman_development_foreman_dir }}/.env"
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0644"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+
+- name: Create plugin settings directory
+  ansible.builtin.file:
+    path: "{{ foreman_development_foreman_dir }}/config/settings.plugins.d"
+    state: directory
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0755"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+
+- name: Create bundler.d directory
+  ansible.builtin.file:
+    path: "{{ foreman_development_foreman_dir }}/bundler.d"
+    state: directory
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0755"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+
+- name: Setup plugins
+  ansible.builtin.include_tasks: plugin.yaml
+  loop: "{{ foreman_development_enabled_plugins }}"
+  loop_control:
+    loop_var: plugin_item
+
+- name: Install Ruby dependencies
+  ansible.builtin.command:
+    cmd: bundle install --path .vendor --jobs 3 --without "libvirt:journald"
+    chdir: "{{ foreman_development_foreman_dir }}"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  environment:
+    PATH: "/usr/bin:/bin:/usr/local/bin"
+  changed_when: true
+
+- name: Install Node.js dependencies
+  ansible.builtin.command:
+    cmd: npm install
+    chdir: "{{ foreman_development_foreman_dir }}"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  changed_when: true
+
+- name: Run database migrations
+  ansible.builtin.command:
+    cmd: bundle exec rake db:migrate
+    chdir: "{{ foreman_development_foreman_dir }}"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  environment:
+    RAILS_ENV: development
+  changed_when: true
+
+- name: Seed database
+  ansible.builtin.command:
+    cmd: bundle exec rake db:seed
+    chdir: "{{ foreman_development_foreman_dir }}"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  environment:
+    RAILS_ENV: development
+    SEED_ADMIN_USER: "{{ foreman_development_admin_user }}"
+    SEED_ADMIN_PASSWORD: "{{ foreman_development_admin_password }}"
+  changed_when: true
+
+- name: Start Foreman development server temporarily for smart proxy registration
+  ansible.builtin.command:
+    cmd: bundle exec rails server -b 0.0.0.0 -p {{ foreman_development_rails_port }} -e development -d
+    chdir: "{{ foreman_development_foreman_dir }}"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  changed_when: true
+
+- name: Wait for Foreman development server to be accessible
+  ansible.builtin.uri:
+    url: 'https://{{ ansible_fqdn }}/api/v2/ping'
+    validate_certs: false
+  until: foreman_development_status.status == 200
+  retries: 30
+  delay: 5
+  register: foreman_development_status
+
+- name: Configure Foreman Proxy for Pulp
+  theforeman.foreman.smart_proxy:
+    name: "{{ ansible_fqdn }}-pulp"
+    url: "https://{{ ansible_fqdn }}/pulp/api/v3/smart_proxy"
+    server_url: "https://{{ ansible_fqdn }}"
+    username: "{{ foreman_development_admin_user }}"
+    password: "{{ foreman_development_admin_password }}"
+    validate_certs: false
+
+- name: Stop temporary Foreman development server
+  ansible.builtin.command:
+    cmd: pkill -f "rails server"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  failed_when: false
+  changed_when: true

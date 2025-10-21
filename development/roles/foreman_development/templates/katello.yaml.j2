@@ -1,0 +1,19 @@
+### File managed with Ansible ###
+## Role: foreman_development
+
+:katello:
+  :rest_client_timeout: 3600
+  :katello_applicability: true
+
+  :candlepin:
+    :url: {{ candlepin_url | default('https://localhost:23443/candlepin') }}
+    :oauth_key: katello
+    :oauth_secret: {{ candlepin_oauth_secret }}
+    :ca_cert_file: {{ foreman_development_cert_dir }}/proxy_ca.pem
+
+  :candlepin_events:
+    :ssl_cert_file: {{ foreman_development_cert_dir }}/client_cert.pem
+    :ssl_key_file: {{ foreman_development_cert_dir }}/client_key.pem
+    :ssl_ca_file: {{ foreman_development_cert_dir }}/proxy_ca.pem
+
+  :katello_applicability: true
