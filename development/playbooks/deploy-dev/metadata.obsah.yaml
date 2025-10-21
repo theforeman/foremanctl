@@ -1,0 +1,18 @@
+---
+help: |
+  Deploy and manage Foreman development environment with git-based Foreman and containerized backend services.
+
+variables:
+  foreman_development_enabled_plugins:
+    help: Plugin to enable (can be used multiple times)
+    action: append
+    parameter: --foreman-development-enabled-plugin
+  target_host:
+    help: Target hostname or IP address for deployment
+    action: store
+  foreman_development_user:
+    help: Username for the development user account
+    action: store
+  foreman_development_github_username:
+    help: GitHub username to add as additional remote for git checkouts
+    action: store

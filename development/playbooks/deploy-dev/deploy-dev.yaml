@@ -1,0 +1,60 @@
+---
+- name: Deploy Foreman Development Environment
+  hosts: "{{ target_host if target_host is defined and target_host != '' else 'quadlet' }}"
+  become: true
+  vars_files:
+    - "../../../src/vars/defaults.yml"
+    - "../../../src/vars/{{ certificate_source }}_certificates.yml"
+    - "../../../src/vars/images.yml"
+    - "../../../src/vars/database.yml"
+    - "../../../src/vars/foreman.yml"
+    - "../../../src/vars/base.yaml"
+  vars:
+    httpd_foreman_backend: "http://localhost:3000"
+  roles:
+    - role: pre_install
+    - role: certificates
+    - role: postgresql
+      vars:
+        postgresql_databases:
+          - name: "{{ candlepin_database_name }}"
+            owner: "{{ candlepin_database_user }}"
+          - name: "{{ foreman_development_database_name }}"
+            owner: "{{ foreman_database_user }}"
+          - name: "{{ foreman_development_database_name }}_test"
+            owner: "{{ foreman_database_user }}"
+          - name: "{{ pulp_database_name }}"
+            owner: "{{ pulp_database_user }}"
+        postgresql_users:
+          - name: "{{ candlepin_database_user }}"
+            password: "{{ candlepin_database_password }}"
+          - name: "{{ foreman_database_user }}"
+            password: "{{ foreman_database_password }}"
+            role_attr_flags: SUPERUSER
+          - name: "{{ pulp_database_user }}"
+            password: "{{ pulp_database_password }}"
+    - role: redis
+    - role: candlepin
+    - role: httpd
+    - role: pulp
+    - role: foreman_development
+  post_tasks:
+    - name: Display development environment information
+      ansible.builtin.debug:
+        msg: |
+          Foreman development environment deployed successfully!
+
+          Access URLs:
+            - Foreman UI: https://{{ foreman_development_url }}
+            - Direct Rails: http://localhost:3000 (when running)
+
+          Credentials:
+            - Username: {{ foreman_development_admin_user }}
+            - Password: {{ foreman_development_admin_password }}
+
+          Next steps:
+            - SSH into the system
+                when using Vagrant: vagrant ssh quadlet
+                when using a remote system: ssh {{ foreman_development_user }}@{{ ansible_facts['fqdn'] }}
+            - Navigate to {{ foreman_development_foreman_dir }}
+            - Run: bundle exec foreman start

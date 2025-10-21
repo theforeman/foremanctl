@@ -1,0 +1,13 @@
+### File managed with Ansible ###
+## Role: foreman_development
+
+:ansible:
+  :ansible_dir: /usr/share/foreman/.ansible
+  :ansible_ssh_private_key_file: ~/.ssh/id_rsa_foreman_proxy
+  :post_provision_timeout: 300
+  :roles_path:
+    - /etc/ansible/roles
+    - /usr/share/ansible/roles
+  :collections_paths:
+    - /etc/ansible/collections
+    - /usr/share/ansible/collections

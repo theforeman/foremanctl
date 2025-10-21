@@ -1,0 +1,4 @@
+gemspec :path => '../{{ foreman_development_plugin_name }}', :development_group => '{{ foreman_development_plugin_name }}_dev', :name => '{{ foreman_development_plugin_name }}'
+{% for gemfile in foreman_development_plugin_extra_gemfiles %}
+eval_gemfile('{{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}/{{ gemfile }}')
+{% endfor %}

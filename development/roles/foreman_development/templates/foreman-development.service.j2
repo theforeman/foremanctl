@@ -1,0 +1,17 @@
+[Unit]
+Description=Foreman Development Server
+After=postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User={{ foreman_development_user }}
+Group={{ foreman_development_group }}
+WorkingDirectory={{ foreman_development_foreman_dir }}
+Environment=RAILS_ENV=development
+Environment=PATH=/usr/bin:/bin:/usr/local/bin
+Environment=BUNDLE_PATH={{ foreman_development_foreman_dir }}/.vendor
+ExecStart=/usr/bin/bundle exec {{ foreman_development_rails_command }}
+
+[Install]
+WantedBy=multi-user.target
