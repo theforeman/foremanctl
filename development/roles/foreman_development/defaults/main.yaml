@@ -1,0 +1,77 @@
+---
+foreman_development_user: "vagrant"
+foreman_development_group: "{{ foreman_development_user }}"
+foreman_development_deployment_dir: "/home/{{ foreman_development_user }}"
+foreman_development_foreman_dir: "{{ foreman_development_deployment_dir }}/foreman"
+foreman_development_cert_dir: "{{ foreman_development_deployment_dir }}/foreman-certs"
+
+foreman_development_ca_certificate: "{{ foreman_ca_certificate }}"
+foreman_development_client_certificate: "{{ foreman_client_certificate }}"
+foreman_development_client_key: "{{ foreman_client_key }}"
+
+foreman_development_admin_user: "admin"
+foreman_development_admin_password: "changeme"
+
+foreman_development_git_repo: "https://github.com/theforeman/foreman.git"
+foreman_development_git_revision: "develop"
+foreman_development_github_username: ""
+
+foreman_development_rails_port: 3000
+foreman_development_rails_command: "puma -w 2 -p {{ foreman_development_rails_port }} --preload -b tcp://0.0.0.0"
+
+foreman_development_url: "http://{{ ansible_facts['fqdn'] }}:{{ foreman_development_rails_port }}"
+
+foreman_development_database_host: "localhost"
+foreman_development_database_port: 5432
+foreman_development_database_name: "foreman_development"
+foreman_development_database_user: "foreman"
+foreman_development_database_password: "foreman"
+
+foreman_development_nodejs_stream: "22"
+
+foreman_development_plugin_registry:
+  katello:
+    name: "katello/katello"
+    settings_template: "katello.yaml.j2"
+    manage_repo: true
+    extra_gemfiles:
+      - "gemfile.d/test.rb"
+  foreman_remote_execution:
+    name: "theforeman/foreman_remote_execution"
+    manage_repo: true
+  foreman_ansible:
+    name: "theforeman/foreman_ansible"
+    settings_template: "foreman_ansible.yaml.j2"
+    manage_repo: true
+  foreman_rh_cloud:
+    name: "theforeman/foreman_rh_cloud"
+    manage_repo: true
+  foreman_discovery:
+    name: "theforeman/foreman_discovery"
+    manage_repo: true
+  foreman_openscap:
+    name: "theforeman/foreman_openscap"
+    manage_repo: true
+  foreman_bootdisk:
+    name: "theforeman/foreman_bootdisk"
+    manage_repo: true
+
+foreman_development_default_plugins:
+  - katello
+  - foreman_remote_execution
+
+foreman_development_enabled_plugins: []
+
+foreman_development_packages:
+  - git
+  - ruby-devel
+  - npm
+  - postgresql-devel
+  - libxml2-devel
+  - libxslt-devel
+  - libcurl-devel
+  - gcc-c++
+  - make
+  - rubygem-bundler
+  - rubygem-irb
+  - postgresql

@@ -1,0 +1,31 @@
+---
+certificates_hostnames:
+  - "{{ ansible_facts['fqdn'] }}"
+  - localhost
+
+certificates_ca_password: "CHANGEME"
+candlepin_keystore_password: "CHANGEME"
+candlepin_oauth_secret: "CHANGEME"
+
+candlepin_ca_key_password: "{{ ca_key_password }}"
+candlepin_ca_key: "{{ ca_key }}"
+candlepin_ca_certificate: "{{ ca_certificate }}"
+candlepin_tomcat_key: "{{ localhost_key }}"
+candlepin_tomcat_certificate: "{{ localhost_certificate }}"
+candlepin_client_key: "{{ client_key }}"
+candlepin_client_certificate: "{{ client_certificate }}"
+
+foreman_ca_certificate: "{{ server_ca_certificate }}"
+foreman_client_key: "{{ client_key }}"
+foreman_client_certificate: "{{ client_certificate }}"
+foreman_oauth_consumer_key: abcdefghijklmnopqrstuvwxyz123456
+foreman_oauth_consumer_secret: abcdefghijklmnopqrstuvwxyz123456
+foreman_url: "https://{{ ansible_facts['fqdn'] }}"
+
+httpd_server_ca_certificate: "{{ server_ca_certificate }}"
+httpd_client_ca_certificate: "{{ client_ca_certificate }}"
+httpd_server_certificate: "{{ server_certificate }}"
+httpd_server_key: "{{ server_key }}"
+
+pulp_content_origin: "https://{{ ansible_facts['fqdn'] }}"
+pulp_pulp_url: "https://{{ ansible_facts['fqdn'] }}"

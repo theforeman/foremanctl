@@ -1,0 +1,48 @@
+#your default puppet server - can be overridden in the host level
+#if none specified, plain "puppet" will be used.
+#:puppet_server: puppet
+:unattended: true
+:login: true
+:require_ssl: false
+:locations_enabled: true
+:organizations_enabled: true
+
+# The following values are used for providing default settings during db migrate
+:oauth_active: true
+:oauth_map_users: true
+:oauth_consumer_key: {{ candlepin_oauth_key | default('katello') }}
+:oauth_consumer_secret: {{ candlepin_oauth_secret }}
+
+# SSL settings
+:ssl_ca_file: {{ foreman_development_cert_dir }}/proxy_ca.pem
+:ssl_certificate: {{ foreman_development_cert_dir }}/client_cert.pem
+:ssl_priv_key: {{ foreman_development_cert_dir }}/client_key.pem
+
+# Configure reverse proxy headers
+:ssl_client_dn_env: HTTP_SSL_CLIENT_S_DN
+:ssl_client_verify_env: HTTP_SSL_CLIENT_VERIFY
+:ssl_client_cert_env: HTTP_SSL_CLIENT_CERT
+
+# Debug mode disables concatenation and preprocessing of assets.
+:assets_debug: false
+
+# Rails Cache type
+:rails_cache_store:
+  :type: redis
+  :urls:
+    - redis://localhost:6379/4
+  :options:
+    :compress: true
+    :namespace: foreman
+
+# Individual logging types can be toggled on/off here
+:loggers:
+  :audit:
+    :enabled: true
+    :level: error
+  :taxonomy:
+    :enabled: true
+    :level: error
+  :dynflow:
+    :enabled: true
+    :level: info

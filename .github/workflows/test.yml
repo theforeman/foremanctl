@@ -108,6 +108,40 @@ jobs:
           ## If no one connects after 5 minutes, shut down server.
           wait-timeout-minutes: 5
 
+  devel-tests:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Setup libvirt for Vagrant
+        uses: voxpupuli/setup-vagrant@v0
+      - name: Install Ansible
+        run: pip install --upgrade ansible-core
+      - name: Setup environment
+        run: ./setup-environment
+      - name: Start VMs
+        run: |
+          ./forge vms start
+      - name: Configure repositories
+        run: |
+          ./forge setup-repositories
+      - name: Run deployment
+        run: |
+          ./forge deploy-dev --foreman-development-enabled-plugin foreman_ansible
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: owenthereal/action-upterm@v1
+        with:
+          ## limits ssh access and adds the ssh public key for the user which triggered the workflow
+          limit-access-to-actor: true
+          ## If no one connects after 5 minutes, shut down server.
+          wait-timeout-minutes: 5
+
   # A dummy job that you can mark as a required check instead of each individual test
   test-suite:
     if: always()
