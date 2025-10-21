@@ -48,6 +48,9 @@ def get_configs(hosts):
         return
 
     for host in hosts:
+        if not host.get('hostname') or not host.get('ip'):
+            continue
+
         details = {
             'ansible_host': host['ip'],
             'ansible_port': '22',
