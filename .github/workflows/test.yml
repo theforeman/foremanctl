@@ -178,6 +178,9 @@ jobs:
       - name: Run deployment
         run: |
           ./foremanctl deploy --foreman-initial-admin-password=changeme
+      - name: Stop services
+        run:
+          ./foremanctl services stop
       - name: Configure upgrade version
         run: |
           sed -i '/container_tag_stream:/ s/:.*/: "${{ matrix.upgrade_to }}"/' src/vars/images.yml
