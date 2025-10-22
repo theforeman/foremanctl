@@ -6,13 +6,9 @@ on:
     branches:
       - master
     paths-ignore:
-      - 'container-images/**'
-      - '.github/workflows/container.yml'
       - 'docs/**'
   pull_request:
     paths-ignore:
-      - 'container-images/**'
-      - '.github/workflows/container.yml'
       - 'docs/**'
 
 
