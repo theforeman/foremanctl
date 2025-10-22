@@ -1,0 +1,18 @@
+---
+- name: Deploy debug_tools
+  ansible.builtin.include_role:
+    name: debug_tools
+
+- name: Install podman
+  ansible.builtin.package:
+    name:
+      - podman
+
+- name: Install other dependencies
+  ansible.builtin.package:
+    name:
+      - bash-completion
+      - python3-cryptography
+      - python3-libsemanage
+      - python3-psycopg2
+      - python3-requests
