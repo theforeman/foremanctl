@@ -9,7 +9,6 @@
     - "../../vars/images.yml"
     - "../../vars/database.yml"
     - "../../vars/foreman.yml"
-
   vars:
     certificates_hostnames:
       - "{{ ansible_fqdn }}"
@@ -36,23 +35,8 @@
     httpd_server_key: "{{ server_key }}"
     pulp_content_origin: "https://{{ ansible_fqdn }}"
     pulp_pulp_url: "https://{{ ansible_fqdn }}"
-  pre_tasks:
-    - name: Deploy debug_tools
-      ansible.builtin.include_role:
-        name: debug_tools
-    - name: Install podman
-      ansible.builtin.package:
-        name:
-          - podman
-    - name: Install other dependencies
-      ansible.builtin.package:
-        name:
-          - bash-completion
-          - python3-cryptography
-          - python3-libsemanage
-          - python3-psycopg2
-          - python3-requests
   roles:
+    - role: pre_install
     - role: checks
     - role: certificates
       when: "certificate_source == 'default'"
