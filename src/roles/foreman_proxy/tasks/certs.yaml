@@ -1,0 +1,48 @@
+---
+- name: Create the podman secret for Foreman Proxy CA certificate
+  containers.podman.podman_secret:
+    name: foreman-proxy-ssl-ca
+    path: "{{ server_ca_certificate }}"
+    state: present
+  notify:
+    - Restart Foreman Proxy
+
+- name: Create the podman secret for foreman-proxy Proxy server certificate (for HTTPS)
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-ssl-cert
+    path: "{{ server_certificate }}"
+  notify:
+    - Restart Foreman Proxy
+
+- name: Create the podman secret for Foreman Proxy server key (for HTTPS)
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-ssl-key
+    path: "{{ server_key }}"
+  notify:
+    - Restart Foreman Proxy
+
+- name: Create the podman secret for Foreman Proxy Foreman CA
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-foreman-ssl-ca
+    path: "{{ server_ca_certificate }}"
+  notify:
+    - Restart Foreman Proxy
+
+- name: Create the podman secret for Foreman Proxy Foreman client certificate
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-foreman-ssl-cert
+    path: "{{ client_certificate }}"
+  notify:
+    - Restart Foreman Proxy
+
+- name: Create the podman secret for Foreman Proxy Foreman client key
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-foreman-ssl-key
+    path: "{{ client_key }}"
+  notify:
+    - Restart Foreman Proxy

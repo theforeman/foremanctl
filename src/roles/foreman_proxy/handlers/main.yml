@@ -1,0 +1,5 @@
+---
+- name: Restart Foreman Proxy
+  ansible.builtin.systemd:
+    name: foreman-proxy
+    state: restarted

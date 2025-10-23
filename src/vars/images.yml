@@ -3,6 +3,9 @@ candlepin_container_image: quay.io/foreman/candlepin
 candlepin_container_tag: "foreman-{{ container_tag_stream }}"
 foreman_container_image: quay.io/foreman/foreman
 foreman_container_tag: "{{ container_tag_stream }}"
+foreman_proxy_container_image: "quay.io/foreman/foreman-proxy"
+foreman_proxy_container_tag: "{{ container_tag_stream }}"
+
 postgresql_container_image: quay.io/sclorg/postgresql-13-c9s
 postgresql_container_tag: "latest"
 pulp_container_image: quay.io/foreman/pulp

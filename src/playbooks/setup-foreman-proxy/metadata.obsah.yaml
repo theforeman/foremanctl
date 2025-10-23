@@ -1,0 +1,6 @@
+---
+help: |
+  Set up Foreman Proxy
+
+include:
+  - _certificate_source
