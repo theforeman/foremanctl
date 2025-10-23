@@ -1,0 +1,16 @@
+---
+- name: Create settings config secret
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-settings-yaml
+    data: "{{ lookup('ansible.builtin.template', 'settings.yaml.j2') }}"
+  notify:
+    - Restart Foreman Proxy
+
+- name: Create logs config secret
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-logs-yaml
+    data: "{{ lookup('ansible.builtin.template', 'settings.d/logs.yaml.j2') }}"
+  notify:
+    - Restart Foreman Proxy

@@ -1,0 +1,8 @@
+---
+foreman_proxy_name: "{{ ansible_facts['fqdn'] }}"
+foreman_proxy_https_port: 8443
+foreman_proxy_url: "https://{{ foreman_proxy_name }}:{{ foreman_proxy_https_port }}"
+
+# Settings
+foreman_proxy_trusted_hosts:
+  - "{{ foreman_proxy_name }}"

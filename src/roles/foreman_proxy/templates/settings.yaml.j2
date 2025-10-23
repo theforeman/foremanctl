@@ -1,0 +1,20 @@
+:settings_directory: /etc/foreman-proxy/settings.d
+
+:foreman_url: {{ foreman_url }}
+:trusted_hosts: {{ foreman_proxy_trusted_hosts }}
+
+:https_port: {{ foreman_proxy_https_port }}
+:ssl_ca_file: /etc/foreman-proxy/ssl_ca.pem
+:ssl_certificate: /etc/foreman-proxy/ssl_cert.pem
+:ssl_private_key: /etc/foreman-proxy/ssl_key.pem
+
+:foreman_ssl_ca: /etc/foreman-proxy/foreman_ssl_ca.pem
+:foreman_ssl_cert: /etc/foreman-proxy/foreman_ssl_cert.pem
+:foreman_ssl_key: /etc/foreman-proxy/foreman_ssl_key.pem
+
+:bind_host: '*'
+
+:log_level: INFO
+:log_file: JOURNAL
+:log_buffer: 2000
+:log_buffer_errors: 1000

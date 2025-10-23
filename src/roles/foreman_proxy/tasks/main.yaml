@@ -1,0 +1,57 @@
+---
+- name: Pull the Foreman Proxy container image
+  containers.podman.podman_image:
+    name: "{{ foreman_proxy_container_image }}:{{ foreman_proxy_container_tag }}"
+    state: present
+
+- name: Create config secrets
+  ansible.builtin.include_tasks: configs.yaml
+
+- name: Create certs secrets
+  ansible.builtin.include_tasks: certs.yaml
+
+- name: Deploy Foreman Container
+  containers.podman.podman_container:
+    name: "foreman-proxy"
+    image: "{{ foreman_proxy_container_image }}:{{ foreman_proxy_container_tag }}"
+    state: quadlet
+    sdnotify: true
+    network: host
+    hostname: "{{ ansible_facts['fqdn'] }}"
+    secrets:
+      - 'foreman-proxy-settings-yaml,type=mount,target=/etc/foreman-proxy/settings.yml'
+      - 'foreman-proxy-logs-yaml,type=mount,target=/etc/foreman-proxy/settings.d/logs.yml'
+      - 'foreman-proxy-ssl-ca,type=mount,target=/etc/foreman-proxy/ssl_ca.pem'
+      - 'foreman-proxy-ssl-cert,type=mount,target=/etc/foreman-proxy/ssl_cert.pem'
+      - 'foreman-proxy-ssl-key,type=mount,target=/etc/foreman-proxy/ssl_key.pem'
+      - 'foreman-proxy-foreman-ssl-ca,type=mount,target=/etc/foreman-proxy/foreman_ssl_ca.pem'
+      - 'foreman-proxy-foreman-ssl-cert,type=mount,target=/etc/foreman-proxy/foreman_ssl_cert.pem'
+      - 'foreman-proxy-foreman-ssl-key,type=mount,target=/etc/foreman-proxy/foreman_ssl_key.pem'
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target foreman.target
+        [Unit]
+        PartOf=foreman.target
+  notify: Restart Foreman Proxy
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Flush handlers to restart services
+  ansible.builtin.meta: flush_handlers
+
+- name: Start the Foreman Proxy Service
+  ansible.builtin.systemd:
+    name: foreman-proxy
+    state: started
+
+- name: Register Foreman Proxy to Foreman
+  theforeman.foreman.smart_proxy:
+    name: "{{ foreman_proxy_name }}"
+    url: "{{ foreman_proxy_url }}"
+    server_url: "{{ foreman_url }}"
+    username: "{{ foreman_initial_admin_username }}"
+    password: "{{ foreman_initial_admin_password }}"
+    validate_certs: false
