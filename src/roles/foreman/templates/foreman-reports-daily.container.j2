@@ -1,0 +1,14 @@
+[Unit]
+Description=Foreman recurring task: reports:daily
+
+[Container]
+Image={{ foreman_container_image }}:{{ foreman_container_tag }}
+Exec=foreman-rake reports:daily
+User=foreman
+WorkingDir=/usr/share/foreman
+Volume=/etc/foreman:/etc/foreman:ro
+Volume=/var/lib/foreman:/var/lib/foreman
+Network=host
+
+[Install]
+WantedBy=multi-user.target
