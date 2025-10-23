@@ -1,0 +1,24 @@
+---
+- name: Create settings config secret
+  containers.podman.podman_secret:
+    state: present
+    name: smart-proxy-settings-yaml
+    data: "{{ lookup('ansible.builtin.template', 'settings.yaml.j2') }}"
+  notify:
+    - Restart Smart Proxy
+
+- name: Create pulpcore config secret
+  containers.podman.podman_secret:
+    state: present
+    name: smart-proxy-pulpcore-yaml
+    data: "{{ lookup('ansible.builtin.template', 'settings.d/pulpcore.yaml.j2') }}"
+  notify:
+    - Restart Smart Proxy
+
+- name: Create logs config secret
+  containers.podman.podman_secret:
+    state: present
+    name: smart-proxy-logs-yaml
+    data: "{{ lookup('ansible.builtin.template', 'settings.d/logs.yaml.j2') }}"
+  notify:
+    - Restart Smart Proxy

@@ -1,0 +1,5 @@
+---
+smart_proxy_container_image: "quay.io/foreman/foreman-proxy"
+smart_proxy_container_tag: "nightly"
+smart_proxy_https_port: 8443
+smart_proxy_url: "https://{{ ansible_fqdn }}:{{ smart_proxy_https_port }}"

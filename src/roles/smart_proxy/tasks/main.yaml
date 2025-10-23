@@ -1,0 +1,69 @@
+---
+- name: Create Smart Proxy directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - /var/log/foreman-proxy
+
+- name: Pull the Smart Proxy container image
+  containers.podman.podman_image:
+    name: "{{ smart_proxy_container_image }}:{{ smart_proxy_container_tag }}"
+    state: present
+
+- name: Create config secrets
+  ansible.builtin.include_tasks: configs.yaml
+
+- name: Create certs secrets
+  ansible.builtin.include_tasks: certs.yaml
+
+- name: Deploy Foreman Container
+  containers.podman.podman_container:
+    name: "smart-proxy"
+    image: "{{ smart_proxy_container_image }}:{{ smart_proxy_container_tag }}"
+    state: quadlet
+    sdnotify: true
+    network: host
+    hostname: "{{ ansible_fqdn }}"
+    volume:
+      - 'smart-proxy-data-run:/var/run/smart-proxy:z'
+      - '/var/log/foreman-proxy:/var/log/foreman-proxy:z'
+    secrets:
+      - 'smart-proxy-settings-yaml,type=mount,target=/etc/foreman-proxy/settings.yml'
+      - 'smart-proxy-pulpcore-yaml,type=mount,target=/etc/foreman-proxy/settings.d/pulpcore.yml'
+      - 'smart-proxy-logs-yaml,type=mount,target=/etc/foreman-proxy/settings.d/logs.yml'
+      - 'smart-proxy-ssl-ca,type=mount,target=/etc/foreman-proxy/ssl_ca.pem'
+      - 'smart-proxy-ssl-cert,type=mount,target=/etc/foreman-proxy/ssl_cert.pem'
+      - 'smart-proxy-ssl-key,type=mount,target=/etc/foreman-proxy/ssl_key.pem'
+      - 'smart-proxy-ssl-ca,type=mount,target=/etc/foreman-proxy/foreman_ssl_ca.pem'
+      - 'smart-proxy-foreman-ssl-cert,type=mount,target=/etc/foreman-proxy/foreman_ssl_cert.pem'
+      - 'smart-proxy-foreman-ssl-key,type=mount,target=/etc/foreman-proxy/foreman_ssl_key.pem'
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
+  notify: Restart Smart Proxy
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Flush handlers to restart services
+  ansible.builtin.meta: flush_handlers
+
+- name: Start the Smart Proxy Service
+  ansible.builtin.systemd:
+    name: smart-proxy
+    state: started
+
+- name: Configure Foreman Proxy
+  theforeman.foreman.smart_proxy:
+    name: "{{ ansible_fqdn }}"
+    url: "{{ smart_proxy_url }}"
+    server_url: "{{ foreman_url }}"
+    username: "{{ foreman_initial_admin_username }}"
+    password: "{{ foreman_initial_admin_password }}"
+    validate_certs: false

@@ -1,0 +1,5 @@
+---
+- name: Restart Smart Proxy
+  ansible.builtin.systemd:
+    name: smart-proxy
+    state: restarted
