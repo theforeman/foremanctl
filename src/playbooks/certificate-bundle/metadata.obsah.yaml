@@ -1,0 +1,10 @@
+---
+help: |
+  Generate a certificate bundle
+
+variables:
+  hostname:
+    parameter: hostname
+    help: Hostname to generate a certificate bundle for that will be the common name.
+  certificate_source:
+    help: What certificate source is being used.
