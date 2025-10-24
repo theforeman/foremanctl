@@ -1,0 +1,38 @@
+# Foreman development settings
+:logging:
+  :level: debug
+  :production:
+    :enabled: false
+  :console:
+    :enabled: true
+    :level: debug
+
+# Development environment settings
+:require_ssl: false
+:ssl_certificate: {{ foreman_development_cert_dir }}/client_cert.pem
+:ssl_ca_file: {{ foreman_development_cert_dir }}/proxy_ca.pem
+:ssl_priv_key: {{ foreman_development_cert_dir }}/client_key.pem
+
+# Domain and URL settings
+:fqdn: {{ ansible_fqdn }}
+:foreman_url: https://{{ ansible_fqdn }}
+:unattended: true
+
+# Authentication settings
+:oauth_active: true
+:oauth_map_users: false
+:oauth_consumer_key: katello
+:oauth_consumer_secret: katello
+
+# Development-specific settings
+:webpack_dev_server: false
+:assets_debug: true
+
+# Redis settings (points to containerized Redis)
+:dynflow:
+  :redis_url: redis://localhost:6379/6
+
+# Cache store (Redis)
+:rails_cache_store:
+  :type: redis_cache_store
+  :url: redis://localhost:6379/4
