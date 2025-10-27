@@ -1,0 +1,22 @@
+---
+- name: Execute smoker
+  hosts:
+    - localhost
+  vars_files:
+    - ../../../src/vars/foreman.yml
+    - "{{ obsah_state_path }}/parameters.yaml" # this is a hack to load persisted params without enabling persisting
+  vars:
+    smoker_base_url: "https://{{ hostvars['quadlet'].ansible_default_ipv4.address }}"
+    smoker_variables:
+      username: "{{ foreman_initial_admin_username }}"
+      password: "{{ foreman_initial_admin_password }}"
+    # We want to rely on the OS to already provide the needed packages
+    smoker_browser_packages: []
+    pytest_project_packages: []
+  pre_tasks:
+    - name: Gather facts from server
+      ansible.builtin.setup:
+      delegate_to: "quadlet"
+      delegate_facts: true
+  roles:
+    - role: theforeman.forklift.smoker
