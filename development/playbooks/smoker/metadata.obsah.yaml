@@ -1,0 +1,7 @@
+---
+help: |
+  Execute smoker
+
+variables:
+  pytest_args:
+    help: Pass arguments to pytest.

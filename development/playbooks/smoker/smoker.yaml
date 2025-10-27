@@ -1,0 +1,17 @@
+---
+- name: Execute tests
+  hosts:
+    - localhost
+  vars_files:
+    - ../../../src/vars/foreman.yml
+  vars:
+    smoker_base_url: "https://{{ hostvars['quadlet'].ansible_default_ipv4.address }}"
+    smoker_variables:
+      password: "{{ foreman_initial_admin_password | default('changeme') }}"
+  pre_tasks:
+    - name: Gather facts from server
+      ansible.builtin.setup:
+      delegate_to: "quadlet"
+      delegate_facts: true
+  roles:
+    - role: theforeman.forklift.smoker

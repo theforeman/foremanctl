@@ -75,6 +75,9 @@ jobs:
       - name: Run tests
         run: |
           ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }}"
+      - name: Run smoker
+        run: |
+          ./forge smoker
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
