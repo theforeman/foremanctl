@@ -53,6 +53,12 @@ Ensure you have a deployment. Now run the tests:
 > [!NOTE]
 > This will trigger all the tests so hammer tests will fail if you don't have [hammer setup](#deploy-hammeroptional)
 
+Additonally, you can run [smoker](https://github.com/theforeman/smoker) based tests with:
+
+```
+./forge smoker
+```
+
 ## Service Configuration
 
 Configuration files for services are stored as [podman secrets](https://docs.podman.io/en/latest/markdown/podman-secret-create.1.html) and mounted into the container at the expected locations. These configuration files can be listed:
