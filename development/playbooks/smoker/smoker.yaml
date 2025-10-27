@@ -6,6 +6,8 @@
     - ../../../src/vars/foreman.yml
   vars:
     smoker_base_url: "https://{{ hostvars['quadlet'].ansible_default_ipv4.address }}"
+    smoker_browser_packages: base-files
+    pytest_project_packages: base-files
     smoker_variables:
       password: "{{ foreman_initial_admin_password | default('changeme') }}"
   pre_tasks:
