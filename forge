@@ -1,9 +1,11 @@
 #!/bin/bash
 
 OBSAH_NAME=forge
-OBSAH_DATA=development
-OBSAH_INVENTORY=./inventories/
-export OBSAH_NAME OBSAH_DATA OBSAH_INVENTORY
+OBSAH_BASE=.
+OBSAH_DATA=${OBSAH_BASE}/development
+OBSAH_INVENTORY=${OBSAH_BASE}/inventories
+OBSAH_STATE=$(dirname $(readlink -f forge))/.var/lib/foremanctl
+export OBSAH_NAME OBSAH_DATA OBSAH_INVENTORY OBSAH_STATE
 
 ANSIBLE_COLLECTIONS_PATH=./build/collections/forge
 ANSIBLE_COLLECTIONS_SCAN_SYS_PATH=false
