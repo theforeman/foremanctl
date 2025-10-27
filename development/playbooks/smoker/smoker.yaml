@@ -4,6 +4,7 @@
     - localhost
   vars_files:
     - ../../../src/vars/foreman.yml
+    - "{{ obsah_state_path }}/parameters.yaml" # this is a hack to load persisted params without enabling persisting
   vars:
     smoker_base_url: "https://{{ hostvars['quadlet'].ansible_default_ipv4.address }}"
     smoker_browser_packages: base-files
