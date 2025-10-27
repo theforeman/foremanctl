@@ -1,0 +1,3 @@
+---
+- name: Resize disk and filesystem
+  ansible.builtin.import_playbook: theforeman.forklift.resize_disk

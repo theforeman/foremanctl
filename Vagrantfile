@@ -13,6 +13,11 @@ Vagrant.configure("2") do |config|
     override.vm.provider "libvirt" do |libvirt, provider|
       libvirt.memory = 10240
       libvirt.cpus = 4
+      libvirt.machine_virtual_size = 30
+    end
+
+    override.vm.provision('disk_resize', type: 'ansible') do |ansible_provisioner|
+      ansible_provisioner.playbook = 'development/playbooks/resize_disk.yaml'
     end
   end
 
