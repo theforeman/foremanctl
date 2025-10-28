@@ -9,14 +9,5 @@
   tasks:
     - name: "Manage services"
       ansible.builtin.service:
-        name: "{{ item }}"
+        name: foreman.target
         state: "{{ 'started' if services_state == 'start' else 'stopped' }}"
-      loop:
-        - candlepin
-        - foreman
-        - dynflow-sidekiq@orchestrator
-        - dynflow-sidekiq@worker
-        - dynflow-sidekiq@worker-hosts-queue
-        - pulp-api
-        - pulp-content
-        - pulp-worker
