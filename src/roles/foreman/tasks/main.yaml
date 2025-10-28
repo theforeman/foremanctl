@@ -108,7 +108,9 @@
     quadlet_options:
       - |
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
+        [Unit]
+        PartOf=foreman.target
   notify: Restart foreman
 
 - name: Deploy Dynflow Container
@@ -138,7 +140,9 @@
     quadlet_options:
       - |
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
+        [Unit]
+        PartOf=foreman.target
       - |
         [Service]
         RestartPolicy="on-failure"
