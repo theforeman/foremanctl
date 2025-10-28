@@ -96,8 +96,9 @@
     quadlet_options:
       - |
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
         [Unit]
+        PartOf=foreman.target
         Wants=postgresql.service
         [Service]
         Restart=always
@@ -123,8 +124,9 @@
     quadlet_options:
       - |
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
         [Unit]
+        PartOf=foreman.target
         Wants=postgresql.service
         [Service]
         Restart=always
@@ -149,8 +151,9 @@
     quadlet_options:
       - |
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
         [Unit]
+        PartOf=foreman.target
         Wants=postgresql.service
         [Service]
         Restart=always

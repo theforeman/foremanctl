@@ -82,7 +82,9 @@
     quadlet_options:
       - |
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
+        [Unit]
+        PartOf=foreman.target
         [Service]
         TimeoutStartSec=300
     healthcheck: curl --fail --insecure https://localhost:23443/candlepin/status

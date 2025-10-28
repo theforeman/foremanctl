@@ -34,7 +34,9 @@
     quadlet_options:
       - |
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
+        [Unit]
+        PartOf=foreman.target
 
 - name: Run daemon reload
   ansible.builtin.systemd:

@@ -1,0 +1,22 @@
+---
+- name: Define foreman.target
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/foreman.target
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Foreman services
+      [Install]
+      WantedBy=default.target
+
+- name: Run daemon reload to load new target
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start foreman.target
+  ansible.builtin.systemd_service:
+    name: foreman.target
+    state: started
+    enabled: true
