@@ -1,28 +1,13 @@
-#!/usr/bin/env bash
-# this is a very crude hack and can be removed once we have no more python2 systems
-# that need to run this code
-"exec" "$(command -v python3 || command -v python)" "$0" "$@"
+#!/usr/bin/env python3
 # Adapted from Mark Mandel's implementation
 # https://github.com/ansible/ansible/blob/devel/plugins/inventory/vagrant.py
 import argparse
 import json
-import os
 import subprocess
 import sys
 import yaml
 
-try:
-    from StringIO import StringIO  # pyright: reportMissingImports=false
-except ImportError:
-    from io import StringIO  # pyright: reportMissingImports=false
-
 from collections import defaultdict
-
-
-try:
-    DEVNULL = subprocess.DEVNULL
-except AttributeError:
-    DEVNULL = open(os.devnull, 'w')
 
 
 def parse_args():
@@ -36,7 +21,7 @@ def parse_args():
 
 def get_running_hosts():
     try:
-        subprocess.check_call(["which", "vagrant"], stdout=DEVNULL)
+        subprocess.check_call(["which", "vagrant"], stdout=subprocess.DEVNULL)
     except subprocess.CalledProcessError:
         return
 
@@ -70,7 +55,7 @@ def list_running_hosts():
 def get_ssh_configs(hosts):
     cmd = ['vagrant', 'ssh-config'] + hosts
     try:
-        output = subprocess.check_output(cmd, universal_newlines=True, stderr=DEVNULL)
+        output = subprocess.check_output(cmd, universal_newlines=True, stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError:
         return None
 
