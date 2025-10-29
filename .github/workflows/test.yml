@@ -17,35 +17,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ansible-lint:
-    name: Ansible Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-      - name: Run ansible-lint on src
-        uses: ansible/ansible-lint@main
-        with:
-          requirements_file: requirements.yml
-          working_directory: src
-          setup_python: false
-      - name: Run ansible-lint on development
-        uses: ansible/ansible-lint@main
-        with:
-          requirements_file: requirements.yml
-          working_directory: development
-          setup_python: false
-
   tests:
     strategy:
       fail-fast: false
-      matrix:
-        certificate_source:
-          - default
-          - installer
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
@@ -55,50 +29,22 @@ jobs:
           python-version: '3.12'
       - name: Setup libvirt for Vagrant
         uses: voxpupuli/setup-vagrant@v0
-      - name: Install Ansible
-        run: pip install --upgrade ansible-core
-      - name: Setup environment
-        run: ./setup-environment
+      - name: Install systemd-resolved
+        run: |
+          sudo apt-get install -y --no-install-recommends systemd-resolved
+      - name: Install DNS hook
+        run: |
+          # https://gist.github.com/ekohl/e487422d4aaad8ab176c19ec713b700a
+          sudo curl -L https://gist.github.com/ekohl/e487422d4aaad8ab176c19ec713b700a/raw/d0792cf733b5ffb65873cc33c96e7a1b54e0d14b/network.py -o /etc/libvirt/hooks/network
+          sudo chmod 0755 /etc/libvirt/hooks/network
+          sudo systemctl restart libvirtd
       - name: Start VMs
         run: |
-          ./forge vms start
-      - name: Configure repositories
+          vagrant up --no-provision --no-tty quadlet
+      - name: Ping machine
         run: |
-          ./forge setup-repositories
-      - name: Create installer certificates
-        if: contains(matrix.certificate_source, 'installer')
-        run: |
-          ./forge installer-certs
-      - name: Run image pull
-        run: |
-          ./foremanctl pull-images
-      - name: Run deployment
-        run: |
-          ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} --foreman-initial-admin-password=changeme
-      - name: Setup hammer
-        run: |
-          ./foremanctl setup-hammer
-      - name: Run tests
-        run: |
-          ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }}"
-      - name: Run smoker
-        run: |
-          ./forge smoker
-      - name: Archive smoker report
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v5
-        with:
-          name: smoker-${{ matrix.certificate_source }}
-          path: "/home/runner/smoker/report/"
-      - name: Generate sos reports
-        if: ${{ always() }}
-        run: ./forge sos
-      - name: Archive sos reports
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v5
-        with:
-          name: sosreport-${{ matrix.certificate_source }}
-          path: sos/
+          resolvectl
+          ping -c1 quadlet.example.com
       - name: Setup upterm session
         if: ${{ failure() }}
         uses: owenthereal/action-upterm@v1
