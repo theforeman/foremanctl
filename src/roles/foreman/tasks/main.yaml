@@ -80,7 +80,7 @@
 
 - name: Extract public assets
   ansible.builtin.shell:
-    cmd: podman exec foreman-extract-temp tar -chC /usr/share/foreman/public . | tar -xC {{ foreman_public_assets_dir }}/
+    cmd: set -o pipefail && podman exec foreman-extract-temp tar -chC /usr/share/foreman/public . | tar -xC {{ foreman_public_assets_dir }}/
   changed_when: false
 
 - name: Remove temporary container
