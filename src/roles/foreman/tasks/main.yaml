@@ -76,11 +76,11 @@
   containers.podman.podman_container:
     name: foreman-extract-temp
     image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
-    state: present
+    state: started
 
-- name: Extract public assets using podman cp
-  ansible.builtin.command:
-    cmd: podman cp foreman-extract-temp:/usr/share/foreman/public/. {{ foreman_public_assets_dir }}/
+- name: Extract public assets
+  ansible.builtin.shell:
+    cmd: podman exec foreman-extract-temp tar -chC /usr/share/foreman/public . | tar -xC {{ foreman_public_assets_dir }}/
   changed_when: false
 
 - name: Remove temporary container
