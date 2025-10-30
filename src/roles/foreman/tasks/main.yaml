@@ -90,6 +90,7 @@
       - |
         [Install]
         WantedBy=default.target
+  notify: Restart foreman
 
 - name: Deploy Dynflow Container
   containers.podman.podman_container:
