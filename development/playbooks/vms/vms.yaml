@@ -26,6 +26,13 @@
             content: "{{ inventory_output.stdout }}\n"
             mode: "0664"
 
+        - name: Provision the virtual machines
+          ansible.builtin.command:
+            cmd: "vagrant provision {{ vms | default() }}"
+          args:
+            chdir: "{{ inventory_dir }}/../"
+          changed_when: false
+
     - name: Stop virtual machines
       when: vm_action == 'stop'
       block:
