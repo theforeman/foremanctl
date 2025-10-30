@@ -86,6 +86,7 @@
     env:
       SEED_ADMIN_USER: "{{ foreman_initial_admin_username }}"
       SEED_ADMIN_PASSWORD: "{{ foreman_initial_admin_password }}"
+      FOREMAN_PUMA_WORKERS: "{{ foreman_service_puma_workers }}"
     quadlet_options:
       - |
         [Install]
