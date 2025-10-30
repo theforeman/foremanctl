@@ -202,3 +202,27 @@
     username: "{{ foreman_initial_admin_username }}"
     password: "{{ foreman_initial_admin_password }}"
     validate_certs: false
+
+- name: Deploy Quadlet container and timer for Foreman db:sessions:clear
+  block:
+    - name: Create Quadlet container definition
+      ansible.builtin.template:
+        src: foreman-db-sessions-clear.container.j2
+        dest: "/etc/containers/systemd/foreman-db-sessions-clear.container"
+        mode: "0644"
+
+    - name: Create Quadlet timer definition
+      ansible.builtin.template:
+        src: foreman-db-sessions-clear.timer.j2
+        dest: "/etc/containers/systemd/foreman-db-sessions-clear.timer"
+        mode: "0644"
+
+    - name: Reload systemd for db:sessions:clear timer
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Enable and start Foreman db:sessions:clear timer
+      ansible.builtin.systemd:
+        name: "foreman-db-sessions-clear.timer"
+        enabled: true
+        state: started
