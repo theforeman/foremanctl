@@ -1,0 +1,15 @@
+---
+help: |
+  Manage development and testing containers.
+
+variables:
+  container_action:
+    parameter: container_action
+    help: Start the containers
+    choices:
+      - start
+      - stop
+      - status
+  containers:
+    help: Which containers to manage, defaults to quadlet.
+    action: store
