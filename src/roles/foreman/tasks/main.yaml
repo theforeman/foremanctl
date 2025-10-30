@@ -86,6 +86,7 @@
     env:
       SEED_ADMIN_USER: "{{ foreman_initial_admin_username }}"
       SEED_ADMIN_PASSWORD: "{{ foreman_initial_admin_password }}"
+      FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
     quadlet_options:
       - |
         [Install]
@@ -115,6 +116,7 @@
       DYNFLOW_SIDEKIQ_SCRIPT: "/usr/share/foreman/extras/dynflow-sidekiq.rb"
       DYNFLOW_REDIS_URL: "redis://localhost:6379/6"
       REDIS_PROVIDER: "DYNFLOW_REDIS_URL"
+      FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
     command: "/usr/libexec/foreman/sidekiq-selinux -e production -r /usr/share/foreman/extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yml"
     quadlet_options:
       - |
