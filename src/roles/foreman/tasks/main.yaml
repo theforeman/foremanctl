@@ -13,6 +13,24 @@
     - Restart foreman
     - Restart dynflow-sidekiq@
 
+- name: Create secret for SEED_ADMIN_USER
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-seed-admin-user
+    data: "{{ foreman_initial_admin_username }}"
+  notify:
+    - Restart foreman
+    - Restart dynflow-sidekiq@
+
+- name: Create secret for SEED_ADMIN_PASSWORD
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-seed-admin-password
+    data: "{{ foreman_initial_admin_password }}"
+  notify:
+    - Restart foreman
+    - Restart dynflow-sidekiq@
+
 - name: Create settings config secret
   containers.podman.podman_secret:
     state: present
@@ -78,14 +96,13 @@
       - 'foreman-data-run:/var/run/foreman:z'
     secrets:
       - 'foreman-database-url,type=env,target=DATABASE_URL'
+      - 'foreman-seed-admin-user,type=env,target=SEED_ADMIN_USER'
+      - 'foreman-seed-admin-password,type=env,target=SEED_ADMIN_PASSWORD'
       - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
       - 'foreman-katello-yaml,type=mount,target=/etc/foreman/plugins/katello.yaml'
       - 'foreman-ca-cert,type=mount,target=/etc/foreman/katello-default-ca.crt'
       - 'foreman-client-cert,type=mount,target=/etc/foreman/client_cert.pem'
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
-    env:
-      SEED_ADMIN_USER: "{{ foreman_initial_admin_username }}"
-      SEED_ADMIN_PASSWORD: "{{ foreman_initial_admin_password }}"
     quadlet_options:
       - |
         [Install]
@@ -152,10 +169,9 @@
     network: host
     secrets:
       - 'foreman-database-url,type=env,target=DATABASE_URL'
+      - 'foreman-seed-admin-user,type=env,target=SEED_ADMIN_USER'
+      - 'foreman-seed-admin-password,type=env,target=SEED_ADMIN_PASSWORD'
       - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
-    env:
-      SEED_ADMIN_USER: "{{ foreman_initial_admin_username }}"
-      SEED_ADMIN_PASSWORD: "{{ foreman_initial_admin_password }}"
 
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers
