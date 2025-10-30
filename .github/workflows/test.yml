@@ -22,16 +22,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
       - name: Run ansible-lint on src
         uses: ansible/ansible-lint@main
         with:
           requirements_file: requirements.yml
           working_directory: src
+          setup_python: false
       - name: Run ansible-lint on development
         uses: ansible/ansible-lint@main
         with:
           requirements_file: requirements.yml
           working_directory: development
+          setup_python: false
 
   tests:
     strategy:
