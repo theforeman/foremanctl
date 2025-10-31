@@ -2,3 +2,7 @@
 foreman_admin_passwd_file: "{{ obsah_state_path }}/foreman-admin-init-passwd"
 foreman_initial_admin_username: admin
 foreman_initial_admin_password: "{{ lookup('ansible.builtin.password', foreman_admin_passwd_file, chars=['ascii_letters']) }}"
+# Puma workers calculation:
+# CPU based calculation is based on https://github.com/puma/puma/blob/master/docs/deployment.md#mri
+# Memory based calculation is based on https://docs.gitlab.com/ee/install/requirements.html#puma-settings
+foreman_service_puma_workers: "{{ [100, ansible_processor_nproc * 1.5, (ansible_memtotal_mb / 1024) - 1.5] | min | int }}"
