@@ -1,0 +1,14 @@
+---
+- name: Check if yuptoo service exists
+  ansible.builtin.systemd:
+    name: iop-core-yuptoo
+  register: yuptoo_service_status
+  failed_when: false
+  listen: restart yuptoo
+
+- name: Restart yuptoo service if it exists
+  ansible.builtin.systemd:
+    name: iop-core-yuptoo
+    state: restarted
+  when: yuptoo_service_status.status is defined and yuptoo_service_status.status.LoadState != "not-found"
+  listen: restart yuptoo

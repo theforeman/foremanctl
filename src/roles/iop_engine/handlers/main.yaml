@@ -1,0 +1,14 @@
+---
+- name: Check if engine service exists
+  ansible.builtin.systemd:
+    name: iop-core-engine
+  register: engine_service_status
+  failed_when: false
+  listen: restart engine
+
+- name: Restart engine service if it exists
+  ansible.builtin.systemd:
+    name: iop-core-engine
+    state: restarted
+  when: engine_service_status.status is defined and engine_service_status.status.LoadState != "not-found"
+  listen: restart engine
