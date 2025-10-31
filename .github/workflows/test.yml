@@ -28,16 +28,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Setup libvirt for Vagrant
-        uses: voxpupuli/setup-vagrant@v0
-      - name: Install systemd-resolved
-        run: |
-          sudo apt-get install -y --no-install-recommends systemd-resolved
-      - name: Install DNS hook
-        run: |
-          # https://gist.github.com/ekohl/e487422d4aaad8ab176c19ec713b700a
-          sudo curl -L https://gist.github.com/ekohl/e487422d4aaad8ab176c19ec713b700a/raw/d0792cf733b5ffb65873cc33c96e7a1b54e0d14b/network.py -o /etc/libvirt/hooks/network
-          sudo chmod 0755 /etc/libvirt/hooks/network
-          sudo systemctl restart libvirtd
+        uses: ekohl/setup-vagrant@dns-hook
+        with:
+          configure_dns: true
       - name: Start VMs
         run: |
           vagrant up --no-provision --no-tty quadlet
