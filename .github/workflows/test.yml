@@ -54,7 +54,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Setup libvirt for Vagrant
-        uses: voxpupuli/setup-vagrant@v0
+        # https://github.com/voxpupuli/setup-vagrant/pull/1
+        uses: ekohl/setup-vagrant@dns-hook
+        with:
+          configure_dns: true
       - name: Install Ansible
         run: pip install --upgrade ansible-core
       - name: Setup environment
