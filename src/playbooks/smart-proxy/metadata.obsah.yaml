@@ -1,0 +1,8 @@
+---
+help: |
+  Install Smart Proxy
+
+include:
+  - _certificate_source
+  - _database_mode
+  - _database_connection

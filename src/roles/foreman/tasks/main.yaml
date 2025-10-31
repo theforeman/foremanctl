@@ -194,12 +194,3 @@
   register: foreman_tasks_status
   when:
     - "'katello' in foreman_status.json['results']"
-
-- name: Configure Foreman Proxy
-  theforeman.foreman.smart_proxy:
-    name: "{{ ansible_fqdn }}-pulp"
-    url: "https://{{ ansible_fqdn }}/pulp/api/v3/smart_proxy"
-    server_url: "{{ foreman_url }}"
-    username: "{{ foreman_initial_admin_username }}"
-    password: "{{ foreman_initial_admin_password }}"
-    validate_certs: false

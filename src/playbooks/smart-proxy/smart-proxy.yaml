@@ -1,0 +1,17 @@
+---
+- name: Setup Smart Proxy
+  hosts:
+    - quadlet
+  become: true
+  vars_files:
+    - "../../vars/defaults.yml"
+    - "../../vars/{{ certificate_source }}_certificates.yml"
+    - "../../vars/foreman.yml"
+    - "../../roles/pulp/defaults/main.yaml"
+  vars:
+    foreman_url: "https://{{ ansible_fqdn }}"
+
+  roles:
+    - pre_install
+    - checks
+    - smart_proxy
