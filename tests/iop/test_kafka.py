@@ -1,0 +1,71 @@
+import pytest
+
+
+def test_kafka_service(server):
+    service = server.service("iop-core-kafka")
+    assert service.is_running
+    assert service.is_enabled
+
+
+def test_kafka_port(server):
+    addr = server.addr("localhost")
+    assert addr.port("9092").is_reachable
+
+
+def test_kafka_volume(server):
+    result = server.run("podman volume ls --format '{{.Name}}'")
+    assert result.succeeded
+    assert "iop-core-kafka-data" in result.stdout
+
+
+def test_kafka_topics_initialized(server):
+    result = server.run("podman exec iop-core-kafka /opt/kafka/init.sh --check")
+    assert result.succeeded
+
+
+def test_kafka_secrets(server):
+    secrets = [
+        'iop-core-kafka-init-start',
+        'iop-core-kafka-server-properties',
+        'iop-core-kafka-init'
+    ]
+
+    result = server.run("podman secret ls --format '{{.Name}}'")
+    assert result.succeeded
+
+    for secret_name in secrets:
+        assert secret_name in result.stdout
+
+
+def test_kafka_config_content(server):
+    result = server.run("podman secret inspect iop-core-kafka-server-properties --showsecret")
+    assert result.succeeded
+
+    config_data = result.stdout.strip()
+    assert "advertised.listeners=DOCKER://localhost:9092" in config_data
+    assert "controller.quorum.voters=1@localhost:9093" in config_data
+
+
+def test_kafka_container_running(server):
+    result = server.run("podman inspect iop-core-kafka --format '{{.State.Status}}'")
+    assert result.succeeded
+    assert "running" in result.stdout
+
+
+def test_kafka_quadlet_file(server):
+    quadlet_file = server.file("/etc/containers/systemd/iop-core-kafka.container")
+    assert quadlet_file.exists
+    assert quadlet_file.is_file
+
+
+def test_kafka_bootstrap_connectivity(server):
+    result = server.run("timeout 10 bash -c 'until ncat -z localhost 9092; do sleep 1; done'")
+    assert result.succeeded
+
+
+def test_kafka_topic_creation(server, kafka_topics):
+    result = server.run("podman exec iop-core-kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list")
+    assert result.succeeded
+
+    for topic in kafka_topics:
+        assert topic in result.stdout

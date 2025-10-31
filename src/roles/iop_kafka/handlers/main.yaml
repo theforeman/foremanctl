@@ -1,0 +1,14 @@
+---
+- name: Check if kafka service exists
+  ansible.builtin.systemd:
+    name: iop-core-kafka
+  register: iop_kafka_service_status
+  failed_when: false
+  listen: restart kafka
+
+- name: Restart kafka service if it exists
+  ansible.builtin.systemd:
+    name: iop-core-kafka
+    state: restarted
+  when: iop_kafka_service_status.status is defined and iop_kafka_service_status.status.LoadState != "not-found"
+  listen: restart kafka
