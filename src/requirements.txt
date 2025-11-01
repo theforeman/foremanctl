@@ -1,2 +1,3 @@
 obsah >= 1.4
+passlib
 requests

@@ -1,0 +1,29 @@
+development:
+  adapter: postgresql
+  database: {{ foreman_development_database_name }}
+  pool: 20
+  username: {{ foreman_development_database_user }}
+  password: {{ foreman_development_database_password }}
+  host: localhost
+  encoding: UTF8
+  template: template0
+
+test:
+  adapter: postgresql
+  database: {{ foreman_development_database_name }}_test
+  pool: 20
+  username: {{ foreman_development_database_user }}
+  password: {{ foreman_development_database_password }}
+  host: localhost
+  encoding: UTF8
+  template: template0
+
+production:
+  adapter: postgresql
+  database: {{ foreman_development_database_name }}
+  pool: 20
+  username: {{ foreman_development_database_user }}
+  password: {{ foreman_development_database_password }}
+  host: localhost
+  encoding: UTF8
+  template: template0
