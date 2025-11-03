@@ -7,6 +7,8 @@ variables:
     help: Initial username for the admin user.
   foreman_initial_admin_password:
     help: Initial password for the admin user.
+  pulp_worker_count:
+    help: Number of pulpcore workers. Defaults to 8 or the number of CPU cores, whichever is smaller.
 
 include:
   - _certificate_source
