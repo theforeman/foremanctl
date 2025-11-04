@@ -7,7 +7,7 @@ variables:
     help: Initial username for the admin user.
   foreman_initial_admin_password:
     help: Initial password for the admin user.
-  foreman_service_puma_workers:
+  foreman_puma_workers:
     help: Number of workers for Puma.
 
 include:
