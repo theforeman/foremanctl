@@ -107,3 +107,17 @@ jobs:
           limit-access-to-actor: true
           ## If no one connects after 5 minutes, shut down server.
           wait-timeout-minutes: 5
+
+  # A dummy job that you can mark as a required check instead of each individual test
+  test-suite:
+    if: always()
+    needs:
+      - tests
+      - ansible-lint
+    runs-on: ubuntu-latest
+    name: Test suite
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
