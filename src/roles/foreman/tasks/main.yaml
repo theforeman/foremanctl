@@ -103,6 +103,8 @@
       - 'foreman-ca-cert,type=mount,target=/etc/foreman/katello-default-ca.crt'
       - 'foreman-client-cert,type=mount,target=/etc/foreman/client_cert.pem'
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
+    env:
+      FOREMAN_PUMA_WORKERS: "{{ foreman_puma_workers }}"
     quadlet_options:
       - |
         [Install]

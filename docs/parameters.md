@@ -49,6 +49,7 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--pulp-database-password` | Password for Pulp database | `--foreman-proxy-content-pulpcore-postgresql-password` |
 | `--foreman-initial-admin-username` | Initial username for the admin user | `--foreman-initial-admin-username` |
 | `--foreman-initial-admin-password` | Initial password for the admin user | `--foreman-initial-admin-password` |
+| `--foreman-puma-workers` | Number of workers for Puma | `--foreman-foreman-service-puma-workers` |
 
 #### Certs
 
@@ -66,7 +67,6 @@ There are multiple use cases from the users perspective that dictate what parame
 
 | foreman-installer Parameter | Description | Module | Puppet Parameter | Keep |
 | ------------------- | ----------- | ------ | ---------------- |-------------------|
-| `--foreman-foreman-service-puma-workers` | | foreman | foreman_service_puma_workers | `--foreman-puma-workers` |
 | `--foreman-foreman-service-puma-threads-min` | | foreman | foreman_service_puma_workers_min | `--foreman-puma-threads-min` |
 | `--foreman-foreman-service-puma-threads-max` | | foreman | foreman_service_puma_threads_max | `--foreman-puma-threads-max` |
 | `--foreman-dynflow-worker-instances` | | foreman | dynflow_worker_instances |
