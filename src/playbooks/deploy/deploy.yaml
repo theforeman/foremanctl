@@ -11,7 +11,7 @@
     - "../../vars/foreman.yml"
   vars:
     certificates_hostnames:
-      - "{{ ansible_fqdn }}"
+      - "{{ ansible_facts['fqdn'] }}"
       - localhost
     certificates_ca_password: "CHANGEME"
     candlepin_keystore_password: "CHANGEME"
@@ -28,13 +28,13 @@
     foreman_client_certificate: "{{ client_certificate }}"
     foreman_oauth_consumer_key: abcdefghijklmnopqrstuvwxyz123456
     foreman_oauth_consumer_secret: abcdefghijklmnopqrstuvwxyz123456
-    foreman_url: "https://{{ ansible_fqdn }}"
+    foreman_url: "https://{{ ansible_facts['fqdn'] }}"
     httpd_server_ca_certificate: "{{ server_ca_certificate }}"
     httpd_client_ca_certificate: "{{ client_ca_certificate }}"
     httpd_server_certificate: "{{ server_certificate }}"
     httpd_server_key: "{{ server_key }}"
-    pulp_content_origin: "https://{{ ansible_fqdn }}"
-    pulp_pulp_url: "https://{{ ansible_fqdn }}"
+    pulp_content_origin: "https://{{ ansible_facts['fqdn'] }}"
+    pulp_pulp_url: "https://{{ ansible_facts['fqdn'] }}"
   roles:
     - role: pre_install
     - role: checks

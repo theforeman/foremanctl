@@ -1,5 +1,5 @@
 <VirtualHost *:443>
-  ServerName {{ ansible_fqdn }}
+  ServerName {{ ansible_facts['fqdn'] }}
 
   ## Load additional static includes
   IncludeOptional "/etc/httpd/conf.d/05-foreman-ssl.d/*.conf"
@@ -37,7 +37,7 @@
   <Location "/pulpcore_registry/v2/">
     RequestHeader unset REMOTE_USER
     RequestHeader unset REMOTE-USER
-    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_fqdn }}'"
+    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_facts['fqdn'] }}'"
     ProxyPass {{ httpd_pulp_api_backend }}/v2/
     ProxyPassReverse {{ httpd_pulp_api_backend }}/v2/
   </Location>
@@ -55,7 +55,7 @@
   <Location "/pulp/api/v3">
     RequestHeader unset REMOTE_USER
     RequestHeader unset REMOTE-USER
-    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_fqdn }}'"
+    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_facts['fqdn'] }}'"
     ProxyPass {{ httpd_pulp_api_backend }}/pulp/api/v3 timeout=600
     ProxyPassReverse {{ httpd_pulp_api_backend }}/pulp/api/v3
   </Location>

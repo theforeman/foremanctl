@@ -6,4 +6,4 @@ foreman_initial_admin_password: "{{ lookup('ansible.builtin.password', foreman_a
 # Puma workers calculation:
 # CPU based calculation is based on https://github.com/puma/puma/blob/master/docs/deployment.md#mri
 # Memory based calculation is based on https://docs.gitlab.com/ee/install/requirements.html#puma-settings
-foreman_puma_workers: "{{ [32, ansible_processor_nproc * 1.5, (ansible_memtotal_mb / 1024) - 1.5] | min | int }}"
+foreman_puma_workers: "{{ [32, ansible_facts['processor_nproc'] * 1.5, (ansible_facts['memtotal_mb'] / 1024) - 1.5] | min | int }}"
