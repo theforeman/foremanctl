@@ -5,7 +5,7 @@ pulp_api_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
 pulp_content_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
 pulp_worker_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
 
-pulp_worker_count: "{{ [8, ansible_processor_nproc] | min }}"
+pulp_worker_count: 2
 pulp_content_service_worker_count: "{{ (2 * ([8, ansible_processor_nproc] | min)) + 1 }}"
 pulp_api_service_worker_count: "{{ ([4, ansible_processor_nproc] | min) + 1 }}"
 
@@ -49,7 +49,6 @@ pulp_settings_other_env:
   PULP_REST_FRAMEWORK__DEFAULT_AUTHENTICATION_CLASSES: >-
     ['rest_framework.authentication.SessionAuthentication', 'pulpcore.app.authentication.PulpRemoteUserAuthentication']
   PULP_SMART_PROXY_PULP_URL: "{{ pulp_pulp_url }}"
-  PULP_WORKERS: "{{ pulp_worker_count }}"
   PULP_API_WORKERS: "{{ pulp_api_service_worker_count }}"
   PULP_CONTENT_WORKERS: "{{ pulp_content_service_worker_count }}"
 
