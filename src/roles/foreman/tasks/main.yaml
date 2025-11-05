@@ -91,7 +91,7 @@
     state: quadlet
     sdnotify: true
     network: host
-    hostname: "{{ ansible_fqdn }}"
+    hostname: "{{ ansible_facts['fqdn'] }}"
     volume:
       - 'foreman-data-run:/var/run/foreman:z'
     secrets:
@@ -119,7 +119,7 @@
     state: quadlet
     sdnotify: true
     network: host
-    hostname: "{{ ansible_fqdn }}"
+    hostname: "{{ ansible_facts['fqdn'] }}"
     volume:
       - 'foreman-data-run:/var/run/foreman:z'
     secrets:
@@ -215,8 +215,8 @@
 
 - name: Configure Foreman Proxy
   theforeman.foreman.smart_proxy:
-    name: "{{ ansible_fqdn }}-pulp"
-    url: "https://{{ ansible_fqdn }}/pulp/api/v3/smart_proxy"
+    name: "{{ ansible_facts['fqdn'] }}-pulp"
+    url: "https://{{ ansible_facts['fqdn'] }}/pulp/api/v3/smart_proxy"
     server_url: "{{ foreman_url }}"
     username: "{{ foreman_initial_admin_username }}"
     password: "{{ foreman_initial_admin_password }}"

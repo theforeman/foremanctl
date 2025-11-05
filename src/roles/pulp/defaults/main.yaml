@@ -6,8 +6,8 @@ pulp_content_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
 pulp_worker_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
 
 pulp_worker_count: 2
-pulp_content_service_worker_count: "{{ (2 * ([8, ansible_processor_nproc] | min)) + 1 }}"
-pulp_api_service_worker_count: "{{ ([4, ansible_processor_nproc] | min) + 1 }}"
+pulp_content_service_worker_count: "{{ (2 * ([8, ansible_facts['processor_nproc']] | min)) + 1 }}"
+pulp_api_service_worker_count: "{{ ([4, ansible_facts['processor_nproc']] | min) + 1 }}"
 
 pulp_volumes:
   - /var/lib/pulp:/var/lib/pulp
@@ -16,8 +16,8 @@ pulp_api_container_name: pulp-api
 pulp_content_container_name: pulp-content
 pulp_worker_container_name: pulp-worker
 
-pulp_content_origin: "http://{{ ansible_fqdn }}:24816"
-pulp_pulp_url: "http://{{ ansible_fqdn }}:24817"
+pulp_content_origin: "http://{{ ansible_facts['fqdn'] }}:24816"
+pulp_pulp_url: "http://{{ ansible_facts['fqdn'] }}:24817"
 
 pulp_enable_analytics: false
 
