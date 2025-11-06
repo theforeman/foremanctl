@@ -31,3 +31,6 @@ httpd_server_key: "{{ server_key }}"
 pulp_content_origin: "https://{{ ansible_facts['fqdn'] }}"
 pulp_pulp_url: "https://{{ ansible_facts['fqdn'] }}"
 pulp_plugins: "{{ features | select('contains', 'content/') | map('replace', 'content/', 'pulp_') | list }}"
+
+hammer_ca_certificate: "{{ server_ca_certificate }}"
+hammer_plugins: "{{ foreman_plugins | map('replace', 'foreman-tasks', 'foreman_tasks') | list }}"

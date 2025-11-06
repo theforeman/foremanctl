@@ -34,7 +34,7 @@ source .venv/bin/activate
 
 ```
 ./forge setup-repositories
-./foremanctl setup-hammer
+./foremanctl deploy --feature hammer
 ```
 To teardown the environment:
 

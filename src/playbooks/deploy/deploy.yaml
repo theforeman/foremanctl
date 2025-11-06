@@ -29,4 +29,7 @@
     - pulp
     - foreman
     - role: systemd_target
+    - role: hammer
+      when:
+        - "'hammer' in features"
     - post_install

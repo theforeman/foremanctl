@@ -75,9 +75,10 @@ jobs:
       - name: Run deployment
         run: |
           ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} --foreman-initial-admin-password=changeme
-      - name: Setup hammer
+      - name: Add optional feature - hammer
+        # FIXME: We need to repeat the default features once
         run: |
-          ./foremanctl setup-hammer
+          ./foremanctl deploy --feature foreman-tasks --feature foreman_remote_execution --feature katello --feature content/container --feature content/rpm --feature hammer
       - name: Set up Foreman Proxy
         run: |
           ./foremanctl setup-foreman-proxy
@@ -193,9 +194,9 @@ jobs:
       - name: Run deployment
         run: |
           ./foremanctl deploy
-      - name: Setup hammer
+      - name: Add optional feature - hammer
         run: |
-          ./foremanctl setup-hammer
+          ./foremanctl deploy --feature hammer
       - name: Set up Foreman Proxy
         run: |
           ./foremanctl setup-foreman-proxy
