@@ -137,14 +137,15 @@
         RestartSec=3
   notify: Restart pulp-content
 
-- name: Deploy Pulp Worker Container
+- name: Deploy Pulp Worker Template
   containers.podman.podman_container:
-    name: "{{ pulp_worker_container_name }}"
+    name: "{{ pulp_worker_container_name }}-%i"
+    quadlet_filename: "{{ pulp_worker_container_name }}@"
     image: "{{ pulp_worker_image }}"
     state: quadlet
     command: pulp-worker
     network: host
-    hostname: "pulp-worker.{{ ansible_facts['fqdn'] }}"
+    hostname: "pulp-worker-%i.{{ ansible_facts['fqdn'] }}"
     volumes: "{{ pulp_volumes }}"
     security_opt:
       - "label=disable"
@@ -156,17 +157,43 @@
     quadlet_options:
       - |
         [Install]
-        WantedBy=default.target foreman.target
+        WantedBy=foreman.target pulp-worker.target
         [Unit]
-        PartOf=foreman.target
+        PartOf=pulp-worker.target foreman.target
         Wants=redis.service postgresql.service
         After=redis.service postgresql.service
         [Service]
         Restart=always
         RestartSec=3
+        SyslogIdentifier={{ pulp_worker_container_name }}@%i
   notify: Restart pulp-worker
 
-- name: Run daemon reload to make Quadlet create the service files
+- name: Create Pulp Worker Container instances
+  ansible.builtin.file:
+    state: link
+    src: "/etc/containers/systemd/{{ pulp_worker_container_name }}@.container"
+    dest: "/etc/containers/systemd/{{ item }}.container"
+  loop: "{{ pulp_worker_services }}"
+
+- name: Create pulp-worker.target
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/pulp-worker.target
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Pulp Worker Services
+      [Install]
+      WantedBy=foreman.target
+
+- name: Enable and start pulp-worker.target
+  ansible.builtin.systemd:
+    name: pulp-worker.target
+    enabled: true
+    state: started
+
+- name: Run daemon reload to load service files
   ansible.builtin.systemd:
     daemon_reload: true
 
@@ -193,10 +220,7 @@
     state: started
   async: 60
   poll: 0
-  loop:
-    - pulp-api
-    - pulp-content
-    - pulp-worker
+  loop: "{{ pulp_all_services }}"
   register: pulp_services
 
 - name: Wait for Pulp services
@@ -207,6 +231,32 @@
   retries: 100
   delay: 1
   loop: "{{ pulp_services.results }}"
+
+- name: Gather service facts to find existing pulp-worker instances
+  ansible.builtin.service_facts:
+
+- name: Build list of existing pulp-worker services
+  ansible.builtin.set_fact:
+    pulp_existing_workers: "{{ ansible_facts.services.keys() | select('match', '^' + pulp_worker_container_name + '@\\d+\\.service$') | list }}"
+
+- name: Stop and disable old pulp-worker instances
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: false
+    state: stopped
+  loop: "{{ pulp_existing_workers }}"
+  when:
+    - pulp_existing_workers | length > 0
+    - (item | regex_replace('^' + pulp_worker_container_name + '@(\\d+)\\.service$', '\\1') | int) > (pulp_worker_count | int)
+
+- name: Remove container symlinks for old pulp-worker instances
+  ansible.builtin.file:
+    path: "/etc/containers/systemd/{{ item | regex_replace('\\.service$', '.container') }}"
+    state: absent
+  loop: "{{ pulp_existing_workers }}"
+  when:
+    - pulp_existing_workers | length > 0
+    - (item | regex_replace('^' + pulp_worker_container_name + '@(\\d+)\\.service$', '\\1') | int) > (pulp_worker_count | int)
 
 - name: Ensure Pulp admin user exists
   containers.podman.podman_container_exec:
