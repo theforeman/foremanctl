@@ -1,0 +1,12 @@
+[Unit]
+Description=Timer for Foreman recurring: {{ item.rake }}
+
+[Timer]
+Unit=foreman-recurring@{{ item.instance }}.service
+OnCalendar={{ item.schedule }}
+Persistent=true
+RandomizedDelaySec=120
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target
