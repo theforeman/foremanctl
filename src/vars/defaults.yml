@@ -3,8 +3,6 @@ certificate_source: default
 database_mode: internal
 tuning_profile: development
 features:
-  - foreman-tasks
-  - foreman_remote_execution
   - katello
   - content/container
   - content/rpm
