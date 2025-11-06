@@ -78,7 +78,7 @@ jobs:
       - name: Add optional feature - hammer
         # FIXME: We need to repeat the default features once
         run: |
-          ./foremanctl deploy --feature foreman-tasks --feature foreman_remote_execution --feature katello --feature content/container --feature content/rpm --feature hammer
+          ./foremanctl deploy --feature katello --feature content/container --feature content/rpm --feature hammer
       - name: Set up Foreman Proxy
         run: |
           ./foremanctl setup-foreman-proxy
