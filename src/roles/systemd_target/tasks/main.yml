@@ -11,6 +11,18 @@
       [Install]
       WantedBy=default.target
 
+- name: Create pulp-worker.target
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/pulp-worker.target
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Pulp Worker Services
+      [Install]
+      WantedBy=foreman.target
+
 - name: Run daemon reload to load new target
   ansible.builtin.systemd:
     daemon_reload: true
@@ -18,5 +30,11 @@
 - name: Start foreman.target
   ansible.builtin.systemd_service:
     name: foreman.target
+    state: started
+    enabled: true
+
+- name: Start pulp-worker.target
+  ansible.builtin.systemd_service:
+    name: pulp-worker.target
     state: started
     enabled: true
