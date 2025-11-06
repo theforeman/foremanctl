@@ -23,10 +23,15 @@ def test_pulp_content_service(server):
     assert pulp_content.is_running
     assert pulp_content.is_enabled
 
-def test_pulp_worker_service(server):
-    pulp_worker = server.service("pulp-worker")
-    assert pulp_worker.is_running
-    assert pulp_worker.is_enabled
+def test_pulp_worker_services(server):
+    result = server.run("systemctl list-units --all --type=service --no-legend 'pulp-worker@*.service' | awk '{print $1}'")
+    worker_services = [s.strip() for s in result.stdout.split('\n') if s.strip()]
+    assert len(worker_services) > 0
+
+    for worker_service in worker_services:
+        worker = server.service(worker_service)
+        assert worker.is_running
+        assert worker.is_enabled
 
 def test_pulp_api_port(server):
     pulp_api = server.addr(PULP_HOST)

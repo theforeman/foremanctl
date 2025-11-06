@@ -5,7 +5,7 @@ pulp_api_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
 pulp_content_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
 pulp_worker_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
 
-pulp_worker_count: 2
+pulp_worker_count: "{{ [8, ansible_facts['processor_nproc']] | min }}"
 pulp_content_service_worker_count: "{{ (2 * ([8, ansible_facts['processor_nproc']] | min)) + 1 }}"
 pulp_api_service_worker_count: "{{ ([4, ansible_facts['processor_nproc']] | min) + 1 }}"
 
@@ -53,3 +53,9 @@ pulp_settings_other_env:
   PULP_CONTENT_WORKERS: "{{ pulp_content_service_worker_count }}"
 
 pulp_settings_env: "{{ pulp_settings_database_env | ansible.builtin.combine(pulp_settings_other_env) }}"
+
+pulp_all_services: "{{ ['pulp-api', 'pulp-content'] + pulp_worker_services }}"
+pulp_worker_services: >-
+  {{
+    range(1, pulp_worker_count | int + 1) | map('string') | map('regex_replace', '^', pulp_worker_container_name ~ '@') | list
+  }}

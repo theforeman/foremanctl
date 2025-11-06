@@ -11,5 +11,5 @@
 
 - name: Restart pulp-worker
   ansible.builtin.systemd:
-    name: pulp-worker
+    name: pulp-worker.target
     state: restarted
