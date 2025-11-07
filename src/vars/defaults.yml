@@ -4,4 +4,4 @@ database_mode: internal
 tuning_profile: development
 profile: katello
 features: []
-enabled_features: "{{ profile_features + features }}"
+enabled_features: "{{ (profile_features + features) | unique }}"
