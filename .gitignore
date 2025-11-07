@@ -46,3 +46,4 @@ build/
 foremanctl-*.tar.gz
 
 .var
+.tmp
