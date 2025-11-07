@@ -1,0 +1,10 @@
+---
+- name: Setup remote database
+  hosts:
+    - database
+  become: true
+  vars_files:
+    - "../../../src/vars/database.yml"
+  roles:
+    - role: pre_install
+    - role: postgresql
