@@ -2,7 +2,6 @@
 certificate_source: default
 database_mode: internal
 tuning_profile: development
-features:
-  - katello
-  - content/container
-  - content/rpm
+profile: katello
+features: []
+enabled_features: "{{ profile_features + features }}"

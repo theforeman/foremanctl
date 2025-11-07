@@ -5,6 +5,7 @@
   become: true
   vars_files:
     - "../../vars/defaults.yml"
+    - "../../vars/profiles/{{ profile }}.yml"
     - "../../vars/{{ certificate_source }}_certificates.yml"
     - "../../vars/images.yml"
     - "../../vars/database.yml"
@@ -31,5 +32,5 @@
     - role: systemd_target
     - role: hammer
       when:
-        - "'hammer' in features"
+        - "'hammer' in enabled_features"
     - post_install
