@@ -14,19 +14,32 @@
   hosts:
     - localhost
   tasks:
-    - name: Capture vagrant ssh-config
-      ansible.builtin.command:
-        cmd: vagrant ssh-config
-      args:
-        chdir: "{{ inventory_dir }}/../"
-      register: ssh_config
-      changed_when: false
-
-    - name: Write ssh_config
-      ansible.builtin.copy:
-        dest: "{{ inventory_dir }}/../.vagrant/ssh-config"
-        content: "{{ ssh_config.stdout }}"
+    - name: Ensure .tmp directory exists
+      ansible.builtin.file:
+        path: "{{ inventory_dir }}/../.tmp"
+        state: directory
         mode: "0755"
+
+    - name: Generate ssh_config from ansible inventory
+      ansible.builtin.copy:
+        dest: "{{ inventory_dir }}/../.tmp/ssh-config"
+        content: |
+          {% for host in groups['all'] %}
+          Host {{ host }}
+            HostName {{ hostvars[host]['ansible_host'] | default(host) }}
+            User {{ hostvars[host]['ansible_user'] | default('vagrant') }}
+            Port {{ hostvars[host]['ansible_port'] | default('22') }}
+            UserKnownHostsFile /dev/null
+            StrictHostKeyChecking no
+            PasswordAuthentication no
+          {% if hostvars[host]['ansible_ssh_private_key_file'] is defined %}
+            IdentityFile {{ hostvars[host]['ansible_ssh_private_key_file'] }}
+          {% endif %}
+            IdentitiesOnly yes
+            LogLevel FATAL
+
+          {% endfor %}
+        mode: "0644"
 
     - name: Run pytest
       ansible.builtin.command:
