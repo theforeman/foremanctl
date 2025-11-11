@@ -147,6 +147,7 @@ jobs:
     if: always()
     needs:
       - tests
+      - devel-tests
       - ansible-lint
     runs-on: ubuntu-latest
     name: Test suite
