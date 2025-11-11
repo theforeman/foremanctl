@@ -1,20 +1,20 @@
-<VirtualHost *:443>
+<VirtualHost *:80>
   ServerName {{ ansible_facts['fqdn'] }}
 
   ## Load additional static includes
-  IncludeOptional "/etc/httpd/conf.d/05-foreman-ssl.d/*.conf"
+  IncludeOptional "/etc/httpd/conf.d/05-foreman.d/*.conf"
 
   ## Logging
-  ErrorLog "/var/log/httpd/foreman-ssl_error_ssl.log"
+  ErrorLog "/var/log/httpd/foreman_error.log"
   ServerSignature Off
-  CustomLog "/var/log/httpd/foreman-ssl_access_ssl.log" combined
+  CustomLog "/var/log/httpd/foreman_access.log" combined
 
   ## Request header rules
   ## as per http://httpd.apache.org/docs/2.4/mod/mod_headers.html#requestheader
-  RequestHeader set X_FORWARDED_PROTO "https"
-  RequestHeader set SSL_CLIENT_S_DN "%{SSL_CLIENT_S_DN}s"
-  RequestHeader set SSL_CLIENT_CERT "%{SSL_CLIENT_CERT}s"
-  RequestHeader set SSL_CLIENT_VERIFY "%{SSL_CLIENT_VERIFY}s"
+  RequestHeader set X-FORWARDED-PROTO "http"
+  RequestHeader set SSL-CLIENT-S-DN ""
+  RequestHeader set SSL-CLIENT-CERT ""
+  RequestHeader set SSL-CLIENT-VERIFY ""
   RequestHeader unset REMOTE-USER
   RequestHeader unset REMOTE_USER
   RequestHeader unset REMOTE-USER-EMAIL
@@ -33,33 +33,6 @@
   RequestHeader unset REMOTE-USER_GROUPS
   RequestHeader unset REMOTE_USER-GROUPS
   RequestHeader unset REMOTE_USER_GROUPS
-
-  ## SSL directives
-  SSLEngine on
-  SSLCertificateFile      "{{ httpd_ssl_dir }}/certs/katello-apache.crt"
-  SSLCertificateKeyFile   "{{ httpd_ssl_dir }}/private/katello-apache.key"
-  SSLCertificateChainFile "{{ httpd_ssl_dir }}/certs/katello-server-ca.crt"
-  SSLVerifyClient         optional
-  SSLVerifyDepth          3
-  SSLCACertificateFile    "{{ httpd_ssl_dir }}/certs/katello-default-ca.crt"
-  SSLOptions +StdEnvVars +ExportCertData
-
-  # SSL Proxy directives
-  SSLProxyEngine On
-
-  ProxyPass /pulp_ansible/galaxy/ {{ httpd_pulp_api_backend }}/pulp_ansible/galaxy/
-  ProxyPassReverse /pulp_ansible/galaxy/ {{ httpd_pulp_api_backend }}/pulp_ansible/galaxy/
-
-  <Location "/pulpcore_registry/v2/">
-    RequestHeader unset REMOTE_USER
-    RequestHeader unset REMOTE-USER
-    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_facts['fqdn'] }}'"
-    ProxyPass {{ httpd_pulp_api_backend }}/v2/
-    ProxyPassReverse {{ httpd_pulp_api_backend }}/v2/
-  </Location>
-
-  ProxyPass /pulp/container/ {{ httpd_pulp_content_backend }}/pulp/container/
-  ProxyPassReverse /pulp/container/ {{ httpd_pulp_content_backend }}/pulp/container/
 
   <Location "/pulp/deb">
     RequestHeader unset X-CLIENT-CERT
@@ -85,27 +58,17 @@
   <Location "/pulp/content">
     RequestHeader unset X-CLIENT-CERT
     RequestHeader set X-CLIENT-CERT "%{SSL_CLIENT_CERT}s" env=SSL_CLIENT_CERT
+    RequestHeader set X-FORWARDED-PROTO expr=%{REQUEST_SCHEME}
     ProxyPass {{ httpd_pulp_content_backend }}/pulp/content disablereuse=on timeout=600
     ProxyPassReverse {{ httpd_pulp_content_backend }}/pulp/content
   </Location>
 
-  <Location "/pulp/api/v3">
-    RequestHeader unset REMOTE_USER
-    RequestHeader unset REMOTE-USER
-    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_facts['fqdn'] }}'"
-    ProxyPass {{ httpd_pulp_api_backend }}/pulp/api/v3 timeout=600
-    ProxyPassReverse {{ httpd_pulp_api_backend }}/pulp/api/v3
-  </Location>
-
-  Alias /pub {{ httpd_pub_dir }}
+  Alias /pub /var/www/html/pub
 
   <Location /pub>
     Options +FollowSymLinks +Indexes
     Require all granted
   </Location>
-
-  ProxyPass /pulp/assets/ {{ httpd_pulp_api_backend }}/pulp/assets/
-  ProxyPassReverse /pulp/assets/ {{ httpd_pulp_api_backend }}/pulp/assets/
 
   ## Proxy rules
   ProxyRequests Off
@@ -121,6 +84,11 @@
   ProxyPass / {{ httpd_foreman_backend }}/ retry=0 timeout=900 upgrade=websocket
   ProxyPassReverse / {{ httpd_foreman_backend }}/
 
+  ## Server aliases
+  ServerAlias foreman
+
+  ## Custom fragment
+  # Set headers for all possible assets which are compressed
   <FilesMatch \.css\.gz$>
     ForceType text/css
     Header set Content-Encoding gzip
@@ -158,7 +126,7 @@
     RewriteCond %{REQUEST_FILENAME} \.(css|js|svg)$
     RewriteCond %{REQUEST_FILENAME}.gz -s
     RewriteRule ^(.+) $1.gz [L]
-</LocationMatch>
+  </LocationMatch>
 
   AddDefaultCharset UTF-8
 </VirtualHost>
