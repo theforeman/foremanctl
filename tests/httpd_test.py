@@ -41,3 +41,18 @@ def test_https_pulp_auth(server, certificates, server_fqdn):
     cmd = server.run(f"curl --cacert {certificates['ca_certificate']} --silent --write-out '%{{stderr}}%{{http_code}}' --cert {certificates['client_certificate']} --key {certificates['client_key']} https://{server_fqdn}/pulp/api/v3/users/")
     assert cmd.succeeded
     assert cmd.stderr == '200'
+
+def test_http_foreman(server, server_fqdn):
+    cmd = server.run(f"curl --silent --output /dev/null --write-out '%{{http_code}}' http://{server_fqdn}")
+    assert cmd.succeeded
+    assert cmd.stdout == '302'
+
+def test_http_pulp_status(server, server_fqdn):
+    cmd = server.run(f"curl --silent --output /dev/null --write-out '%{{http_code}}' http://{server_fqdn}/pulp/api/v3/status/")
+    assert cmd.succeeded
+    assert cmd.stdout == '200'
+
+def test_http_pulp_content(server, server_fqdn):
+    cmd = server.run(f"curl --silent --output /dev/null --write-out '%{{http_code}}' http://{server_fqdn}/pulp/content/")
+    assert cmd.succeeded
+    assert cmd.stdout == '200'
