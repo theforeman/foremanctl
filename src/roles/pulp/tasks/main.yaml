@@ -99,7 +99,8 @@
         WantedBy=default.target foreman.target
         [Unit]
         PartOf=foreman.target
-        Wants=postgresql.service
+        Wants=redis.service postgresql.service
+        After=redis.service postgresql.service
         [Service]
         Restart=always
         RestartSec=3
@@ -127,7 +128,8 @@
         WantedBy=default.target foreman.target
         [Unit]
         PartOf=foreman.target
-        Wants=postgresql.service
+        Wants=redis.service postgresql.service
+        After=redis.service postgresql.service
         [Service]
         Restart=always
         RestartSec=3
@@ -154,7 +156,8 @@
         WantedBy=default.target foreman.target
         [Unit]
         PartOf=foreman.target
-        Wants=postgresql.service
+        Wants=redis.service postgresql.service
+        After=redis.service postgresql.service
         [Service]
         Restart=always
         RestartSec=3

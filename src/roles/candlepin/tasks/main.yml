@@ -85,6 +85,8 @@
         WantedBy=default.target foreman.target
         [Unit]
         PartOf=foreman.target
+        Wants=redis.service postgresql.service
+        After=redis.service postgresql.service
         [Service]
         TimeoutStartSec=300
     healthcheck: curl --fail --insecure https://localhost:23443/candlepin/status
