@@ -85,6 +85,7 @@
     sdnotify: true
     command: pulp-api
     network: host
+    hostname: "pulp-api.{{ ansible_facts['fqdn'] }}"
     volumes: "{{ pulp_volumes }}"
     security_opt:
       - "label=disable"
@@ -114,6 +115,7 @@
     sdnotify: true
     command: pulp-content
     network: host
+    hostname: "pulp-content.{{ ansible_facts['fqdn'] }}"
     volumes: "{{ pulp_volumes }}"
     security_opt:
       - "label=disable"
@@ -142,6 +144,7 @@
     state: quadlet
     command: pulp-worker
     network: host
+    hostname: "pulp-worker.{{ ansible_facts['fqdn'] }}"
     volumes: "{{ pulp_volumes }}"
     security_opt:
       - "label=disable"
