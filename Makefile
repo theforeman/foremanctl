@@ -14,3 +14,6 @@ build/collections/foremanctl:
 
 build/collections/forge:
 	ANSIBLE_COLLECTIONS_PATH=$@ ANSIBLE_COLLECTIONS_SCAN_SYS_PATH=false ansible-galaxy install -r development/requirements.yml
+
+clean-var:
+	rm -rf .var
