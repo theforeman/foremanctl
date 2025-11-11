@@ -173,7 +173,7 @@
     hostname: "{{ ansible_facts['fqdn'] }}"
     user: foreman
     working_dir: /usr/share/foreman
-    command: "bash -lc 'foreman-rake ${RAKE_TASK}'"
+    command: "bash -lc 'foreman-rake %I'"
     volume:
       - 'foreman-data-run:/var/run/foreman:z'
     secrets:
@@ -196,23 +196,11 @@
         StartLimitIntervalSec=0
       - |
         [Service]
-        Environment=RAILS_ENV=production
-        EnvironmentFile=/etc/sysconfig/foreman-recurring@%i
         ExecStartPre=/usr/bin/flock -n /run/foreman-recurring-%i.lock -c /usr/bin/true
         TimeoutStartSec=30m
         TimeoutStopSec=2m
         KillMode=mixed
         SyslogIdentifier=foreman-recurring-%i
-
-- name: Render per-instance env (RAKE_TASK)
-  when: foreman_recurring_tasks_enabled | default(true)
-  ansible.builtin.template:
-    src: foreman-recurring-sysconfig.j2
-    dest: "/etc/sysconfig/foreman-recurring@{{ item.instance }}"
-    mode: "0644"
-  loop: "{{ foreman_recurring_tasks }}"
-  loop_control:
-    label: "{{ item.instance }}"
 
 - name: Render timers for recurring tasks
   when: foreman_recurring_tasks_enabled | default(true)
