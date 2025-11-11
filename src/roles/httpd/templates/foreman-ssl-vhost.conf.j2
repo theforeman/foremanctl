@@ -15,8 +15,24 @@
   RequestHeader set SSL_CLIENT_S_DN "%{SSL_CLIENT_S_DN}s"
   RequestHeader set SSL_CLIENT_CERT "%{SSL_CLIENT_CERT}s"
   RequestHeader set SSL_CLIENT_VERIFY "%{SSL_CLIENT_VERIFY}s"
-  RequestHeader unset REMOTE_USER
   RequestHeader unset REMOTE-USER
+  RequestHeader unset REMOTE_USER
+  RequestHeader unset REMOTE-USER-EMAIL
+  RequestHeader unset REMOTE-USER_EMAIL
+  RequestHeader unset REMOTE_USER-EMAIL
+  RequestHeader unset REMOTE_USER_EMAIL
+  RequestHeader unset REMOTE-USER-FIRSTNAME
+  RequestHeader unset REMOTE-USER_FIRSTNAME
+  RequestHeader unset REMOTE_USER-FIRSTNAME
+  RequestHeader unset REMOTE_USER_FIRSTNAME
+  RequestHeader unset REMOTE-USER-LASTNAME
+  RequestHeader unset REMOTE-USER_LASTNAME
+  RequestHeader unset REMOTE_USER-LASTNAME
+  RequestHeader unset REMOTE_USER_LASTNAME
+  RequestHeader unset REMOTE-USER-GROUPS
+  RequestHeader unset REMOTE-USER_GROUPS
+  RequestHeader unset REMOTE_USER-GROUPS
+  RequestHeader unset REMOTE_USER_GROUPS
 
   ## SSL directives
   SSLEngine on
@@ -77,8 +93,9 @@
   ProxyPass /pulp !
   ProxyPass /pub !
   ProxyPass /icons !
+  ProxyPass /images !
   ProxyPass /server-status !
-  ProxyPass / {{ httpd_foreman_backend }}/ retry=0 timeout=900
+  ProxyPass / {{ httpd_foreman_backend }}/ retry=0 timeout=900 upgrade=websocket
   ProxyPassReverse / {{ httpd_foreman_backend }}/
 
   AddDefaultCharset UTF-8

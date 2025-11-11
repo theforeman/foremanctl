@@ -2,9 +2,9 @@ import json
 
 import pytest
 
-
 FOREMAN_HOST = 'localhost'
 FOREMAN_PORT = 3000
+
 RECURRING_INSTANCES = [
     "reports-daily",
     "db-sessions-clear",
@@ -16,10 +16,9 @@ RECURRING_INSTANCES = [
     "ldap-refresh_usergroups",
 ]
 
-
 @pytest.fixture(scope="module")
-def foreman_status_curl(server):
-    return server.run(f"curl --silent --write-out '%{{stderr}}%{{http_code}}' http://{FOREMAN_HOST}:{FOREMAN_PORT}/api/v2/ping")
+def foreman_status_curl(server, certificates, server_fqdn):
+    return server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' --cacert {certificates['ca_certificate']} http://{FOREMAN_HOST}:{FOREMAN_PORT}/api/v2/ping")
 
 
 @pytest.fixture(scope="module")
