@@ -1,5 +1,5 @@
 [Unit]
-Description=Timer for Foreman recurring: {{ item.instance }}
+Description=Timer for Foreman recurring: {{ item.rake }}
 
 [Timer]
 Unit=foreman-recurring@{{ item.instance }}.service
