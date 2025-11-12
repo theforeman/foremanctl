@@ -210,6 +210,55 @@
   loop_control:
     label: "{{ item.instance }}"
 
+- name: Define templated Quadlet for Katello recurring rake tasks
+  when: katello_recurring_tasks_enabled | default(false)
+  loop: "{{ katello_recurring_tasks }}"
+  loop_control:
+    label: "{{ item.instance }}"
+  containers.podman.podman_container:
+    name: "katello-recurring-{{ item.instance }}"
+    quadlet_filename: "katello-recurring@{{ item.instance }}"
+    state: quadlet
+    image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
+    sdnotify: false
+    network: host
+    hostname: "{{ ansible_facts['fqdn'] }}"
+    command: "foreman-rake {{ item.rake }}"
+    volume:
+      - 'foreman-data-run:/var/run/foreman:z'
+    secrets:
+      - 'foreman-database-url,type=env,target=DATABASE_URL'
+      - 'foreman-seed-admin-user,type=env,target=SEED_ADMIN_USER'
+      - 'foreman-seed-admin-password,type=env,target=SEED_ADMIN_PASSWORD'
+      - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
+      - 'foreman-katello-yaml,type=mount,target=/etc/foreman/plugins/katello.yaml'
+      - 'foreman-ca-cert,type=mount,target=/etc/foreman/katello-default-ca.crt'
+      - 'foreman-client-cert,type=mount,target=/etc/foreman/client_cert.pem'
+      - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
+    quadlet_options:
+      - |
+        [Unit]
+        PartOf=foreman.target
+        StartLimitIntervalSec=0
+      - |
+        [Service]
+        TimeoutStartSec=90m
+        TimeoutStopSec=2m
+        KillMode=mixed
+        SyslogIdentifier=katello-recurring-%i
+
+- name: Render timers for Katello recurring tasks
+  when: katello_recurring_tasks_enabled | default(false)
+  ansible.builtin.template:
+    src: foreman-recurring@.timer.j2
+    dest: "/etc/systemd/system/katello-recurring@{{ item.instance }}.timer"
+    mode: "0644"
+  vars:
+    timer_unit_prefix: "katello-recurring"
+  loop: "{{ katello_recurring_tasks }}"
+  loop_control:
+    label: "{{ item.instance }}"
+
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
     daemon_reload: true
@@ -263,6 +312,16 @@
     enabled: true
     state: started
   loop: "{{ foreman_recurring_tasks }}"
+  loop_control:
+    label: "{{ item.instance }}"
+
+- name: Enable & start Katello recurring timers
+  when: katello_recurring_tasks_enabled | default(false)
+  ansible.builtin.systemd:
+    name: "katello-recurring@{{ item.instance }}.timer"
+    enabled: true
+    state: started
+  loop: "{{ katello_recurring_tasks }}"
   loop_control:
     label: "{{ item.instance }}"
 
