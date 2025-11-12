@@ -19,10 +19,26 @@ foreman_puma_workers: "{{ [32, ansible_facts['processor_nproc'] * 1.5, (ansible_
 foreman_recurring_tasks_enabled: true
 foreman_recurring_tasks:
   - instance: reports-daily
+    rake: "reports:daily"
     schedule: "daily"
   - instance: db-sessions-clear
+    rake: "db:sessions:clear"
     schedule: "*-*-* 23:15:00"
   - instance: reports-expire
+    rake: "reports:expire"
     schedule: "*-*-* 07:30:00"
   - instance: audits-expire
+    rake: "audits:expire"
     schedule: "*-*-* 01:00:00"
+  - instance: reports-weekly
+    rake: "reports:weekly"
+    schedule: "Sun *-*-* 05:00:00"
+  - instance: reports-monthly
+    rake: "reports:monthly"
+    schedule: "*-*-01 03:00:00"
+  - instance: notifications-clean
+    rake: "notifications:clean"
+    schedule: "Sun *-*-* 06:00:00"
+  - instance: ldap-refresh_usergroups
+    rake: "ldap:refresh_usergroups"
+    schedule: "*-*-* *:00,30:00"
