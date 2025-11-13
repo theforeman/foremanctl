@@ -196,6 +196,9 @@ jobs:
       - name: Setup hammer
         run: |
           ./foremanctl setup-hammer
+      - name: Set up Foreman Proxy
+        run: |
+          ./foremanctl setup-foreman-proxy
       - name: Run tests
         run: |
           ./forge test
