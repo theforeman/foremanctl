@@ -37,3 +37,15 @@ foreman_recurring_tasks:
   - instance: monthly
     rake: "cron:monthly"
     schedule: "monthly"
+  - instance: notifications-clean
+    rake: "notifications:clean"
+    schedule: "weekly"
+  - instance: ldap-refresh_usergroups
+    rake: "ldap:refresh_usergroups"
+    schedule: "*-*-* *:00,30:00"
+
+foreman_foremantasks_recurring_tasks_enabled: true
+foreman_foremantasks_recurring_tasks:
+  - instance: foreman_tasks-cleanup
+    rake: "foreman_tasks:cleanup"
+    schedule: "*-*-* 19:45:00"
