@@ -71,3 +71,21 @@ The best practices are listed in preferential order.
   1. Use native environment variables
   2. Rely on envsubst with default config files in the container
   3. Mount config file from secrets
+
+## Existing deployment handling
+
+When the user provides parameters to alter the deployment, the deployment utility stores these and re-uses them on the next run, even if the user did not pass in the parameter again.
+
+## Container changes (Upgrades)
+
+When the running containers change because the stream was changed in the configuration, the deployment utility will pull the new images and use the new images when starting services.
+
+As there is currently no way for the deployment utility to verify which image version is used by a running service, the user is advised to stop all services before performing an upgrade.
+
+The upgrade process is:
+
+  1. Update `foremanctl`: `dnf upgrade foremanctl`
+  :exclamation: Ensure `/usr/share/foremanctl/src/vars/images.yml` contains the right target version while `foremanctl` is not yet properly aligned with Foreman releases.
+  2. Stop services: `systemctl stop foreman.target`
+  3. Deploy updated containers: `foremanctl deploy`
+  4. Optional: Prune old container images: `podman image prune --all`
