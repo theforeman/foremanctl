@@ -61,6 +61,7 @@ There are multiple use cases from the users perspective that dictate what parame
 
 | Parameter | Description | foreman-installer Parameter |
 | ----------| ----------- | --------------------------- |
+| `--certificate-cname` | Allows defining CNAME for default certificates | --certs-cname |
 
 ##### Unmapped
 
@@ -78,6 +79,7 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-loggers` | | foreman | loggers |
 | `--foreman-plugin-tasks-cron-line` | | foreman::plugin::tasks | cron_line |
 | `--foreman-plugin-tasks-automatic-cleanup` | | foreman::plugin::tasks | automatic_cleanup |
+| `--tuning` | Sets the tuning profile | foreman-installer | |
 | `--certs-cname` | | certs | cname |
 | `--certs-tar` | | certs | tar |
 | `--certs-tar-file` | | certs | tar |

@@ -4,3 +4,4 @@ certificates_ca_directory: /root/certificates # Change this to /var/lib?
 certificates_ca_directory_keys: "{{ certificates_ca_directory }}/private"
 certificates_ca_directory_certs: "{{ certificates_ca_directory }}/certs"
 certificates_ca_directory_requests: "{{ certificates_ca_directory }}/requests"
+certificates_cnames: []
