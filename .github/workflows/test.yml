@@ -78,9 +78,9 @@ jobs:
       - name: Add optional feature - hammer
         run: |
           ./foremanctl deploy --feature hammer
-      - name: Set up Foreman Proxy
+      - name: Add optional feature - foreman-proxy
         run: |
-          ./foremanctl setup-foreman-proxy
+          ./foremanctl deploy --feature foreman-proxy
       - name: Run tests
         run: |
           ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }}"
@@ -196,9 +196,9 @@ jobs:
       - name: Add optional feature - hammer
         run: |
           ./foremanctl deploy --feature hammer
-      - name: Set up Foreman Proxy
+      - name: Add optional feature - foreman-proxy
         run: |
-          ./foremanctl setup-foreman-proxy
+          ./foremanctl deploy --feature foreman-proxy
       - name: Run tests
         run: |
           ./forge test
