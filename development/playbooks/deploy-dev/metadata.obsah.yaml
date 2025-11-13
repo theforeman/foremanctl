@@ -7,6 +7,13 @@ variables:
     help: Plugin to enable (can be used multiple times)
     action: append
     parameter: --foreman-development-enabled-plugin
+    choices:
+      - foreman_remote_execution
+      - foreman_ansible
+      - foreman_rh_cloud
+      - foreman_discovery
+      - foreman_openscap
+      - foreman_bootdisk
   target_host:
     help: Target hostname or IP address for deployment
     action: store
