@@ -19,6 +19,8 @@ Vagrant.configure("2") do |config|
     override.vm.provision('disk_resize', type: 'ansible') do |ansible_provisioner|
       ansible_provisioner.playbook = 'development/playbooks/resize_disk.yaml'
     end
+
+    override.vm.provision "shell", inline: "sudo dnf update -y"
   end
 
   config.vm.define "client" do |override|
