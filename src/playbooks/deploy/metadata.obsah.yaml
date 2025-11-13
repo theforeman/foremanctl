@@ -11,14 +11,9 @@ variables:
     help: Number of workers for Puma.
   pulp_worker_count:
     help: Number of Pulp workers. Defaults to 8 or the number of CPU cores, whichever is smaller.
-  profile:
-    help: Base profile to use in this deployment.
-  features:
-    parameter: --feature
-    help: Additional features to enable in this deployment.
-    action: append
 
 include:
   - _certificate_source
   - _database_mode
   - _database_connection
+  - _profile_features
