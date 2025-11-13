@@ -9,14 +9,9 @@ variables:
     help: Initial password for the admin user.
   foreman_puma_workers:
     help: Number of workers for Puma.
-  profile:
-    help: Base profile to use in this deployment.
-  features:
-    parameter: --feature
-    help: Additional features to enable in this deployment.
-    action: append
 
 include:
   - _certificate_source
   - _database_mode
   - _database_connection
+  - _profile_features
