@@ -51,6 +51,14 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-initial-admin-password` | Initial password for the admin user | `--foreman-initial-admin-password` |
 | `--foreman-puma-workers` | Number of workers for Puma | `--foreman-foreman-service-puma-workers` |
 
+#### IOP
+
+##### Mapped
+
+| Parameter | Description | foreman-installer Parameters |
+| ----------| ----------- | ---------------------------- |
+| `--enable-iop` | Enable deployment of IOP services | `--enable-iop` |
+
 #### Certs
 
 ##### Mapped

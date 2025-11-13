@@ -9,6 +9,8 @@ variables:
     help: Initial password for the admin user.
   foreman_puma_workers:
     help: Number of workers for Puma.
+  enable_iop:
+    help: Enable deployment of IOP services.
 
 include:
   - _certificate_source

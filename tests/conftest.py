@@ -1,3 +1,4 @@
+import os
 import uuid
 
 import apypie
@@ -11,6 +12,32 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
 VAGRANT_SSH_CONFIG='./.vagrant/ssh-config'
+
+
+def is_iop_enabled():
+    """Check if IOP is enabled by reading parameters.yaml from OBSAH_STATE"""
+    try:
+        # Get the directory of the current file (tests/conftest.py)
+        test_dir = os.path.dirname(os.path.abspath(__file__))
+        # Go up one level to get to the foremanctl root directory
+        foremanctl_dir = os.path.dirname(test_dir)
+        # Build path to parameters.yaml in OBSAH_STATE
+        params_file = os.path.join(foremanctl_dir, '.var', 'lib', 'foremanctl', 'parameters.yaml')
+
+        if os.path.exists(params_file):
+            with open(params_file, 'r') as f:
+                params = yaml.safe_load(f)
+                return params.get('enable_iop') == 'true'
+    except Exception:
+        pass
+    return False
+
+
+def pytest_runtest_setup(item):
+    """Skip IOP tests if IOP is not enabled"""
+    if "iop" in item.nodeid.lower():
+        if not is_iop_enabled():
+            pytest.skip("IOP not enabled - skipping IOP tests (enable_iop not set in parameters.yaml)")
 
 
 def pytest_addoption(parser):
@@ -148,3 +175,91 @@ def wait_for_tasks(foremanapi, search=None):
 
 def wait_for_metadata_generate(foremanapi):
     wait_for_tasks(foremanapi, 'label = Actions::Katello::Repository::MetadataGenerate')
+
+
+@pytest.fixture(scope="module")
+def iop_services():
+    return [
+        'iop-core-kafka',
+        'iop-core-ingress',
+        'iop-core-gateway',
+        'iop-core-engine',
+        'iop-core-puptoo',
+        'iop-core-yuptoo'
+    ]
+
+
+@pytest.fixture(scope="module")
+def iop_service_ports():
+    return {
+        'kafka': '9092',
+        'ingress': '8080',
+        'gateway': '24443',
+        'puptoo': '8000',
+        'yuptoo': '5005'
+    }
+
+
+@pytest.fixture(scope="module")
+def iop_secrets():
+    return [
+        'iop-core-kafka-init-start',
+        'iop-core-kafka-server-properties',
+        'iop-core-kafka-init',
+        'iop-core-engine-config-yml'
+    ]
+
+
+@pytest.fixture(scope="module")
+def kafka_topics():
+    return [
+        "platform.engine.results",
+        "platform.insights.rule-hits",
+        "platform.insights.rule-deactivation",
+        "platform.inventory.events",
+        "platform.inventory.host-ingress",
+        "platform.sources.event-stream",
+        "platform.playbook-dispatcher.runs",
+        "platform.upload.announce",
+        "platform.upload.validation",
+        "platform.logging.logs",
+        "platform.payload-status",
+        "platform.remediation-updates.vulnerability",
+        "vulnerability.evaluator.results",
+        "vulnerability.evaluator.recalc",
+        "vulnerability.evaluator.upload",
+        "vulnerability.grouper.inventory.upload",
+        "vulnerability.grouper.advisor.upload"
+    ]
+
+
+@pytest.fixture
+def iop_service_wait_timeout():
+    return 30
+
+
+def wait_for_iop_service(server, service_name, timeout=30):
+    """Wait for an IOP service to be running and healthy"""
+    import time
+    start_time = time.time()
+
+    while time.time() - start_time < timeout:
+        result = server.run(f"systemctl is-active {service_name}")
+        if result.succeeded and "active" in result.stdout:
+            return True
+        time.sleep(1)
+
+    return False
+
+
+def wait_for_iop_port(server, port, timeout=30):
+    """Wait for a port to be reachable"""
+    import time
+    start_time = time.time()
+
+    while time.time() - start_time < timeout:
+        if server.addr("localhost").port(port).is_reachable:
+            return True
+        time.sleep(1)
+
+    return False

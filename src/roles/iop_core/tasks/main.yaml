@@ -1,0 +1,24 @@
+---
+- name: Deploy IOP Kafka service
+  ansible.builtin.include_role:
+    name: iop_kafka
+
+- name: Deploy IOP Ingress service
+  ansible.builtin.include_role:
+    name: iop_ingress
+
+- name: Deploy IOP Gateway service
+  ansible.builtin.include_role:
+    name: iop_gateway
+
+- name: Deploy IOP Puptoo service
+  ansible.builtin.include_role:
+    name: iop_puptoo
+
+- name: Deploy IOP Yuptoo service
+  ansible.builtin.include_role:
+    name: iop_yuptoo
+
+- name: Deploy IOP Engine service
+  ansible.builtin.include_role:
+    name: iop_engine
