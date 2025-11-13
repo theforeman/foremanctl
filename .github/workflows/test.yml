@@ -181,6 +181,12 @@ jobs:
       - name: Run deployment
         run: |
           ./foremanctl deploy --foreman-initial-admin-password=changeme
+      - name: Add optional feature - hammer
+        run: |
+          ./foremanctl deploy --feature hammer
+      - name: Add optional feature - foreman-proxy
+        run: |
+          ./foremanctl deploy --feature foreman-proxy
       - name: Stop services
         run:
           vagrant ssh quadlet -- sudo systemctl stop foreman.target
@@ -193,12 +199,6 @@ jobs:
       - name: Run deployment
         run: |
           ./foremanctl deploy
-      - name: Add optional feature - hammer
-        run: |
-          ./foremanctl deploy --feature hammer
-      - name: Add optional feature - foreman-proxy
-        run: |
-          ./foremanctl deploy --feature foreman-proxy
       - name: Run tests
         run: |
           ./forge test
