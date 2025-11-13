@@ -1,6 +1,7 @@
 apypie>=0.5.0
 jinja2
 paramiko
+passlib
 pytest-testinfra
 pytest-durations
 pyyaml
