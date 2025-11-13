@@ -11,6 +11,10 @@ variables:
     help: Number of workers for Puma.
   pulp_worker_count:
     help: Number of Pulp workers. Defaults to 8 or the number of CPU cores, whichever is smaller.
+  certificates_cnames:
+    help: Additional DNS name to include in Subject Alternative Names for certificates. Can be specified multiple times.
+    action: append
+    parameter: --certificate-cname
 
 include:
   - _certificate_source
