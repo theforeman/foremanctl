@@ -43,6 +43,7 @@ install -d -m0755 %{buildroot}%{_sysconfdir}/%{name}
 install -d -m0755 %{buildroot}%{_datadir}/%{name}
 install -d -m0755 %{buildroot}%{_bindir}
 install -d -m0750 %{buildroot}%{_sharedstatedir}/%{name}
+install -d -m0755 %{buildroot}%{_localstatedir}/log/%{name}
 
 cp inventories/quadlet %{buildroot}%{_sysconfdir}/%{name}/inventory
 cp -r src %{buildroot}%{_datadir}/%{name}
@@ -55,6 +56,7 @@ cp -r build/collections/%{name} %{buildroot}%{_datadir}/%{name}/collections
 %{_datadir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}
 %{_sharedstatedir}/%{name}
+%{_localstatedir}/log/%{name}
 
 
 %changelog
