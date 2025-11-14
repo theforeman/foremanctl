@@ -9,6 +9,8 @@ variables:
     help: Initial password for the admin user.
   foreman_puma_workers:
     help: Number of workers for Puma.
+  pulp_worker_count:
+    help: Number of Pulp workers. Defaults to 8 or the number of CPU cores, whichever is smaller.
 
 include:
   - _certificate_source
