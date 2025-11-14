@@ -71,3 +71,17 @@ The best practices are listed in preferential order.
   1. Use native environment variables
   2. Rely on envsubst with default config files in the container
   3. Mount config file from secrets
+
+## Existing deployment handling
+
+When the user provides parameters to alter the deployment, the deployment utility stores these and re-uses them on the next run, even if the user did not pass in the parameter again.
+
+## Container changes (Updates and Upgrades)
+
+When the running containers change, either because there is a newer version of the same container stream, or the stream was changed in the configuration, the deployment utility will pull the new images and use the new images when starting services.
+
+As there is currently no way for the deployment utility to verify which image version is used by a running service, the user is advised to stop all services before performing an update or upgrade.
+
+The upgrade process is:
+  1. `systemctl stop foreman.target`
+  2. `foremanctl deploy`
