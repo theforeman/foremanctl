@@ -1,0 +1,118 @@
+---
+- name: Create a container to deploy and test in
+  gather_facts: false
+  hosts:
+    - localhost
+  vars:
+    container: quadlet
+  tasks:
+    - name: Start containers
+      when: container_action == 'start'
+      block:
+        - name: Start CentOS 9 Stream container
+          containers.podman.podman_container:
+            name: "{{ container }}"
+            image: quay.io/centos/centos:stream9
+            state: started
+            force_restart: true
+            privileged: true
+            hostname: "{{ container }}.example.com"
+            restart_policy: "always"
+            ports:
+              - "22"
+              - "8080:80"
+              - "8443:443"
+            command: sleep infinity
+
+        - name: Wait for container to be ready
+          ansible.builtin.wait_for:
+            timeout: 10
+
+        - name: Install systemd and SSH in container
+          containers.podman.podman_container_exec:
+            name: "{{ container }}"
+            command: "{{ item }}"
+          loop:
+            - "dnf install -y systemd openssh-server passwd python3 podman"
+            - "echo 'root:password' | chpasswd"
+            - "sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config"
+          changed_when: false
+
+        - name: Commit container with systemd installed
+          ansible.builtin.command:
+            cmd: "podman commit {{ container }} {{ container }}-systemd"
+          changed_when: false
+
+        - name: Stop container to restart with systemd
+          containers.podman.podman_container:
+            name: "{{ container }}"
+            state: stopped
+
+        - name: Remove container completely
+          containers.podman.podman_container:
+            name: "{{ container }}"
+            state: absent
+
+        - name: Start new container with systemd as PID 1
+          containers.podman.podman_container:
+            name: "{{ container }}"
+            image: "{{ container }}-systemd"
+            state: started
+            privileged: true
+            hostname: "{{ container }}.example.com"
+            restart_policy: "always"
+            ports:
+              - "22"
+              - "8080:80"
+              - "8443:443"
+            command: /usr/sbin/init
+
+        - name: Wait for systemd to initialize
+          ansible.builtin.wait_for:
+            timeout: 15
+
+        - name: Create local_containers inventory
+          ansible.builtin.copy:
+            dest: "{{ inventory_dir }}/local_containers"
+            content: |
+              all:
+                hosts:
+                  {{ container }}:
+                    ansible_connection: podman
+                    ansible_user: root
+            mode: "0664"
+
+    - name: Stop containers
+      when: container_action == 'stop'
+      block:
+        - name: Stop and remove container
+          containers.podman.podman_container:
+            name: "{{ container }}"
+            state: absent
+
+        - name: Remove containers inventory
+          ansible.builtin.file:
+            state: absent
+            path: "{{ inventory_dir }}/local_containers"
+
+    - name: Show container status
+      when: container_action == 'status'
+      block:
+        - name: Get container status
+          containers.podman.podman_container_info:
+            name: "{{ container }}"
+          register: container_info
+          ignore_errors: true
+
+        - name: Display container status
+          ansible.builtin.debug:
+            msg: |
+              Container Status:
+              {% if container_info.containers | length > 0 %}
+              Name: {{ container_info.containers[0].Name }}
+              State: {{ container_info.containers[0].State.Status }}
+              Image: {{ container_info.containers[0].Config.Image }}
+              Created: {{ container_info.containers[0].Created }}
+              {% else %}
+              Container "{{ container }}" not found or not running
+              {% endif %}
