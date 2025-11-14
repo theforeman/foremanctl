@@ -10,7 +10,7 @@ URL:       https://github.com/theforeman/foremanctl
 Source:    https://github.com/theforeman/foremanctl/releases/download/%{version}/%{name}-%{version}.tar.gz
 
 BuildArch: noarch
-Requires:  python3-obsah >= 1.4
+Requires:  python3-obsah >= 1.6
 
 # These are needed on the target host, which is usually localhost
 Recommends:  podman
