@@ -10,11 +10,12 @@ import yaml
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
-VAGRANT_SSH_CONFIG='./.vagrant/ssh-config'
+SSH_CONFIG='./.tmp/ssh-config'
 
 
 def pytest_addoption(parser):
     parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'installer'), help="Where to obtain certificates from")
+    parser.addoption("--database-mode", action="store", default="internal", choices=('internal', 'external'), help="Whether the database is internal or external")
 
 
 @pytest.fixture(scope="module")
@@ -43,18 +44,30 @@ def certificates(pytestconfig, server_fqdn):
 
 
 @pytest.fixture(scope="module")
+def database_mode(pytestconfig):
+    return pytestconfig.getoption("database_mode")
+
+@pytest.fixture(scope="module")
 def server(server_hostname):
-    yield testinfra.get_host(f'paramiko://{server_hostname}', sudo=True, ssh_config=VAGRANT_SSH_CONFIG)
+    yield testinfra.get_host(f'paramiko://{server_hostname}', sudo=True, ssh_config=SSH_CONFIG)
 
 
 @pytest.fixture(scope="module")
 def client():
-    yield testinfra.get_host('paramiko://client', sudo=True, ssh_config=VAGRANT_SSH_CONFIG)
+    yield testinfra.get_host('paramiko://client', sudo=True, ssh_config=SSH_CONFIG)
+
+
+@pytest.fixture(scope="module")
+def database(database_mode, server):
+    if database_mode == 'external':
+        yield testinfra.get_host('paramiko://database', sudo=True, ssh_config=SSH_CONFIG)
+    else:
+        yield server
 
 
 @pytest.fixture(scope="module")
 def ssh_config(server_hostname):
-    config = paramiko.SSHConfig.from_path(VAGRANT_SSH_CONFIG)
+    config = paramiko.SSHConfig.from_path(SSH_CONFIG)
     return config.lookup(server_hostname)
 
 
