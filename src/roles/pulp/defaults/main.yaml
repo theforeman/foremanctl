@@ -21,6 +21,15 @@ pulp_pulp_url: "http://{{ ansible_facts['fqdn'] }}:24817"
 
 pulp_enable_analytics: false
 
+pulp_default_plugins:
+  - pulp_certguard
+  - pulp_file
+  - pulp_smart_proxy
+pulp_plugins:
+  - pulp_container
+  - pulp_rpm
+pulp_enabled_plugins: "{{ pulp_default_plugins + pulp_plugins }}"
+
 pulp_database_name: pulp
 pulp_database_user: pulp
 pulp_database_host: localhost
@@ -35,6 +44,8 @@ pulp_settings_database_env:
   PULP_DATABASES__default__PORT: "{{ pulp_database_port }}"
   PULP_DATABASES__default__OPTIONS__sslmode: "{{ pulp_database_ssl_mode }}"
   PULP_DATABASES__default__OPTIONS__sslrootcert: "{{ pulp_database_ssl_ca }}"
+  PULP_ENABLED_PLUGINS: >-
+    {{ pulp_enabled_plugins }}
 
 # The arrays (AUTH_BACKENDS, AUTH_CLASSES) need to be strings
 # that get parsed to array by dynaconf, so we're using block scalars for them
