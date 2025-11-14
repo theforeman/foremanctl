@@ -3,6 +3,6 @@ variables:
   profile:
     help: Base profile to use in this deployment.
   features:
-    parameter: --feature
+    parameter: --add-feature
     help: Additional features to enable in this deployment.
     action: append

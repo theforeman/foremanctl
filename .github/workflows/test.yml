@@ -77,10 +77,10 @@ jobs:
           ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} --foreman-initial-admin-password=changeme
       - name: Add optional feature - hammer
         run: |
-          ./foremanctl deploy --feature hammer
+          ./foremanctl deploy --add-feature hammer
       - name: Add optional feature - foreman-proxy
         run: |
-          ./foremanctl deploy --feature foreman-proxy
+          ./foremanctl deploy --add-feature foreman-proxy
       - name: Run tests
         run: |
           ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }}"
@@ -183,10 +183,10 @@ jobs:
           ./foremanctl deploy --foreman-initial-admin-password=changeme
       - name: Add optional feature - hammer
         run: |
-          ./foremanctl deploy --feature hammer
+          ./foremanctl deploy --add-feature hammer
       - name: Add optional feature - foreman-proxy
         run: |
-          ./foremanctl deploy --feature foreman-proxy
+          ./foremanctl deploy --add-feature foreman-proxy
       - name: Stop services
         run:
           vagrant ssh quadlet -- sudo systemctl stop foreman.target
