@@ -1,5 +1,6 @@
 ---
 profile_features:
+  - foreman
   - katello
   - content/container
   - content/rpm
