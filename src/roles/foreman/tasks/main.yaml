@@ -168,7 +168,7 @@
     label: "{{ item.instance }}"
   containers.podman.podman_container:
     name: "foreman-recurring-{{ item.instance }}"
-    quadlet_filename: "foreman-recurring@"
+    quadlet_filename: "foreman-recurring@{{ item.instance }}"
     state: quadlet
     image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
     sdnotify: false
@@ -192,6 +192,7 @@
       - |
         [Install]
         WantedBy=default.target foreman.target
+      - |
         [Unit]
         PartOf=foreman.target
         Requires=foreman.service
@@ -211,16 +212,6 @@
     src: foreman-recurring@.timer.j2
     dest: "/etc/systemd/system/foreman-recurring@{{ item.instance }}.timer"
     mode: "0644"
-  loop: "{{ foreman_recurring_tasks }}"
-  loop_control:
-    label: "{{ item.instance }}"
-
-- name: Create Quadlet instance links (recurring)
-  when: foreman_recurring_tasks_enabled | default(true)
-  ansible.builtin.file:
-    state: link
-    src: "/etc/containers/systemd/foreman-recurring@.container"
-    dest: "/etc/containers/systemd/foreman-recurring@{{ item.instance }}.container"
   loop: "{{ foreman_recurring_tasks }}"
   loop_control:
     label: "{{ item.instance }}"
