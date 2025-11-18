@@ -37,3 +37,5 @@ foreman_recurring_tasks:
   - instance: monthly
     rake: "cron:monthly"
     schedule: "monthly"
+
+foreman_plugins: []
