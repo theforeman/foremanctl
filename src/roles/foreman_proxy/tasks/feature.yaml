@@ -6,6 +6,7 @@
     data: "{{ lookup('ansible.builtin.template', 'settings.d/' + feature_name + '.yml.j2') }}"
   notify:
     - Restart Foreman Proxy
+    - Refresh Foreman Proxy
 
 - name: Mount config secret for {{ feature_name }}
   ansible.builtin.copy:
@@ -18,3 +19,4 @@
     group: root
   notify:
     - Restart Foreman Proxy
+    - Refresh Foreman Proxy
