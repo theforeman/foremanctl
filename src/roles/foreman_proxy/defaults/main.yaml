@@ -9,3 +9,4 @@ foreman_proxy_trusted_hosts:
 
 foreman_proxy_features:
   - logs
+  - remote_execution_ssh
