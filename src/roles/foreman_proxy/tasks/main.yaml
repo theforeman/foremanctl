@@ -19,8 +19,8 @@
     network: host
     hostname: "{{ ansible_facts['fqdn'] }}"
     secrets:
-      - 'foreman-proxy-settings-yaml,type=mount,target=/etc/foreman-proxy/settings.yml'
-      - 'foreman-proxy-logs-yaml,type=mount,target=/etc/foreman-proxy/settings.d/logs.yml'
+      - 'foreman-proxy-settings-yml,type=mount,target=/etc/foreman-proxy/settings.yml'
+      - 'foreman-proxy-logs-yml,type=mount,target=/etc/foreman-proxy/settings.d/logs.yml'
       - 'foreman-proxy-ssl-ca,type=mount,target=/etc/foreman-proxy/ssl_ca.pem'
       - 'foreman-proxy-ssl-cert,type=mount,target=/etc/foreman-proxy/ssl_cert.pem'
       - 'foreman-proxy-ssl-key,type=mount,target=/etc/foreman-proxy/ssl_key.pem'
