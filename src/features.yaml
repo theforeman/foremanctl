@@ -11,3 +11,15 @@ azure_rm:
   description: Azure Resource Manager plugin for Foreman
   foreman:
     plugin_name: foreman_azure_rm
+remote_execution:
+  description: Remote Execution plugin for Foreman
+  foreman:
+    plugin_name: foreman_remote_execution
+  foreman_proxy:
+    plugin_name: remote_execution_ssh
+  dependencies:
+    - dynflow
+dynflow:
+  internal: true
+  foreman_proxy:
+    plugin_name: dynflow
