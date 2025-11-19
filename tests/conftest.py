@@ -34,6 +34,16 @@ def server_fqdn(server_hostname):
 
 
 @pytest.fixture(scope="module")
+def client_hostname():
+    return 'client'
+
+
+@pytest.fixture(scope="module")
+def client_fqdn(client_hostname):
+    return f'{client_hostname}.example.com'
+
+
+@pytest.fixture(scope="module")
 def certificates(pytestconfig, server_fqdn):
     source = pytestconfig.getoption("certificate_source")
     env = Environment(loader=FileSystemLoader("."), autoescape=select_autoescape())
@@ -53,8 +63,8 @@ def server(server_hostname):
 
 
 @pytest.fixture(scope="module")
-def client():
-    yield testinfra.get_host('paramiko://client', sudo=True, ssh_config=SSH_CONFIG)
+def client(client_hostname):
+    yield testinfra.get_host(f'paramiko://{client_hostname}', sudo=True, ssh_config=SSH_CONFIG)
 
 
 @pytest.fixture(scope="module")
