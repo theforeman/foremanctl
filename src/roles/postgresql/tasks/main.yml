@@ -48,7 +48,6 @@
 - name: Start the PostgreSQL Service
   ansible.builtin.systemd:
     name: "{{ postgresql_container_name }}"
-    enabled: true
     state: started
 
 # SCRAM-SHA-256 is default for PostgreSQL 14+,
