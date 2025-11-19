@@ -189,7 +189,6 @@
 - name: Start Pulp services
   ansible.builtin.systemd:
     name: "{{ item }}"
-    enabled: true
     state: started
   async: 60
   poll: 0
