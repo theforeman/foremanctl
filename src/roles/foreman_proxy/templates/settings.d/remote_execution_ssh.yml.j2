@@ -1,0 +1,38 @@
+---
+:enabled: true
+:ssh_identity_key_file: '~/.ssh/id_rsa_foreman_proxy'
+:local_working_dir: '/var/tmp'
+:remote_working_dir: '/var/tmp'
+:socket_working_dir: '/var/tmp'
+# :kerberos_auth: false
+
+# :cockpit_integration: true
+
+# Mode of operation, one of ssh, ssh-async, pull, pull-mqtt
+:mode: ssh
+
+# Defines how often (in seconds) should the runner check
+# for new data leave empty to use the runner's default
+# (1 second for regular, 60 seconds with async_ssh enabled)
+# :runner_refresh_interval:
+
+# Defines the verbosity of logging coming from ssh command
+# one of :debug, :info, :error, :fatal
+# must be lower than general log level
+# :ssh_log_level: error
+
+# Remove working directories on job completion
+# :cleanup_working_dirs: true
+
+# MQTT configuration, need to be set if mode is set to pull-mqtt
+# :mqtt_broker: localhost
+# :mqtt_port: 1883
+
+# Use of SSL can be forced either way by explicitly setting mqtt_tls setting. If
+# unset, SSL gets used if smart-proxy's foreman_ssl_cert, foreman_ssl_key and
+# foreman_ssl_ca settings are set available.
+# :mqtt_tls:
+
+# The notification is sent over mqtt every $mqtt_resend_interval seconds, until
+# the job is picked up by the host or cancelled
+# :mqtt_resend_interval: 900
