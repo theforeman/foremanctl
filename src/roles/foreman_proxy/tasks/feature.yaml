@@ -20,3 +20,11 @@
   notify:
     - Restart Foreman Proxy
     - Refresh Foreman Proxy
+
+- name: Include additional tasks for {{ feature_name }}
+  ansible.builtin.include_tasks: '{{ tasks_file }}'
+  when:
+    - tasks_file is not none
+    - tasks_file != ""
+  vars:
+    tasks_file: "{{ lookup('ansible.builtin.first_found', files=['feature/' + feature_name + '.yaml'], errors='ignore') }}"
