@@ -1,7 +1,7 @@
 ---
 variables:
-  profile:
-    help: Base profile to use in this deployment.
+  flavor:
+    help: Base flavor to use in this deployment.
   features:
     parameter: --add-feature
     help: Additional features to enable in this deployment.

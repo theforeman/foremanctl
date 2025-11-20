@@ -1,5 +1,5 @@
 ---
-profile_features:
+flavor_features:
   - foreman
   - katello
   - content/container

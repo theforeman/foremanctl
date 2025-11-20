@@ -16,4 +16,4 @@ include:
   - _certificate_source
   - _database_mode
   - _database_connection
-  - _profile_features
+  - _flavor_features
