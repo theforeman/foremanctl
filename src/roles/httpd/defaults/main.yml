@@ -2,3 +2,10 @@ httpd_ssl_dir: /etc/pki/httpd
 httpd_pulp_api_backend: http://localhost:24817
 httpd_pulp_content_backend: http://localhost:24816
 httpd_foreman_backend: http://localhost:3000
+
+# External authentication configuration
+httpd_external_authentication: "{{ external_authentication | default(None) }}"
+httpd_ipa_manage_sssd: "{{ ipa_manage_sssd | default(true) }}"
+httpd_ipa_keytab: /etc/httpd/conf/http.keytab
+httpd_ipa_pam_service: "{{ pam_service | default('foreman') }}"
+httpd_ipa_gssapi_local_name: "{{ gssapi_local_name | default(true) }}"

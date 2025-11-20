@@ -1,0 +1,48 @@
+---
+- name: Install sssd-dbus package
+  ansible.builtin.package:
+    name: sssd-dbus
+    state: present
+
+- name: Ensure SSSD service is running and enabled
+  ansible.builtin.systemd:
+    name: sssd
+    state: started
+    enabled: true
+
+- name: Configure SSSD services to include ifp
+  community.general.ini_file:
+    path: /etc/sssd/sssd.conf
+    section: sssd
+    option: services
+    value: >-
+      {{
+        (
+          (lookup('ini', 'services section=sssd file=/etc/sssd/sssd.conf', errors='ignore') | default('', true)
+          | string | trim | split(',') | map('trim') | reject('equalto', '') | list) +
+          ['ifp']
+        ) | unique | join(', ')
+      }}
+    mode: "0600"
+  notify:
+    - Restart sssd
+
+- name: Configure SSSD IFP allowed_uids
+  community.general.ini_file:
+    path: /etc/sssd/sssd.conf
+    section: ifp
+    option: allowed_uids
+    value: "root, apache"
+    mode: "0600"
+  notify:
+    - Restart sssd
+
+- name: Configure SSSD IFP user_attributes
+  community.general.ini_file:
+    path: /etc/sssd/sssd.conf
+    section: ifp
+    option: user_attributes
+    value: "+email, +firstname, +lastname"
+    mode: "0600"
+  notify:
+    - Restart sssd
