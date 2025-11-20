@@ -5,3 +5,4 @@ hammer_default_plugins:
   - foreman
 hammer_plugins: []
 hammer_packages: "{{ (hammer_default_plugins+hammer_plugins) | map('regex_replace', '^', 'hammer-cli-plugin-') }}"
+hammer_kerberos_auth_enabled: "{{ external_authentication is defined and external_authentication == 'ipa_with_api' }}"

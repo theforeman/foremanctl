@@ -8,7 +8,11 @@
   # Enable using sessions
   # When sessions are enabled, hammer ignores credentials stored in the config file
   # and asks for them interactively at the begining of each session.
-  :use_sessions: false
+  :use_sessions: {{ hammer_kerberos_auth_enabled | ternary(true, false) }}
+{% if hammer_kerberos_auth_enabled %}
+  # Default authentication type for Kerberos/negotiate authentication
+  :default_auth_type: 'Negotiate_Auth'
+{% endif %}
 
   # Check API documentation cache status on each request
   :refresh_cache: false

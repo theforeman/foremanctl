@@ -1,0 +1,55 @@
+---
+- name: Install sssd-dbus package
+  ansible.builtin.package:
+    name: sssd-dbus
+    state: present
+
+- name: Ensure SSSD service is running and enabled
+  ansible.builtin.systemd:
+    name: sssd
+    state: started
+    enabled: true
+
+- name: Read existing SSSD configuration
+  ansible.builtin.slurp:
+    src: /etc/sssd/sssd.conf
+  register: httpd_sssd_config
+  ignore_errors: true
+
+- name: Parse SSSD services configuration
+  ansible.builtin.set_fact:
+    httpd_sssd_existing_services: "{{ (httpd_sssd_config.content | default('') | b64decode |
+                                       regex_search('\\[sssd\\][\\s\\S]*?services\\s*=\\s*([^\\n]+)', '\\1', multiline=True) |
+                                       default(['']) | first) | trim }}"
+  when: httpd_sssd_config.content is defined
+
+- name: Configure SSSD services to include ifp
+  community.general.ini_file:
+    path: /etc/sssd/sssd.conf
+    section: sssd
+    option: services
+    value: "{{ httpd_sssd_existing_services }}{% if httpd_sssd_existing_services != '' %}, {% endif %}ifp"
+    mode: "0600"
+  when: httpd_sssd_existing_services | regex_search('\\bifp\\b') != 'ifp'
+  notify:
+    - Restart sssd
+
+- name: Configure SSSD IFP allowed_uids
+  community.general.ini_file:
+    path: /etc/sssd/sssd.conf
+    section: ifp
+    option: allowed_uids
+    value: "root, apache"
+    mode: "0600"
+  notify:
+    - Restart sssd
+
+- name: Configure SSSD IFP user_attributes
+  community.general.ini_file:
+    path: /etc/sssd/sssd.conf
+    section: ifp
+    option: user_attributes
+    value: "+email, +firstname, +lastname"
+    mode: "0600"
+  notify:
+    - Restart sssd

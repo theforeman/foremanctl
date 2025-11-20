@@ -2,3 +2,9 @@
   # Credentials. You'll be asked for them interactively if you leave them blank here
   :username: '{{ foreman_initial_admin_username }}'
   :password: '{{ foreman_initial_admin_password }}'
+{% if hammer_kerberos_auth_enabled %}
+  # Enable using sessions for Kerberos authentication
+  :use_sessions: true
+  # Default authentication type for Kerberos/negotiate authentication
+  :default_auth_type: 'Negotiate_Auth'
+{% endif %}
