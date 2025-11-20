@@ -10,7 +10,7 @@
 - name: Create certs secrets
   ansible.builtin.include_tasks: certs.yaml
 
-- name: Deploy Foreman Container
+- name: Deploy Foreman Proxy Container
   containers.podman.podman_container:
     name: "foreman-proxy"
     image: "{{ foreman_proxy_container_image }}:{{ foreman_proxy_container_tag }}"
