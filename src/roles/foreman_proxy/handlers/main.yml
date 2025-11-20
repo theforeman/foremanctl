@@ -2,7 +2,7 @@
 - name: Restart Foreman Proxy
   ansible.builtin.systemd:
     name: foreman-proxy
-    state: restarted
+    state: "{{ (_foreman_proxy_service is changed) | ternary('started', 'restarted') }}"
 
 - name: Refresh Foreman Proxy
   theforeman.foreman.smart_proxy_refresh:
