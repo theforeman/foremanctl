@@ -3,3 +3,8 @@
   ansible.builtin.systemd:
     name: httpd
     state: restarted
+
+- name: Restart sssd
+  ansible.builtin.systemd:
+    name: sssd
+    state: restarted

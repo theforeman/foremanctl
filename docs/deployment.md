@@ -213,3 +213,21 @@ For secure connections with certificate verification:
   --candlepin-database-password=secure_candlepin_password \
   --pulp-database-password=secure_pulp_password
 ```
+
+## External authentication support
+
+The deployment utility supports setting up necessary services to allow leveraging kerberos for user authentication if the host machine is enrolled in a FreeIPA/IDM or Active Directory realm.
+
+### Prerequisites
+
+Before configuring external authentication support, ensure the following requirements are met:
+- the host machine is enrolled in FreeIPA/IDM or Active Directory realm
+- a keytab for the Kerberos service principal is available at the host machine
+
+### External Database Configuration Parameters
+
+The external authentication configuration is managed through `foremanctl` command line parameters:
+- `--external-authentication`: Set to `ipa` to enable kerberos authentication in WebUI, set to `ipa_with_api` to enable kerberos authentication in WebUI, API and hammer CLI
+- `--external-authentication-pam-server`: PAM service name to use when authenticating users, can be changed in case a specific FreeIPA/IDM HBAC service should be used (default: `foreman`)
+
+If `hammer` feature is enabled and `--external-authentication` is set to `ipa_with_api`, `hammer` will be configured to use negotiate-based authentication.
