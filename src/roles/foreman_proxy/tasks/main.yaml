@@ -52,9 +52,6 @@
   ansible.builtin.systemd:
     daemon_reload: true
 
-- name: Flush handlers to restart services
-  ansible.builtin.meta: flush_handlers
-
 - name: Start the Foreman Proxy Service
   ansible.builtin.systemd:
     name: foreman-proxy
@@ -68,3 +65,6 @@
     username: "{{ foreman_initial_admin_username }}"
     password: "{{ foreman_initial_admin_password }}"
     validate_certs: false
+
+- name: Flush handlers to restart services
+  ansible.builtin.meta: flush_handlers
