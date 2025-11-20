@@ -9,6 +9,10 @@ variables:
     help: Initial password for the admin user.
   foreman_puma_workers:
     help: Number of workers for Puma.
+  certificates_cnames:
+    help: Additional DNS name to include in Subject Alternative Names for certificates. Can be specified multiple times.
+    action: append
+    parameter: --certificate-cname
 
 include:
   - _certificate_source
