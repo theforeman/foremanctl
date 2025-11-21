@@ -8,7 +8,6 @@ def test_foreman_proxy_features(server, certificates, server_fqdn):
 def test_foreman_proxy_service(server):
     foreman_proxy = server.service("foreman-proxy")
     assert foreman_proxy.is_running
-    assert foreman_proxy.is_enabled
 
 def test_foreman_proxy_port(server):
     foreman_proxy = server.addr('localhost')

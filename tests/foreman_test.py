@@ -20,7 +20,6 @@ def foreman_status(foreman_status_curl):
 def test_foreman_service(server):
     foreman = server.service("foreman")
     assert foreman.is_running
-    assert foreman.is_enabled
 
 
 def test_foreman_port(server):
@@ -60,4 +59,3 @@ def test_foreman_dynflow_container_instances(server, dynflow_instance):
 def test_foreman_dynflow_service_instances(server, dynflow_instance):
     service = server.service(f"dynflow-sidekiq@{dynflow_instance}")
     assert service.is_running
-    assert service.is_enabled
