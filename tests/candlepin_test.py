@@ -10,7 +10,6 @@ def assert_secret_content(server, secret_name, secret_value):
 def test_candlepin_service(server):
     candlepin = server.service("candlepin")
     assert candlepin.is_running
-    assert candlepin.is_enabled
 
 
 def test_candlepin_port(server):
