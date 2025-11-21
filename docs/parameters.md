@@ -50,6 +50,9 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-initial-admin-username` | Initial username for the admin user | `--foreman-initial-admin-username` |
 | `--foreman-initial-admin-password` | Initial password for the admin user | `--foreman-initial-admin-password` |
 | `--foreman-puma-workers` | Number of workers for Puma | `--foreman-foreman-service-puma-workers` |
+| `--foreman-ipa-authentication` | Enable configuration for external authentication via IPA for web UI | `--external-authentication=ipa` |
+| `--foreman-ipa-authentication-api` | Enable configuration for external authentication via IPA for web UI and API | `--external-authentication=ipa_with_api` |
+| `--pam-service` | PAM service used for host-based access control in IPA | `--foreman-pam-service` |
 
 #### Certs
 
@@ -85,9 +88,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--certs-reset` | Parameter to reset all certificates to default | foreman-installer | No |
 | `--foreman-initial-location` | | |
 | `--foreman-initial-organization` | | |
-| `--foreman-ipa-authentication` | | foreman | ipa_authentication | `--external-authentication=ipa` |
-| `--foreman-ipa-authentication-api` | | foreman | ipa_authentication_api | `--external-authentication=ipa_with_api` |
-| `--foreman-pam-service` | | foreman | pam_service | `--foreman-pam-service` |
 | `--foreman-keycloak` | | |
 | `--foreman-keycloak-app-name` | | |
 | `--foreman-keycloak-realm` | | |
