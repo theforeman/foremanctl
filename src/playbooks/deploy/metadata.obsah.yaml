@@ -16,14 +16,8 @@ variables:
     choices:
       - ipa
       - ipa_with_api
-  ipa_manage_sssd:
-    help: Whether to manage SSSD service and configuration for IPA authentication
-    action: store_true
   pam_service:
     help: Name of the PAM service to use for IPA authentication
-  gssapi_local_name:
-    help: Whether to use the local name for GSSAPI authentication
-    action: store_true
 
 include:
   - _certificate_source
