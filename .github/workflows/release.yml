@@ -15,7 +15,7 @@ jobs:
     name: Build the tarball
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Build tarball
         run: make dist
       - name: Upload tarball to GitHub cache
