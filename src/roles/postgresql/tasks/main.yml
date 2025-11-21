@@ -31,6 +31,8 @@
       - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
     secrets:
       - 'postgresql_admin_password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
+    env:
+      POSTGRESQL_MAX_CONNECTIONS: "{{ postgresql_max_connections }}"
     quadlet_options:
       - |
         [Install]
