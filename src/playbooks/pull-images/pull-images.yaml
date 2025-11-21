@@ -4,7 +4,9 @@
     - quadlet
   vars_files:
     - "../../vars/defaults.yml"
+    - "../../vars/flavors/{{ flavor }}.yml"
     - "../../vars/images.yml"
+    - "../../vars/base.yaml"
   become: true
   tasks:
     - name: Install podman
@@ -16,6 +18,13 @@
       containers.podman.podman_image:
         name: "{{ item }}"
       loop: "{{ images }}"
+
+    - name: Pull foreman_proxy images
+      containers.podman.podman_image:
+        name: "{{ item }}"
+      loop: "{{ foreman_proxy_images }}"
+      when:
+        - "'foreman-proxy' in enabled_features"
 
     - name: Pull database images
       containers.podman.podman_image:
