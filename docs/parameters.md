@@ -88,9 +88,7 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-initial-organization` | | |
 | `--foreman-ipa-authentication` | | foreman | ipa_authentication | `--external-authentication=ipa` |
 | `--foreman-ipa-authentication-api` | | foreman | ipa_authentication_api | `--external-authentication=ipa_with_api` |
-| `--foreman-ipa-manage-sssd` | | foreman | ipa_manage_sssd | `--foreman-ipa-manage-sssd` |
 | `--foreman-pam-service` | | foreman | pam_service | `--foreman-pam-service` |
-| `--foreman-gssapi-local-name` | | foreman | gssapi_local_name | `--gssapi-local-name` |
 | `--foreman-keycloak` | | |
 | `--foreman-keycloak-app-name` | | |
 | `--foreman-keycloak-realm` | | |
