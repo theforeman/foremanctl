@@ -6,4 +6,4 @@ hammer_packages:
   - hammer-cli-plugin-foreman_tasks
   - hammer-cli-plugin-foreman_remote_execution
   - hammer-cli-plugin-katello
-hammer_kerberos_auth_enabled: "{{ kerberos_auth_enabled | default(false) }}"
+hammer_kerberos_auth_enabled: "{{ enable_kerberos_authentication | default(false) }}"

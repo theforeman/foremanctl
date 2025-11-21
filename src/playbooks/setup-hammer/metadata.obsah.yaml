@@ -3,7 +3,7 @@ help: |
   Setup hammer
 
 variables:
-  kerberos_auth_enabled:
+  enable_kerberos_authentication:
     help: Whether to enable Kerberos/negotiate authentication for Hammer CLI
     action: store_true
 
