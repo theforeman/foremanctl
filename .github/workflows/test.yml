@@ -235,3 +235,70 @@ jobs:
         uses: re-actors/alls-green@release/v1
         with:
           jobs: ${{ toJSON(needs) }}
+
+  tests-external-database:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Setup libvirt for Vagrant
+        uses: voxpupuli/setup-vagrant@v0
+      - name: Install Ansible
+        run: pip install --upgrade ansible-core
+      - name: Setup environment
+        run: ./setup-environment
+      - name: Start VMs
+        run: |
+          ./forge vms start --vms "quadlet client database"
+      - name: Configure remote-database
+        run: |
+          ./forge remote-database
+      - name: Configure repositories
+        run: |
+          ./forge setup-repositories
+      - name: Run image pull
+        run: |
+          ./foremanctl pull-images
+      - name: Run deployment
+        run: |
+          ./foremanctl deploy --database-mode=external --database-host=database.example.com --foreman-initial-admin-password=changeme
+      - name: Setup hammer
+        run: |
+          ./foremanctl setup-hammer
+      - name: Set up Foreman Proxy
+        run: |
+          ./foremanctl setup-foreman-proxy
+      - name: Run tests
+        run: |
+          ./forge test --pytest-args="--database-mode=external"
+      - name: Run smoker
+        run: |
+          ./forge smoker
+      - name: Archive smoker report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: smoker-external-database
+          path: "/home/runner/smoker/report/"
+      - name: Generate sos reports
+        if: ${{ always() }}
+        run: ./forge sos
+      - name: Archive sos reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: sosreport-external-database
+          path: sos/
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: owenthereal/action-upterm@v1
+        with:
+          ## limits ssh access and adds the ssh public key for the user which triggered the workflow
+          limit-access-to-actor: true
+          ## If no one connects after 5 minutes, shut down server.
+          wait-timeout-minutes: 5

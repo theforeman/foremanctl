@@ -9,7 +9,7 @@
       block:
         - name: Run vagrant up
           ansible.builtin.command:
-            cmd: "vagrant up {{ vms | default() }}"
+            cmd: "vagrant up {{ vms | default('quadlet client') }}"
           args:
             chdir: "{{ inventory_dir }}/../"
           changed_when: false
