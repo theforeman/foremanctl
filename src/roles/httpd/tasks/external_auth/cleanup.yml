@@ -1,0 +1,19 @@
+---
+- name: Remove external authentication configuration
+  ansible.builtin.file:
+    path: /etc/httpd/conf.d/05-foreman-ssl.d/external_auth.conf
+    state: absent
+  notify:
+    - Restart httpd
+
+- name: Remove Apache module configuration files for IPA authentication
+  ansible.builtin.file:
+    path: /etc/httpd/conf.modules.d/55-{{ item }}.conf
+    state: absent
+  loop:
+    - authnz_pam
+    - intercept_form_submit
+    - lookup_identity
+    - auth_gssapi
+  notify:
+    - Restart httpd
