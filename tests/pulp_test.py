@@ -64,3 +64,8 @@ def test_pulp_status_workers(pulp_status):
 
 def test_pulp_volumes(server):
     assert server.file("/var/lib/pulp").is_directory
+
+def test_pulp_worker_target(server):
+    pulp_worker_target = server.service("pulp-worker.target")
+    assert pulp_worker_target.is_running
+    assert pulp_worker_target.is_enabled
