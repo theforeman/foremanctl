@@ -1,4 +1,20 @@
 ---
+- name: Create log directory
+  ansible.builtin.file:
+    path: /var/log/foremanctl
+    state: directory
+    mode: '0750'
+    owner: root
+    group: root
+
+- name: Backup the latest log file
+  ansible.builtin.copy:
+    src: "{{ lookup('ansible.builtin.env', 'ANSIBLE_LOG_PATH') }}"
+    dest: "/var/log/foremanctl/foremanctl-{{ ansible_facts['date_time']['iso8601_basic_short'] }}.log"
+    mode: '0750'
+    owner: root
+    group: root
+
 - name: Deploy debug_tools
   ansible.builtin.include_role:
     name: debug_tools
