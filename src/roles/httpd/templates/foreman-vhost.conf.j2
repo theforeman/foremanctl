@@ -1,0 +1,60 @@
+<VirtualHost *:80>
+  ServerName {{ ansible_facts['fqdn'] }}
+
+  ## Load additional static includes
+  IncludeOptional "/etc/httpd/conf.d/05-foreman.d/*.conf"
+
+  ## Logging
+  ErrorLog "/var/log/httpd/foreman_error.log"
+  ServerSignature Off
+  CustomLog "/var/log/httpd/foreman_access.log" combined
+
+  ## Request header rules
+  ## as per http://httpd.apache.org/docs/2.4/mod/mod_headers.html#requestheader
+  RequestHeader set X-FORWARDED-PROTO "http"
+  RequestHeader set SSL-CLIENT-S-DN ""
+  RequestHeader set SSL-CLIENT-CERT ""
+  RequestHeader set SSL-CLIENT-VERIFY ""
+  RequestHeader unset REMOTE_USER
+  RequestHeader unset REMOTE-USER
+
+  ProxyPass /pulp_ansible/galaxy/ {{ httpd_pulp_api_backend }}/pulp_ansible/galaxy/
+  ProxyPassReverse /pulp_ansible/galaxy/ {{ httpd_pulp_api_backend }}/pulp_ansible/galaxy/
+
+  <Location "/pulpcore_registry/v2/">
+    RequestHeader unset REMOTE_USER
+    RequestHeader unset REMOTE-USER
+    ProxyPass {{ httpd_pulp_api_backend }}/v2/
+    ProxyPassReverse {{ httpd_pulp_api_backend }}/v2/
+  </Location>
+
+  ProxyPass /pulp/container/ {{ httpd_pulp_content_backend }}/pulp/container/
+  ProxyPassReverse /pulp/container/ {{ httpd_pulp_content_backend }}/pulp/container/
+
+  <Location "/pulp/content">
+    ProxyPass {{ httpd_pulp_content_backend }}/pulp/content disablereuse=on timeout=600
+    ProxyPassReverse {{ httpd_pulp_content_backend }}/pulp/content
+  </Location>
+
+  <Location "/pulp/api/v3">
+    RequestHeader unset REMOTE_USER
+    RequestHeader unset REMOTE-USER
+    ProxyPass {{ httpd_pulp_api_backend }}/pulp/api/v3 timeout=600
+    ProxyPassReverse {{ httpd_pulp_api_backend }}/pulp/api/v3
+  </Location>
+
+  ProxyPass /pulp/assets/ {{ httpd_pulp_api_backend }}/pulp/assets/
+  ProxyPassReverse /pulp/assets/ {{ httpd_pulp_api_backend }}/pulp/assets/
+
+  ## Proxy rules
+  ProxyRequests Off
+  ProxyPreserveHost On
+  ProxyAddHeaders On
+  ProxyPass /pulp !
+  ProxyPass /icons !
+  ProxyPass /server-status !
+  ProxyPass / {{ httpd_foreman_backend }}/ retry=0 timeout=900
+  ProxyPassReverse / {{ httpd_foreman_backend }}/
+
+  AddDefaultCharset UTF-8
+</VirtualHost>

@@ -43,6 +43,14 @@
     - src: "{{ httpd_server_key }}"
       dest: "private/katello-apache.key"
 
+- name: Configure foreman vhost
+  ansible.builtin.template:
+    src: foreman-vhost.conf.j2
+    dest: /etc/httpd/conf.d/foreman.conf
+    mode: "0644"
+  notify:
+    - Restart httpd
+
 - name: Configure foreman-ssl vhost
   ansible.builtin.template:
     src: foreman-ssl-vhost.conf.j2
