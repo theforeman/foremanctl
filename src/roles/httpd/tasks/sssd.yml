@@ -15,15 +15,9 @@
     path: /etc/sssd/sssd.conf
     section: sssd
     option: services
-    value: >-
-      {{
-        (
-          (lookup('ini', 'services section=sssd file=/etc/sssd/sssd.conf', errors='ignore') | default('', true)
-          | string | trim | split(',') | map('trim') | reject('equalto', '') | list) +
-          ['ifp']
-        ) | unique | join(', ')
-      }}
+    value: "{{ lookup('ini', 'services section=sssd file=/etc/sssd/sssd.conf', errors='ignore') }} , ifp"
     mode: "0600"
+  when: not lookup('ini', 'services section=sssd file=/etc/sssd/sssd.conf', errors='ignore') | default('', true) | string | regex_search('ifp') | bool
   notify:
     - Restart sssd
 
