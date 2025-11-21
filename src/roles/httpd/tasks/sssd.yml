@@ -10,14 +10,27 @@
     state: started
     enabled: true
 
+- name: Read existing SSSD configuration
+  ansible.builtin.slurp:
+    src: /etc/sssd/sssd.conf
+  register: httpd_sssd_config
+  ignore_errors: true
+
+- name: Parse SSSD services configuration
+  ansible.builtin.set_fact:
+    httpd_sssd_existing_services: "{{ (httpd_sssd_config.content | default('') | b64decode |
+                                       regex_search('\\[sssd\\][\\s\\S]*?services\\s*=\\s*([^\\n]+)', '\\1', multiline=True) |
+                                       default(['']) | first) | trim }}"
+  when: httpd_sssd_config.content is defined
+
 - name: Configure SSSD services to include ifp
   community.general.ini_file:
     path: /etc/sssd/sssd.conf
     section: sssd
     option: services
-    value: "{{ lookup('ini', 'services section=sssd file=/etc/sssd/sssd.conf', errors='ignore') }} , ifp"
+    value: "{{ httpd_sssd_existing_services }}{% if httpd_sssd_existing_services != '' %}, {% endif %}ifp"
     mode: "0600"
-  when: not lookup('ini', 'services section=sssd file=/etc/sssd/sssd.conf', errors='ignore') | default('', true) | string | regex_search('ifp') | bool
+  when: httpd_sssd_existing_services | regex_search('\\bifp\\b') != 'ifp'
   notify:
     - Restart sssd
 
