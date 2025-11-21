@@ -1,0 +1,3 @@
+---
+- name: Configure IPA authentication with API support
+  ansible.builtin.import_tasks: ipa.yml
