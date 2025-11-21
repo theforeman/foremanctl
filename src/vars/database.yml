@@ -43,3 +43,5 @@ postgresql_users:
     password: "{{ foreman_database_password }}"
   - name: "{{ pulp_database_name }}"
     password: "{{ pulp_database_password }}"
+
+postgresql_max_connections: 500
