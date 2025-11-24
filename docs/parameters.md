@@ -51,8 +51,7 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-initial-admin-password` | Initial password for the admin user | `--foreman-initial-admin-password` |
 | `--foreman-puma-workers` | Number of workers for Puma | `--foreman-foreman-service-puma-workers` |
 | `--pulp-worker-count` | Number of pulp workers | `--foreman-proxy-content-pulpcore-worker-count` |
-| `--foreman-ipa-authentication` | Enable configuration for external authentication via IPA for web UI | `--external-authentication=ipa` |
-| `--foreman-ipa-authentication-api` | Enable configuration for external authentication via IPA for web UI and API | `--external-authentication=ipa_with_api` |
+| `--external-authentication={ipa,ipa_with_api}` | Enable configuration for external authentication via IPA for web UI (or webUI and API for `ipa_with_api`), expects the target machine to [be enrolled into FreeIPA/IDM](https://docs.theforeman.org/3.16/Configuring_User_Authentication/index-katello.html#enrolling-foreman-server-in-freeipa-domain) | `--foreman-ipa-authentication`<br/> `--foreman-ipa-authentication-api` |
 | `--pam-service` | PAM service used for host-based access control in IPA | `--foreman-pam-service` |
 
 #### Certs
