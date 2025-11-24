@@ -3,11 +3,12 @@
   hosts:
     - quadlet
   become: true
+  vars_files:
+    - "../../vars/defaults.yml"
   vars:
     certificates_ca: false
     certificates_hostnames:
       - "{{ hostname }}"
-    certificate_source: default
   roles:
     - role: certificates
       when: "certificate_source == 'default'"
