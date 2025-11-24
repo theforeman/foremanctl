@@ -27,6 +27,14 @@
     - "{{ httpd_ssl_dir }}/certs"
     - "{{ httpd_ssl_dir }}/private"
 
+- name: Create pub directory
+  ansible.builtin.file:
+    path: "{{ httpd_pub_dir }}"
+    state: directory
+    group: apache
+    owner: apache
+    mode: "0755"
+
 - name: Deploy certificates
   ansible.builtin.copy:
     src: "{{ item.src }}"
@@ -42,6 +50,13 @@
       dest: "certs/katello-apache.crt"
     - src: "{{ httpd_server_key }}"
       dest: "private/katello-apache.key"
+
+- name: Copy CA certificate to pub directory for client trust
+  ansible.builtin.copy:
+    src: "{{ httpd_server_ca_certificate }}"
+    dest: "{{ httpd_pub_dir }}/katello-server-ca.crt"
+    remote_src: true
+    mode: "0644"
 
 - name: Configure foreman-ssl vhost
   ansible.builtin.template:
