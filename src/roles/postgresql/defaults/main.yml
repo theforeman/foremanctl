@@ -10,3 +10,4 @@ postgresql_data_dir: /var/lib/pgsql/data
 postgresql_admin_password: "CHANGEME"
 
 postgresql_max_connections: 500
+postgresql_shared_buffers: 512MB

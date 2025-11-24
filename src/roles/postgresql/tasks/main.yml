@@ -33,6 +33,7 @@
       - 'postgresql_admin_password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
     env:
       POSTGRESQL_MAX_CONNECTIONS: "{{ postgresql_max_connections }}"
+      POSTGRESQL_SHARED_BUFFERS: "{{ postgresql_shared_buffers }}"
     quadlet_options:
       - |
         [Install]
