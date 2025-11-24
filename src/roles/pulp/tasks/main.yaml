@@ -210,6 +210,19 @@
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
     env: "{{ pulp_settings_database_env }}"
 
+- name: Ensure Pulp admin user exists
+  containers.podman.podman_container:
+    name: pulpcore-manager-admin-password
+    image: "{{ pulp_api_image }}"
+    command: pulpcore-manager reset-admin-password --random
+    detach: false
+    network: host
+    volumes: "{{ pulp_volumes }}"
+    secrets:
+      - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
+      - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+    env: "{{ pulp_settings_database_env }}"
+
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers
 
@@ -256,8 +269,3 @@
   when:
     - pulp_existing_workers | length > 0
     - (item | regex_replace('^' + pulp_worker_container_name + '@(\\d+)\\.service$', '\\1') | int) > (pulp_worker_count | int)
-
-- name: Ensure Pulp admin user exists
-  containers.podman.podman_container_exec:
-    name: "{{ pulp_api_container_name }}"
-    command: pulpcore-manager reset-admin-password --random
