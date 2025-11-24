@@ -60,6 +60,13 @@
     ProxyPassReverse {{ httpd_pulp_api_backend }}/pulp/api/v3
   </Location>
 
+  Alias /pub {{ httpd_pub_dir }}
+
+  <Location /pub>
+    Options +FollowSymLinks +Indexes
+    Require all granted
+  </Location>
+
   ProxyPass /pulp/assets/ {{ httpd_pulp_api_backend }}/pulp/assets/
   ProxyPassReverse /pulp/assets/ {{ httpd_pulp_api_backend }}/pulp/assets/
 
@@ -68,6 +75,7 @@
   ProxyPreserveHost On
   ProxyAddHeaders On
   ProxyPass /pulp !
+  ProxyPass /pub !
   ProxyPass /icons !
   ProxyPass /server-status !
   ProxyPass / {{ httpd_foreman_backend }}/ retry=0 timeout=900
