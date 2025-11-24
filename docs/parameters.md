@@ -50,6 +50,7 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-initial-admin-username` | Initial username for the admin user | `--foreman-initial-admin-username` |
 | `--foreman-initial-admin-password` | Initial password for the admin user | `--foreman-initial-admin-password` |
 | `--foreman-puma-workers` | Number of workers for Puma | `--foreman-foreman-service-puma-workers` |
+| `--pulp-worker-count` | Number of pulp workers | `--foreman-proxy-content-pulpcore-worker-count` |
 
 #### Certs
 
