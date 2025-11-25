@@ -13,5 +13,4 @@
 
   roles:
     - pre_install
-    - checks
     - foreman_proxy
