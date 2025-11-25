@@ -1,3 +1,7 @@
 ---
 min_cpu_cores: 16
 min_ram_mb: 65536
+
+postgresql_max_connections: 1000
+postgresql_shared_buffers: 8GB
+postgresql_effective_cache_size: 16GB

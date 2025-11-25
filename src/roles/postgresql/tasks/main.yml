@@ -34,6 +34,7 @@
     env:
       POSTGRESQL_MAX_CONNECTIONS: "{{ postgresql_max_connections }}"
       POSTGRESQL_SHARED_BUFFERS: "{{ postgresql_shared_buffers }}"
+      POSTGRESQL_EFFECTIVE_CACHE_SIZE: "{{ postgresql_effective_cache_size }}"
     quadlet_options:
       - |
         [Install]
