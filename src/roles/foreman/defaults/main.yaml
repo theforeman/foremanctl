@@ -11,3 +11,9 @@ foreman_database_sslmode: disable
 foreman_database_sslrootcert:
 
 foreman_url: "http://{{ ansible_facts['fqdn'] }}:3000"
+
+foremantasks_recurring_tasks_enabled: true
+foremantasks_recurring_tasks:
+  - instance: foreman_tasks-cleanup
+    rake: "foreman_tasks:cleanup"
+    schedule: "*-*-* 19:45:00"
