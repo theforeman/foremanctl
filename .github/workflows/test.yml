@@ -81,6 +81,12 @@ jobs:
       - name: Add optional feature - foreman-proxy
         run: |
           ./foremanctl deploy --add-feature foreman-proxy
+      - name: Add optional feature - foreman_azure_rm
+        run: |
+          ./foremanctl deploy --add-feature foreman_azure_rm
+      - name: Add optional feature - foreman_google
+        run: |
+          ./foremanctl deploy --add-feature foreman_google
       - name: Run tests
         run: |
           ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }}"
