@@ -9,10 +9,10 @@ $(NAME)-$(VERSION).tar.gz: build/collections/foremanctl
 	tar --append --file $(NAME)-$(VERSION).tar --transform='s#^#$(NAME)-$(VERSION)/#' build/collections/foremanctl
 	gzip $(NAME)-$(VERSION).tar
 
-build/collections/foremanctl:
+build/collections/foremanctl: $(REQUIREMENTS_YML)
 	ANSIBLE_COLLECTIONS_PATH=$@ ANSIBLE_COLLECTIONS_SCAN_SYS_PATH=false ansible-galaxy install -r $(REQUIREMENTS_YML)
 
-build/collections/forge:
+build/collections/forge: development/requirements.yml
 	ANSIBLE_COLLECTIONS_PATH=$@ ANSIBLE_COLLECTIONS_SCAN_SYS_PATH=false ansible-galaxy install -r development/requirements.yml
 
 clean-var:
