@@ -12,9 +12,15 @@ foreman_database_sslrootcert:
 
 foreman_url: "http://{{ ansible_facts['fqdn'] }}:3000"
 
+# Puma threads calculation:
+# Max calculation is based on the default for MRI https://puma.io/puma6/#thread-pool
+# Min calculation is based on testing that showed that having the same value as the max led to
+# lower memory usage
+foreman_puma_threads_max: 5
+foreman_puma_threads_min: "{{ foreman_puma_threads_max }}"
 # Puma workers calculation:
-# CPU based calculation is based on https://github.com/puma/puma/blob/master/docs/deployment.md#mri
-# Memory based calculation is based on https://docs.gitlab.com/ee/install/requirements.html#puma-settings
+# CPU calculation is based on https://github.com/puma/puma/blob/master/docs/deployment.md#mri
+# Memory calculation is based on https://docs.gitlab.com/ee/install/requirements.html#puma-settings
 foreman_puma_workers: "{{ [32, ansible_facts['processor_nproc'] * 1.5, (ansible_facts['memtotal_mb'] / 1024) - 1.5] | min | int }}"
 
 foreman_recurring_tasks_enabled: true

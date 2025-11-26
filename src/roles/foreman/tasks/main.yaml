@@ -104,6 +104,8 @@
       - 'foreman-client-cert,type=mount,target=/etc/foreman/client_cert.pem'
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
     env:
+      FOREMAN_PUMA_THREADS_MIN: "{{ foreman_puma_threads_min }}"
+      FOREMAN_PUMA_THREADS_MAX: "{{ foreman_puma_threads_max }}"
       FOREMAN_PUMA_WORKERS: "{{ foreman_puma_workers }}"
       FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
     quadlet_options:
