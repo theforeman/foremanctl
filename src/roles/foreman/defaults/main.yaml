@@ -12,6 +12,8 @@ foreman_database_sslrootcert:
 
 foreman_url: "http://{{ ansible_facts['fqdn'] }}:3000"
 
+foreman_puma_threads_max: 5
+foreman_puma_threads_min: "{{ foreman_puma_threads_max }}"
 # Puma workers calculation:
 # CPU based calculation is based on https://github.com/puma/puma/blob/master/docs/deployment.md#mri
 # Memory based calculation is based on https://docs.gitlab.com/ee/install/requirements.html#puma-settings
