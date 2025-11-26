@@ -98,7 +98,7 @@ jobs:
           ./foremanctl pull-images
       - name: Run deployment
         run: |
-          ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com' || '' }}  --foreman-initial-admin-password=changeme
+          ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com' || '' }}  --foreman-initial-admin-password=changeme --tuning development
       - name: Add optional feature - hammer
         run: |
           ./foremanctl deploy --add-feature hammer
@@ -207,7 +207,7 @@ jobs:
           ./foremanctl pull-images
       - name: Run deployment
         run: |
-          ./foremanctl deploy --foreman-initial-admin-password=changeme
+          ./foremanctl deploy --foreman-initial-admin-password=changeme --tuning development
       - name: Add optional feature - hammer
         run: |
           ./foremanctl deploy --add-feature hammer
