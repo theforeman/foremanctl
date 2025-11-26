@@ -43,6 +43,14 @@
     - src: "{{ httpd_server_key }}"
       dest: "private/katello-apache.key"
 
+- name: Configure external authentication
+  ansible.builtin.include_tasks: "external_auth/{{ httpd_external_authentication }}.yml"
+  when: httpd_external_authentication in ['ipa', 'ipa_with_api']
+
+- name: Remove external authentication configuration if not enabled
+  ansible.builtin.include_tasks: external_auth/cleanup.yml
+  when: httpd_external_authentication is none
+
 - name: Configure foreman-ssl vhost
   ansible.builtin.template:
     src: foreman-ssl-vhost.conf.j2
