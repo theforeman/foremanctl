@@ -14,6 +14,7 @@ Vagrant.configure("2") do |config|
       libvirt.memory = 10240
       libvirt.cpus = 4
       libvirt.machine_virtual_size = 30
+      libvirt.management_network_domain = 'example.com'
     end
 
     override.vm.provision('disk_resize', type: 'ansible') do |ansible_provisioner|
@@ -26,6 +27,7 @@ Vagrant.configure("2") do |config|
 
     override.vm.provider "libvirt" do |libvirt, provider|
       libvirt.memory = 1024
+      libvirt.management_network_domain = 'example.com'
     end
   end
 end
