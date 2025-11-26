@@ -1,4 +1,11 @@
 ---
+- name: Setup Foreman repositories
+  ansible.builtin.include_role:
+    name: theforeman.operations.foreman_repositories
+  vars:
+    foreman_repositories_version: nightly
+    foreman_repositories_katello_version: nightly
+
 - name: Install Hammer and plugins
   ansible.builtin.package:
     name: "{{ hammer_packages }}"
