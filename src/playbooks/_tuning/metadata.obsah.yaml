@@ -1,7 +1,7 @@
 ---
 variables:
   tuning:
-    help: Tuning profile to apply. Defaults to development. Set to a different value according to the available hardware.
+    help: Tuning profile to apply. Defaults to default. Set to a different value according to the available hardware.
     choices:
       - default
       - medium
