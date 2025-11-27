@@ -161,7 +161,7 @@
     - worker-hosts-queue
 
 - name: Define templated Quadlet for recurring Foreman rake tasks
-  when: foreman_recurring_tasks_enabled | default(true)
+  when: foreman_recurring_tasks_enabled
   loop: "{{ foreman_recurring_tasks }}"
   loop_control:
     label: "{{ item.instance }}"
@@ -173,9 +173,7 @@
     sdnotify: false
     network: host
     hostname: "{{ ansible_facts['fqdn'] }}"
-    user: foreman
-    working_dir: /usr/share/foreman
-    command: "bash -lc 'foreman-rake {{ item.rake }}'"
+    command: "foreman-rake {{ item.rake }}"
     volume:
       - 'foreman-data-run:/var/run/foreman:z'
     secrets:
@@ -189,17 +187,11 @@
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
     quadlet_options:
       - |
-        [Install]
-        WantedBy=default.target foreman.target
-      - |
         [Unit]
         PartOf=foreman.target
-        Requires=foreman.service
-        After=foreman.service
         StartLimitIntervalSec=0
       - |
         [Service]
-        ExecStartPre=/usr/bin/flock -n /run/foreman-recurring-%i.lock -c /usr/bin/true
         TimeoutStartSec=30m
         TimeoutStopSec=2m
         KillMode=mixed
@@ -261,7 +253,7 @@
   register: foreman_status
 
 - name: Enable & start recurring timers
-  when: foreman_recurring_tasks_enabled | default(true)
+  when: foreman_recurring_tasks_enabled
   ansible.builtin.systemd:
     name: "foreman-recurring@{{ item.instance }}.timer"
     enabled: true
