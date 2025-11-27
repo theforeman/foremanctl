@@ -173,7 +173,6 @@
       - -c
       - bin/rails db:migrate && bin/rails db:seed
     detach: false
-    working_dir: /usr/share/foreman
     network: host
     secrets:
       - 'foreman-database-url,type=env,target=DATABASE_URL'
