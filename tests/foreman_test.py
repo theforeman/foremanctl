@@ -6,14 +6,10 @@ FOREMAN_HOST = 'localhost'
 FOREMAN_PORT = 3000
 
 RECURRING_INSTANCES = [
-    "reports-daily",
-    "db-sessions-clear",
-    "reports-expire",
-    "audits-expire",
-    "reports-weekly",
-    "reports-monthly",
-    "notifications-clean",
-    "ldap-refresh_usergroups",
+    "hourly",
+    "daily",
+    "weekly",
+    "monthly",
 ]
 
 @pytest.fixture(scope="module")
