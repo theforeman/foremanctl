@@ -133,7 +133,6 @@
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
       - 'foreman-dynflow-worker-hosts-queue-yaml,type=mount,target=/etc/foreman/dynflow/worker-hosts-queue.yml'
     env:
-      DYNFLOW_SIDEKIQ_SCRIPT: "/usr/share/foreman/extras/dynflow-sidekiq.rb"
       DYNFLOW_REDIS_URL: "redis://localhost:6379/6"
       REDIS_PROVIDER: "DYNFLOW_REDIS_URL"
     command: "/usr/libexec/foreman/sidekiq-selinux -e production -r /usr/share/foreman/extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yml"
