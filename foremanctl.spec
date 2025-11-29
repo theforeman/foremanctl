@@ -10,7 +10,7 @@ URL:       https://github.com/theforeman/foremanctl
 Source:    https://github.com/theforeman/foremanctl/releases/download/%{version}/%{name}-%{version}.tar.gz
 
 BuildArch: noarch
-Requires:  python3-obsah >= 1.4
+Requires:  python3-obsah >= 1.7.1
 
 # These are needed on the target host, which is usually localhost
 Recommends:  podman
@@ -37,12 +37,14 @@ sed -i '/^OBSAH_BASE=/ s|=.\+|=%{_datadir}/%{name}|' %{name}
 sed -i '/^OBSAH_INVENTORY=/ s|=.\+|=%{_sysconfdir}/%{name}/inventory|' %{name}
 sed -i '/^OBSAH_STATE=/ s|=.\+|=%{_sharedstatedir}/%{name}|' %{name}
 sed -i '/^ANSIBLE_COLLECTIONS_PATH=/ s|=.\+|=%{_datadir}/%{name}/collections|' %{name}
+sed -i '/^ANSIBLE_LOG_PATH=/ s|=.\+|=%{_localstatedir}/log/%{name}/%{name}.log|' %{name}
 
 %install
 install -d -m0755 %{buildroot}%{_sysconfdir}/%{name}
 install -d -m0755 %{buildroot}%{_datadir}/%{name}
 install -d -m0755 %{buildroot}%{_bindir}
 install -d -m0750 %{buildroot}%{_sharedstatedir}/%{name}
+install -d -m0750 %{buildroot}%{_localstatedir}/log/%{name}
 
 cp inventories/quadlet %{buildroot}%{_sysconfdir}/%{name}/inventory
 cp -r src %{buildroot}%{_datadir}/%{name}
@@ -55,6 +57,7 @@ cp -r build/collections/%{name} %{buildroot}%{_datadir}/%{name}/collections
 %{_datadir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}
 %{_sharedstatedir}/%{name}
+%{_localstatedir}/log/%{name}
 
 
 %changelog
