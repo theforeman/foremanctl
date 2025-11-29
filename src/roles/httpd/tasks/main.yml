@@ -58,6 +58,14 @@
     remote_src: true
     mode: "0644"
 
+- name: Configure foreman vhost
+  ansible.builtin.template:
+    src: foreman-vhost.conf.j2
+    dest: /etc/httpd/conf.d/foreman.conf
+    mode: "0644"
+  notify:
+    - Restart httpd
+
 - name: Configure foreman-ssl vhost
   ansible.builtin.template:
     src: foreman-ssl-vhost.conf.j2
