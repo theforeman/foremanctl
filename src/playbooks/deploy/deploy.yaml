@@ -5,6 +5,7 @@
   become: true
   vars_files:
     - "../../vars/defaults.yml"
+    - "../../vars/flavors/{{ flavor }}.yml"
     - "../../vars/{{ certificate_source }}_certificates.yml"
     - "../../vars/images.yml"
     - "../../vars/database.yml"
@@ -29,4 +30,10 @@
     - pulp
     - foreman
     - role: systemd_target
+    - role: foreman_proxy
+      when:
+        - "'foreman-proxy' in enabled_features"
+    - role: hammer
+      when:
+        - "'hammer' in enabled_features"
     - post_install

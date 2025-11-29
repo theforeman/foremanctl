@@ -4,6 +4,7 @@
   become: true
   vars_files:
     - "../../../src/vars/defaults.yml"
+    - "../../../src/vars/flavors/{{ flavor }}.yml"
     - "../../../src/vars/{{ certificate_source }}_certificates.yml"
     - "../../../src/vars/images.yml"
     - "../../../src/vars/database.yml"
