@@ -52,6 +52,14 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-puma-workers` | Number of workers for Puma | `--foreman-foreman-service-puma-workers` |
 | `--pulp-worker-count` | Number of pulp workers | `--foreman-proxy-content-pulpcore-worker-count` |
 
+#### IOP
+
+##### Mapped
+
+| Parameter | Description | foreman-installer Parameters |
+| ----------| ----------- | ---------------------------- |
+| `--enable-iop` | Enable deployment of IOP services | `--enable-iop` |
+
 #### Certs
 
 ##### Mapped
