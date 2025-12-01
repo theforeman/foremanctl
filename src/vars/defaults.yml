@@ -5,3 +5,38 @@ tuning_profile: development
 flavor: katello
 features: []
 enabled_features: "{{ (flavor_features + features) }}"
+
+# The number 25 is for the addition of:
+# - hibernate.c3p0.max_size: 20 (https://github.com/candlepin/candlepin/blob/main/src/main/resources/META-INF/persistence.xml#L20)
+# - org.quartz.dataSource.myDS.maxConnections: 5 (https://github.com/theforeman/puppet-candlepin/blob/master/templates/_candlepin_database.conf.epp#L36)
+candlepin_connection_count: 25
+
+# Puma threads calculation:
+# Max calculation is based on the default for MRI https://puma.io/puma6/#thread-pool
+# Min calculation is based on testing that showed that having the same value as the max led to
+# lower memory usage
+foreman_puma_threads_max: 5
+# Puma workers calculation:
+# CPU calculation is based on https://github.com/puma/puma/blob/master/docs/deployment.md#mri
+# Memory calculation is based on https://docs.gitlab.com/ee/install/requirements.html#puma-settings
+foreman_puma_workers: "{{ [32, ansible_facts['processor_nproc'] * 1.5, (ansible_facts['memtotal_mb'] / 1024) - 1.5] | min | int }}"
+# Database pool calculation is based on https://community.theforeman.org/t/rails-connection-pool-size-optimizations/36675
+# The number 4 is for 4 threads that are spawned internally during the execution:
+#  1. Katello event daemon listener
+#  2. Katello event monitor poller
+#  3. Stomp listener (required by Katello)
+#  4. Puma server listener thread
+# This means for systems without Katello we can reduce the amount of the pool to foreman_puma_threads_max + 1
+foreman_database_pool: "{{ foreman_puma_threads_max | int + 4 }}"
+foreman_connection_count: "{{ foreman_puma_workers | int * foreman_database_pool | int }}"
+
+pulp_worker_count: "{{ [8, ansible_facts['processor_nproc']] | min }}"
+pulp_content_service_worker_count: "{{ (2 * ([8, ansible_facts['processor_nproc']] | min)) + 1 }}"
+pulp_api_service_worker_count: "{{ ([4, ansible_facts['processor_nproc']] | min) + 1 }}"
+pulp_connection_count: "{{ pulp_worker_count | int + pulp_content_service_worker_count | int + pulp_api_service_worker_count | int }}"
+
+postgresql_connection_count: "{{ candlepin_connection_count | int + foreman_connection_count | int + pulp_connection_count | int }}"
+postgresql_max_connections: "{{ (postgresql_connection_count | int / 500) | round(0, 'ceil') | int * 500 }}"
+postgresql_shared_buffers_in_mb: "{{ (ansible_facts['memtotal_mb'] / 8 / 512) | round(0, 'ceil') | int * 512 }}"
+postgresql_shared_buffers: "{{ postgresql_shared_buffers_in_mb }}MB"
+postgresql_effective_cache_size: "{{ postgresql_shared_buffers_in_mb | int * 2 }}MB"
