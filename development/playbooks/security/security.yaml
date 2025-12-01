@@ -1,0 +1,17 @@
+---
+- name: Configure FIPS and fapolicyd
+  hosts:
+    - quadlet
+  become: true
+  tasks:
+    - name: Setup FIPS
+      ansible.builtin.include_role:
+        name: theforeman.forklift.fips
+      when:
+        - security_mode == 'fips'
+
+    - name: Setup fapolicyd
+      ansible.builtin.include_role:
+        name: theforeman.forklift.fapolicyd
+      when:
+        - security_mode == 'fapolicyd'
