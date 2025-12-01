@@ -51,6 +51,9 @@ jobs:
             security: fapolicyd
             database: internal
           - certificate_source: default
+            security: fips
+            database: internal
+          - certificate_source: default
             security: none
             database: external
     runs-on: ubuntu-24.04
