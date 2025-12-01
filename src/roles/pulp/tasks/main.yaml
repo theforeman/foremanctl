@@ -187,12 +187,6 @@
       [Install]
       WantedBy=foreman.target
 
-- name: Enable and start pulp-worker.target
-  ansible.builtin.systemd:
-    name: pulp-worker.target
-    enabled: true
-    state: started
-
 - name: Run daemon reload to load service files
   ansible.builtin.systemd:
     daemon_reload: true
@@ -243,6 +237,12 @@
   retries: 100
   delay: 1
   loop: "{{ pulp_services.results }}"
+
+- name: Enable and start pulp-worker.target
+  ansible.builtin.systemd:
+    name: pulp-worker.target
+    enabled: true
+    state: started
 
 - name: Gather service facts to find existing pulp-worker instances
   ansible.builtin.service_facts:
