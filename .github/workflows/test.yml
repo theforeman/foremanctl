@@ -47,6 +47,8 @@ jobs:
         include:
           - certificate_source: default
             security: fapolicyd
+          - certificate_source: default
+            security: fips
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
