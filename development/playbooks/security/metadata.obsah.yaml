@@ -1,0 +1,10 @@
+---
+help: |
+  Setup FIPS and fapolicyd
+
+variables:
+  security_mode:
+    help: Security mode to enable
+    choices:
+      - fips
+      - fapolicyd
