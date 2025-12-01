@@ -2,6 +2,7 @@
 
 ## Requirements
 
+### For Virtual Machine Development
 * Vagrant - 2.2+
 * Ansible - 2.14+
 * [Vagrant Libvirt provider plugin](https://github.com/vagrant-libvirt/vagrant-libvirt)
@@ -9,6 +10,9 @@
 
 Follow [instruction](https://github.com/theforeman/forklift/blob/master/docs/vagrant.md) to install vagrant
 
+### For Container Development (Alternative)
+* Podman - 5.0+ (recommended for systemd support)
+* Ansible - 2.14+
 
 ## Development environment
 
@@ -21,6 +25,8 @@ source .venv/bin/activate
 
 ## Deployment
 
+### Using Virtual Machines
+
 This setup uses Vagrant to create a basic VM for running the deployment on:
 
 ```
@@ -28,6 +34,34 @@ This setup uses Vagrant to create a basic VM for running the deployment on:
 source .venv/bin/activate
 ./forge vms start
 ./foremanctl deploy --foreman-initial-admin-password=changeme
+```
+
+### Using Containers (Alternative)
+
+As an alternative to VMs, you can use containers for faster deployment and testing:
+
+```
+./setup-environment
+source .venv/bin/activate
+./forge containers start
+./foremanctl deploy --foreman-initial-admin-password=changeme
+```
+
+The containers command provides the following benefits:
+- **Faster startup** - No VM boot time required
+- **Lower resource usage** - Containers use less memory and CPU than VMs
+- **Systemd support** - Properly configured systemd environment for service management
+
+Container management commands:
+```
+./forge containers start    # Start container (default name: quadlet)
+./forge containers status   # Check container status
+./forge containers stop     # Stop and remove container
+```
+
+You can also specify a custom container name:
+```
+./forge containers start mycontainer
 ```
 
 ## Deploy hammer (optional)
@@ -38,8 +72,14 @@ source .venv/bin/activate
 ```
 To teardown the environment:
 
+**For VMs:**
 ```
 ./forge vms stop
+```
+
+**For containers:**
+```
+./forge containers stop
 ```
 
 ## Testing
