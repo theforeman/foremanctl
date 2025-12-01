@@ -63,6 +63,12 @@ jobs:
           python-version: '3.12'
       - name: Setup libvirt for Vagrant
         uses: voxpupuli/setup-vagrant@v0
+      - name: Patch Vagrant not to use ed25519 keys
+        # Vagrant tries to use ed25519 over rsa, but ed25519 is not allowed when we run in FIPS mode
+        # As we enable FIPS *after* the initial VM start, Vagrant has already decided to use ed25519
+        if: matrix.security == 'fips'
+        run:
+          sudo sed -i '/PREFER_KEY_TYPES/ s/"ssh-ed25519".freeze => :ed25519, //' /usr/lib/x86_64-linux-gnu/rubygems-integration/*/gems/vagrant-*/lib/vagrant/util/keypair.rb
       - name: Install Ansible
         run: pip install --upgrade ansible-core
       - name: Setup environment
