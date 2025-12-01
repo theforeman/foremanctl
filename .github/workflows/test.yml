@@ -58,6 +58,10 @@ jobs:
             database: internal
             box: centos/stream9
           - certificate_source: default
+            security: fips
+            database: internal
+            box: centos/stream9
+          - certificate_source: default
             security: none
             database: external
             box: centos/stream9
