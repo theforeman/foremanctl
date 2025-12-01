@@ -80,6 +80,7 @@ jobs:
         if: matrix.security == 'fapolicyd'
         run: |
           vagrant ssh --command "echo 'allow perm=any pattern=ld_so exe=/usr/bin/crun : path=/usr/lib64/libsystemd.so.0' | sudo tee -a /etc/fapolicyd/rules.d/15-foremanctl.rules" quadlet
+          vagrant ssh --command "echo 'allow perm=any all : dir=/home/vagrant/.ansible/tmp/' | sudo tee -a /etc/fapolicyd/rules.d/15-foremanctl.rules" quadlet
           vagrant ssh quadlet -- sudo systemctl restart fapolicyd
       - name: Run image pull
         run: |
