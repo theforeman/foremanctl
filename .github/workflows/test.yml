@@ -74,6 +74,13 @@ jobs:
         if: matrix.security != 'none'
         run: |
           ./forge security --mode ${{ matrix.security }}
+      - name: Apply fapolicyd workarounds
+        # https://access.redhat.com/solutions/7072618 / https://issues.redhat.com/browse/RHEL-37912
+        # https://github.com/theforeman/foreman-fapolicyd/blob/develop/15-foreman-container.rules
+        if: matrix.security == 'fapolicyd'
+        run: |
+          vagrant ssh --command "echo 'allow perm=any pattern=ld_so exe=/usr/bin/crun : path=/usr/lib64/libsystemd.so.0' | sudo tee -a /etc/fapolicyd/rules.d/15-foremanctl.rules" quadlet
+          vagrant ssh quadlet -- sudo systemctl restart fapolicyd
       - name: Run image pull
         run: |
           ./foremanctl pull-images
