@@ -43,8 +43,6 @@ def test_foreman_status_cache(foreman_status):
 
 @pytest.mark.parametrize("katello_service", ['candlepin', 'candlepin_auth', 'candlepin_events', 'foreman_tasks', 'katello_events', 'pulp3', 'pulp3_content'])
 def test_katello_services_status(foreman_status, katello_service):
-    if katello_service == 'foreman_tasks':
-        pytest.xfail("Foreman Tasks needs to boot workers, we don't wait enough")
     assert foreman_status['results']['katello']['services'][katello_service]['status'] == 'ok'
 
 
