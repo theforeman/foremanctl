@@ -35,7 +35,7 @@ pulp_database_user: pulp
 pulp_database_host: localhost
 pulp_database_port: 5432
 pulp_database_ssl_mode: disabled
-pulp_database_ssl_ca: None
+pulp_database_ssl_ca:
 
 pulp_settings_database_env:
   PULP_DATABASES__default__NAME: "{{ pulp_database_name }}"
@@ -43,7 +43,7 @@ pulp_settings_database_env:
   PULP_DATABASES__default__HOST: "{{ pulp_database_host }}"
   PULP_DATABASES__default__PORT: "{{ pulp_database_port }}"
   PULP_DATABASES__default__OPTIONS__sslmode: "{{ pulp_database_ssl_mode }}"
-  PULP_DATABASES__default__OPTIONS__sslrootcert: "{{ pulp_database_ssl_ca }}"
+  PULP_DATABASES__default__OPTIONS__sslrootcert: "/etc/pulp/certs/db-ca.crt"
   PULP_ENABLED_PLUGINS: >-
     {{ pulp_enabled_plugins }}
 
