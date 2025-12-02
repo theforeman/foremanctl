@@ -31,6 +31,9 @@
     - pulp
     - foreman
     - role: systemd_target
+    - role: iop_core
+      when:
+        - "'iop' in enabled_features"
     - role: foreman_proxy
       when:
         - "'foreman-proxy' in enabled_features"
