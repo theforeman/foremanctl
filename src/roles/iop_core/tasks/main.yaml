@@ -14,3 +14,7 @@
 - name: Deploy IOP Puptoo service
   ansible.builtin.include_role:
     name: iop_puptoo
+
+- name: Deploy IOP Yuptoo service
+  ansible.builtin.include_role:
+    name: iop_yuptoo
