@@ -1,0 +1,46 @@
+---
+- name: Pull Engine container image
+  containers.podman.podman_image:
+    name: "{{ iop_engine_container_image }}:{{ iop_engine_container_tag }}"
+    state: present
+
+- name: Create Engine config secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-core-engine-config-yml
+    data: "{{ lookup('ansible.builtin.template', 'engine/config.yml.j2') }}"
+  notify: restart engine
+
+- name: Deploy Engine container
+  containers.podman.podman_container:
+    name: iop-core-engine
+    image: "{{ iop_engine_container_image }}:{{ iop_engine_container_tag }}"
+    state: quadlet
+    command: insights-core-engine /var/config.yml
+    secrets:
+      - 'iop-core-engine-config-yml,target=/var/config.yml,mode=0440,uid=1000,type=mount'
+    etc_hosts:
+      console.redhat.com: "127.0.0.1"
+    network:
+      - iop-core-network
+    quadlet_options:
+      - |
+        [Unit]
+        Description=IOP Core Engine Container
+        After=iop-core-kafka.service iop-core-ingress.service iop-core-puptoo.service
+        Wants=iop-core-kafka.service iop-core-ingress.service iop-core-puptoo.service
+        [Service]
+        Environment=REGISTRY_AUTH_FILE=/etc/foreman/registry-auth.json
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start Engine service
+  ansible.builtin.systemd:
+    name: iop-core-engine
+    enabled: true
+    state: started

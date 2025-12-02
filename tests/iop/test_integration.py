@@ -44,3 +44,11 @@ def test_iop_core_yuptoo_service(server):
 def test_iop_yuptoo_endpoint(server):
     result = server.run("curl -f http://localhost:5005/ 2>/dev/null || echo 'Yuptoo not yet responding'")
     assert result.rc == 0
+
+
+def test_iop_core_engine_service(server):
+    service_exists = server.run("systemctl list-units --type=service | grep iop-core-engine").succeeded
+    if service_exists:
+        service = server.service("iop-core-engine")
+        assert service.is_running
+        assert service.is_enabled

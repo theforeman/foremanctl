@@ -1,0 +1,7 @@
+---
+- name: Restart engine
+  ansible.builtin.systemd:
+    name: iop-core-engine
+    state: restarted
+  listen: restart engine
+  when: ansible_facts.services['iop-core-engine.service'] is defined
