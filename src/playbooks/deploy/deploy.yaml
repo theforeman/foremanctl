@@ -8,6 +8,7 @@
     - "../../vars/flavors/{{ flavor }}.yml"
     - "../../vars/{{ certificate_source }}_certificates.yml"
     - "../../vars/images.yml"
+    - "../../vars/tuning/{{ tuning }}.yml"
     - "../../vars/database.yml"
     - "../../vars/foreman.yml"
     - "../../vars/base.yaml"
