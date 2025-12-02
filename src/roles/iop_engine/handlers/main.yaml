@@ -1,0 +1,5 @@
+---
+- name: Restart engine
+  ansible.builtin.systemd:
+    name: iop-core-engine
+    state: restarted
