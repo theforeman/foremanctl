@@ -1,0 +1,33 @@
+plugins:
+  default_component_enabled: true
+  packages:
+{% for package in iop_engine_packages %}
+      - {{ package }}
+{% endfor %}
+configs: []
+service:
+  extract_timeout: 10
+  unpacked_archive_size_limit: 1800000000
+  extract_tmp_dir:
+  format: insights_kafka_service.formats._insights.InsightsFormat
+  target_components: []
+  consumer:
+    name: "insights_kafka_service.consumer.InsightsKafkaConsumer"
+    kwargs:
+      services:
+        - "advisor"
+      group_id: "insights-core-kafka"
+      queued.max.messages.kbytes: 10000
+      session.timeout.ms: 30000
+      max.poll.interval.ms: 600000
+      bootstrap_servers:
+        - "iop-core-kafka:9092"
+      incoming_topic: platform.inventory.events
+  publisher:
+    name: "insights_kafka_service.producer.InsightsKafkaProducer"
+    kwargs:
+      bootstrap_servers:
+        - "iop-core-kafka:9092"
+      topic: platform.engine.results
+  downloader:
+    name: "insights_messaging.downloaders.httpfs.Http"
