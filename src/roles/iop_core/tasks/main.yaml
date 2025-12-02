@@ -10,3 +10,7 @@
 - name: Deploy IOP Ingress service
   ansible.builtin.include_role:
     name: iop_ingress
+
+- name: Deploy IOP Puptoo service
+  ansible.builtin.include_role:
+    name: iop_puptoo
