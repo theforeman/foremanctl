@@ -1,0 +1,8 @@
+---
+- name: Deploy IOP Network
+  ansible.builtin.include_role:
+    name: iop_network
+
+- name: Deploy IOP Kafka service
+  ansible.builtin.include_role:
+    name: iop_kafka
