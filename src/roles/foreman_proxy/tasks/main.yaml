@@ -44,7 +44,17 @@
 
 - name: Configure features
   ansible.builtin.include_tasks: feature.yaml
+  vars:
+    feature_enabled: "true"
   loop: "{{ foreman_proxy_features }}"
+  loop_control:
+    loop_var: feature_name
+
+- name: Disable features
+  ansible.builtin.include_tasks: feature.yaml
+  vars:
+    feature_enabled: "false"
+  loop: "{{ foreman_proxy_disabled_features }}"
   loop_control:
     loop_var: feature_name
 

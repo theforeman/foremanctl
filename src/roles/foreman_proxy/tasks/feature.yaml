@@ -24,6 +24,7 @@
 - name: Include additional tasks for {{ feature_name }}
   ansible.builtin.include_tasks: '{{ tasks_file }}'
   when:
+    - feature_enabled != "false"
     - tasks_file is not none
     - tasks_file != ""
   vars:
