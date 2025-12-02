@@ -26,8 +26,20 @@ def foreman_plugins(value):
     return compact_list(plugins)
 
 
-def known_foreman_plugins(_value):
+def available_foreman_plugins(_value):
     plugins = [FEATURE_MAP.get(feature).get('foreman', {}).get('plugin_name') for feature in FEATURE_MAP.keys()]
+    return compact_list(plugins)
+
+
+def foreman_proxy_plugins(value):
+    dependencies = [FEATURE_MAP.get(feature, {}).get('dependencies', []) for feature in filter_content(value) if feature not in BASE_FEATURES]
+    dependencies = list(set([dep for deplist in dependencies for dep in deplist]))
+    plugins = [FEATURE_MAP.get(feature, {}).get('foreman_proxy', {}).get('plugin_name') for feature in (value + dependencies) if feature not in BASE_FEATURES]
+    return compact_list(plugins)
+
+
+def available_foreman_proxy_plugins(_value):
+    plugins = [FEATURE_MAP.get(feature).get('foreman_proxy', {}).get('plugin_name') for feature in FEATURE_MAP.keys()]
     return compact_list(plugins)
 
 
@@ -37,5 +49,7 @@ class FilterModule(object):
     def filters(self):
         return {
             'features_to_foreman_plugins': foreman_plugins,
-            'known_foreman_plugins': known_foreman_plugins,
+            'available_foreman_plugins': available_foreman_plugins,
+            'features_to_foreman_proxy_plugins': foreman_proxy_plugins,
+            'available_foreman_proxy_plugins': available_foreman_proxy_plugins,
         }
