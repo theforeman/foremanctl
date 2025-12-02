@@ -1,0 +1,6 @@
+---
+- name: Restart kafka
+  ansible.builtin.systemd:
+    name: iop-core-kafka
+    state: restarted
+  when: ansible_facts.services['iop-core-kafka.service'] is defined
