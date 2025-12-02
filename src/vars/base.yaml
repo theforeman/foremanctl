@@ -34,3 +34,5 @@ pulp_plugins: "{{ enabled_features | select('contains', 'content/') | map('repla
 
 hammer_ca_certificate: "{{ server_ca_certificate }}"
 hammer_plugins: "{{ foreman_plugins | map('replace', 'foreman-tasks', 'foreman_tasks') | list }}"
+
+foreman_proxy_plugins: "{{ enabled_features | reject('contains', 'content/') | features_to_foreman_proxy_plugins }}"
