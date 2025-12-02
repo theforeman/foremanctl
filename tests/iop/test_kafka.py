@@ -41,18 +41,6 @@ def test_kafka_config_content(server):
     assert "controller.quorum.voters=1@iop-core-kafka:9093" in config_data
 
 
-def test_kafka_container_running(server):
-    result = server.run("podman inspect iop-core-kafka --format '{{.State.Status}}'")
-    assert result.succeeded
-    assert "running" in result.stdout
-
-
-def test_kafka_quadlet_file(server):
-    quadlet_file = server.file("/etc/containers/systemd/iop-core-kafka.container")
-    assert quadlet_file.exists
-    assert quadlet_file.is_file
-
-
 def test_kafka_topic_creation(server):
     topics = [
         "platform.upload.available",

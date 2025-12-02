@@ -1,0 +1,40 @@
+---
+- name: Pull Ingress container image
+  containers.podman.podman_image:
+    name: "{{ iop_ingress_container_image }}:{{ iop_ingress_container_tag }}"
+    state: present
+
+- name: Deploy Ingress container
+  containers.podman.podman_container:
+    name: iop-core-ingress
+    image: "{{ iop_ingress_container_image }}:{{ iop_ingress_container_tag }}"
+    state: quadlet
+    env:
+      INGRESS_VALID_UPLOAD_TYPES: "advisor,compliance,qpc,rhv,tower,leapp-reporting,xavier,playbook,playbook-sat,malware-detection,tasks"
+      INGRESS_KAFKA_BROKERS: "iop-core-kafka:9092"
+      BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
+      INGRESS_STAGERIMPLEMENTATION: "filebased"
+      INGRESS_STORAGEFILESYSTEMPATH: "/var/tmp"
+      INGRESS_SERVICEBASEURL: "http://localhost:8080"
+      INGRESS_WEBPORT: "8080"
+      INGRESS_METRICSPORT: "3001"
+    network:
+      - iop-core-network
+    quadlet_options:
+      - |
+        [Unit]
+        Description=IOP Core Ingress Container
+        [Service]
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start Ingress service
+  ansible.builtin.systemd:
+    name: iop-core-ingress
+    enabled: true
+    state: started
