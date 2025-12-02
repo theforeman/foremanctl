@@ -88,6 +88,9 @@ jobs:
       - name: Run deployment
         run: |
           ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} --foreman-initial-admin-password=changeme
+      - name: Generate certificate bundle for second system
+        run: |
+          ./foremanctl certificate-bundle --certificate-source=${{ matrix.certificate_source }} proxy.example.com
       - name: Setup hammer
         run: |
           ./foremanctl setup-hammer
