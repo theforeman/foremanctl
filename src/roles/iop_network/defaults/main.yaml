@@ -1,0 +1,5 @@
+---
+iop_network_name: "iop-core-network"
+iop_network_subnet: "10.130.0.0/24"
+iop_network_gateway: "10.130.0.1"
+iop_network_driver: "bridge"
