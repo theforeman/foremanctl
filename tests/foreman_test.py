@@ -5,6 +5,16 @@ import pytest
 
 FOREMAN_HOST = 'localhost'
 FOREMAN_PORT = 3000
+RECURRING_INSTANCES = [
+    "reports-daily",
+    "db-sessions-clear",
+    "reports-expire",
+    "audits-expire",
+    "reports-weekly",
+    "reports-monthly",
+    "notifications-clean",
+    "ldap-refresh_usergroups",
+]
 
 
 @pytest.fixture(scope="module")
@@ -59,3 +69,16 @@ def test_foreman_dynflow_container_instances(server, dynflow_instance):
 def test_foreman_dynflow_service_instances(server, dynflow_instance):
     service = server.service(f"dynflow-sidekiq@{dynflow_instance}")
     assert service.is_running
+
+
+@pytest.mark.parametrize("instance", RECURRING_INSTANCES)
+def test_foreman_recurring_timers_enabled_and_running(server, instance):
+    timer = server.service(f"foreman-recurring@{instance}.timer")
+    assert timer.is_enabled
+    assert timer.is_running
+
+
+@pytest.mark.parametrize("instance", RECURRING_INSTANCES)
+def test_foreman_recurring_services_exist(server, instance):
+    service = server.service(f"foreman-recurring@{instance}.service")
+    assert service.exists
