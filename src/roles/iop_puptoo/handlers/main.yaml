@@ -1,0 +1,6 @@
+---
+- name: Restart puptoo
+  ansible.builtin.systemd:
+    name: iop-core-puptoo
+    state: restarted
+  when: ansible_facts.services['iop-core-puptoo.service'] is defined

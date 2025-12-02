@@ -1,0 +1,3 @@
+---
+iop_puptoo_container_image: "quay.io/iop/puptoo"
+iop_puptoo_container_tag: "foreman-3.16"
