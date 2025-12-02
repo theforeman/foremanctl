@@ -1,0 +1,14 @@
+---
+- name: Check if ingress service exists
+  ansible.builtin.systemd:
+    name: iop-core-ingress
+  register: iop_ingress_service_status
+  failed_when: false
+  listen: restart ingress
+
+- name: Restart ingress service if it exists
+  ansible.builtin.systemd:
+    name: iop-core-ingress
+    state: restarted
+  when: iop_ingress_service_status.status is defined and iop_ingress_service_status.status.LoadState != "not-found"
+  listen: restart ingress

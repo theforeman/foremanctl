@@ -6,3 +6,7 @@
 - name: Deploy IOP Kafka service
   ansible.builtin.include_role:
     name: iop_kafka
+
+- name: Deploy IOP Ingress service
+  ansible.builtin.include_role:
+    name: iop_ingress
