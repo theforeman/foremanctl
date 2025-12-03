@@ -1,0 +1,244 @@
+---
+- name: Pull Host Inventory container image
+  containers.podman.podman_image:
+    name: "{{ iop_inventory_container_image }}:{{ iop_inventory_container_tag }}"
+    state: present
+
+- name: Create podman secret for inventory database username
+  containers.podman.podman_secret:
+    name: iop-core-host-inventory-database-username
+    data: "{{ iop_inventory_database_user }}"
+  notify: restart inventory
+
+- name: Create podman secret for inventory database password
+  containers.podman.podman_secret:
+    name: iop-core-host-inventory-database-password
+    data: "{{ iop_inventory_database_password }}"
+  notify: restart inventory
+
+- name: Create podman secret for inventory database name
+  containers.podman.podman_secret:
+    name: iop-core-host-inventory-database-name
+    data: "{{ iop_inventory_database_name }}"
+  notify: restart inventory
+
+- name: Create podman secret for inventory database host
+  containers.podman.podman_secret:
+    name: iop-core-host-inventory-database-host
+    data: "{{ iop_inventory_database_host }}"
+  notify: restart inventory
+
+- name: Create podman secret for inventory database port
+  containers.podman.podman_secret:
+    name: iop-core-host-inventory-database-port
+    data: "{{ iop_inventory_database_port }}"
+  notify: restart inventory
+
+- name: Deploy Host Inventory Database Migration Container
+  containers.podman.podman_container:
+    name: iop-core-host-inventory-migrate
+    image: "{{ iop_inventory_container_image }}:{{ iop_inventory_container_tag }}"
+    state: quadlet
+    command: make upgrade_db
+    network:
+      - iop-core-network
+    env:
+      KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
+      USE_SUBMAN_ID: "true"
+      INVENTORY_DB_SSL_MODE: "disable"
+      REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
+    secrets:
+      - 'iop-core-host-inventory-database-username,type=env,target=INVENTORY_DB_USER'
+      - 'iop-core-host-inventory-database-password,type=env,target=INVENTORY_DB_PASS'
+      - 'iop-core-host-inventory-database-name,type=env,target=INVENTORY_DB_NAME'
+      - 'iop-core-host-inventory-database-host,type=env,target=INVENTORY_DB_HOST'
+      - 'iop-core-host-inventory-database-port,type=env,target=INVENTORY_DB_PORT'
+    quadlet_options:
+      - |
+        [Unit]
+        Description=Database Readiness and Migration Init Container
+        [Service]
+        Type=oneshot
+        RemainAfterExit=true
+        [Install]
+        WantedBy=default.target
+
+- name: Deploy Host Inventory MQ Service Container
+  containers.podman.podman_container:
+    name: iop-core-host-inventory
+    image: "{{ iop_inventory_container_image }}:{{ iop_inventory_container_tag }}"
+    state: quadlet
+    command: make run_inv_mq_service
+    network:
+      - iop-core-network
+    env:
+      KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
+      USE_SUBMAN_ID: "true"
+      INVENTORY_DB_SSL_MODE: "disable"
+      REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
+    secrets:
+      - 'iop-core-host-inventory-database-username,type=env,target=INVENTORY_DB_USER'
+      - 'iop-core-host-inventory-database-password,type=env,target=INVENTORY_DB_PASS'
+      - 'iop-core-host-inventory-database-name,type=env,target=INVENTORY_DB_NAME'
+      - 'iop-core-host-inventory-database-host,type=env,target=INVENTORY_DB_HOST'
+      - 'iop-core-host-inventory-database-port,type=env,target=INVENTORY_DB_PORT'
+    quadlet_options:
+      - |
+        [Unit]
+        Description=IOP Core Host-Based Inventory Container
+        After=network-online.target iop-core-host-inventory-migrate.service
+        Requires=iop-core-host-inventory-migrate.service
+        [Service]
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target
+
+- name: Deploy Host Inventory API Container
+  containers.podman.podman_container:
+    name: iop-core-host-inventory-api
+    image: "{{ iop_inventory_container_image }}:{{ iop_inventory_container_tag }}"
+    state: quadlet
+    command: python run_gunicorn.py
+    network:
+      - iop-core-network
+    env:
+      KAFKA_BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
+      LISTEN_PORT: "8081"
+      BYPASS_RBAC: "true"
+      USE_SUBMAN_ID: "true"
+      INVENTORY_DB_SSL_MODE: "disable"
+      REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
+    secrets:
+      - 'iop-core-host-inventory-database-username,type=env,target=INVENTORY_DB_USER'
+      - 'iop-core-host-inventory-database-password,type=env,target=INVENTORY_DB_PASS'
+      - 'iop-core-host-inventory-database-name,type=env,target=INVENTORY_DB_NAME'
+      - 'iop-core-host-inventory-database-host,type=env,target=INVENTORY_DB_HOST'
+      - 'iop-core-host-inventory-database-port,type=env,target=INVENTORY_DB_PORT'
+    quadlet_options:
+      - |
+        [Unit]
+        Description=IOP Core Host-Based Inventory Web Container
+        [Service]
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target
+
+- name: Deploy Host Inventory Cleanup Container
+  containers.podman.podman_container:
+    name: iop-core-host-inventory-cleanup
+    image: "{{ iop_inventory_container_image }}:{{ iop_inventory_container_tag }}"
+    state: quadlet
+    command: make run_host_delete_access_tags
+    network:
+      - iop-core-network
+    env:
+      KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
+      USE_SUBMAN_ID: "true"
+      INVENTORY_DB_SSL_MODE: "disable"
+      PYTHONPATH: "/opt/app-root/src"
+      REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
+    secrets:
+      - 'iop-core-host-inventory-database-username,type=env,target=INVENTORY_DB_USER'
+      - 'iop-core-host-inventory-database-password,type=env,target=INVENTORY_DB_PASS'
+      - 'iop-core-host-inventory-database-name,type=env,target=INVENTORY_DB_NAME'
+      - 'iop-core-host-inventory-database-host,type=env,target=INVENTORY_DB_HOST'
+      - 'iop-core-host-inventory-database-port,type=env,target=INVENTORY_DB_PORT'
+    quadlet_options:
+      - |
+        [Unit]
+        Description=Host Inventory Access Tags Cleanup Job
+        Wants=iop-core-host-inventory-api.service
+        After=iop-core-host-inventory-api.service
+
+- name: Create Host Inventory Cleanup Timer
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/iop-core-host-inventory-cleanup.timer
+    content: |
+      [Unit]
+      Description=Host Inventory Access Tags Cleanup Timer
+
+      [Timer]
+      OnBootSec=10min
+      OnUnitActiveSec=24h
+      Persistent=true
+      RandomizedDelaySec=300
+
+      [Install]
+      WantedBy=timers.target
+    mode: '0644'
+  notify: restart inventory
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start Host Inventory Migration service
+  ansible.builtin.systemd:
+    name: iop-core-host-inventory-migrate
+    enabled: true
+    state: started
+
+- name: Start Host Inventory MQ service
+  ansible.builtin.systemd:
+    name: iop-core-host-inventory
+    enabled: true
+    state: started
+
+- name: Start Host Inventory API service
+  ansible.builtin.systemd:
+    name: iop-core-host-inventory-api
+    enabled: true
+    state: started
+
+- name: Enable Host Inventory Cleanup Timer
+  ansible.builtin.systemd:
+    name: iop-core-host-inventory-cleanup.timer
+    enabled: true
+    state: started
+
+- name: Install PostgreSQL client for FDW operations
+  ansible.builtin.package:
+    name: postgresql
+    state: present
+
+- name: Enable postgres_fdw extension on inventory database
+  community.postgresql.postgresql_ext:
+    name: postgres_fdw
+    db: "{{ iop_inventory_database_name }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+    login_host: localhost
+
+- name: Create inventory schema in inventory database
+  community.postgresql.postgresql_schema:
+    db: "{{ iop_inventory_database_name }}"
+    name: inventory
+    owner: "{{ iop_inventory_database_user }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+    login_host: localhost
+
+- name: Create inventory.hosts view in inventory database
+  community.postgresql.postgresql_query:
+    db: "{{ iop_inventory_database_name }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+    login_host: localhost
+    query: |
+      CREATE OR REPLACE VIEW "inventory"."hosts" AS SELECT
+        id,
+        account,
+        display_name,
+        created_on as created,
+        modified_on as updated,
+        stale_timestamp,
+        stale_timestamp + INTERVAL '1' DAY * '7' AS stale_warning_timestamp,
+        stale_timestamp + INTERVAL '1' DAY * '14' AS culled_timestamp,
+        tags_alt as tags,
+        system_profile_facts as system_profile,
+        (canonical_facts ->> 'insights_id')::uuid as insights_id,
+        reporter,
+        per_reporter_staleness,
+        org_id,
+        groups
+      FROM hbi.hosts WHERE (canonical_facts->'insights_id' IS NOT NULL);
