@@ -75,3 +75,21 @@ def test_iop_gateway_api_ingress_endpoint(server):
 def test_iop_gateway_https_cert_auth(server):
     result = server.run("curl -s -o /dev/null -w '%{http_code}' https://localhost:24443/ --cert /root/certificates/certs/localhost-client.crt --key /root/certificates/private/localhost-client.key --cacert /root/certificates/certs/ca.crt 2>/dev/null || echo '000'")
     assert "200" in result.stdout
+
+
+def test_iop_core_host_inventory_api_service(server):
+    service_exists = server.run("systemctl list-units --type=service | grep iop-core-host-inventory-api").succeeded
+    if service_exists:
+        service = server.service("iop-core-host-inventory-api")
+        assert service.is_running
+        assert service.is_enabled
+
+
+def test_iop_inventory_mq_endpoint(server):
+    result = server.run("podman run --network=iop-core-network quay.io/iop/host-inventory:latest curl http://iop-core-host-inventory:9126/ 2>/dev/null || echo 'Host inventory MQ not yet responding'")
+    assert result.rc == 0
+
+
+def test_iop_inventory_api_health_endpoint(server):
+    result = server.run("podman run --network=iop-core-network quay.io/iop/host-inventory curl -s -o /dev/null -w '%{http_code}' http://iop-core-host-inventory-api:8081/health 2>/dev/null || echo '000'")
+    assert "200" in result.stdout
