@@ -34,3 +34,7 @@ hammer_ca_certificate: "{{ server_ca_certificate }}"
 hammer_plugins: "{{ enabled_features | features_to_hammer_plugins }}"
 
 foreman_proxy_plugins: "{{ enabled_features | features_to_foreman_proxy_plugins }}"
+
+iop_core_foreman_url: "{{ foreman_url }}"
+iop_core_foreman_admin_username: "{{ foreman_initial_admin_username }}"
+iop_core_foreman_admin_password: "{{ foreman_initial_admin_password }}"

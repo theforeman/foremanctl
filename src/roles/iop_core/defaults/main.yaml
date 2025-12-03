@@ -1,1 +1,4 @@
 ---
+iop_core_foreman_url: "https://{{ ansible_facts['fqdn'] }}"
+iop_core_foreman_admin_username: admin
+iop_core_foreman_admin_password: changeme

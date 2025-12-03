@@ -22,3 +22,16 @@
 - name: Deploy IOP Engine service
   ansible.builtin.include_role:
     name: iop_engine
+
+- name: Deploy IOP Gateway service
+  ansible.builtin.include_role:
+    name: iop_gateway
+
+- name: Register IOP Gateway as smart proxy
+  theforeman.foreman.smart_proxy:
+    name: "iop-gateway"
+    url: "https://localhost:24443"
+    server_url: "{{ iop_core_foreman_url }}"
+    username: "{{ iop_core_foreman_admin_username }}"
+    password: "{{ iop_core_foreman_admin_password }}"
+    validate_certs: false

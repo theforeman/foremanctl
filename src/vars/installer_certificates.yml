@@ -10,3 +10,11 @@ client_key: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'
 client_ca_certificate: "{{ ca_certificate }}"
 localhost_key: "/root/ssl-build/localhost/localhost-tomcat.key"
 localhost_certificate: "/root/ssl-build/localhost/localhost-tomcat.crt"
+
+# IOP Gateway certificate paths - uses localhost certs to match puppet-iop behavior
+iop_gateway_server_certificate: "/root/ssl-build/localhost/localhost-iop-core-gateway-server.crt"
+iop_gateway_server_key: "/root/ssl-build/localhost/localhost-iop-core-gateway-server.key"
+iop_gateway_server_ca_certificate: "/root/ssl-build/katello-default-ca.crt"
+iop_gateway_client_certificate: "/root/ssl-build/localhost/localhost-iop-core-gateway-client.crt"
+iop_gateway_client_key: "/root/ssl-build/localhost/localhost-iop-core-gateway-client.key"
+iop_gateway_client_ca_certificate: "/root/ssl-build/katello-server-ca.crt"
