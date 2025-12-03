@@ -44,10 +44,17 @@ jobs:
           - installer
         security:
           - none
+        database:
+          - internal
         include:
           - certificate_source: default
             security: fapolicyd
+            database: internal
+          - certificate_source: default
+            security: none
+            database: external
     runs-on: ubuntu-24.04
+    name: "Tests (certificate source: ${{ matrix.certificate_source }}, database: ${{ matrix.database }}, security mode: ${{ matrix.security }})"
     steps:
       - uses: actions/checkout@v6
       - name: Set up Python
@@ -62,7 +69,11 @@ jobs:
         run: ./setup-environment
       - name: Start VMs
         run: |
-          ./forge vms start
+          ./forge vms start --vms "quadlet client ${{ matrix.database == 'external' && 'database' || '' }}"
+      - name: Configure remote-database
+        if: matrix.database == 'external'
+        run: |
+          ./forge remote-database
       - name: Configure repositories
         run: |
           ./forge setup-repositories
@@ -87,7 +98,7 @@ jobs:
           ./foremanctl pull-images
       - name: Run deployment
         run: |
-          ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} --foreman-initial-admin-password=changeme
+          ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com' || '' }}  --foreman-initial-admin-password=changeme
       - name: Add optional feature - hammer
         run: |
           ./foremanctl deploy --add-feature hammer
@@ -96,7 +107,7 @@ jobs:
           ./foremanctl deploy --add-feature foreman-proxy
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }}"
+          ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }} --database-mode=${{ matrix.database }}"
       - name: Run smoker
         run: |
           ./forge smoker
@@ -104,7 +115,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v5
         with:
-          name: smoker-${{ matrix.certificate_source }}-${{ matrix.security }}
+          name: smoker-${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.database }}
           path: "/home/runner/smoker/report/"
       - name: Generate sos reports
         if: ${{ always() }}
@@ -113,7 +124,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v5
         with:
-          name: sosreport-${{ matrix.certificate_source }}-${{ matrix.security }}
+          name: sosreport-${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.database }}
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}
@@ -233,80 +244,12 @@ jobs:
           ## If no one connects after 5 minutes, shut down server.
           wait-timeout-minutes: 5
 
-  tests-external-database:
-    strategy:
-      fail-fast: false
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v5
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-      - name: Setup libvirt for Vagrant
-        uses: voxpupuli/setup-vagrant@v0
-      - name: Install Ansible
-        run: pip install --upgrade ansible-core
-      - name: Setup environment
-        run: ./setup-environment
-      - name: Start VMs
-        run: |
-          ./forge vms start --vms "quadlet client database"
-      - name: Configure remote-database
-        run: |
-          ./forge remote-database
-      - name: Configure repositories
-        run: |
-          ./forge setup-repositories
-      - name: Run image pull
-        run: |
-          ./foremanctl pull-images
-      - name: Run deployment
-        run: |
-          ./foremanctl deploy --database-mode=external --database-host=database.example.com --foreman-initial-admin-password=changeme
-      - name: Add optional feature - hammer
-        run: |
-          ./foremanctl deploy --add-feature hammer
-      - name: Add optional feature - foreman-proxy
-        run: |
-          ./foremanctl deploy --add-feature foreman-proxy
-      - name: Run tests
-        run: |
-          ./forge test --pytest-args="--database-mode=external"
-      - name: Run smoker
-        run: |
-          ./forge smoker
-      - name: Archive smoker report
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v5
-        with:
-          name: smoker-external-database
-          path: "/home/runner/smoker/report/"
-      - name: Generate sos reports
-        if: ${{ always() }}
-        run: ./forge sos
-      - name: Archive sos reports
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v5
-        with:
-          name: sosreport-external-database
-          path: sos/
-      - name: Setup upterm session
-        if: ${{ failure() }}
-        uses: owenthereal/action-upterm@v1
-        with:
-          ## limits ssh access and adds the ssh public key for the user which triggered the workflow
-          limit-access-to-actor: true
-          ## If no one connects after 5 minutes, shut down server.
-          wait-timeout-minutes: 5
-
   # A dummy job that you can mark as a required check instead of each individual test
   test-suite:
     if: always()
     needs:
       - tests
       - devel-tests
-      - tests-external-database
       - upgrade
       - ansible-lint
     runs-on: ubuntu-latest
