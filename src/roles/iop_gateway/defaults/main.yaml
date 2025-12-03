@@ -1,0 +1,11 @@
+---
+iop_gateway_container_image: "quay.io/iop/gateway"
+iop_gateway_container_tag: "foreman-3.16"
+
+# Certificate paths - gateway server uses localhost certs to match puppet-iop behavior
+iop_gateway_server_certificate: "/root/certificates/certs/localhost.crt"
+iop_gateway_server_key: "/root/certificates/private/localhost.key"
+iop_gateway_server_ca_certificate: "/root/certificates/certs/ca.crt"
+iop_gateway_client_certificate: "/root/certificates/certs/localhost-client.crt"
+iop_gateway_client_key: "/root/certificates/private/localhost-client.key"
+iop_gateway_client_ca_certificate: "/root/certificates/certs/ca.crt"

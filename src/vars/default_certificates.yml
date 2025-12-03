@@ -11,3 +11,13 @@ client_key: "{{ certificates_ca_directory }}/private/{{ ansible_facts['fqdn'] }}
 client_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
 localhost_key: "{{ certificates_ca_directory }}/private/localhost.key"
 localhost_certificate: "{{ certificates_ca_directory }}/certs/localhost.crt"
+localhost_client_key: "{{ certificates_ca_directory }}/private/localhost-client.key"
+localhost_client_certificate: "{{ certificates_ca_directory }}/certs/localhost-client.crt"
+
+# IOP Gateway certificate paths - uses localhost certs to match puppet-iop behavior
+iop_gateway_server_certificate: "{{ certificates_ca_directory }}/certs/localhost.crt"
+iop_gateway_server_key: "{{ certificates_ca_directory }}/private/localhost.key"
+iop_gateway_server_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
+iop_gateway_client_certificate: "{{ certificates_ca_directory }}/certs/localhost-client.crt"
+iop_gateway_client_key: "{{ certificates_ca_directory }}/private/localhost-client.key"
+iop_gateway_client_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"

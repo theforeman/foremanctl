@@ -1,0 +1,95 @@
+---
+- name: Pull Gateway container image
+  containers.podman.podman_image:
+    name: "{{ iop_gateway_container_image }}:{{ iop_gateway_container_tag }}"
+    state: present
+
+- name: Create Gateway server certificate secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-core-gateway-server-cert
+    path: "{{ iop_gateway_server_certificate }}"
+  notify: restart gateway
+
+- name: Create Gateway server key secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-core-gateway-server-key
+    path: "{{ iop_gateway_server_key }}"
+  notify: restart gateway
+
+- name: Create Gateway server CA certificate secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-core-gateway-server-ca-cert
+    path: "{{ iop_gateway_server_ca_certificate }}"
+  notify: restart gateway
+
+- name: Create Gateway client certificate secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-core-gateway-client-cert
+    path: "{{ iop_gateway_client_certificate }}"
+  notify: restart gateway
+
+- name: Create Gateway client key secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-core-gateway-client-key
+    path: "{{ iop_gateway_client_key }}"
+  notify: restart gateway
+
+- name: Create Gateway client CA certificate secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-core-gateway-client-ca-cert
+    path: "{{ iop_gateway_client_ca_certificate }}"
+  notify: restart gateway
+
+- name: Create Gateway relay configuration secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-core-gateway-relay-conf
+    data: "{{ lookup('ansible.builtin.template', 'relay.conf.j2') }}"
+  notify: restart gateway
+
+- name: Deploy Gateway container
+  containers.podman.podman_container:
+    name: iop-core-gateway
+    image: "{{ iop_gateway_container_image }}:{{ iop_gateway_container_tag }}"
+    state: quadlet
+    network:
+      - iop-core-network
+    publish:
+      - "127.0.0.1:24443:8443"
+    env:
+      REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
+    secrets:
+      - 'iop-core-gateway-server-cert,target=/etc/nginx/certs/nginx.crt,mode=0440,uid=998,gid=998,type=mount'
+      - 'iop-core-gateway-server-key,target=/etc/nginx/certs/nginx.key,mode=0440,uid=998,gid=998,type=mount'
+      - 'iop-core-gateway-server-ca-cert,target=/etc/nginx/certs/ca.crt,mode=0440,uid=998,gid=998,type=mount'
+      - 'iop-core-gateway-client-cert,target=/etc/nginx/smart-proxy-relay/certs/proxy.crt,mode=0440,uid=998,gid=998,type=mount'
+      - 'iop-core-gateway-client-key,target=/etc/nginx/smart-proxy-relay/certs/proxy.key,mode=0440,uid=998,gid=998,type=mount'
+      - 'iop-core-gateway-client-ca-cert,target=/etc/nginx/smart-proxy-relay/certs/ca.crt,mode=0440,uid=998,gid=998,type=mount'
+      - 'iop-core-gateway-relay-conf,target=/etc/nginx/smart-proxy-relay/relay.conf,mode=0440,uid=998,gid=998,type=mount'
+    quadlet_options:
+      - |
+        [Unit]
+        Description=IOP Core Gateway Container
+        After=iop-core-kafka.service iop-core-engine.service iop-core-ingress.service
+        Wants=iop-core-kafka.service iop-core-engine.service iop-core-ingress.service
+        [Service]
+        Restart=on-failure
+        [Install]
+        WantedBy=multi-user.target
+        WantedBy=default.target
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start Gateway service
+  ansible.builtin.systemd:
+    name: iop-core-gateway
+    enabled: true
+    state: started
