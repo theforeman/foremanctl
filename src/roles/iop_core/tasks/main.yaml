@@ -22,3 +22,7 @@
 - name: Deploy IOP Engine service
   ansible.builtin.include_role:
     name: iop_engine
+
+- name: Deploy IOP Gateway service
+  ansible.builtin.include_role:
+    name: iop_gateway
