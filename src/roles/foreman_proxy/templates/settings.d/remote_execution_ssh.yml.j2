@@ -8,13 +8,12 @@
 
 # :cockpit_integration: true
 
-# Mode of operation, one of ssh, ssh-async, pull, pull-mqtt
+# Mode of operation, one of ssh, pull, pull-mqtt
 :mode: ssh
 
 # Defines how often (in seconds) should the runner check
 # for new data leave empty to use the runner's default
-# (1 second for regular, 60 seconds with async_ssh enabled)
-# :runner_refresh_interval:
+# :runner_refresh_interval: 1
 
 # Defines the verbosity of logging coming from ssh command
 # one of :debug, :info, :error, :fatal
