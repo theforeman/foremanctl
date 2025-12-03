@@ -1,0 +1,20 @@
+---
+- name: Check if inventory services exist
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+  register: iop_inventory_services_status
+  failed_when: false
+  listen: restart inventory
+  loop:
+    - iop-core-host-inventory-migrate
+    - iop-core-host-inventory
+    - iop-core-host-inventory-api
+    - iop-core-host-inventory-cleanup
+
+- name: Restart inventory services if they exist
+  ansible.builtin.systemd:
+    name: "{{ item.item }}"
+    state: restarted
+  when: item.status is defined and item.status.LoadState != "not-found"
+  listen: restart inventory
+  loop: "{{ iop_inventory_services_status.results }}"
