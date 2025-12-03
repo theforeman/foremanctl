@@ -62,6 +62,7 @@
       -x509
       -nodes
       -extensions v3_ca
+      -days 7300
       -config "{{ certificates_ca_directory }}/openssl.cnf"
       -subj "/CN=Foreman Self-signed CA"
       -keyout "{{ certificates_ca_directory_keys }}/ca.key"
