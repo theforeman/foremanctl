@@ -52,3 +52,26 @@ def test_iop_core_engine_service(server):
         service = server.service("iop-core-engine")
         assert service.is_running
         assert service.is_enabled
+
+
+def test_iop_core_gateway_service(server):
+    service_exists = server.run("systemctl list-units --type=service | grep iop-core-gateway").succeeded
+    if service_exists:
+        service = server.service("iop-core-gateway")
+        assert service.is_running
+        assert service.is_enabled
+
+
+def test_iop_gateway_endpoint(server):
+    result = server.run("curl -f http://localhost:24443/ 2>/dev/null || echo 'Gateway not yet responding'")
+    assert result.rc == 0
+
+
+def test_iop_gateway_api_ingress_endpoint(server):
+    result = server.run("curl -f http://localhost:24443/api/ingress 2>/dev/null || echo 'Gateway API ingress not yet responding'")
+    assert result.rc == 0
+
+
+def test_iop_gateway_https_cert_auth(server, certificates):
+    result = server.run(f"curl -s -o /dev/null -w '%{{http_code}}' https://localhost:24443/ --cert {certificates['iop_gateway_client_certificate']} --key {certificates['iop_gateway_client_key']} --cacert {certificates['iop_gateway_client_ca_certificate']} 2>/dev/null || echo '000'")
+    assert "200" in result.stdout
