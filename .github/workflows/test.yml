@@ -91,9 +91,9 @@ jobs:
       - name: Add optional feature - hammer
         run: |
           ./foremanctl deploy --add-feature hammer
-      - name: Add optional feature - foreman-proxy
+      - name: Add optional features - foreman-proxy and remote_execution
         run: |
-          ./foremanctl deploy --add-feature foreman-proxy
+          ./foremanctl deploy --add-feature foreman-proxy --add-feature remote_execution
       - name: Run tests
         run: |
           ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }}"
@@ -197,9 +197,9 @@ jobs:
       - name: Add optional feature - hammer
         run: |
           ./foremanctl deploy --add-feature hammer
-      - name: Add optional feature - foreman-proxy
+      - name: Add optional features - foreman-proxy and remote_execution
         run: |
-          ./foremanctl deploy --add-feature foreman-proxy
+          ./foremanctl deploy --add-feature foreman-proxy --add-feature remote_execution
       - name: Stop services
         run:
           vagrant ssh quadlet -- sudo systemctl stop foreman.target
@@ -267,9 +267,9 @@ jobs:
       - name: Add optional feature - hammer
         run: |
           ./foremanctl deploy --add-feature hammer
-      - name: Add optional feature - foreman-proxy
+      - name: Add optional features - foreman-proxy and remote_execution
         run: |
-          ./foremanctl deploy --add-feature foreman-proxy
+          ./foremanctl deploy --add-feature foreman-proxy --add-feature remote_execution
       - name: Run tests
         run: |
           ./forge test --pytest-args="--database-mode=external"
