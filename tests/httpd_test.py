@@ -63,7 +63,7 @@ def test_http_pub_directory_accessible(server, server_fqdn):
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
-def test_http_spub_directory_accessible(server, certificates, server_fqdn):
+def test_https_pub_directory_accessible(server, certificates, server_fqdn):
     cmd = server.run(f"curl --cacert {certificates['ca_certificate']} --silent --output /dev/null --write-out '%{{http_code}}' https://{server_fqdn}/pub/")
     assert cmd.succeeded
     assert cmd.stdout == '200'

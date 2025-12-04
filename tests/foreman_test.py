@@ -17,8 +17,8 @@ RECURRING_INSTANCES = [
 ]
 
 @pytest.fixture(scope="module")
-def foreman_status_curl(server, certificates, server_fqdn):
-    return server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' --cacert {certificates['ca_certificate']} http://{FOREMAN_HOST}:{FOREMAN_PORT}/api/v2/ping")
+def foreman_status_curl(server):
+    return server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' http://{FOREMAN_HOST}:{FOREMAN_PORT}/api/v2/ping")
 
 
 @pytest.fixture(scope="module")
