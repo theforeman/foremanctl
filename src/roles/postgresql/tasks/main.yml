@@ -3,6 +3,8 @@
   containers.podman.podman_image:
     name: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
 
 - name: Create PostgreSQL storage directory
   ansible.builtin.file:

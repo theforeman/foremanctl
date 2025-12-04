@@ -1,17 +1,24 @@
+---
 - name: Pull the Pulp API container image
   containers.podman.podman_image:
     name: "{{ pulp_api_image }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
 
 - name: Pull the Pulp Content container image
   containers.podman.podman_image:
     name: "{{ pulp_content_image }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
 
 - name: Pull the Pulp Worker container image
   containers.podman.podman_image:
     name: "{{ pulp_worker_image }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
 
 - name: Create Pulp storage
   ansible.builtin.file:
@@ -202,7 +209,7 @@
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
-    env: "{{ pulp_settings_database_env }}"
+    env: "{{ pulp_settings_database_env | combine({'REGISTRY_AUTH_FILE': '/etc/foreman/registry-auth.json'}) }}"
 
 - name: Ensure Pulp admin user exists
   containers.podman.podman_container:
@@ -215,7 +222,7 @@
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
-    env: "{{ pulp_settings_database_env }}"
+    env: "{{ pulp_settings_database_env | combine({'REGISTRY_AUTH_FILE': '/etc/foreman/registry-auth.json'}) }}"
 
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers
