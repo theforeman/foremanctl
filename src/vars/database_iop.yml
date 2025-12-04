@@ -20,6 +20,18 @@ iop_remediation_database_name: remediations_db
 iop_remediation_database_user: remediations_user
 iop_remediation_database_password: CHANGEME
 
+iop_vmaas_database_host: "{{ iop_database_host }}"
+iop_vmaas_database_port: "{{ iop_database_port }}"
+iop_vmaas_database_name: vmaas_db
+iop_vmaas_database_user: vmaas_admin
+iop_vmaas_database_password: CHANGEME
+
+iop_vulnerability_database_host: "{{ iop_database_host }}"
+iop_vulnerability_database_port: "{{ iop_database_port }}"
+iop_vulnerability_database_name: vulnerability_db
+iop_vulnerability_database_user: vulnerability_admin
+iop_vulnerability_database_password: CHANGEME
+
 iop_postgresql_databases:
   - name: "{{ iop_inventory_database_name }}"
     owner: "{{ iop_inventory_database_user }}"
@@ -27,6 +39,10 @@ iop_postgresql_databases:
     owner: "{{ iop_advisor_database_user }}"
   - name: "{{ iop_remediation_database_name }}"
     owner: "{{ iop_remediation_database_user }}"
+  - name: "{{ iop_vmaas_database_name }}"
+    owner: "{{ iop_vmaas_database_user }}"
+  - name: "{{ iop_vulnerability_database_name }}"
+    owner: "{{ iop_vulnerability_database_user }}"
 iop_postgresql_users:
   - name: "{{ iop_inventory_database_user }}"
     password: "{{ iop_inventory_database_password }}"
@@ -34,3 +50,7 @@ iop_postgresql_users:
     password: "{{ iop_advisor_database_password }}"
   - name: "{{ iop_remediation_database_user }}"
     password: "{{ iop_remediation_database_password }}"
+  - name: "{{ iop_vmaas_database_user }}"
+    password: "{{ iop_vmaas_database_password }}"
+  - name: "{{ iop_vulnerability_database_user }}"
+    password: "{{ iop_vulnerability_database_password }}"
