@@ -72,14 +72,20 @@
 
 - name: Create directory for Apache configuration fragments
   ansible.builtin.file:
-    path: /etc/httpd/conf.d/05-foreman-ssl.d
+    path: /etc/httpd/conf.d/05-{{ item }}.d
     state: directory
     mode: "0755"
+  loop:
+    - foreman
+    - foreman-ssl
 
 - name: Deploy external authentication configuration
   ansible.builtin.template:
     src: external_auth.conf.j2
-    dest: /etc/httpd/conf.d/05-foreman-ssl.d/external_auth.conf
+    dest: /etc/httpd/conf.d/05-{{ item }}.d/external_auth.conf
     mode: "0644"
   notify:
     - Restart httpd
+  loop:
+    - foreman
+    - foreman-ssl
