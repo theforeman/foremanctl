@@ -62,6 +62,8 @@ pulp_settings_other_env:
   PULP_SMART_PROXY_PULP_URL: "{{ pulp_pulp_url }}"
   PULP_API_WORKERS: "{{ pulp_api_service_worker_count }}"
   PULP_CONTENT_WORKERS: "{{ pulp_content_service_worker_count }}"
+  PULP_TOKEN_AUTH_DISABLED: "true"
+  PULP_FLATPAK_INDEX: "true"
 
 pulp_settings_env: "{{ pulp_settings_database_env | ansible.builtin.combine(pulp_settings_other_env) }}"
 
