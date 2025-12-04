@@ -5,3 +5,4 @@ tuning_profile: development
 flavor: katello
 features: []
 enabled_features: "{{ (flavor_features + features) }}"
+registry_auth_file: /etc/foreman/registry-auth.json
