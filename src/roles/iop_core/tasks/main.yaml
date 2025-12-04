@@ -30,3 +30,7 @@
 - name: Deploy IOP Inventory service
   ansible.builtin.include_role:
     name: iop_inventory
+
+- name: Deploy IOP Advisor service
+  ansible.builtin.include_role:
+    name: iop_advisor
