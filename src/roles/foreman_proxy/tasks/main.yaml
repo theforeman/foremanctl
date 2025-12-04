@@ -3,6 +3,8 @@
   containers.podman.podman_image:
     name: "{{ foreman_proxy_container_image }}:{{ foreman_proxy_container_tag }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "{{ foreman_proxy_registry_auth_file }}"
 
 - name: Create config secrets
   ansible.builtin.include_tasks: configs.yaml

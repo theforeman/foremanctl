@@ -16,3 +16,11 @@
       - python3-libsemanage
       - python3-psycopg2
       - python3-requests
+
+- name: Create foreman configuration directory
+  ansible.builtin.file:
+    path: /etc/foreman
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
