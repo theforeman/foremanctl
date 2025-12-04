@@ -38,3 +38,11 @@
 - name: Deploy IOP Remediation service
   ansible.builtin.include_role:
     name: iop_remediation
+
+- name: Deploy IOP VMAAS service
+  ansible.builtin.include_role:
+    name: iop_vmaas
+
+- name: Deploy IOP Vulnerability service
+  ansible.builtin.include_role:
+    name: iop_vulnerability
