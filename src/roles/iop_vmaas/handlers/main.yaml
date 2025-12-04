@@ -1,0 +1,8 @@
+---
+- name: Restart vmaas
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: restarted
+  loop:
+    - iop-service-vmaas-reposcan
+    - iop-service-vmaas-webapp-go

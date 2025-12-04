@@ -192,6 +192,11 @@
     - iop-core-host-inventory-cleanup.timer
   register: iop_inventory_services
 
+- name: Enable Host Inventory cleanup timer
+  ansible.builtin.systemd:
+    name: iop-core-host-inventory-cleanup.timer
+    enabled: true
+
 - name: Wait for Host Inventory services to start
   ansible.builtin.async_status:
     jid: "{{ item.ansible_job_id }}"
