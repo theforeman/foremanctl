@@ -1,0 +1,136 @@
+---
+- name: Pull Advisor Backend container image
+  containers.podman.podman_image:
+    name: "{{ iop_advisor_container_image }}:{{ iop_advisor_container_tag }}"
+    state: present
+
+- name: Create podman secret for advisor database username
+  containers.podman.podman_secret:
+    name: iop-service-advisor-backend-database-username
+    data: "{{ iop_advisor_database_user }}"
+  notify: restart advisor
+
+- name: Create podman secret for advisor database password
+  containers.podman.podman_secret:
+    name: iop-service-advisor-backend-database-password
+    data: "{{ iop_advisor_database_password }}"
+  notify: restart advisor
+
+- name: Create podman secret for advisor database name
+  containers.podman.podman_secret:
+    name: iop-service-advisor-backend-database-name
+    data: "{{ iop_advisor_database_name }}"
+  notify: restart advisor
+
+- name: Create podman secret for advisor database host
+  containers.podman.podman_secret:
+    name: iop-service-advisor-backend-database-host
+    data: "{{ iop_advisor_database_host }}"
+  notify: restart advisor
+
+- name: Create podman secret for advisor database port
+  containers.podman.podman_secret:
+    name: iop-service-advisor-backend-database-port
+    data: "{{ iop_advisor_database_port }}"
+  notify: restart advisor
+
+- name: Deploy Advisor Backend API Container
+  containers.podman.podman_container:
+    name: iop-service-advisor-backend-api
+    image: "{{ iop_advisor_container_image }}:{{ iop_advisor_container_tag }}"
+    state: quadlet
+    command: sh -c "./container_init.sh && api/app.sh"
+    network:
+      - iop-core-network
+    env:
+      DJANGO_SESSION_KEY: "UNUSED"
+      BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
+      ADVISOR_ENV: "prod"
+      LOG_LEVEL: "INFO"
+      USE_DJANGO_WEBSERVER: "false"
+      CLOWDER_ENABLED: "false"
+      WEB_CONCURRENCY: "2"
+      ENABLE_AUTOSUB: "true"
+      TASKS_REWRITE_INTERNAL_URLS: "true"
+      TASKS_REWRITE_INTERNAL_URLS_FOR: "internal.localhost"
+      ENABLE_INIT_CONTAINER_MIGRATIONS: "true"
+      ENABLE_INIT_CONTAINER_IMPORT_CONTENT: "true"
+      IMAGE: "latest"
+      ALLOWED_HOSTS: "*"
+      INVENTORY_SERVER_URL: "http://iop-core-host-inventory-api:8081/api/inventory/v1"
+      ADVISOR_DB_SSL_MODE: "disable"
+      PORT: "8000"
+      REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
+    secrets:
+      - 'iop-service-advisor-backend-database-username,type=env,target=ADVISOR_DB_USER'
+      - 'iop-service-advisor-backend-database-password,type=env,target=ADVISOR_DB_PASSWORD'
+      - 'iop-service-advisor-backend-database-name,type=env,target=ADVISOR_DB_NAME'
+      - 'iop-service-advisor-backend-database-host,type=env,target=ADVISOR_DB_HOST'
+      - 'iop-service-advisor-backend-database-port,type=env,target=ADVISOR_DB_PORT'
+    quadlet_options:
+      - |
+        [Unit]
+        Description=Advisor Backend API
+        After=iop-core-kafka.service
+        Wants=iop-core-kafka.service
+        [Service]
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target
+
+- name: Deploy Advisor Backend Service Container
+  containers.podman.podman_container:
+    name: iop-service-advisor-backend-service
+    image: "{{ iop_advisor_container_image }}:{{ iop_advisor_container_tag }}"
+    state: quadlet
+    command: pipenv run python service/service.py
+    network:
+      - iop-core-network
+    env:
+      BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
+      ADVISOR_DB_SSL_MODE: "disable"
+      DISABLE_WEB_SERVER: "true"
+      REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
+    secrets:
+      - 'iop-service-advisor-backend-database-username,type=env,target=ADVISOR_DB_USER'
+      - 'iop-service-advisor-backend-database-password,type=env,target=ADVISOR_DB_PASSWORD'
+      - 'iop-service-advisor-backend-database-name,type=env,target=ADVISOR_DB_NAME'
+      - 'iop-service-advisor-backend-database-host,type=env,target=ADVISOR_DB_HOST'
+      - 'iop-service-advisor-backend-database-port,type=env,target=ADVISOR_DB_PORT'
+    quadlet_options:
+      - |
+        [Unit]
+        Description=Advisor Backend Service
+        After=iop-core-kafka.service
+        Wants=iop-core-kafka.service
+        [Service]
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start Advisor Backend API service
+  ansible.builtin.systemd:
+    name: iop-service-advisor-backend-api
+    enabled: true
+    state: started
+
+- name: Start Advisor Backend Service
+  ansible.builtin.systemd:
+    name: iop-service-advisor-backend-service
+    enabled: true
+    state: started
+
+- name: Set up Foreign Data Wrapper for advisor database
+  ansible.builtin.include_role:
+    name: iop_fdw
+  vars:
+    iop_fdw_database_name: "{{ iop_advisor_database_name }}"
+    iop_fdw_database_user: "{{ iop_advisor_database_user }}"
+    iop_fdw_database_password: "{{ iop_advisor_database_password }}"
+    iop_fdw_remote_database_name: "{{ iop_inventory_database_name }}"
+    iop_fdw_remote_user: "{{ iop_inventory_database_user }}"
+    iop_fdw_remote_password: "{{ iop_inventory_database_password }}"
