@@ -1,0 +1,8 @@
+---
+- name: Restart advisor
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: restarted
+  loop:
+    - iop-service-advisor-backend-api
+    - iop-service-advisor-backend-service

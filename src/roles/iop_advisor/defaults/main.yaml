@@ -1,0 +1,9 @@
+---
+iop_advisor_container_image: "quay.io/iop/advisor-backend"
+iop_advisor_container_tag: "foreman-3.16"
+
+iop_advisor_database_name: advisor_db
+iop_advisor_database_user: advisor_user
+iop_advisor_database_password: CHANGEME
+iop_advisor_database_host: host.containers.internal
+iop_advisor_database_port: 5432
