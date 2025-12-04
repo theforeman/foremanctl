@@ -27,10 +27,6 @@
   ansible.builtin.include_role:
     name: iop_gateway
 
-- name: Deploy IOP Inventory service
-  ansible.builtin.include_role:
-    name: iop_inventory
-
 - name: Register IOP Gateway as smart proxy
   theforeman.foreman.smart_proxy:
     name: "iop-gateway"
@@ -39,3 +35,11 @@
     username: "{{ iop_core_foreman_admin_username }}"
     password: "{{ iop_core_foreman_admin_password }}"
     validate_certs: false
+
+- name: Deploy IOP Inventory service
+  ansible.builtin.include_role:
+    name: iop_inventory
+
+- name: Deploy IOP Advisor service
+  ansible.builtin.include_role:
+    name: iop_advisor
