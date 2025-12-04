@@ -59,22 +59,22 @@ def test_pub_directory_exists(server):
     assert pub_dir.mode == 0o755
 
 def test_http_pub_directory_accessible(server, server_fqdn):
-    cmd = server.run(f"curl --silent --output /dev/null --write-out '%{{http_code}}' http://{server_fqdn}/pub/")
+    cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/pub/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
 def test_https_pub_directory_accessible(server, certificates, server_fqdn):
-    cmd = server.run(f"curl --cacert {certificates['ca_certificate']} --silent --output /dev/null --write-out '%{{http_code}}' https://{server_fqdn}/pub/")
+    cmd = server.run(f"{CURL_CMD} --cacert {certificates['ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/pub/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
 def test_http_pub_ca_certificate_downloadable(server, server_fqdn):
-    cmd = server.run(f"curl --silent --output /dev/null --write-out '%{{http_code}}' http://{server_fqdn}/pub/katello-server-ca.crt")
+    cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/pub/katello-server-ca.crt")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
 def test_https_pub_ca_certificate_downloadable(server, certificates, server_fqdn):
-    cmd = server.run(f"curl --cacert {certificates['ca_certificate']} --silent --output /dev/null --write-out '%{{http_code}}' https://{server_fqdn}/pub/katello-server-ca.crt")
+    cmd = server.run(f"{CURL_CMD} --cacert {certificates['ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/pub/katello-server-ca.crt")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
