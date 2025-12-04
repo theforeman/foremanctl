@@ -20,3 +20,4 @@ iop_gateway_server_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt
 iop_gateway_client_certificate: "{{ certificates_ca_directory }}/certs/localhost-client.crt"
 iop_gateway_client_key: "{{ certificates_ca_directory }}/private/localhost-client.key"
 iop_gateway_client_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
+iop_vmaas_client_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
