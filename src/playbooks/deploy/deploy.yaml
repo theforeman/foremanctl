@@ -13,16 +13,16 @@
     - "../../vars/foreman.yml"
     - "../../vars/base.yaml"
   pre_tasks:
-    - when:
+    - name: Add iop databases
+      when:
         - "'iop' in enabled_features"
       block:
         - name: Include iop databases
           ansible.builtin.include_vars:
             file: "../../vars/database_iop.yml"
-          when:
 
         - name: Combine lists
-          set_fact:
+          ansible.builtin.set_fact:
             postgresql_databases: "{{ postgresql_databases + iop_postgresql_databases }}"
             postgresql_users: "{{ postgresql_users + iop_postgresql_users }}"
   roles:

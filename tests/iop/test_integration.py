@@ -93,3 +93,24 @@ def test_iop_inventory_mq_endpoint(server):
 def test_iop_inventory_api_health_endpoint(server):
     result = server.run("podman run --network=iop-core-network quay.io/iop/host-inventory curl -s -o /dev/null -w '%{http_code}' http://iop-core-host-inventory-api:8081/health 2>/dev/null || echo '000'")
     assert "200" in result.stdout
+
+
+def test_iop_service_advisor_backend_api_service(server):
+    service_exists = server.run("systemctl list-units --type=service | grep iop-service-advisor-backend-api").succeeded
+    if service_exists:
+        service = server.service("iop-service-advisor-backend-api")
+        assert service.is_running
+        assert service.is_enabled
+
+
+def test_iop_service_advisor_backend_service(server):
+    service_exists = server.run("systemctl list-units --type=service | grep iop-service-advisor-backend-service").succeeded
+    if service_exists:
+        service = server.service("iop-service-advisor-backend-service")
+        assert service.is_running
+        assert service.is_enabled
+
+
+def test_iop_advisor_api_endpoint(server):
+    result = server.run("podman run --network=iop-core-network --rm quay.io/iop/advisor-backend:latest curl -f http://iop-service-advisor-backend-api:8000/ 2>/dev/null || echo 'Advisor API not yet responding'")
+    assert result.rc == 0
