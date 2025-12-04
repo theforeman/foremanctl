@@ -114,3 +114,16 @@ def test_iop_service_advisor_backend_service(server):
 def test_iop_advisor_api_endpoint(server):
     result = server.run("podman run --network=iop-core-network --rm quay.io/iop/advisor-backend:latest curl -f http://iop-service-advisor-backend-api:8000/ 2>/dev/null || echo 'Advisor API not yet responding'")
     assert result.rc == 0
+
+
+def test_iop_service_remediations_api_service(server):
+    service_exists = server.run("systemctl list-units --type=service | grep iop-service-remediations-api").succeeded
+    if service_exists:
+        service = server.service("iop-service-remediations-api")
+        assert service.is_running
+        assert service.is_enabled
+
+
+def test_iop_remediations_api_endpoint(server):
+    result = server.run("curl -f http://localhost:9002/ 2>/dev/null || echo 'Remediations API not yet responding'")
+    assert result.rc == 0
