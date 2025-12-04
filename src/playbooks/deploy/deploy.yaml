@@ -16,6 +16,7 @@
     - name: Add iop databases
       when:
         - "'iop' in enabled_features"
+        - database_mode == 'internal'
       block:
         - name: Include iop databases
           ansible.builtin.include_vars:
@@ -47,6 +48,7 @@
     - role: iop_core
       when:
         - "'iop' in enabled_features"
+        - database_mode == 'internal'
     - role: foreman_proxy
       when:
         - "'foreman-proxy' in enabled_features"
