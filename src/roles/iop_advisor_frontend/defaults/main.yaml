@@ -1,0 +1,5 @@
+---
+iop_advisor_frontend_container_image: "quay.io/iop/advisor-frontend"
+iop_advisor_frontend_container_tag: "foreman-3.16"
+iop_advisor_frontend_assets_path: "/var/lib/foreman/public/assets/apps/advisor"
+iop_advisor_frontend_source_path: "/srv/dist/."

@@ -46,3 +46,16 @@
 - name: Deploy IOP Vulnerability service
   ansible.builtin.include_role:
     name: iop_vulnerability
+
+- name: Install foreman-selinux package for frontend assets
+  ansible.builtin.package:
+    name: foreman-selinux
+    state: present
+
+- name: Deploy IOP Advisor Frontend
+  ansible.builtin.include_role:
+    name: iop_advisor_frontend
+
+- name: Deploy IOP Vulnerability Frontend
+  ansible.builtin.include_role:
+    name: iop_vulnerability_frontend
