@@ -1,7 +1,6 @@
 ---
 - name: Setup quadlet demo machine
-  hosts:
-    - quadlet
+  hosts: "{{ target_host if target_host is defined and target_host != '' else 'quadlet' }}"
   become: true
   vars_files:
     - "../../vars/defaults.yml"
