@@ -16,6 +16,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
+        # the "ref: github.ref" is required for the tag to be properly checked out, as a workaround
+        # for https://github.com/actions/checkout/issues/1638
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          ref: ${{ github.ref }}
       - name: Build tarball
         run: make dist
       - name: Upload tarball to GitHub cache
