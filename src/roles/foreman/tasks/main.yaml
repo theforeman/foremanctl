@@ -8,7 +8,7 @@
   containers.podman.podman_secret:
     state: present
     name: foreman-database-url
-    data: "postgresql://{{ foreman_database_user }}:{{ foreman_database_password }}@{{ foreman_database_host }}:{{ foreman_database_port }}/{{ foreman_database_name }}?pool={{ foreman_database_pool }}&sslmode={{ foreman_database_sslmode }}{% if foreman_database_sslrootcert is defined %}&sslrootcert=/etc/foreman/db-ca.crt{% endif %}" # yamllint disable-line rule:line-length
+    data: "postgresql://{{ foreman_database_user }}:{{ foreman_database_password }}@{{ foreman_database_host }}:{{ foreman_database_port }}/{{ foreman_database_name }}?pool={{ foreman_database_pool }}&sslmode={{ foreman_database_ssl_mode }}{% if foreman_database_ssl_ca is defined %}&sslrootcert=/etc/foreman/db-ca.crt{% endif %}" # yamllint disable-line rule:line-length
   notify:
     - Restart foreman
     - Restart dynflow-sidekiq@
@@ -88,7 +88,7 @@
   containers.podman.podman_secret:
     state: present
     name: foreman-db-ca
-    data: "{{ lookup('ansible.builtin.file', foreman_database_sslrootcert) if foreman_database_sslrootcert else 'empty' }}"
+    data: "{{ lookup('ansible.builtin.file', foreman_database_ssl_ca) if foreman_database_ssl_ca else 'empty' }}"
   notify:
     - Restart foreman
     - Restart dynflow-sidekiq@
