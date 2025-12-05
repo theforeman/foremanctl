@@ -69,3 +69,7 @@ def test_pulp_worker_target(server):
     pulp_worker_target = server.service("pulp-worker.target")
     assert pulp_worker_target.is_running
     assert pulp_worker_target.is_enabled
+
+def test_pulp_manager_check(server):
+    result = server.run("podman exec -ti pulp-api pulpcore-manager check --deploy")
+    assert result.succeeded
