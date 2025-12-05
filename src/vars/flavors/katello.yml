@@ -4,4 +4,3 @@ flavor_features:
   - katello
   - content/container
   - content/rpm
-  - iop
