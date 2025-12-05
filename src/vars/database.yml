@@ -26,8 +26,8 @@ pulp_database_ssl_ca: "{{ database_ssl_ca }}"
 
 foreman_database_host: "{{ database_host }}"
 foreman_database_port: "{{ database_port }}"
-foreman_database_sslmode: "{{ database_ssl_mode }}"
-foreman_database_sslrootcert: "{{ database_ssl_ca }}"
+foreman_database_ssl_mode: "{{ database_ssl_mode }}"
+foreman_database_ssl_ca: "{{ database_ssl_ca }}"
 
 postgresql_databases:
   - name: "{{ candlepin_database_name }}"
