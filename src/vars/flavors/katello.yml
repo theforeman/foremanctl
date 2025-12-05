@@ -6,4 +6,3 @@ flavor_features:
   - content/container
   - content/deb
   - content/rpm
-  - iop
