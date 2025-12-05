@@ -49,6 +49,8 @@ jobs:
         box:
           - centos/stream9
           - centos/stream10
+        iop:
+          - enabled
         exclude:
           - certificate_source: installer
             box: centos/stream10
@@ -64,7 +66,7 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       FOREMANCTL_BASE_BOX: ${{ matrix.box }}
-    name: "Tests (certificates: ${{ matrix.certificate_source }}, database: ${{ matrix.database }}, security: ${{ matrix.security }}, box: ${{ matrix.box }})"
+    name: "Tests (certificates: ${{ matrix.certificate_source }}, database: ${{ matrix.database }}, security: ${{ matrix.security }}, box: ${{ matrix.box }}, iop: ${{ matrix.iop }})"
     steps:
       - name: generate artifact suffix
         run: echo "ARTIFACT_SUFFIX=$(echo '${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.database }}-${{ matrix.box }}' | tr -cd '[:alnum:]-')" >> "${GITHUB_ENV}"
@@ -120,6 +122,10 @@ jobs:
       - name: Add optional features - azure-rm, google and remote-execution
         run: |
           ./foremanctl deploy --add-feature azure-rm --add-feature google --add-feature remote-execution
+      - name: Enable iop
+        if: matrix.iop == 'enabled'
+        run: |
+          ./foremanctl deploy --add-feature iop
       - name: Run tests
         run: |
           ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }} --database-mode=${{ matrix.database }}"
