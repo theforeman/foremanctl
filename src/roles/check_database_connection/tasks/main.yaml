@@ -8,8 +8,8 @@
       user: "{{ foreman_database_user }}"
       password: "{{ foreman_database_password }}"
       dbname: "{{ foreman_database_name }}"
-      ca_cert: "{{ foreman_database_sslrootcert | default(omit) }}"
-      sslmode: "{{ foreman_database_sslmode | default(omit) }}"
+      ca_cert: "{{ foreman_database_ssl_ca | default(omit) }}"
+      sslmode: "{{ foreman_database_ssl_mode | default(omit) }}"
 
     - name: Candlepin
       host: "{{ candlepin_database_host }}"
