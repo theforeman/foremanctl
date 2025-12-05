@@ -3,6 +3,8 @@
   containers.podman.podman_image:
     name: "{{ redis_container_image }}:{{ redis_container_tag }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
 
 - name: Create directory for Redis data
   ansible.builtin.file:
