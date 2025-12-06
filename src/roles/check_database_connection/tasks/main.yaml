@@ -26,6 +26,38 @@
       dbname: "{{ pulp_database_name }}"
       ca_cert: "{{ pulp_database_ssl_ca | default(omit) }}"
       sslmode: "{{ pulp_database_ssl_mode | default(omit) }}"
+
+    - name: IOP Remediations
+      host: "{{ iop_remediations_database_host }}"
+      user: "{{ iop_remediations_database_user }}"
+      password: "{{ iop_remediations_database_password }}"
+      dbname: "{{ iop_remediations_database_name }}"
+      ca_cert: "{{ iop_remediations_database_ssl_ca | default(omit) }}"
+      sslmode: "{{ iop_remediations_database_ssl_mode | default(omit) }}"
+
+    - name: IOP Advisor
+      host: "{{ iop_advisor_database_host }}"
+      user: "{{ iop_advisor_database_user }}"
+      password: "{{ iop_advisor_database_password }}"
+      dbname: "{{ iop_advisor_database_name }}"
+      ca_cert: "{{ iop_advisor_database_ssl_ca | default(omit) }}"
+      sslmode: "{{ iop_advisor_database_ssl_mode | default(omit) }}"
+
+    - name: IOP Vulnerability
+      host: "{{ iop_vulnerability_database_host }}"
+      user: "{{ iop_vulnerability_database_user }}"
+      password: "{{ iop_vulnerability_database_password }}"
+      dbname: "{{ iop_vulnerability_database_name }}"
+      ca_cert: "{{ iop_vulnerability_database_ssl_ca | default(omit) }}"
+      sslmode: "{{ iop_vulnerability_database_ssl_mode | default(omit) }}"
+
+    - name: IOP VMAAS
+      host: "{{ iop_vmaas_database_host }}"
+      user: "{{ iop_vmaas_database_user }}"
+      password: "{{ iop_vmaas_database_password }}"
+      dbname: "{{ iop_vmaas_database_name }}"
+      ca_cert: "{{ iop_vmaas_database_ssl_ca | default(omit) }}"
+      sslmode: "{{ iop_vmaas_database_ssl_mode | default(omit) }}"
   loop_control:
     loop_var: db_item
   when: database_mode == 'external'
