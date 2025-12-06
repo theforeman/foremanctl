@@ -1,7 +1,7 @@
 ---
 certificate_source: default
 database_mode: internal
-tuning_profile: development
+tuning: default
 flavor: katello
 features: []
 enabled_features: "{{ (flavor_features + features) }}"
