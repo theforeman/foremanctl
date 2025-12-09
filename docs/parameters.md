@@ -50,6 +50,7 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-initial-admin-username` | Initial username for the admin user | `--foreman-initial-admin-username` |
 | `--foreman-initial-admin-password` | Initial password for the admin user | `--foreman-initial-admin-password` |
 | `--foreman-puma-workers` | Number of workers for Puma | `--foreman-foreman-service-puma-workers` |
+| `--foreman-puma-threads-max` | Maximum number of threads spawned by a Puma worker | `--foreman-foreman-service-puma-threads-max` |
 | `--pulp-worker-count` | Number of pulp workers | `--foreman-proxy-content-pulpcore-worker-count` |
 
 #### Certs
