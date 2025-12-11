@@ -9,6 +9,7 @@ postgresql_data_dir: /var/lib/pgsql/data
 
 postgresql_admin_password: "CHANGEME"
 
-postgresql_max_connections: 500
-postgresql_shared_buffers: 512MB
-postgresql_effective_cache_size: 1GB
+postgresql_max_connections: "{{ (postgresql_connection_count | int / 500) | round(0, 'ceil') | int * 500 }}"
+postgresql_shared_buffers_in_mb: "{{ (ansible_facts['memtotal_mb'] / 8 / 512) | round(0, 'ceil') | int * 512 }}"
+postgresql_shared_buffers: "{{ postgresql_shared_buffers_in_mb }}MB"
+postgresql_effective_cache_size: "{{ postgresql_shared_buffers_in_mb | int * 2 }}MB"
