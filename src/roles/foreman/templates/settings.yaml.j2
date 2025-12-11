@@ -20,3 +20,11 @@
 :oauth_consumer_key: {{ foreman_oauth_consumer_key }}
 :oauth_consumer_secret: {{ foreman_oauth_consumer_secret }}
 {% endif %}
+
+{% if httpd_external_authentication in ['ipa', 'ipa_with_api'] %}
+:authorize_login_delegation: true
+:authorize_login_delegation_auth_source_user_autocreate: External
+{% endif %}
+{% if httpd_external_authentication == 'ipa_with_api' %}
+:authorize_login_delegation_api: true
+{% endif %}
