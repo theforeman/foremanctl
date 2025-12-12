@@ -51,6 +51,7 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-initial-admin-password` | Initial password for the admin user | `--foreman-initial-admin-password` |
 | `--foreman-puma-workers` | Number of workers for Puma | `--foreman-foreman-service-puma-workers` |
 | `--pulp-worker-count` | Number of pulp workers | `--foreman-proxy-content-pulpcore-worker-count` |
+| `--tuning` | Sets the tuning profile | `--tuning` |
 
 #### Certs
 
@@ -75,7 +76,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-loggers` | | foreman | loggers |
 | `--foreman-plugin-tasks-cron-line` | | foreman::plugin::tasks | cron_line |
 | `--foreman-plugin-tasks-automatic-cleanup` | | foreman::plugin::tasks | automatic_cleanup |
-| `--tuning` | Sets the tuning profile | foreman-installer | |
 | `--certs-cname` | | certs | cname |
 | `--certs-tar` | | certs | tar |
 | `--certs-tar-file` | | certs | tar |
