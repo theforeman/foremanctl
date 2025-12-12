@@ -54,7 +54,7 @@ jobs:
             security: none
             database: external
     runs-on: ubuntu-24.04
-    name: "Tests (certificate source: ${{ matrix.certificate_source }}, database: ${{ matrix.database }}, security mode: ${{ matrix.security }})"
+    name: "Tests (certificates: ${{ matrix.certificate_source }}, database: ${{ matrix.database }}, security: ${{ matrix.security }})"
     steps:
       - uses: actions/checkout@v6
       - name: Set up Python
