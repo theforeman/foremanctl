@@ -1,0 +1,74 @@
+---
+- name: Pull Kafka container image
+  containers.podman.podman_image:
+    name: "{{ iop_kafka_container_image }}:{{ iop_kafka_container_tag }}"
+    state: present
+
+- name: Create Kafka init script secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-core-kafka-init-start
+    data: "{{ lookup('ansible.builtin.file', 'kafka/init-start.sh') }}"
+  notify: restart kafka
+
+- name: Create Kafka server properties secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-core-kafka-server-properties
+    data: "{{ lookup('ansible.builtin.template', 'kafka/kraft.j2') }}"
+  notify: restart kafka
+
+- name: Create Kafka init topics script secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-core-kafka-init
+    data: "{{ lookup('ansible.builtin.file', 'kafka/init') }}"
+
+- name: Create Kafka data volume
+  containers.podman.podman_volume:
+    name: iop-core-kafka-data
+    state: present
+
+- name: Deploy Kafka container
+  containers.podman.podman_container:
+    name: iop-core-kafka
+    image: "{{ iop_kafka_container_image }}:{{ iop_kafka_container_tag }}"
+    state: quadlet
+    command: sh bin/init-start.sh
+    network:
+      - iop-core-network
+    env:
+      LOG_DIR: /tmp/kafka-logs
+      KAFKA_NODE_ID: "1"
+    volumes:
+      - "iop-core-kafka-data:/var/lib/kafka/data"
+    secrets:
+      - 'iop-core-kafka-init-start,target=/opt/kafka/bin/init-start.sh,mode=0755,type=mount'
+      - 'iop-core-kafka-server-properties,target=/opt/kafka/config/kraft/server.properties,mode=0644,type=mount'
+      - 'iop-core-kafka-init,target=/opt/kafka/init.sh,mode=0755,type=mount'
+    quadlet_options:
+      - |
+        [Unit]
+        Description=IOP Core Kafka Container
+        [Service]
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start Kafka service
+  ansible.builtin.systemd:
+    name: iop-core-kafka
+    enabled: true
+    state: started
+
+- name: Initialize Kafka topics
+  containers.podman.podman_container_exec:
+    name: iop-core-kafka
+    command: /opt/kafka/init.sh --create
+  register: iop_kafka_topics_result
+  changed_when: "'Creating topic' in iop_kafka_topics_result.stdout"
+  failed_when: iop_kafka_topics_result.rc != 0 and 'already exists' not in iop_kafka_topics_result.stderr
