@@ -25,7 +25,7 @@ jobs:
       - name: Build tarball
         run: make dist
       - name: Upload tarball to GitHub cache
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: release-tarball
           path: 'foremanctl-*.tar.gz'
