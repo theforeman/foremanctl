@@ -55,6 +55,9 @@ foreman_development_plugin_registry:
   foreman_bootdisk:
     name: "theforeman/foreman_bootdisk"
     manage_repo: true
+  foreman_theme_satellite:
+    name: "redhatsatellite/foreman_theme_satellite"
+    manage_repo: true
 
 foreman_development_default_plugins:
   - katello
