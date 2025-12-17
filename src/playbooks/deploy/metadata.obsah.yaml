@@ -16,7 +16,7 @@ variables:
     choices:
       - ipa
       - ipa_with_api
-  pam_service:
+  external_authentication_pam_service:
     help: Name of the PAM service to use for IPA authentication
 
 include:
