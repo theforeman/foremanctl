@@ -14,6 +14,7 @@ variables:
       - foreman_discovery
       - foreman_openscap
       - foreman_bootdisk
+      - foreman_theme_satellite
   target_host:
     help: Target hostname or IP address for deployment
     action: store
