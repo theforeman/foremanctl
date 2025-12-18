@@ -11,6 +11,13 @@ variables:
     help: Number of workers for Puma.
   pulp_worker_count:
     help: Number of Pulp workers. Defaults to 8 or the number of CPU cores, whichever is smaller.
+  external_authentication:
+    help: External authentication method to use
+    choices:
+      - ipa
+      - ipa_with_api
+  external_authentication_pam_service:
+    help: Name of the PAM service to use for IPA authentication
 
 include:
   - _certificate_source

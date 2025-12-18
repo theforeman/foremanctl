@@ -3,3 +3,10 @@ httpd_pulp_api_backend: http://localhost:24817
 httpd_pulp_content_backend: http://localhost:24816
 httpd_foreman_backend: http://localhost:3000
 httpd_pub_dir: /var/www/html/pub
+
+# External authentication configuration
+httpd_external_authentication: "{{ external_authentication | default(None) }}"
+httpd_ipa_manage_sssd: true
+httpd_ipa_keytab: /etc/httpd/conf/http.keytab
+httpd_ipa_pam_service: "{{ external_authentication_pam_service | default('foreman') }}"
+httpd_ipa_gssapi_local_name: true

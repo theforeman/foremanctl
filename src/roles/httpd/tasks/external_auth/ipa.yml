@@ -1,0 +1,91 @@
+---
+- name: Install Apache modules for IPA authentication
+  ansible.builtin.package:
+    name:
+      - mod_authnz_pam
+      - mod_intercept_form_submit
+      - mod_lookup_identity
+      - mod_auth_gssapi
+    state: present
+
+- name: Create directory for Apache module configuration
+  ansible.builtin.file:
+    path: /etc/httpd/conf.modules.d
+    state: directory
+    mode: "0755"
+
+- name: Load Apache modules for IPA authentication
+  ansible.builtin.copy:
+    dest: /etc/httpd/conf.modules.d/55-{{ item }}.conf
+    content: |
+      LoadModule {{ item }}_module modules/mod_{{ item }}.so
+    mode: "0644"
+  loop:
+    - authnz_pam
+    - intercept_form_submit
+    - lookup_identity
+    - auth_gssapi
+  notify:
+    - Restart httpd
+
+- name: Set SELinux booleans for IPA authentication
+  ansible.posix.seboolean:
+    name: "{{ item }}"
+    state: true
+    persistent: true
+  loop:
+    - allow_httpd_mod_auth_pam
+    - httpd_dbus_sssd
+  when: ansible_facts['selinux']['status'] == "enabled"
+
+- name: Configure SSSD for IPA authentication
+  ansible.builtin.import_tasks: ../sssd.yml
+  when: httpd_ipa_manage_sssd | bool
+
+- name: Create PAM service file for IPA authentication
+  ansible.builtin.template:
+    src: pam_service.j2
+    dest: "/etc/pam.d/{{ httpd_ipa_pam_service }}"
+    mode: "0644"
+
+- name: Ensure keytab directory exists
+  ansible.builtin.file:
+    path: "{{ httpd_ipa_keytab | dirname }}"
+    state: directory
+    mode: "0755"
+
+- name: Get keytab for HTTP service
+  ansible.builtin.shell:
+    cmd: |
+      KRB5CCNAME=KEYRING:session:get-http-service-keytab kinit -k || true
+      KRB5CCNAME=KEYRING:session:get-http-service-keytab /usr/sbin/ipa-getkeytab -k {{ httpd_ipa_keytab }} -p HTTP/{{ ansible_facts['fqdn'] }}
+      kdestroy -c KEYRING:session:get-http-service-keytab || true
+    creates: "{{ httpd_ipa_keytab }}"
+  changed_when: false
+
+- name: Set keytab file permissions
+  ansible.builtin.file:
+    path: "{{ httpd_ipa_keytab }}"
+    owner: apache
+    group: apache
+    mode: "0600"
+
+- name: Create directory for Apache configuration fragments
+  ansible.builtin.file:
+    path: /etc/httpd/conf.d/05-{{ item }}.d
+    state: directory
+    mode: "0755"
+  loop:
+    - foreman
+    - foreman-ssl
+
+- name: Deploy external authentication configuration
+  ansible.builtin.template:
+    src: external_auth.conf.j2
+    dest: /etc/httpd/conf.d/05-{{ item }}.d/external_auth.conf
+    mode: "0644"
+  notify:
+    - Restart httpd
+  loop:
+    - foreman
+    - foreman-ssl
