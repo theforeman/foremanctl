@@ -15,6 +15,11 @@ variables:
       - foreman_openscap
       - foreman_bootdisk
       - foreman_theme_satellite
+      - foreman_tasks
+      - foreman_webhooks
+      - foreman_templates
+      - foreman_leapp
+      - foreman_puppet
   target_host:
     help: Target hostname or IP address for deployment
     action: store
