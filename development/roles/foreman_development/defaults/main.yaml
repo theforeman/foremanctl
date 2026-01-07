@@ -58,6 +58,21 @@ foreman_development_plugin_registry:
   foreman_theme_satellite:
     name: "redhatsatellite/foreman_theme_satellite"
     manage_repo: true
+  foreman_tasks:
+    name: "theforeman/foreman-tasks"
+    manage_repo: true
+  foreman_webhooks:
+    name: "theforeman/foreman_webhooks"
+    manage_repo: true
+  foreman_templates:
+    name: "theforeman/foreman_templates"
+    manage_repo: true
+  foreman_leapp:
+    name: "theforeman/foreman_leapp"
+    manage_repo: true
+  foreman_puppet:
+    name: "theforeman/foreman_puppet"
+    manage_repo: true
 
 foreman_development_default_plugins:
   - katello
