@@ -1,0 +1,82 @@
+---
+- name: Pull Remediation container image
+  containers.podman.podman_image:
+    name: "{{ iop_remediation_container_image }}:{{ iop_remediation_container_tag }}"
+    state: present
+
+- name: Create Remediation database username secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-service-remediations-db-username
+    data: "{{ iop_remediation_database_user }}"
+  notify: restart remediation
+
+- name: Create Remediation database password secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-service-remediations-db-password
+    data: "{{ iop_remediation_database_password }}"
+  notify: restart remediation
+
+- name: Create Remediation database name secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-service-remediations-db-name
+    data: "{{ iop_remediation_database_name }}"
+  notify: restart remediation
+
+- name: Create Remediation database host secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-service-remediations-db-host
+    data: "{{ iop_remediation_database_host }}"
+  notify: restart remediation
+
+- name: Create Remediation database port secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-service-remediations-db-port
+    data: "{{ iop_remediation_database_port }}"
+  notify: restart remediation
+
+- name: Deploy Remediation API container
+  containers.podman.podman_container:
+    name: iop-service-remediations-api
+    image: "{{ iop_remediation_container_image }}:{{ iop_remediation_container_tag }}"
+    state: quadlet
+    network: host
+    command: sh -c "npm run db:migrate && exec node --max-http-header-size=16384 src/app.js"
+    env:
+      REDIS_ENABLED: "false"
+      RBAC_ENFORCE: "false"
+      CONTENT_SERVER_HOST: "http://iop-service-advisor-backend-api:8000"
+      ADVISOR_HOST: "http://iop-service-advisor-backend-api:8000"
+      INVENTORY_HOST: "http://iop-core-host-inventory-api:8081"
+      DB_SSL_ENABLED: "false"
+      REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
+    secrets:
+      - 'iop-service-remediations-db-username,type=env,target=DB_USERNAME'
+      - 'iop-service-remediations-db-password,type=env,target=DB_PASSWORD'
+      - 'iop-service-remediations-db-name,type=env,target=DB_DATABASE'
+      - 'iop-service-remediations-db-host,type=env,target=DB_HOST'
+      - 'iop-service-remediations-db-port,type=env,target=DB_PORT'
+    quadlet_options:
+      - |
+        [Unit]
+        Description=Remediations API
+        Wants=iop-core-host-inventory-api.service iop-service-advisor-backend-api.service
+        After=iop-core-host-inventory-api.service iop-service-advisor-backend-api.service
+        [Service]
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start Remediation API service
+  ansible.builtin.systemd:
+    name: iop-service-remediations-api
+    enabled: true
+    state: started
