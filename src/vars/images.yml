@@ -1,16 +1,18 @@
+---
+registry: quay.io
 container_tag_stream: "3.17"
-candlepin_container_image: quay.io/foreman/candlepin
+candlepin_container_image: "{{ registry }}/foreman/candlepin"
 candlepin_container_tag: "foreman-{{ container_tag_stream }}"
-foreman_container_image: quay.io/foreman/foreman
+foreman_container_image: "{{ registry }}/foreman/foreman"
 foreman_container_tag: "{{ container_tag_stream }}"
-foreman_proxy_container_image: "quay.io/foreman/foreman-proxy"
+pulp_container_image: "{{ registry }}/foreman/pulp"
+pulp_container_tag: "foreman-{{ container_tag_stream }}"
+foreman_proxy_container_image: "{{ registry }}/foreman/foreman-proxy"
 foreman_proxy_container_tag: "{{ container_tag_stream }}"
 
-postgresql_container_image: quay.io/sclorg/postgresql-13-c9s
+postgresql_container_image: "{{ registry }}/sclorg/postgresql-13-c9s"
 postgresql_container_tag: "latest"
-pulp_container_image: quay.io/foreman/pulp
-pulp_container_tag: "foreman-{{ container_tag_stream }}"
-redis_container_image: quay.io/sclorg/redis-6-c9s
+redis_container_image: "{{ registry }}/sclorg/redis-6-c9s"
 redis_container_tag: "latest"
 
 images:
