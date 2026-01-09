@@ -1,4 +1,4 @@
-container_tag_stream: "3.16"
+container_tag_stream: "3.17"
 candlepin_container_image: quay.io/foreman/candlepin
 candlepin_container_tag: "foreman-{{ container_tag_stream }}"
 foreman_container_image: quay.io/foreman/foreman
