@@ -17,10 +17,10 @@ images:
  - "{{ candlepin_container_image }}:{{ candlepin_container_tag }}"
  - "{{ foreman_container_image }}:{{ foreman_container_tag }}"
  - "{{ pulp_container_image }}:{{ pulp_container_tag }}"
- - "{{ redis_container_image }}:{{ redis_container_tag }}"
 
 database_images:
  - "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
+ - "{{ redis_container_image }}:{{ redis_container_tag }}"
 
 foreman_proxy_images:
  - "{{ foreman_proxy_container_image }}:{{ foreman_proxy_container_tag }}"
