@@ -1,0 +1,9 @@
+---
+help: |
+  Deploy Foreman with default settings including Hammer CLI and Foreman Proxy.
+  Uses password 'changeme' for the initial admin user.
+
+variables:
+  target_host:
+    help: Target hostname or IP address for deployment
+    action: store
