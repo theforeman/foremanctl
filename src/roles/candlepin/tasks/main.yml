@@ -55,6 +55,8 @@
   containers.podman.podman_image:
     name: "{{ candlepin_container_image }}:{{ candlepin_container_tag }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
 
 - name: Deploy Candlepin quadlet
   containers.podman.podman_container:
