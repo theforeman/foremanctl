@@ -1,0 +1,34 @@
+---
+variables:
+  registry:
+    help: registry
+  registry_username:
+    help: registry_username
+  registry_password:
+    help: registry_password
+  container_tag_stream:
+    help: container_tag_stream
+  candlepin_container_image:
+    help: candlepin_container_image
+  candlepin_container_tag:
+    help: candlepin_container_tag
+  foreman_container_image:
+    help: foreman_container_image
+  foreman_container_tag:
+    help: foreman_container_tag
+  foreman_proxy_container_image:
+    help: foreman_proxy_container_image
+  foreman_proxy_container_tag:
+    help: foreman_proxy_container_tag
+  pulp_container_image:
+    help: pulp_container_image
+  pulp_container_tag:
+    help: pulp_container_tag
+  postgresql_container_image:
+    help: postgresql_container_image
+  postgresql_container_tag:
+    help: postgresql_container_tag
+  redis_container_image:
+    help: redis_container_image
+  redis_container_tag:
+    help: redis_container_tag

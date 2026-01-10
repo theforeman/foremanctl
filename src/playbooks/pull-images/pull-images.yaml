@@ -17,11 +17,15 @@
     - name: Pull an image
       containers.podman.podman_image:
         name: "{{ item }}"
+      environment:
+        REGISTRY_AUTH_FILE: "{{ registry_auth_file }}"
       loop: "{{ images }}"
 
     - name: Pull foreman_proxy images
       containers.podman.podman_image:
         name: "{{ item }}"
+      environment:
+        REGISTRY_AUTH_FILE: "{{ registry_auth_file }}"
       loop: "{{ foreman_proxy_images }}"
       when:
         - "'foreman-proxy' in enabled_features"
@@ -29,6 +33,8 @@
     - name: Pull database images
       containers.podman.podman_image:
         name: "{{ item }}"
+      environment:
+        REGISTRY_AUTH_FILE: "{{ registry_auth_file }}"
       loop: "{{ database_images }}"
       when:
         - database_mode == 'internal'
