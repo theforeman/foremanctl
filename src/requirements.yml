@@ -4,4 +4,6 @@ collections:
   - ansible.posix
   - name: containers.podman
     version: ">=1.16.4"
-  - name: theforeman.foreman
+  - name: https://github.com/theforeman/foreman-ansible-modules
+    type: git
+    version: smart_proxy_refresh

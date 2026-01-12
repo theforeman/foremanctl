@@ -3,3 +3,11 @@
   ansible.builtin.systemd:
     name: foreman-proxy
     state: restarted
+
+- name: Refresh Foreman Proxy
+  theforeman.foreman.smart_proxy_refresh:
+    smart_proxy: "{{ foreman_proxy_name }}"
+    server_url: "{{ foreman_url }}"
+    username: "{{ foreman_initial_admin_username }}"
+    password: "{{ foreman_initial_admin_password }}"
+    validate_certs: false
