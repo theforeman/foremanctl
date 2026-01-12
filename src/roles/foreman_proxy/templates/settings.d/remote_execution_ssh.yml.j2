@@ -11,6 +11,15 @@
 # Mode of operation, one of ssh, pull, pull-mqtt
 :mode: ssh
 
+# Enables the use of SSH certificate for smart proxy authentication
+# The file should contain an SSH CA public key that the SSH public key of smart proxy is signed by
+# :ssh_user_ca_public_key_file:
+
+# Enables the use of SSH host certificates for host authentication
+# The file should contain a list of trusted SSH CA authorities that the host certs can be signed by
+# Example file content: @cert-authority * <SSH CA public key>
+# :ssh_ca_known_hosts_file:
+
 # Defines how often (in seconds) should the runner check
 # for new data leave empty to use the runner's default
 # :runner_refresh_interval: 1
