@@ -107,7 +107,7 @@ jobs:
           ./foremanctl deploy --add-feature foreman-proxy
       - name: Add optional features - azure_rm, google and remote_execution
         run: |
-          ./foremanctl deploy --add-feature foreman_azure_rm --add-feature foreman_google --add-feature remote_execution
+          ./foremanctl deploy --add-feature azure_rm --add-feature google --add-feature remote_execution
       - name: Run tests
         run: |
           ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }} --database-mode=${{ matrix.database }}"
@@ -216,7 +216,7 @@ jobs:
           ./foremanctl deploy --add-feature foreman-proxy
       - name: Add optional features - azure_rm, google and remote_execution
         run: |
-          ./foremanctl deploy --add-feature foreman_azure_rm --add-feature foreman_google --add-feature remote_execution
+          ./foremanctl deploy --add-feature azure_rm --add-feature google --add-feature remote_execution
       - name: Stop services
         run:
           vagrant ssh quadlet -- sudo systemctl stop foreman.target
