@@ -11,6 +11,14 @@ FEATURE_MAP = {
     'remote_execution': {
         'foreman': 'foreman_remote_execution',
         'foreman_proxy': 'remote_execution_ssh'
+    },
+    'google': {
+        'foreman': 'foreman_google',
+        'foreman_proxy': None
+    },
+    'azure_rm': {
+        'foreman': 'foreman_azure_rm',
+        'foreman_proxy': None
     }
 }
 
