@@ -4,4 +4,5 @@ help: |
 
 include:
   - _database_mode
+  - _images
   - _flavor_features
