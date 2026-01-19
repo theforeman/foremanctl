@@ -49,3 +49,13 @@ foreman_recurring_tasks:
   - instance: ldap-refresh_usergroups
     rake: "ldap:refresh_usergroups"
     schedule: "*-*-* *:00,30:00"
+
+katello_recurring_tasks_enabled: true
+katello_recurring_tasks:
+  - instance: katello-delete_orphaned_content
+    rake: "katello:delete_orphaned_content"
+    schedule: "Sun *-*-* 22:00:00"
+
+  - instance: katello-refresh_alternate_content_sources
+    rake: "katello:refresh_alternate_content_sources"
+    schedule: "Sun *-*-* 18:00:00"
