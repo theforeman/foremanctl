@@ -1,0 +1,8 @@
+---
+- name: Deploy Foreman with default settings
+  ansible.builtin.import_playbook: ../../../src/playbooks/deploy/deploy.yaml
+  vars:
+    foreman_initial_admin_password: changeme
+    features:
+      - hammer
+      - foreman-proxy
