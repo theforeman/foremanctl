@@ -1,17 +1,24 @@
+---
 - name: Pull the Pulp API container image
   containers.podman.podman_image:
     name: "{{ pulp_api_image }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "{{ pulp_registry_auth_file }}"
 
 - name: Pull the Pulp Content container image
   containers.podman.podman_image:
     name: "{{ pulp_content_image }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "{{ pulp_registry_auth_file }}"
 
 - name: Pull the Pulp Worker container image
   containers.podman.podman_image:
     name: "{{ pulp_worker_image }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "{{ pulp_registry_auth_file }}"
 
 - name: Create Pulp storage
   ansible.builtin.file:

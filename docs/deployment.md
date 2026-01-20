@@ -44,25 +44,27 @@ A deployment can have multiple base features enabled.
 
 ### Authenticated Registry Handling
 
-In the non-default case where the image sources are supplied from an authenticated location users will need to inject a login step.
-For example, users might be consuming a custom build of the Foreman image.
+If you need to pull images from private or authenticated container registries, you can configure registry authentication using Podman's auth file.
 
-In this case, the happy path becomes:
+#### Setting up Registry Authentication
 
-  1. Configure package repository
-  2. Install `foremanctl` package
-  3. Run deployment utility and provide registry username and token
+1. **Login to your registry** using Podman and save credentials to the default auth file location:
+```bash
+podman login <registry> --authfile=/etc/foreman/registry-auth.json
+```
 
-The advanced path breaks down to:
+2. **Ensure proper permissions** on the auth file:
+```bash
+sudo chmod 600 /etc/foreman/registry-auth.json
+sudo chown root:root /etc/foreman/registry-auth.json
+```
 
-  1. Configure package repository
-  2. Install `foremanctl` package
-  3. Login to registry with podman
-  3. Pull images
-  4. Generate certificates
-  5. Execute pre-requisite checks
-  6. Run deployment utility
-  7. Post deploy checks
+3. **Deploy as usual** - foremanctl will automatically detect and use the authentication file:
+```bash
+./foremanctl deploy
+```
+
+This approach integrates seamlessly with both the happy path and advanced deployment paths described above. The authentication is handled transparently during image pulling operations.
 
 ## Deployer Stages
 
