@@ -40,6 +40,16 @@
     - Restart pulp-content
     - Restart pulp-worker
 
+- name: Create DB SSL cert
+  containers.podman.podman_secret:
+    state: present
+    name: pulp-db-ca
+    data: "{{ lookup('ansible.builtin.file', pulp_database_ssl_ca) if pulp_database_ssl_ca else 'empty' }}"
+  notify:
+    - Restart pulp-api
+    - Restart pulp-content
+    - Restart pulp-worker
+
 - name: Generate Django secret key
   ansible.builtin.command: "bash -c 'openssl rand -base64 50 | tr -d \"\\n\" | tr \"+/\" \"-_\" > /var/lib/pulp/django_secret_key'"
   args:
@@ -92,6 +102,7 @@
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+      - 'pulp-db-ca,type=mount,target=/etc/pulp/certs/db-ca.crt'
       - 'pulp-django-secret-key,type=env,target=PULP_SECRET_KEY'
     env: "{{ pulp_settings_env }}"
     quadlet_options:
@@ -122,6 +133,7 @@
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+      - 'pulp-db-ca,type=mount,target=/etc/pulp/certs/db-ca.crt'
       - 'pulp-django-secret-key,type=env,target=PULP_SECRET_KEY'
     env: "{{ pulp_settings_env }}"
     quadlet_options:
@@ -152,6 +164,7 @@
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+      - 'pulp-db-ca,type=mount,target=/etc/pulp/certs/db-ca.crt'
       - 'pulp-django-secret-key,type=env,target=PULP_SECRET_KEY'
     env: "{{ pulp_settings_env }}"
     quadlet_options:
@@ -202,6 +215,7 @@
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+      - 'pulp-db-ca,type=mount,target=/etc/pulp/certs/db-ca.crt'
     env: "{{ pulp_settings_database_env }}"
 
 - name: Ensure Pulp admin user exists
@@ -215,6 +229,7 @@
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+      - 'pulp-db-ca,type=mount,target=/etc/pulp/certs/db-ca.crt'
     env: "{{ pulp_settings_database_env }}"
 
 - name: Flush handlers to restart services
