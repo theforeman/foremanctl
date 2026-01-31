@@ -1,0 +1,9 @@
+---
+iop_inventory_container_image: "quay.io/iop/host-inventory"
+iop_inventory_container_tag: "foreman-3.16"
+
+iop_inventory_database_name: inventory_db
+iop_inventory_database_user: inventory_admin
+iop_inventory_database_password: CHANGEME
+iop_inventory_database_host: host.containers.internal
+iop_inventory_database_port: 5432

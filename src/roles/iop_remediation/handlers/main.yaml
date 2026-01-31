@@ -1,0 +1,14 @@
+---
+- name: Check if remediation api service exists
+  ansible.builtin.systemd:
+    name: iop-service-remediations-api
+  register: iop_remediation_api_service_status
+  failed_when: false
+  listen: restart remediation
+
+- name: Restart remediation api
+  ansible.builtin.systemd:
+    name: iop-service-remediations-api
+    state: restarted
+  when: iop_remediation_api_service_status.status is defined and iop_remediation_api_service_status.status.LoadState != "not-found"
+  listen: restart remediation
