@@ -1,3 +1,5 @@
+DOMAIN = 'example.com'.freeze
+
 Vagrant.configure("2") do |config|
   config.vm.box = "centos/stream9"
   config.vm.synced_folder ".", "/vagrant"
@@ -12,20 +14,22 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "quadlet" do |override|
-    override.vm.hostname = "quadlet.example.com"
+    override.vm.hostname = "quadlet.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
       libvirt.memory = 10240
       libvirt.cpus = 4
       libvirt.machine_virtual_size = 30
+      libvirt.management_network_domain = DOMAIN
     end
   end
 
   config.vm.define "client" do |override|
-    override.vm.hostname = "client.example.com"
+    override.vm.hostname = "client.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
       libvirt.memory = 1024
+      libvirt.management_network_domain = DOMAIN
     end
   end
 
