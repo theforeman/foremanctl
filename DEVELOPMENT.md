@@ -27,7 +27,7 @@ This setup uses Vagrant to create a basic VM for running the deployment on:
 ./setup-environment
 source .venv/bin/activate
 ./forge vms start
-./foremanctl deploy --foreman-initial-admin-password=changeme
+./foremanctl deploy --foreman-initial-admin-password=changeme --tuning development
 ```
 
 ## Deploy hammer (optional)
