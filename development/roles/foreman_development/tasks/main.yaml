@@ -32,6 +32,14 @@
     enabled: false
   failed_when: false
 
+- name: Check if development user exists
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ foreman_development_user }}"
+  register: foreman_development_user_exists
+  failed_when: false
+  when: foreman_development_user != 'root'
+
 - name: Create development user
   ansible.builtin.user:
     name: "{{ foreman_development_user }}"
@@ -41,7 +49,10 @@
     append: true
     password: "{{ 'changeme' | password_hash('sha512') }}"
     state: present
-  when: foreman_development_user != 'root'
+  when:
+    - foreman_development_user != 'root'
+    - foreman_development_user_exists.failed | default(false) or foreman_development_user not in (foreman_development_user_exists.ansible_facts.getent_passwd |
+      default({}))
 
 - name: Configure sudo access without password for development user
   ansible.builtin.lineinfile:
