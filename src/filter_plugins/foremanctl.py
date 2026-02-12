@@ -10,7 +10,11 @@ FEATURE_MAP = {
     },
     'remote_execution': {
         'foreman': 'foreman_remote_execution',
-        'foreman_proxy': 'remote_execution_ssh'
+        'foreman_proxy': 'remote_execution_ssh',
+        'dependencies': ['dynflow']
+    },
+    'dynflow': {
+        'foreman_proxy': 'dynflow'
     },
     'google': {
         'foreman': 'foreman_google',
@@ -24,12 +28,16 @@ FEATURE_MAP = {
 
 
 def foreman_plugins(value):
-    plugins = [FEATURE_MAP.get(feature, {}).get('foreman') for feature in value if feature not in BASE_FEATURES]
+    dependencies = [FEATURE_MAP.get(feature, {}).get('dependencies', []) for feature in value if feature not in BASE_FEATURES]
+    dependencies = list(set([dep for deplist in dependencies for dep in deplist]))
+    plugins = [FEATURE_MAP.get(feature, {}).get('foreman') for feature in (value + dependencies) if feature not in BASE_FEATURES]
     return [plugin for plugin in plugins if plugin is not None]
 
 
 def foreman_proxy_plugins(value):
-    plugins = [FEATURE_MAP.get(feature, {}).get('foreman_proxy') for feature in value if feature not in BASE_FEATURES]
+    dependencies = [FEATURE_MAP.get(feature, {}).get('dependencies', []) for feature in value if feature not in BASE_FEATURES]
+    dependencies = list(set([dep for deplist in dependencies for dep in deplist]))
+    plugins = [FEATURE_MAP.get(feature, {}).get('foreman_proxy') for feature in (value + dependencies) if feature not in BASE_FEATURES]
     return [plugin for plugin in plugins if plugin is not None]
 
 
