@@ -6,6 +6,8 @@
     - ../../../src/vars/foreman.yml
     - "{{ obsah_state_path }}/parameters.yaml" # this is a hack to load persisted params without enabling persisting
   vars:
+    smoker_url: https://github.com/ekohl/smoker
+    smoker_version: add-content-api-tests
     smoker_base_url: "https://{{ hostvars['quadlet'].ansible_default_ipv4.address }}"
     smoker_variables:
       username: "{{ foreman_initial_admin_username }}"
