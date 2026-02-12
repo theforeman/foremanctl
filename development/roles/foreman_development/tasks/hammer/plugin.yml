@@ -1,0 +1,59 @@
+---
+- name: Clone plugin repository  # noqa latest[git]
+  ansible.builtin.git:
+    repo: "{{ foreman_development_plugin_repo_url }}"
+    dest: "{{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}"
+    force: true
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  when: foreman_development_plugin_manage_repo
+
+- name: Add GitHub username as additional remote for plugin
+  community.general.git_config:
+    name: "remote.{{ foreman_development_github_username }}.url"
+    scope: local
+    repo: "{{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}"
+    value: "git@github.com:{{ foreman_development_github_username }}/{{ foreman_development_plugin_name }}.git"
+    state: present
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  when:
+    - foreman_development_plugin_manage_repo
+    - foreman_development_github_username != ""
+
+- name: Create plugin settings file
+  ansible.builtin.template:
+    src: "{{ foreman_development_plugin_settings_template }}"
+    dest: "{{ foreman_development_hammer_dir }}/config/cli.modules.d/{{ foreman_development_plugin_settings_template.split('/')[1] | replace('.j2', '') }}"
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0644"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  when: foreman_development_plugin_settings_template != ""
+
+- name: Copy module config file
+  ansible.builtin.shell: |
+    cp {{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}/config/{{ foreman_development_plugin_module_config }} \
+       {{ foreman_development_hammer_dir }}/config/cli.modules.d/{{ foreman_development_plugin_module_config }}
+  args:
+    creates: "{{ foreman_development_hammer_dir }}/config/cli.modules.d/{{ foreman_development_plugin_module_config }}"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  when:
+    - foreman_development_plugin_settings_template == ""
+    - foreman_development_plugin_module_config | default("") != ""
+
+- name: Create plugin bundler configuration
+  ansible.builtin.lineinfile:
+    line: >-
+      gem '{{ foreman_development_plugin_gem | default(foreman_development_plugin_name) }}',
+      path: '{{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}'
+    path: "{{ foreman_development_hammer_dir }}/Gemfile.local.rb"
+    create: true
+    state: present
+    regexp: "^\\s*gem '{{ foreman_development_plugin_name }}'"
+    mode: "0644"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  when: foreman_development_plugin_name != ""
