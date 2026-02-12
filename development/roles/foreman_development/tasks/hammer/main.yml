@@ -1,0 +1,56 @@
+- name: Clone Hammer repository
+  ansible.builtin.git:
+    repo: "{{ foreman_development_hammer_git_repo }}"
+    dest: "{{ foreman_development_hammer_dir }}"
+    version: "{{ foreman_development_hammer_git_revision }}"
+    force: true
+  become: true
+  become_user: "{{ foreman_development_user }}"
+
+- name: Add GitHub username as additional remote for Foreman
+  community.general.git_config:
+    name: "remote.{{ foreman_development_github_username }}.url"
+    scope: local
+    repo: "{{ foreman_development_hammer_dir }}"
+    value: "git@github.com:{{ foreman_development_github_username }}/hammer-cli.git"
+    state: present
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  when: foreman_development_github_username != ""
+
+- name: Setup hammer-cli-foreman
+  ansible.builtin.include_tasks: hammer/plugin.yml
+  vars:
+    foreman_development_plugin_name: "hammer_cli_foreman"
+    foreman_development_plugin_org: "theforeman"
+    foreman_development_plugin_repo_url: "https://github.com/theforeman/hammer-cli-foreman.git"
+    foreman_development_plugin_manage_repo: true
+    foreman_development_plugin_settings_template: "hammer/foreman.yml.j2"
+    foreman_development_plugin_extra_gemfiles: []
+
+- name: Setup plugins
+  ansible.builtin.include_tasks: hammer/plugin.yml
+  vars:
+    foreman_development_plugin_config: "{{ (foreman_development_plugin_registry[plugin_item] | default({})).hammer | default({}) }}"
+    foreman_development_plugin_name: "{{ foreman_development_plugin_config.name.split('/')[1] }}"
+    foreman_development_plugin_gem: "{{ foreman_development_plugin_config.gem }}"
+    foreman_development_plugin_org: "{{ foreman_development_plugin_config.name.split('/')[0] }}"
+    foreman_development_plugin_repo_url: "https://github.com/{{ foreman_development_plugin_config.name }}.git"
+    foreman_development_plugin_manage_repo: "{{ foreman_development_plugin_config.manage_repo | default(true) }}"
+    foreman_development_plugin_settings_template: "{{ foreman_development_plugin_config.settings_template | default('') }}"
+    foreman_development_plugin_module_config: "{{ foreman_development_plugin_config.module_config | default('') }}"
+    foreman_development_plugin_extra_gemfiles: []
+  when: foreman_development_plugin_config != {}
+  loop: "{{ foreman_development_default_plugins + foreman_development_enabled_plugins }}"
+  loop_control:
+    loop_var: plugin_item
+
+- name: Install Ruby dependencies
+  ansible.builtin.command:
+    cmd: bundle install --path .vendor --jobs 3 --without "libvirt:journald"
+    chdir: "{{ foreman_development_foreman_dir }}"
+  become: true
+  become_user: "{{ foreman_development_hammer_dir }}"
+  environment:
+    PATH: "/usr/bin:/bin:/usr/local/bin"
+  changed_when: true

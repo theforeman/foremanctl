@@ -241,3 +241,8 @@
     name: foreman-development
     state: stopped
     enabled: false
+
+- name: Configure hammer for development
+  ansible.builtin.include_tasks: hammer/main.yml
+  when:
+    - "'hammer' in enabled_features"

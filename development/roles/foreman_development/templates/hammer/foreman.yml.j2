@@ -1,0 +1,55 @@
+:foreman:
+  # Enable/disable foreman commands
+  :enable_module: true
+
+  # Your foreman server address
+  # For development try using http with the fully domain name.
+  :host: '{{ ansible_facts['fqdn'] }}'
+
+  # Credentials. You'll be asked for them interactively if you leave them blank here
+  # Possible values:
+
+  # Basic Auth:
+  #:default_auth_type: 'Basic_Auth'
+  :username: '{{ foreman_development_admin_user }}'
+  :password: '{{ foreman_development_admin_password }}'
+
+  # Basic Auth External:
+  #:default_auth_type: 'Basic_Auth_External'
+  #:username: 'admin'
+  #:password: 'example'
+
+  # Oauth using the Password Grant Flow:
+  # This authentication method requires sessions to be enabled, uncomment the following
+  # lines to use this authentication method.
+  #:default_auth_type: 'Oauth_Password_Grant'
+  #:oidc_token_endpoint: https://keycloak.example.com/token
+  #:oidc_client_id: example-client-id
+
+  # Oauth using Authentication Code Flow(Two Factor):
+  # This authentication method requires sessions to be enabled, uncomment the following
+  # lines to use this authentication method.
+  #:default_auth_type: 'Oauth_Authentication_Code_Grant'
+  #:oidc_token_endpoint: https://keycloak.example.com/token
+  #:oidc_authorization_endpoint: https://keycloak.example.com/auth
+  #:oidc_client_id: example-client-id
+  #:oidc_redirect_uri: urn:ietf:wg:oauth:2.0:oob
+
+  # Negotiate (Kerberos) Auth:
+  # User needs to run kinit before using hammer (or initiate kerberos keyring in another way).
+  #:default_auth_type: 'Negotiate_Auth'
+
+  # Enable using sessions
+  # When sessions are enabled, hammer ignores credentials stored in the config file
+  # and asks for them interactively at the begining of each session.
+  :use_sessions: false
+
+  # Check API documentation cache status on each request
+  #:refresh_cache: false
+
+  # API request timeout. Set to -1 for no timeout
+  #:request_timeout: 120 #seconds
+
+  # Follow API redirects. One of :never, :default, :always
+  # Value :default means RestClient default behaviour - follow only in GET and HEAD requests
+  #:follow_redirects: :never
