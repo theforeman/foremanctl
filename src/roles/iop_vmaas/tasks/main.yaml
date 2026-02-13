@@ -30,7 +30,7 @@
     quadlet_dir: /etc/containers/systemd
     network: iop-core-network
     volumes:
-      - iop-service-vmaas-data:/data
+      - iop-service-vmaas-data:/data:rw
     command: "/vmaas/entrypoint.sh database-upgrade reposcan"
     env:
       PROMETHEUS_PORT: "8085"
