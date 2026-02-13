@@ -1,0 +1,6 @@
+- name: Run ssh keygen to generate ~/.ssh/id_rsa_foreman_proxy unless it exists
+  ansible.builtin.command:
+    cmd: ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa_foreman_proxy -N ''
+    creates: "{{ foreman_development_deployment_dir }}/.ssh/id_rsa_foreman_proxy"
+  become: true
+  become_user: "{{ foreman_development_user }}"
