@@ -1,0 +1,20 @@
+- name: Clone Foreman repository
+  ansible.builtin.git:
+    repo: "https://github.com/{{ deploy_git_repository_repository_owner }}/{{ deploy_git_repository_repository_name }}"
+    dest: "{{ deploy_git_repository_destination_dir }}"
+    version: "{{ deploy_git_repository_revision }}"
+    force: true
+    remote: "{{ deploy_git_repository_remote_name }}"
+  become: true
+  become_user: "{{ deploy_git_repository_user }}"
+
+- name: Add GitHub username as additional remote for Foreman
+  community.general.git_config:
+    name: "remote.{{ deploy_git_repository_secondary_remote_name | default(deploy_git_repository_secondary_remote_owner) }}.url"
+    scope: local
+    repo: "{{ deploy_git_repository_destination_dir }}"
+    value: "git@github.com:{{ deploy_git_repository_secondary_remote_owner }}/{{ deploy_git_repository_repository_name }}.git"
+    state: present
+  when: deploy_git_repository_secondary_remote_owner | default("") != ""
+  become: true
+  become_user: "{{ deploy_git_repository_user }}"
