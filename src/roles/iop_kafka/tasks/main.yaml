@@ -41,7 +41,7 @@
       LOG_DIR: /tmp/kafka-logs
       KAFKA_NODE_ID: "1"
     volumes:
-      - "iop-core-kafka-data:/var/lib/kafka/data"
+      - "iop-core-kafka-data:/var/lib/kafka/data:rw"
     secrets:
       - 'iop-core-kafka-init-start,target=/opt/kafka/bin/init-start.sh,mode=0755,type=mount'
       - 'iop-core-kafka-server-properties,target=/opt/kafka/config/kraft/server.properties,mode=0644,type=mount'
