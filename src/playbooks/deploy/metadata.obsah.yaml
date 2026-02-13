@@ -18,6 +18,10 @@ variables:
       - ipa_with_api
   external_authentication_pam_service:
     help: Name of the PAM service to use for IPA authentication
+  certificates_cnames:
+    help: Additional DNS name to include in Subject Alternative Names for certificates. Can be specified multiple times.
+    action: append
+    parameter: --certificate-cname
 
 include:
   - _certificate_source

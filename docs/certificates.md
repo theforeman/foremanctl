@@ -51,14 +51,19 @@ After deployment, certificates are available at:
 - Server Certificate: `/root/ssl-build/<hostname>/<hostname>-apache.crt`
 - Client Certificate: `/root/ssl-build/<hostname>/<hostname>-foreman-client.crt`
 
-### Current Limitations
+### CNAME Support
 
-- Only supports single hostname (no multiple DNS names)
-- Cannot provide custom certificate files during deployment
-- Fixed 20-year certificate validity period
-- Limited certificate customization options
+foremanctl supports Subject Alternative Names (SANs) for multi-domain certificates:
 
----
+```bash
+# Generate certificates with multiple DNS names
+foremanctl deploy \
+  --certificate-cname api.example.com \
+  --certificate-cname foreman.example.com \
+  --certificate-cname satellite.example.com
+```
+
+When CNAMEs are specified, certificates will include all names in the Subject Alternative Name field, allowing the same certificate to be valid for multiple hostnames.
 
 ## Internal Design
 
@@ -89,7 +94,8 @@ src/roles/certificates/
 
 2. **Host Certificate Issuance** (for each hostname in `certificates_hostnames`):
    - Generate 4096-bit RSA private key
-   - Create certificate signing request (CSR)
+   - Create certificate signing request (CSR) with Subject Alternative Names
+   - Include primary hostname and any additional CNAMEs from `certificate_cname`
    - Sign certificate with CA (includes serverAuth/clientAuth extensions)
    - Generate both server and client certificates per hostname
 
@@ -146,5 +152,6 @@ The `certificate_checks` role uses `foreman-certificate-check` binary to validat
 
 **OpenSSL Configuration:**
 - Custom configuration template supports SAN extensions
-- Single DNS entry per certificate: `subjectAltName = DNS:{{ certificates_hostname }}`
+- Multiple DNS entries supported: `subjectAltName = DNS:{{ certificates_hostname }}{% for cname in certificate_cname %},DNS:{{ cname }}{% endfor %}`
 - Uses OpenSSL's `req` and `ca` commands for generation and signing
+- CNAMEs configured via `certificate_cname` variable (list of additional DNS names)
