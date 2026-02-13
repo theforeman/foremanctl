@@ -1,0 +1,12 @@
+deploy_git_repository_remote_name: "origin"
+deploy_git_repository_revision: "HEAD"
+
+# deploy_git_repository_repository_owner
+# deploy_git_repository_repository_name
+# deploy_git_repository_destination_dir
+
+# deploy_git_repository_secondary_remote_owner
+# deploy_git_repository_secondary_remote_name
+
+# # Ansible is silly and won't allow using become and become_user together with include_role
+# deploy_git_repository_user

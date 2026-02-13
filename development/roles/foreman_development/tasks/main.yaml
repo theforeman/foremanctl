@@ -85,25 +85,16 @@
     - src: "{{ foreman_development_client_key }}"
       dest: "{{ foreman_development_cert_dir }}/client_key.pem"
 
-- name: Clone Foreman repository
-  ansible.builtin.git:
-    repo: "{{ foreman_development_git_repo }}"
-    dest: "{{ foreman_development_foreman_dir }}"
-    version: "{{ foreman_development_git_revision }}"
-    force: true
-  become: true
-  become_user: "{{ foreman_development_user }}"
-
-- name: Add GitHub username as additional remote for Foreman
-  community.general.git_config:
-    name: "remote.{{ foreman_development_github_username }}.url"
-    scope: local
-    repo: "{{ foreman_development_foreman_dir }}"
-    value: "git@github.com:{{ foreman_development_github_username }}/foreman.git"
-    state: present
-  become: true
-  become_user: "{{ foreman_development_user }}"
-  when: foreman_development_github_username != ""
+- name: Deploy Foreman git repository
+  ansible.builtin.include_role:
+    name: deploy_git_repository
+  vars:
+    deploy_git_repository_destination_dir: "{{ foreman_development_foreman_dir }}"
+    deploy_git_repository_user: "{{ foreman_development_user }}"
+    deploy_git_repository_repository_owner: "theforeman"
+    deploy_git_repository_repository_name: "foreman"
+    deploy_git_repository_revision: "{{ foreman_development_git_revision }}"
+    deploy_git_repository_secondary_remote_owner: "{{ foreman_development_github_username }}"
 
 - name: Create database configuration
   ansible.builtin.template:
