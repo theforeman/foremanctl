@@ -1,0 +1,4 @@
+- name: Install openscap-scanner
+  ansible.builtin.package:
+    name: openscap-scanner
+    state: present
