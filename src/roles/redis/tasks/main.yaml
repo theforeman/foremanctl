@@ -19,7 +19,7 @@
     sdnotify: true
     command: ["run-redis", "--supervised", "systemd"]
     volumes:
-      - /var/lib/redis:/data:Z
+      - /var/lib/redis:/data:rw,Z
     quadlet_options:
       - |
         [Install]

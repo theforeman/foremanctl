@@ -1,0 +1,39 @@
+---
+- name: Container with rw and Z
+  containers.podman.podman_container:
+    name: test-rw-z
+    image: example.com/test:latest
+    volumes:
+      - /var/log/test:/var/log/test:rw,Z
+
+- name: Container with ro and Z
+  containers.podman.podman_container:
+    name: test-ro-z
+    image: example.com/test:latest
+    volume:
+      - /var/data:/var/data:ro,Z
+
+- name: Container with rw only
+  containers.podman.podman_container:
+    name: test-rw
+    image: example.com/test:latest
+    volumes:
+      - /var/lib/test:/var/lib/test:rw
+
+- name: Container with ro only
+  containers.podman.podman_container:
+    name: test-ro
+    image: example.com/test:latest
+    volumes:
+      - /var/lib/test:/var/lib/test:ro
+
+- name: Container with jinja volume
+  containers.podman.podman_container:
+    name: test-jinja
+    image: example.com/test:latest
+    volumes:
+      - "{{ some_variable }}"
+
+- name: Non-podman task
+  ansible.builtin.debug:
+    msg: "not a container task"
