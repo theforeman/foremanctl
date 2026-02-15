@@ -10,7 +10,7 @@ pulp_content_service_worker_count: "{{ (2 * ([8, ansible_facts['processor_nproc'
 pulp_api_service_worker_count: "{{ ([4, ansible_facts['processor_nproc']] | min) + 1 }}"
 
 pulp_volumes:
-  - /var/lib/pulp:/var/lib/pulp
+  - /var/lib/pulp:/var/lib/pulp:rw
 
 pulp_api_container_name: pulp-api
 pulp_content_container_name: pulp-content
