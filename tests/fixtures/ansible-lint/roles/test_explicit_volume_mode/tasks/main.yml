@@ -1,0 +1,22 @@
+---
+- name: Container with volume missing permissions (Z only)
+  containers.podman.podman_container:
+    name: test-z-only
+    image: example.com/test:latest
+    volume:
+      - /var/log/test:/var/log/test:Z
+
+- name: Container with volume no options at all
+  containers.podman.podman_container:
+    name: test-no-options
+    image: example.com/test:latest
+    volumes:
+      - /var/data:/var/data
+
+- name: Container with mixed volumes one bad
+  containers.podman.podman_container:
+    name: test-mixed
+    image: example.com/test:latest
+    volumes:
+      - /var/good:/var/good:rw,Z
+      - /var/bad:/var/bad:z
