@@ -77,8 +77,8 @@
       - 'candlepin-artemis-cert-users-properties,target=/etc/tomcat/cert-users.properties,mode=440,type=mount'
       - 'candlepin-artemis-jaas-conf,target=/etc/tomcat/conf.d/jaas.conf,mode=440,type=mount'
     volumes:
-      - /var/log/candlepin:/var/log/candlepin:Z
-      - /var/log/tomcat:/var/log/tomcat:Z
+      - /var/log/candlepin:/var/log/candlepin:rw:Z
+      - /var/log/tomcat:/var/log/tomcat:rw:Z
     quadlet_options:
       - |
         [Install]

@@ -6,3 +6,4 @@ pytest-testinfra
 pytest-durations
 python-dateutil
 pyyaml
+ansible-lint

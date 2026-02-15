@@ -20,7 +20,7 @@
     sdnotify: true
     command: ["run-redis", "--supervised", "systemd"]
     volumes:
-      - /var/lib/redis:/data:Z
+      - /var/lib/redis:/data:rw:Z
     ports:
       - "6379:6379"
     quadlet_options:
