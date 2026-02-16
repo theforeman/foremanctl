@@ -87,14 +87,14 @@
 
 - name: Deploy Foreman git repository
   ansible.builtin.include_role:
-    name: deploy_git_repository
+    name: git_repository
   vars:
-    deploy_git_repository_destination_dir: "{{ foreman_development_foreman_dir }}"
-    deploy_git_repository_user: "{{ foreman_development_user }}"
-    deploy_git_repository_repository_owner: "theforeman"
-    deploy_git_repository_repository_name: "foreman"
-    deploy_git_repository_revision: "{{ foreman_development_git_revision }}"
-    deploy_git_repository_secondary_remote_owner: "{{ foreman_development_github_username }}"
+    git_repository_destination_dir: "{{ foreman_development_foreman_dir }}"
+    git_repository_user: "{{ foreman_development_user }}"
+    git_repository_repository_owner: "theforeman"
+    git_repository_repository_name: "foreman"
+    git_repository_revision: "{{ foreman_development_git_revision }}"
+    git_repository_secondary_remote_owner: "{{ foreman_development_github_username }}"
 
 - name: Create database configuration
   ansible.builtin.template:

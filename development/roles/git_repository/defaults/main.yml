@@ -1,0 +1,12 @@
+git_repository_remote_name: "origin"
+git_repository_revision: "HEAD"
+
+# git_repository_repository_owner
+# git_repository_repository_name
+# git_repository_destination_dir
+
+# git_repository_secondary_remote_owner
+# git_repository_secondary_remote_name
+
+# # Ansible is silly and won't allow using become and become_user together with include_role
+# git_repository_user

@@ -1,13 +1,13 @@
 ---
 - name: Deploy plugin git repository
   ansible.builtin.include_role:
-    name: deploy_git_repository
+    name: git_repository
   vars:
-    deploy_git_repository_destination_dir: "{{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}"
-    deploy_git_repository_user: "{{ foreman_development_user }}"
-    deploy_git_repository_repository_owner: "{{ foreman_development_plugin_org }}"
-    deploy_git_repository_repository_name: "{{ foreman_development_plugin_name }}"
-    deploy_git_repository_secondary_remote_owner: "{{ foreman_development_github_username }}"
+    git_repository_destination_dir: "{{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}"
+    git_repository_user: "{{ foreman_development_user }}"
+    git_repository_repository_owner: "{{ foreman_development_plugin_org }}"
+    git_repository_repository_name: "{{ foreman_development_plugin_name }}"
+    git_repository_secondary_remote_owner: "{{ foreman_development_github_username }}"
   when:
     - foreman_development_plugin_manage_repo
 
