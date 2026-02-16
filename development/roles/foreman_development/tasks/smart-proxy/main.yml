@@ -19,6 +19,28 @@
   become_user: "{{ foreman_development_user }}"
   when: foreman_development_github_username != ""
 
+- name: Create cert directories
+  ansible.builtin.file:
+    path: "{{ foreman_development_cert_dir }}/smart-proxy"
+    state: directory
+    mode: "0750"
+    owner: "{{ foreman_development_user }}"
+
+- name: Deploy certificates
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ foreman_development_cert_dir }}/smart-proxy/{{ item.dest }}"
+    remote_src: true
+    mode: "0640"
+    owner: "{{ foreman_development_user }}"
+  loop:
+    - src: "{{ httpd_server_ca_certificate }}"
+      dest: "ca.crt"
+    - src: "{{ httpd_server_certificate }}"
+      dest: "proxy.crt"
+    - src: "{{ httpd_server_key }}"
+      dest: "proxy.key"
+
 - name: Create smart-proxy settings.d file from template
   ansible.builtin.template:
     src: "smart-proxy/settings.yml.j2"
