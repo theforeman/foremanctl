@@ -47,7 +47,7 @@
 
 - name: Install Ruby dependencies
   ansible.builtin.command:
-    cmd: bundle install --path .vendor --jobs 3 --without "libvirt:journald"
+    cmd: bundle install --path .vendor --jobs 3
     chdir: "{{ foreman_development_foreman_dir }}"
   become: true
   become_user: "{{ foreman_development_hammer_dir }}"
