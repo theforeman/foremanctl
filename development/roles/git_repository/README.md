@@ -31,6 +31,6 @@ fi
 | `git_repository_destination_dir` | Path to the directory where the repository will be cloned to | Yes |
 | `git_repository_secondary_remote_owner` | Name of the owner of the secondary remote to be added to the local clone | No, secondary remote will not be added if left blank |
 | `git_repository_secondary_remote_name` | Name of the remote of the secondary repository | No, defaults to `{{ git_repository_secondary_remote_owner }}` |
-| `git_repository_user` | The owner of the git checkout | Yes |
+| `git_repository_user` | The system user on the target host that the role will be applied as, this user ends up being the owner of the git checkout | Yes |
 
 Generally it would be preferrable to avoid the need for `git_repository_user` by controlling the user with `become` and `become_user`, but those are not available in all contexts.
