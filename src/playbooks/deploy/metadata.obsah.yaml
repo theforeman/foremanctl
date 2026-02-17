@@ -9,6 +9,8 @@ variables:
     help: Initial password for the admin user.
   foreman_puma_workers:
     help: Number of workers for Puma.
+  foreman_puma_threads_max:
+    help: Maximum number of threads spawned by a Puma worker. Defaults to 5.
   pulp_worker_count:
     help: Number of Pulp workers. Defaults to 8 or the number of CPU cores, whichever is smaller.
   external_authentication:
