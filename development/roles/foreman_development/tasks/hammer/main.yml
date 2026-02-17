@@ -48,9 +48,9 @@
 - name: Install Ruby dependencies
   ansible.builtin.command:
     cmd: bundle install --path .vendor --jobs 3
-    chdir: "{{ foreman_development_foreman_dir }}"
+    chdir: "{{ foreman_development_hammer_dir }}"
   become: true
-  become_user: "{{ foreman_development_hammer_dir }}"
+  become_user: "{{ foreman_development_user }}"
   environment:
     PATH: "/usr/bin:/bin:/usr/local/bin"
   changed_when: true
