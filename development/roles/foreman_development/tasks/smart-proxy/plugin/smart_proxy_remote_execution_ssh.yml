@@ -1,4 +1,4 @@
-- name: Ensure {{ foreman_development_deployment_dir }}/.ssh directory exists with correct permissions
+- name: "Ensure ~/.ssh directory exists with correct permissions for {{ foreman_development_plugin_name }}"
   ansible.builtin.file:
     path: "{{ foreman_development_deployment_dir }}/.ssh"
     state: directory
@@ -8,8 +8,7 @@
   become: true
   become_user: "{{ foreman_development_user }}"
 
-
-- name: Run ssh keygen to generate {{ foreman_development_deployment_dir }}/.ssh/id_rsa_foreman_proxy unless it exists
+- name: "Run ssh keygen to generate ~/.ssh/id_rsa_foreman_proxy unless it exists for {{ foreman_development_plugin_name }}"
   ansible.builtin.command:
     cmd: ssh-keygen -t rsa -b 4096 -f {{ foreman_development_deployment_dir }}//.ssh/id_rsa_foreman_proxy -N ''
     creates: "{{ foreman_development_deployment_dir }}/.ssh/id_rsa_foreman_proxy"
