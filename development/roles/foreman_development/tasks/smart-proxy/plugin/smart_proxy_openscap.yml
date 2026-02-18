@@ -1,4 +1,4 @@
-- name: Install openscap-scanner
+- name: "Install openscap-scanner for {{ foreman_development_plugin_name }}"
   ansible.builtin.package:
     name: openscap-scanner
     state: present
