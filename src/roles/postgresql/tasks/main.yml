@@ -28,7 +28,7 @@
     sdnotify: healthy
     network: host
     volumes:
-      - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
+      - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:rw:Z"
     secrets:
       - 'postgresql_admin_password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
     env:
