@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from conftest import get_service
 
 FOREMAN_HOST = 'localhost'
 FOREMAN_PORT = 3000
@@ -26,8 +27,8 @@ def foreman_status(foreman_status_curl):
     return json.loads(foreman_status_curl.stdout)
 
 
-def test_foreman_service(server):
-    foreman = server.service("foreman")
+def test_foreman_service(server, user):
+    foreman = get_service(server, "foreman", user)
     assert foreman.is_running
 
 
@@ -56,26 +57,29 @@ def test_katello_services_status(foreman_status, katello_service):
 
 
 @pytest.mark.parametrize("dynflow_instance", ['orchestrator', 'worker', 'worker-hosts-queue'])
-def test_foreman_dynflow_container_instances(server, dynflow_instance):
-    file = server.file(f"/etc/containers/systemd/dynflow-sidekiq@{dynflow_instance}.container")
+def test_foreman_dynflow_container_instances(server, dynflow_instance, user):
+    if user:
+        file = server.file(f"/var/lib/{user}/.config/containers/systemd/dynflow-sidekiq@{dynflow_instance}.container")
+    else:
+        file = server.file(f"/etc/containers/systemd/dynflow-sidekiq@{dynflow_instance}.container")
     assert file.exists
     assert file.is_symlink
 
 
 @pytest.mark.parametrize("dynflow_instance", ['orchestrator', 'worker', 'worker-hosts-queue'])
-def test_foreman_dynflow_service_instances(server, dynflow_instance):
-    service = server.service(f"dynflow-sidekiq@{dynflow_instance}")
+def test_foreman_dynflow_service_instances(server, dynflow_instance, user):
+    service = get_service(server, f"dynflow-sidekiq@{dynflow_instance}", user)
     assert service.is_running
 
 
 @pytest.mark.parametrize("instance", RECURRING_INSTANCES)
-def test_foreman_recurring_timers_enabled_and_running(server, instance):
-    timer = server.service(f"foreman-recurring@{instance}.timer")
+def test_foreman_recurring_timers_enabled_and_running(server, instance, user):
+    timer = get_service(server, f"foreman-recurring@{instance}.timer", user)
     assert timer.is_enabled
     assert timer.is_running
 
 
 @pytest.mark.parametrize("instance", RECURRING_INSTANCES)
-def test_foreman_recurring_services_exist(server, instance):
-    service = server.service(f"foreman-recurring@{instance}.service")
+def test_foreman_recurring_services_exist(server, instance, user):
+    service = get_service(server, f"foreman-recurring@{instance}.service", user)
     assert service.exists

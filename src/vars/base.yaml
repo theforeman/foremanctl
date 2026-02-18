@@ -1,4 +1,12 @@
 ---
+# Rootless Podman deployment configuration
+foremanctl_user: foremanctl
+foremanctl_group: foremanctl
+foremanctl_home: "/var/lib/{{ foremanctl_user }}"
+foremanctl_quadlet_dir: "{{ foremanctl_home }}/.config/containers/systemd"
+foremanctl_systemd_user_dir: "{{ foremanctl_home }}/.config/systemd/user"
+# Note: foremanctl_xdg_runtime_dir is set dynamically by rootless_user role after user creation
+
 certificates_hostnames:
   - "{{ ansible_facts['fqdn'] }}"
   - localhost
@@ -7,6 +15,8 @@ certificates_ca_password: "CHANGEME"
 candlepin_keystore_password: "CHANGEME"
 candlepin_oauth_secret: "CHANGEME"
 
+candlepin_keystore_path: "{{ foremanctl_home }}/candlepin.keystore"
+candlepin_truststore_path: "{{ foremanctl_home }}/candlepin.truststore"
 candlepin_ca_key_password: "{{ ca_key_password }}"
 candlepin_ca_key: "{{ ca_key }}"
 candlepin_ca_certificate: "{{ ca_certificate }}"

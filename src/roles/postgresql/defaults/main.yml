@@ -7,6 +7,10 @@ postgresql_restart_policy: always
 
 postgresql_data_dir: /var/lib/pgsql/data
 
+# Container user namespace UID/GID (postgres user in sclorg/postgresql-13-c9s)
+postgresql_container_uid: 26
+postgresql_container_gid: 26
+
 postgresql_admin_password: "CHANGEME"
 
 postgresql_max_connections: 500

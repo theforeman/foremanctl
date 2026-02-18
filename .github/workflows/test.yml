@@ -110,7 +110,7 @@ jobs:
           ./foremanctl deploy --add-feature foreman_azure_rm --add-feature foreman_google
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }} --database-mode=${{ matrix.database }}"
+          ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }} --database-mode=${{ matrix.database }} --user=foremanctl"
       - name: Run smoker
         run: |
           ./forge smoker
@@ -219,7 +219,7 @@ jobs:
           ./foremanctl deploy --add-feature foreman_azure_rm --add-feature foreman_google
       - name: Stop services
         run:
-          vagrant ssh quadlet -- sudo systemctl stop foreman.target
+          vagrant ssh quadlet -- sudo systemctl --machine=foremanctl@ --user stop foreman.target
       - name: Configure upgrade version
         run: |
           sed -i '/container_tag_stream:/ s/:.*/: "${{ matrix.upgrade_to }}"/' src/vars/images.yml
@@ -231,7 +231,7 @@ jobs:
           ./foremanctl deploy
       - name: Run tests
         run: |
-          ./forge test
+          ./forge test --pytest-args="--user=foremanctl"
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos

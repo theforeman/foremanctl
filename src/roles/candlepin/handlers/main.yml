@@ -1,5 +1,10 @@
 ---
 - name: Restart candlepin
+  environment:
+    XDG_RUNTIME_DIR: "{{ foremanctl_xdg_runtime_dir }}"
+  become: true
+  become_user: "{{ foremanctl_user }}"
   ansible.builtin.systemd:
     name: candlepin
     state: restarted
+    scope: user

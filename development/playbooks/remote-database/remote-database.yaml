@@ -1,10 +1,22 @@
 ---
+- name: Setup rootless user environment
+  hosts:
+    - database
+  become: true
+  roles:
+    - role: rootless_user
+  tasks:
+    - name: Map rootless_user_xdg_runtime_dir to foremanctl namespace
+      ansible.builtin.set_fact:
+        foremanctl_xdg_runtime_dir: "{{ rootless_user_xdg_runtime_dir }}"
+
 - name: Setup remote database
   hosts:
     - database
   become: true
   vars_files:
     - "../../../src/vars/database.yml"
+    - "../../../src/vars/base.yaml"
   roles:
     - role: pre_install
     - role: postgresql

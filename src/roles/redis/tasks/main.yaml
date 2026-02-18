@@ -1,40 +1,58 @@
 ---
-- name: Pull Redis container image
-  containers.podman.podman_image:
-    name: "{{ redis_container_image }}:{{ redis_container_tag }}"
-    state: present
-
 - name: Create directory for Redis data
   ansible.builtin.file:
-    path: /var/lib/redis
+    path: "{{ redis_data_dir }}"
     state: directory
-    owner: 1001
-    group: 1001
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
     mode: '0755'
+    setype: container_var_lib_t
 
-- name: Run Redis as a container
-  containers.podman.podman_container:
-    name: redis
-    image: "{{ redis_container_image }}:{{ redis_container_tag }}"
-    state: quadlet
-    sdnotify: true
-    command: ["run-redis", "--supervised", "systemd"]
-    volumes:
-      - /var/lib/redis:/data:Z
-    ports:
-      - "6379:6379"
-    quadlet_options:
-      - |
-        [Install]
-        WantedBy=default.target foreman.target
-        [Unit]
-        PartOf=foreman.target
+- name: Set Redis directory ownership for container UID/GID
+  ansible.builtin.shell: |
+    cd /tmp
+    sudo -u {{ foremanctl_user }} XDG_RUNTIME_DIR={{ foremanctl_xdg_runtime_dir }} \
+      podman unshare chown -R {{ redis_container_uid }}:{{ redis_container_gid }} {{ redis_data_dir }}
+  args:
+    executable: /bin/bash
+  changed_when: true
 
-- name: Run daemon reload
-  ansible.builtin.systemd:
-    daemon_reload: true
+- name: Configure Redis container as rootless user
+  environment:
+    XDG_RUNTIME_DIR: "{{ foremanctl_xdg_runtime_dir }}"
+  become: true
+  become_user: "{{ foremanctl_user }}"
+  block:
+    - name: Pull Redis container image
+      containers.podman.podman_image:
+        name: "{{ redis_container_image }}:{{ redis_container_tag }}"
+        state: present
 
-- name: Start the Redis Service
-  ansible.builtin.systemd:
-    name: redis
-    state: started
+    - name: Run Redis as a container
+      containers.podman.podman_container:
+        name: redis
+        image: "{{ redis_container_image }}:{{ redis_container_tag }}"
+        state: quadlet
+        sdnotify: true
+        command: ["run-redis", "--supervised", "systemd"]
+        volumes:
+          - "{{ redis_data_dir }}:/data:Z"
+        ports:
+          - "6379:6379"
+        quadlet_options:
+          - |
+            [Install]
+            WantedBy=default.target foreman.target
+            [Unit]
+            PartOf=foreman.target
+
+    - name: Run daemon reload
+      ansible.builtin.systemd:
+        daemon_reload: true
+        scope: user
+
+    - name: Start the Redis Service
+      ansible.builtin.systemd:
+        name: redis
+        state: started
+        scope: user

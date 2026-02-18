@@ -1,12 +1,16 @@
 ---
-ca_key_password: "/root/ssl-build/katello-default-ca.pwd"
-ca_certificate: "/root/ssl-build/katello-default-ca.crt"
-ca_key: "/root/ssl-build/katello-default-ca.key"
-server_certificate: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-apache.crt"
-server_key: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-apache.key"
-server_ca_certificate: "/root/ssl-build/katello-server-ca.crt"
-client_certificate: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-foreman-client.crt"
-client_key: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-foreman-client.key"
+# Standard foreman-installer certificate location
+# Note: For rootless deployments, permissions are automatically configured
+# during deployment to allow the foremanctl user to read these certificates
+certificates_ca_directory: /root/ssl-build
+ca_key_password: "{{ certificates_ca_directory }}/katello-default-ca.pwd"
+ca_certificate: "{{ certificates_ca_directory }}/katello-default-ca.crt"
+ca_key: "{{ certificates_ca_directory }}/katello-default-ca.key"
+server_certificate: "{{ certificates_ca_directory }}/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-apache.crt"
+server_key: "{{ certificates_ca_directory }}/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-apache.key"
+server_ca_certificate: "{{ certificates_ca_directory }}/katello-server-ca.crt"
+client_certificate: "{{ certificates_ca_directory }}/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-foreman-client.crt"
+client_key: "{{ certificates_ca_directory }}/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-foreman-client.key"
 client_ca_certificate: "{{ ca_certificate }}"
-localhost_key: "/root/ssl-build/localhost/localhost-tomcat.key"
-localhost_certificate: "/root/ssl-build/localhost/localhost-tomcat.crt"
+localhost_key: "{{ certificates_ca_directory }}/localhost/localhost-tomcat.key"
+localhost_certificate: "{{ certificates_ca_directory }}/localhost/localhost-tomcat.crt"
