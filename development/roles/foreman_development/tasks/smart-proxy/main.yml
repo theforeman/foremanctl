@@ -92,3 +92,60 @@
   environment:
     PATH: "/usr/bin:/bin:/usr/local/bin"
   changed_when: true
+
+- name: Create smart-proxy development systemd service
+  ansible.builtin.template:
+    src: smart-proxy/smart-proxy-development.service.j2
+    dest: /etc/systemd/system/smart-proxy-development.service
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable and start smart-proxy development service
+  ansible.builtin.systemd:
+    name: smart-proxy-development
+    enabled: true
+    state: started
+
+- name: Wait for smart-proxy development server to be accessible
+  ansible.builtin.uri:
+    url: "http://{{ ansible_facts['fqdn'] }}:8000/features"
+    validate_certs: false
+  until: foreman_development_smart_proxy_status.status == 200
+  retries: 30
+  delay: 5
+  register: foreman_development_smart_proxy_status
+
+- name: Enable and start Foreman development service
+  ansible.builtin.systemd:
+    name: foreman-development
+    enabled: true
+    state: started
+
+- name: Wait for Foreman development server to be accessible
+  ansible.builtin.uri:
+    url: '{{ foreman_development_url }}/api/v2/ping'
+    validate_certs: false
+  until: foreman_development_status.status == 200
+  retries: 30
+  delay: 5
+  register: foreman_development_status
+
+- name: Configure smart-proxy for development
+  theforeman.foreman.smart_proxy:
+    name: "{{ ansible_facts['fqdn'] }}-dev"
+    url: "https://{{ ansible_facts['fqdn'] }}:8443"
+    server_url: "{{ foreman_development_url }}"
+    username: "{{ foreman_development_admin_user }}"
+    password: "{{ foreman_development_admin_password }}"
+    validate_certs: false
+
+- name: Stop smart-proxy development service after smart proxy registration
+  ansible.builtin.systemd:
+    name: smart-proxy-development
+    state: stopped
+    enabled: false
