@@ -4,7 +4,7 @@
     login_user: "{{ db_item.user }}"
     login_password: "{{ db_item.password }}"
     login_db: "{{ db_item.dbname }}"
-    ca_cert: "{{ db_item.ca | default(omit) }}"
+    ca_cert: "{{ db_item.ca_cert | default(omit) }}"
     ssl_mode: "{{ db_item.sslmode | default(omit) }}"
   register: check_database_connection_ping_result
   ignore_errors: true
