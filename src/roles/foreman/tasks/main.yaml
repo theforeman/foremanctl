@@ -8,7 +8,7 @@
   containers.podman.podman_secret:
     state: present
     name: foreman-database-url
-    data: "postgresql://{{ foreman_database_user }}:{{ foreman_database_password }}@{{ foreman_database_host }}:{{ foreman_database_port }}/{{ foreman_database_name }}?pool={{ foreman_database_pool }}&sslmode={{ foreman_database_ssl_mode }}{% if foreman_database_ssl_ca is defined %}&sslrootcert={{ foreman_database_ssl_ca }}{% endif %}" # yamllint disable-line rule:line-length
+    data: "postgresql://{{ foreman_database_user }}:{{ foreman_database_password }}@{{ foreman_database_host }}:{{ foreman_database_port }}/{{ foreman_database_name }}?pool={{ foreman_database_pool }}&sslmode={{ foreman_database_ssl_mode }}{% if foreman_database_ssl_ca is defined %}&sslrootcert=/etc/foreman/db-ca.crt{% endif %}" # yamllint disable-line rule:line-length
   notify:
     - Restart foreman
     - Restart dynflow-sidekiq@
@@ -84,6 +84,15 @@
     - Restart foreman
     - Restart dynflow-sidekiq@
 
+- name: Create DB SSL cert
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-db-ca
+    data: "{{ lookup('ansible.builtin.file', foreman_database_ssl_ca) if foreman_database_ssl_ca else 'empty' }}"
+  notify:
+    - Restart foreman
+    - Restart dynflow-sidekiq@
+
 - name: Deploy Foreman Container
   containers.podman.podman_container:
     name: "foreman"
@@ -103,6 +112,7 @@
       - 'foreman-ca-cert,type=mount,target=/etc/foreman/katello-default-ca.crt'
       - 'foreman-client-cert,type=mount,target=/etc/foreman/client_cert.pem'
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
+      - 'foreman-db-ca,type=mount,target=/etc/foreman/db-ca.crt'
     env:
       FOREMAN_PUMA_THREADS_MIN: "{{ foreman_puma_threads_min }}"
       FOREMAN_PUMA_THREADS_MAX: "{{ foreman_puma_threads_max }}"
@@ -135,6 +145,7 @@
       - 'foreman-client-cert,type=mount,target=/etc/foreman/client_cert.pem'
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
       - 'foreman-dynflow-worker-hosts-queue-yaml,type=mount,target=/etc/foreman/dynflow/worker-hosts-queue.yml'
+      - 'foreman-db-ca,type=mount,target=/etc/foreman/db-ca.crt'
     env:
       DYNFLOW_REDIS_URL: "redis://localhost:6379/6"
       REDIS_PROVIDER: "DYNFLOW_REDIS_URL"
@@ -231,6 +242,7 @@
       - 'foreman-seed-admin-user,type=env,target=SEED_ADMIN_USER'
       - 'foreman-seed-admin-password,type=env,target=SEED_ADMIN_PASSWORD'
       - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
+      - 'foreman-db-ca,type=mount,target=/etc/foreman/db-ca.crt'
 
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers

@@ -23,7 +23,7 @@ jpa.config.hibernate.hbm2ddl.auto=validate
 jpa.config.hibernate.connection.username={{ candlepin_database_user }}
 jpa.config.hibernate.connection.password={{ candlepin_database_password }}
 jpa.config.hibernate.connection.driver_class=org.postgresql.Driver
-jpa.config.hibernate.connection.url=jdbc:postgresql://{{ candlepin_database_host }}:{{ candlepin_database_port }}/{{ candlepin_database_name }}?sslmode={{ candlepin_database_ssl_mode }}{% if candlepin_database_ssl_ca is defined %}&sslrootcert={{ candlepin_database_ssl_ca }}{% endif %}
+jpa.config.hibernate.connection.url=jdbc:postgresql://{{ candlepin_database_host }}:{{ candlepin_database_port }}/{{ candlepin_database_name }}?sslmode={{ candlepin_database_ssl_mode }}{% if candlepin_database_ssl_ca is defined %}&sslrootcert=/etc/candlepin/certs/db-ca.crt{% endif %}
 
 
 org.quartz.jobStore.misfireThreshold=60000
@@ -37,4 +37,4 @@ org.quartz.dataSource.myDS.driver=org.postgresql.Driver
 org.quartz.dataSource.myDS.user={{ candlepin_database_user }}
 org.quartz.dataSource.myDS.password={{ candlepin_database_password }}
 org.quartz.dataSource.myDS.maxConnections=5
-org.quartz.dataSource.myDS.URL=jdbc:postgresql://{{ candlepin_database_host }}:{{ candlepin_database_port }}/{{ candlepin_database_name }}?sslmode={{ candlepin_database_ssl_mode }}{% if candlepin_database_ssl_ca is defined %}&sslrootcert={{ candlepin_database_ssl_ca }}{% endif %}
+org.quartz.dataSource.myDS.URL=jdbc:postgresql://{{ candlepin_database_host }}:{{ candlepin_database_port }}/{{ candlepin_database_name }}?sslmode={{ candlepin_database_ssl_mode }}{% if candlepin_database_ssl_ca is defined %}&sslrootcert=/etc/candlepin/certs/db-ca.crt{% endif %}

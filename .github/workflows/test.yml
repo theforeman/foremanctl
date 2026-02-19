@@ -53,6 +53,9 @@ jobs:
           - certificate_source: default
             security: none
             database: external
+          - certificate_source: default
+            security: none
+            database: externalssl
     runs-on: ubuntu-24.04
     name: "Tests (certificates: ${{ matrix.certificate_source }}, database: ${{ matrix.database }}, security: ${{ matrix.security }})"
     steps:
@@ -69,11 +72,11 @@ jobs:
         run: ./setup-environment
       - name: Start VMs
         run: |
-          ./forge vms start --vms "quadlet client ${{ matrix.database == 'external' && 'database' || '' }}"
+          ./forge vms start --vms "quadlet client ${{ matrix.database != 'internal' && 'database' || '' }}"
       - name: Configure remote-database
-        if: matrix.database == 'external'
+        if: matrix.database != 'internal'
         run: |
-          ./forge remote-database
+          ./forge remote-database ${{ matrix.database == 'externalssl' && '--database-ssl true' || ''}}
       - name: Configure repositories
         run: |
           ./forge setup-repositories
@@ -98,7 +101,7 @@ jobs:
           ./foremanctl pull-images
       - name: Run deployment
         run: |
-          ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com' || '' }}  --foreman-initial-admin-password=changeme --tuning development
+          ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} ${{ matrix.database != 'internal' && '--database-mode=external --database-host=database.example.com' || '' }}  ${{ matrix.database == 'externalssl' && '--database-ssl-ca $(pwd)/.var/lib/foremanctl/db-ca.crt --database-ssl-mode verify-full' || '' }} --foreman-initial-admin-password=changeme --tuning development
       - name: Add optional feature - hammer
         run: |
           ./foremanctl deploy --add-feature hammer
@@ -110,7 +113,7 @@ jobs:
           ./foremanctl deploy --add-feature foreman_azure_rm --add-feature foreman_google
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }} --database-mode=${{ matrix.database }}"
+          ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }} ${{ matrix.database != 'internal' && '--database-mode=external' || '' }}"
       - name: Run smoker
         run: |
           ./forge smoker
