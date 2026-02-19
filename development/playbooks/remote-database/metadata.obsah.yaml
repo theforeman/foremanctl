@@ -1,0 +1,4 @@
+variables:
+  database_ssl:
+    type: Boolean
+    help: deploy remote database with SSL
