@@ -29,3 +29,6 @@ variables:
   foreman_development_github_username:
     help: GitHub username to add as additional remote for git checkouts
     action: store
+
+include:
+  - _flavor_features

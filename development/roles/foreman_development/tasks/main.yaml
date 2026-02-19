@@ -241,3 +241,13 @@
     name: foreman-development
     state: stopped
     enabled: false
+
+- name: Configure smart-proxy for development
+  ansible.builtin.include_tasks: smart-proxy/main.yml
+  when:
+    - "'foreman-proxy' in enabled_features"
+
+- name: Configure hammer for development
+  ansible.builtin.include_tasks: hammer/main.yml
+  when:
+    - "'hammer' in enabled_features"

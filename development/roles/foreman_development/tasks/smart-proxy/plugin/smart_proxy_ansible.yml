@@ -1,0 +1,28 @@
+- name: "Ensure ~/.foreman-ansible directory exists for {{ foreman_development_plugin_name }}"
+  ansible.builtin.file:
+    path: "{{ foreman_development_deployment_dir }}/.foreman-ansible"
+    state: directory
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0750"
+
+- name: "Ensure /usr/libexec/foreman-proxy directory exists for {{ foreman_development_plugin_name }}"
+  ansible.builtin.file:
+    path: /usr/libexec/foreman-proxy
+    state: directory
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0755"
+
+- name: "Copy ansible-runner-environment for {{ foreman_development_plugin_name }}"
+  ansible.builtin.copy:
+    src: "{{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}/bin/ansible-runner-environment.sh"
+    dest: "/usr/libexec/foreman-proxy/ansible-runner-environment"
+    remote_src: true
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0555"
+
+# To make config reports from ansible to work:
+# TODO: Deploy ansible.env somewhere, see https://github.com/theforeman/puppet-foreman_proxy/blob/master/templates/plugin/ansible.env.erb for reference
+# TODO: Adjust ansible.yml to point to the deployed ansible.env
