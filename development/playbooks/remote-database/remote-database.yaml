@@ -5,6 +5,20 @@
   become: true
   vars_files:
     - "../../../src/vars/database.yml"
+  vars:
+    certificates_hostnames:
+      - "{{ ansible_facts['fqdn'] }}"
+    certificates_ca_password: "CHANGEME"
+    postgresql_ssl_crt: "{{ certificates_ca_directory }}/certs/{{ ansible_facts['fqdn'] }}.crt"
+    postgresql_ssl_key: "{{ certificates_ca_directory }}/private/{{ ansible_facts['fqdn'] }}.key"
   roles:
     - role: pre_install
+    - role: certificates
     - role: postgresql
+
+  tasks:
+    - name: Fetch PostgreSQL SSL CA
+      ansible.builtin.fetch:
+        src: "{{ certificates_ca_directory }}/certs/ca.crt"
+        dest: "{{ obsah_state_path }}/db-ca.crt"
+        flat: true
