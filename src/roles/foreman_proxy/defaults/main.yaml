@@ -6,3 +6,10 @@ foreman_proxy_url: "https://{{ foreman_proxy_name }}:{{ foreman_proxy_https_port
 # Settings
 foreman_proxy_trusted_hosts:
   - "{{ foreman_proxy_name }}"
+
+foreman_proxy_known_feautures: "{{ [] | known_foreman_proxy_plugins }}"
+foreman_proxy_base_feautures:
+  - logs
+foreman_proxy_plugins: []
+foreman_proxy_features: "{{ foreman_proxy_base_feautures + foreman_proxy_plugins }}"
+foreman_proxy_disabled_features: "{{ foreman_proxy_known_feautures | difference(foreman_proxy_features) }}"

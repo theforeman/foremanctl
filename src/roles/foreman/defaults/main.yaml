@@ -49,3 +49,5 @@ foreman_recurring_tasks:
   - instance: ldap-refresh_usergroups
     rake: "ldap:refresh_usergroups"
     schedule: "*-*-* *:00,30:00"
+
+foreman_plugins: []
