@@ -8,7 +8,7 @@
       user: "{{ foreman_database_user }}"
       password: "{{ foreman_database_password }}"
       dbname: "{{ foreman_database_name }}"
-      ca_cert: "{{ foreman_database_ssl_ca | default(omit) }}"
+      ca_cert: "{{ foreman_database_ssl_ca | default('') }}"
       sslmode: "{{ foreman_database_ssl_mode | default(omit) }}"
 
     - name: Candlepin
@@ -16,7 +16,7 @@
       user: "{{ candlepin_database_user }}"
       password: "{{ candlepin_database_password }}"
       dbname: "{{ candlepin_database_name }}"
-      ca_cert: "{{ candlepin_database_ssl_ca | default(omit) }}"
+      ca_cert: "{{ candlepin_database_ssl_ca | default('') }}"
       sslmode: "{{ candlepin_database_ssl_mode | default(omit) }}"
 
     - name: Pulp
@@ -24,7 +24,7 @@
       user: "{{ pulp_database_user }}"
       password: "{{ pulp_database_password }}"
       dbname: "{{ pulp_database_name }}"
-      ca_cert: "{{ pulp_database_ssl_ca | default(omit) }}"
+      ca_cert: "{{ pulp_database_ssl_ca | default('') }}"
       sslmode: "{{ pulp_database_ssl_mode | default(omit) }}"
   loop_control:
     loop_var: db_item
