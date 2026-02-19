@@ -14,7 +14,7 @@
 
 - name: Create Podman secret for PostgreSQL admin password
   containers.podman.podman_secret:
-    name: postgresql_admin_password
+    name: postgresql-admin-password
     data: "{{ postgresql_admin_password }}"
   notify:
     - Restart postgresql
@@ -30,7 +30,7 @@
     volumes:
       - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
     secrets:
-      - 'postgresql_admin_password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
+      - 'postgresql-admin-password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
     env:
       POSTGRESQL_MAX_CONNECTIONS: "{{ postgresql_max_connections }}"
       POSTGRESQL_SHARED_BUFFERS: "{{ postgresql_shared_buffers }}"
