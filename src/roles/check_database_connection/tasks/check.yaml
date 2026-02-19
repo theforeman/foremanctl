@@ -1,13 +1,40 @@
+- name: Store CA cert to a temporary file
+  when:
+    - db_item.ca_cert is defined
+    - db_item.ca_cert is truthy
+  block:
+    - name: Create temporary file
+      ansible.builtin.tempfile:
+        state: file
+        prefix: check_database_connection_
+      register: _check_database_connection_ca_cert
+
+    - name: Write CA cert to temporary file
+      ansible.builtin.copy:
+        dest: "{{ _check_database_connection_ca_cert.path }}"
+        src: "{{ db_item.ca_cert }}"
+        mode: '0640'
+
 - name: Check database connectivity to {{ db_item.name }}
   community.postgresql.postgresql_ping:
     login_host: "{{ db_item.host }}"
     login_user: "{{ db_item.user }}"
     login_password: "{{ db_item.password }}"
     login_db: "{{ db_item.dbname }}"
-    ca_cert: "{{ db_item.ca_cert | default(omit) }}"
+    ca_cert: "{{ _check_database_connection_ca_cert.path | default(omit) }}"
     ssl_mode: "{{ db_item.sslmode | default(omit) }}"
   register: check_database_connection_ping_result
   ignore_errors: true
+
+- name: Delete temporary CA cert file
+  when:
+    - db_item.ca_cert is defined
+    - db_item.ca_cert is truthy
+  block:
+    - name: Delete temporary file
+      ansible.builtin.file:
+        state: absent
+        path: "{{ _check_database_connection_ca_cert.path }}"
 
 - name: Assert database is reachable for  {{ db_item.name }}
   ansible.builtin.assert:
