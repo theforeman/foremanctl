@@ -1,0 +1,91 @@
+---
+- name: Pull Advisor Frontend container image
+  containers.podman.podman_image:
+    name: "{{ iop_advisor_frontend_container_image }}:{{ iop_advisor_frontend_container_tag }}"
+    state: present
+
+- name: Ensure parent assets directory exists
+  ansible.builtin.file:
+    path: /var/lib/foreman/public/assets/apps
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Ensure assets directory exists
+  ansible.builtin.file:
+    path: "{{ iop_advisor_frontend_assets_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create temporary container for asset extraction
+  containers.podman.podman_container:
+    name: iop-advisor-frontend-temp
+    image: "{{ iop_advisor_frontend_container_image }}:{{ iop_advisor_frontend_container_tag }}"
+    state: created
+
+- name: Extract advisor frontend assets from container
+  containers.podman.podman_container_copy:
+    container: iop-advisor-frontend-temp
+    src: "{{ iop_advisor_frontend_source_path }}"
+    dest: "{{ iop_advisor_frontend_assets_path }}"
+    from_container: true
+
+- name: Restore SELinux context for advisor frontend assets
+  ansible.builtin.command:
+    cmd: restorecon -R "{{ iop_advisor_frontend_assets_path }}"
+  when: ansible_facts['selinux']['status'] == "enabled"
+  changed_when: false
+
+- name: Remove temporary container
+  containers.podman.podman_container:
+    name: iop-advisor-frontend-temp
+    state: absent
+
+- name: Set ownership of advisor frontend assets
+  ansible.builtin.file:
+    path: "{{ iop_advisor_frontend_assets_path }}"
+    owner: root
+    group: root
+    recurse: true
+
+- name: Ensure Apache SSL config directory exists
+  ansible.builtin.file:
+    path: /etc/httpd/conf.d/05-foreman-ssl.d
+    state: directory
+    mode: '0755'
+
+- name: Configure Apache for advisor frontend assets
+  ansible.builtin.copy:
+    dest: /etc/httpd/conf.d/05-foreman-ssl.d/advisor-frontend.conf
+    content: |
+      # IOP Advisor Frontend Assets Configuration
+      Alias /assets/apps/advisor {{ iop_advisor_frontend_assets_path }}
+      ProxyPass /assets/apps/advisor !
+
+      <LocationMatch "^/assets/apps/advisor">
+        Options SymLinksIfOwnerMatch
+        AllowOverride None
+        Require all granted
+
+        # Use standard http expire header for assets instead of ETag
+        <IfModule mod_expires.c>
+          Header unset ETag
+          FileETag None
+          ExpiresActive On
+          ExpiresDefault "access plus 1 year"
+        </IfModule>
+
+        # Return compressed assets if they are precompiled
+        RewriteEngine On
+        # Make sure the browser supports gzip encoding and file with .gz added
+        # does exist on disc before we rewrite with the extension
+        RewriteCond %{HTTP:Accept-Encoding} \b(x-)?gzip\b
+        RewriteCond %{REQUEST_FILENAME} \.(css|js|svg)$
+        RewriteCond %{REQUEST_FILENAME}.gz -s
+        RewriteRule ^(.+) $1.gz [L]
+      </LocationMatch>
+    mode: '0644'
+  notify: "httpd : Restart httpd"

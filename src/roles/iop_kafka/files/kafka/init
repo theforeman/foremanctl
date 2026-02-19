@@ -1,0 +1,125 @@
+#!/bin/bash
+
+usage() {
+  echo "Usage: [--create | --check]"
+  echo "  --create : Perform the creation action."
+  echo "  --check  : Perform the check action."
+  exit 1
+}
+
+topics=(
+  "platform.engine.results"
+  "platform.insights.rule-hits"
+  "platform.insights.rule-deactivation"
+  "platform.inventory.events"
+  "platform.inventory.host-ingress"
+  "platform.sources.event-stream"
+  "platform.playbook-dispatcher.runs"
+  "platform.upload.announce"
+  "platform.upload.validation"
+  "platform.logging.logs"
+  "platform.payload-status"
+  "platform.remediation-updates.vulnerability"
+  "vulnerability.evaluator.results"
+  "vulnerability.evaluator.recalc"
+  "vulnerability.evaluator.upload"
+  "vulnerability.grouper.inventory.upload"
+  "vulnerability.grouper.advisor.upload"
+)
+
+if ! [[ -v IOP_CORE_KAFKA ]]; then
+  IOP_CORE_KAFKA=iop-core-kafka
+fi
+
+kafka_cmd="./bin/kafka-topics.sh"
+kafka_bootstrap_server=$IOP_CORE_KAFKA:9092
+
+create_topics() {
+
+  echo -e "====================="
+  echo -e "Creating Kafka topics:"
+  for topic in "${topics[@]}"; do
+    echo -e "Creating topic ""$topic"
+    $kafka_cmd --create --if-not-exists --topic "$topic" --bootstrap-server $kafka_bootstrap_server --partitions 1 replication-factor 1 &
+  done
+  wait
+
+  echo -e "=========================="
+  echo -e "Listing all Kafka topics:"
+  $kafka_cmd --bootstrap-server $kafka_bootstrap_server --list
+}
+
+check_all_kafka_topics_exist() {
+    echo "Using Kafka command: $kafka_cmd" >&2
+
+    echo "Attempting to fetch existing topics..." >&2
+    local existing_topics_list
+    local list_output
+    list_output=$("$kafka_cmd" --bootstrap-server "$kafka_bootstrap_server" --list 2>&1)
+    local list_exit_code=$?
+
+    if [ $list_exit_code -ne 0 ]; then
+        echo "--------------------------------------------------" >&2
+        echo "Error: Failed to connect to Kafka or list topics." >&2
+        echo "Command failed: $kafka_cmd --bootstrap-server \"$kafka_bootstrap_server\" --list" >&2
+        echo "Exit code: $list_exit_code" >&2
+        echo "Output/Error:" >&2
+        echo "$list_output" >&2
+        echo "--------------------------------------------------" >&2
+        return 1
+    fi
+    existing_topics_list="$list_output"
+    echo "Successfully retrieved topic list." >&2
+
+    local missing_count=0
+    local missing_list=()
+
+    echo "Checking if all required topics exist..." >&2
+    for topic in "${topics[@]}"; do
+      if ! echo "$existing_topics_list" | grep -q -x -w "$topic"; then
+        echo " - Required topic '$topic' is MISSING." >&2
+        missing_list+=("$topic")
+        ((missing_count++))
+      else
+        echo " - Required topic '$topic' exists." >&2
+      fi
+    done
+
+    if [ $missing_count -eq 0 ]; then
+        echo "Result: All ${#topics[@]} required topics exist." >&2
+        return 0
+    else
+        echo "Result: Found $missing_count missing required topic(s)." >&2
+        echo "Missing topics:" >&2
+        printf "  - %s\n" "${missing_list[@]}" >&2
+        return 2
+    fi
+}
+
+if [ "$#" -lt 1 ]; then
+  echo "Error: No operation specified." >&2
+  usage
+fi
+
+MODE="$1"
+shift
+
+case "$MODE" in
+  --create)
+    echo "Mode: Create"
+    echo "Performing create action..."
+
+    create_topics
+    ;;
+
+  --check)
+    echo "Mode: Check"
+    echo "Performing check action..."
+    check_all_kafka_topics_exist
+    ;;
+
+  *)
+    echo "Error: Invalid option '$MODE'." >&2
+    usage
+    ;;
+esac

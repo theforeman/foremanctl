@@ -1,0 +1,20 @@
+---
+# Required parameters - must be passed by caller
+iop_fdw_database_name: ""
+iop_fdw_database_user: ""
+iop_fdw_database_password: ""
+iop_fdw_remote_database_name: ""
+iop_fdw_remote_user: ""
+iop_fdw_remote_password: ""
+
+# Optional parameters - can use defaults
+iop_fdw_database_host: "localhost"
+iop_fdw_database_port: 5432
+
+# Constants - same for all invocations (matching puppet-iop)
+iop_fdw_foreign_server_name: hbi_server
+iop_fdw_remote_table_schema: inventory
+iop_fdw_remote_table_name: hosts
+iop_fdw_local_source_schema: inventory_source
+iop_fdw_local_view_schema: inventory
+iop_fdw_local_view_name: hosts

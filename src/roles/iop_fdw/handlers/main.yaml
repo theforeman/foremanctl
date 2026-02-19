@@ -1,0 +1,3 @@
+---
+# Handlers for iop_fdw role
+# Currently no specific handlers needed for FDW operations

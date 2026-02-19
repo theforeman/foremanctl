@@ -1,0 +1,36 @@
+---
+- name: Pull Yuptoo container image
+  containers.podman.podman_image:
+    name: "{{ iop_yuptoo_container_image }}:{{ iop_yuptoo_container_tag }}"
+    state: present
+
+- name: Deploy Yuptoo container
+  containers.podman.podman_container:
+    name: iop-core-yuptoo
+    image: "{{ iop_yuptoo_container_image }}:{{ iop_yuptoo_container_tag }}"
+    state: quadlet
+    command: python -m main
+    env:
+      BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
+      BYPASS_PAYLOAD_EXPIRATION: "true"
+    network:
+      - iop-core-network
+    quadlet_options:
+      - |
+        [Unit]
+        Description=IOP Core Yuptoo Container
+        [Service]
+        Environment=REGISTRY_AUTH_FILE=/etc/foreman/registry-auth.json
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start Yuptoo service
+  ansible.builtin.systemd:
+    name: iop-core-yuptoo
+    enabled: true
+    state: started

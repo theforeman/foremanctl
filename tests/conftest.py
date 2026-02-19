@@ -6,6 +6,7 @@ import py.path
 import pytest
 import testinfra
 import yaml
+import os
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -171,3 +172,25 @@ def wait_for_tasks(foremanapi, search=None):
 
 def wait_for_metadata_generate(foremanapi):
     wait_for_tasks(foremanapi, 'label = Actions::Katello::Repository::MetadataGenerate')
+
+
+def is_iop_enabled():
+    test_dir = os.path.dirname(os.path.abspath(__file__))
+    foremanctl_dir = os.path.dirname(test_dir)
+    params_file = os.path.join(foremanctl_dir, '.var', 'lib', 'foremanctl', 'parameters.yaml')
+
+    if os.path.exists(params_file):
+        with open(params_file, 'r') as f:
+            params = yaml.safe_load(f)
+            features = params.get('features', [])
+            if isinstance(features, str):
+                features = features.split()
+            return 'iop' in features
+
+    return False
+
+
+def pytest_runtest_setup(item):
+    if "iop" in item.nodeid.lower():
+        if not is_iop_enabled():
+            pytest.skip("IOP not enabled - skipping IOP tests ('iop' not in enabled_features)")

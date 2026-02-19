@@ -1,0 +1,37 @@
+---
+- name: Pull Puptoo container image
+  containers.podman.podman_image:
+    name: "{{ iop_puptoo_container_image }}:{{ iop_puptoo_container_tag }}"
+    state: present
+
+- name: Deploy Puptoo container
+  containers.podman.podman_container:
+    name: iop-core-puptoo
+    image: "{{ iop_puptoo_container_image }}:{{ iop_puptoo_container_tag }}"
+    state: quadlet
+    env:
+      BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
+      DISABLE_REDIS: "True"
+      DISABLE_S3_UPLOAD: "True"
+    network:
+      - iop-core-network
+    quadlet_options:
+      - |
+        [Unit]
+        Description=IOP Core Puptoo Container
+        After=iop-core-kafka.service
+        Wants=iop-core-kafka.service
+        [Service]
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start Puptoo service
+  ansible.builtin.systemd:
+    name: iop-core-puptoo
+    enabled: true
+    state: started

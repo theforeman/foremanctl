@@ -1,0 +1,3 @@
+---
+iop_ingress_container_image: "quay.io/iop/ingress"
+iop_ingress_container_tag: "foreman-3.16"

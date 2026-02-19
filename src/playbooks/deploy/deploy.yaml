@@ -12,6 +12,20 @@
     - "../../vars/database.yml"
     - "../../vars/foreman.yml"
     - "../../vars/base.yaml"
+  pre_tasks:
+    - name: Add iop databases
+      when:
+        - "'iop' in enabled_features"
+        - database_mode == 'internal'
+      block:
+        - name: Include iop databases
+          ansible.builtin.include_vars:
+            file: "../../vars/database_iop.yml"
+
+        - name: Combine lists
+          ansible.builtin.set_fact:
+            postgresql_databases: "{{ postgresql_databases + iop_postgresql_databases }}"
+            postgresql_users: "{{ postgresql_users + iop_postgresql_users }}"
   roles:
     - role: pre_install
     - role: checks
@@ -31,6 +45,10 @@
     - pulp
     - foreman
     - role: systemd_target
+    - role: iop_core
+      when:
+        - "'iop' in enabled_features"
+        - database_mode == 'internal'
     - role: foreman_proxy
       when:
         - "'foreman-proxy' in enabled_features"

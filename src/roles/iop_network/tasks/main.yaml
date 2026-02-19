@@ -1,0 +1,8 @@
+---
+- name: Create IOP Core network
+  containers.podman.podman_network:
+    name: "{{ iop_network_name }}"
+    state: present
+    driver: "{{ iop_network_driver }}"
+    subnet: "{{ iop_network_subnet }}"
+    gateway: "{{ iop_network_gateway }}"

@@ -1,0 +1,28 @@
+---
+- name: Check if vmaas reposcan service exists
+  ansible.builtin.systemd:
+    name: iop-service-vmaas-reposcan
+  register: iop_vmaas_reposcan_service_status
+  failed_when: false
+  listen: restart vmaas
+
+- name: Restart vmaas reposcan
+  ansible.builtin.systemd:
+    name: iop-service-vmaas-reposcan
+    state: restarted
+  when: iop_vmaas_reposcan_service_status.status is defined and iop_vmaas_reposcan_service_status.status.LoadState != "not-found"
+  listen: restart vmaas
+
+- name: Check if vmaas webapp-go service exists
+  ansible.builtin.systemd:
+    name: iop-service-vmaas-webapp-go
+  register: iop_vmaas_webapp_service_status
+  failed_when: false
+  listen: restart vmaas
+
+- name: Restart vmaas webapp-go
+  ansible.builtin.systemd:
+    name: iop-service-vmaas-webapp-go
+    state: restarted
+  when: iop_vmaas_webapp_service_status.status is defined and iop_vmaas_webapp_service_status.status.LoadState != "not-found"
+  listen: restart vmaas

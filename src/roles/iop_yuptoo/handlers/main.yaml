@@ -1,0 +1,6 @@
+---
+- name: Restart yuptoo
+  ansible.builtin.systemd:
+    name: iop-core-yuptoo
+    state: restarted
+  when: ansible_facts.services['iop-core-yuptoo.service'] is defined

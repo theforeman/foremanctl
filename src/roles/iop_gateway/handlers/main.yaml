@@ -1,0 +1,14 @@
+---
+- name: Check if gateway service exists
+  ansible.builtin.systemd:
+    name: iop-core-gateway
+  register: iop_gateway_service_status
+  failed_when: false
+  listen: restart gateway
+
+- name: Restart gateway service if it exists
+  ansible.builtin.systemd:
+    name: iop-core-gateway
+    state: restarted
+  when: iop_gateway_service_status.status is defined and iop_gateway_service_status.status.LoadState != "not-found"
+  listen: restart gateway

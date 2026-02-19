@@ -1,0 +1,165 @@
+---
+- name: Install PostgreSQL client for FDW operations
+  ansible.builtin.package:
+    name: postgresql
+    state: present
+
+- name: Enable postgres_fdw extension on target database
+  community.postgresql.postgresql_ext:
+    name: postgres_fdw
+    db: "{{ iop_fdw_database_name }}"
+    login_user: postgres
+    login_host: "{{ iop_fdw_database_host }}"
+
+- name: Check if foreign server exists
+  community.postgresql.postgresql_query:
+    db: "{{ iop_fdw_database_name }}"
+    login_user: postgres
+    login_host: "{{ iop_fdw_database_host }}"
+    query: "SELECT srvname FROM pg_foreign_server WHERE srvname = %s"
+    positional_args:
+      - "{{ iop_fdw_foreign_server_name }}"
+  register: iop_fdw_foreign_server_check
+  changed_when: false
+
+- name: Create foreign server for inventory database
+  community.postgresql.postgresql_query:
+    db: "{{ iop_fdw_database_name }}"
+    login_user: postgres
+    login_host: "{{ iop_fdw_database_host }}"
+    query: |
+      CREATE SERVER {{ iop_fdw_foreign_server_name }}
+      FOREIGN DATA WRAPPER postgres_fdw
+      OPTIONS (host %s, port %s, dbname %s)
+    positional_args:
+      - "{{ iop_fdw_database_host }}"
+      - "{{ iop_fdw_database_port | string }}"
+      - "{{ iop_fdw_remote_database_name }}"
+  when: iop_fdw_foreign_server_check.rowcount == 0
+
+- name: Check if user mapping exists for service user
+  community.postgresql.postgresql_query:
+    db: "{{ iop_fdw_database_name }}"
+    login_user: postgres
+    login_host: "{{ iop_fdw_database_host }}"
+    query: "SELECT umuser FROM pg_user_mappings WHERE srvname = %s AND usename = %s"
+    positional_args:
+      - "{{ iop_fdw_foreign_server_name }}"
+      - "{{ iop_fdw_database_user }}"
+  register: iop_fdw_user_mapping_check
+  changed_when: false
+
+- name: Create user mapping for service user
+  community.postgresql.postgresql_query:
+    db: "{{ iop_fdw_database_name }}"
+    login_user: postgres
+    login_host: "{{ iop_fdw_database_host }}"
+    query: |
+      CREATE USER MAPPING FOR {{ iop_fdw_database_user }}
+      SERVER {{ iop_fdw_foreign_server_name }}
+      OPTIONS (user %s, password %s)
+    positional_args:
+      - "{{ iop_fdw_remote_user }}"
+      - "{{ iop_fdw_remote_password }}"
+  when: iop_fdw_user_mapping_check.rowcount == 0
+
+- name: Check if user mapping exists for postgres user
+  community.postgresql.postgresql_query:
+    db: "{{ iop_fdw_database_name }}"
+    login_user: postgres
+    login_host: "{{ iop_fdw_database_host }}"
+    query: "SELECT umuser FROM pg_user_mappings WHERE srvname = %s AND usename = 'postgres'"
+    positional_args:
+      - "{{ iop_fdw_foreign_server_name }}"
+  register: iop_fdw_postgres_mapping_check
+  changed_when: false
+
+- name: Create user mapping for postgres user
+  community.postgresql.postgresql_query:
+    db: "{{ iop_fdw_database_name }}"
+    login_user: postgres
+    login_host: "{{ iop_fdw_database_host }}"
+    query: |
+      CREATE USER MAPPING FOR postgres
+      SERVER {{ iop_fdw_foreign_server_name }}
+      OPTIONS (user %s, password %s)
+    positional_args:
+      - "{{ iop_fdw_remote_user }}"
+      - "{{ iop_fdw_remote_password }}"
+  when: iop_fdw_postgres_mapping_check.rowcount == 0
+
+- name: Grant usage on foreign server
+  community.postgresql.postgresql_query:
+    db: "{{ iop_fdw_database_name }}"
+    login_user: postgres
+    login_host: "{{ iop_fdw_database_host }}"
+    query: "GRANT USAGE ON FOREIGN SERVER {{ iop_fdw_foreign_server_name }} TO {{ iop_fdw_database_user }}"
+
+- name: Create local view schema
+  community.postgresql.postgresql_schema:
+    db: "{{ iop_fdw_database_name }}"
+    name: "{{ iop_fdw_local_view_schema }}"
+    owner: "{{ iop_fdw_database_user }}"
+    login_user: postgres
+    login_host: "{{ iop_fdw_database_host }}"
+
+- name: Create local schema for foreign tables
+  community.postgresql.postgresql_schema:
+    db: "{{ iop_fdw_database_name }}"
+    name: "{{ iop_fdw_local_source_schema }}"
+    owner: "{{ iop_fdw_database_user }}"
+    login_user: postgres
+    login_host: "{{ iop_fdw_database_host }}"
+
+- name: Check if foreign table exists
+  community.postgresql.postgresql_query:
+    db: "{{ iop_fdw_database_name }}"
+    login_user: postgres
+    login_host: "{{ iop_fdw_database_host }}"
+    query: "SELECT foreign_table_name FROM information_schema.foreign_tables WHERE foreign_table_schema = %s AND foreign_table_name = %s"
+    positional_args:
+      - "{{ iop_fdw_local_source_schema }}"
+      - "{{ iop_fdw_remote_table_name }}"
+  register: iop_fdw_foreign_table_check
+  changed_when: false
+
+- name: Import foreign schema
+  community.postgresql.postgresql_query:
+    db: "{{ iop_fdw_database_name }}"
+    login_user: postgres
+    login_host: "{{ iop_fdw_database_host }}"
+    query: |
+      IMPORT FOREIGN SCHEMA {{ iop_fdw_remote_table_schema }}
+      LIMIT TO ({{ iop_fdw_remote_table_name }})
+      FROM SERVER {{ iop_fdw_foreign_server_name }}
+      INTO {{ iop_fdw_local_source_schema }}
+  when: iop_fdw_foreign_table_check.rowcount == 0
+
+- name: Create local view pointing to foreign table
+  community.postgresql.postgresql_query:
+    db: "{{ iop_fdw_database_name }}"
+    login_user: postgres
+    login_host: "{{ iop_fdw_database_host }}"
+    query: |
+      CREATE OR REPLACE VIEW "{{ iop_fdw_local_view_schema }}"."{{ iop_fdw_local_view_name }}" AS
+      SELECT * FROM "{{ iop_fdw_local_source_schema }}"."{{ iop_fdw_remote_table_name }}"
+
+- name: Grant select on foreign table to service user
+  community.postgresql.postgresql_query:
+    db: "{{ iop_fdw_database_name }}"
+    login_user: postgres
+    login_host: "{{ iop_fdw_database_host }}"
+    query: |
+      GRANT USAGE ON SCHEMA {{ iop_fdw_local_source_schema }} TO {{ iop_fdw_database_user }};
+      GRANT USAGE ON SCHEMA {{ iop_fdw_local_view_schema }} TO {{ iop_fdw_database_user }};
+      GRANT SELECT ON {{ iop_fdw_local_source_schema }}.{{ iop_fdw_remote_table_name }} TO {{ iop_fdw_database_user }};
+      GRANT SELECT ON {{ iop_fdw_local_view_schema }}.{{ iop_fdw_local_view_name }} TO {{ iop_fdw_database_user }};
+
+- name: Grant permissions on remote database view to remote user
+  community.postgresql.postgresql_query:
+    db: "{{ iop_fdw_remote_database_name }}"
+    login_user: postgres
+    login_host: "{{ iop_fdw_database_host }}"
+    query: |
+      GRANT USAGE ON SCHEMA {{ iop_fdw_remote_table_schema }} TO {{ iop_fdw_remote_user }};
+      GRANT SELECT ON {{ iop_fdw_remote_table_schema }}.{{ iop_fdw_local_view_name }} TO {{ iop_fdw_remote_user }};

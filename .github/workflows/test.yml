@@ -46,6 +46,8 @@ jobs:
           - none
         database:
           - internal
+        iop:
+          - enabled
         include:
           - certificate_source: default
             security: fapolicyd
@@ -54,7 +56,7 @@ jobs:
             security: none
             database: external
     runs-on: ubuntu-24.04
-    name: "Tests (certificates: ${{ matrix.certificate_source }}, database: ${{ matrix.database }}, security: ${{ matrix.security }})"
+    name: "Tests (certificates: ${{ matrix.certificate_source }}, database: ${{ matrix.database }}, security: ${{ matrix.security }}, iop: ${{ matrix.iop }})"
     steps:
       - uses: actions/checkout@v6
       - name: Set up Python
@@ -108,6 +110,10 @@ jobs:
       - name: Add optional feature - foreman_azure_rm and foreman_google
         run: |
           ./foremanctl deploy --add-feature foreman_azure_rm --add-feature foreman_google
+      - name: Enable iop
+        if: matrix.iop == 'enabled'
+        run: |
+          ./foremanctl deploy --add-feature iop
       - name: Run tests
         run: |
           ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }} --database-mode=${{ matrix.database }}"
@@ -127,7 +133,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v6
         with:
-          name: sosreport-${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.database }}
+          name: sosreport-${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.database }}-${{ matrix.iop }}
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}
