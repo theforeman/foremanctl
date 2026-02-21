@@ -1,19 +1,17 @@
 ---
-- name: Check /etc/subuid for current user
-  ansible.builtin.command: grep "^{{ ansible_facts['user_id'] }}:" /etc/subuid
-  register: check_subuid_subgid_subuid
-  ignore_errors: true
-  changed_when: false
+- name: Read /etc/subuid file
+  ansible.builtin.slurp:
+    src: /etc/subuid
+  register: check_subuid_subgid_subuid_file
 
-- name: Check /etc/subgid for current user
-  ansible.builtin.command: grep "^{{ ansible_facts['user_id'] }}:" /etc/subgid
-  register: check_subuid_subgid_subgid
-  ignore_errors: true
-  changed_when: false
+- name: Read /etc/subgid file
+  ansible.builtin.slurp:
+    src: /etc/subgid
+  register: check_subuid_subgid_subgid_file
 
-- name: Assert /etc/subuid and /etc/subgid have entries for {{ ansible_facts['user_id'] }}
+- name: Assert /etc/subuid and /etc/subgid have entries for {{ foremanctl_user }}
   ansible.builtin.assert:
     that:
-      - check_subuid_subgid_subuid is success
-      - check_subuid_subgid_subgid is success
-    fail_msg: "Entries for user {{ ansible_facts['user_id'] }} are missing in /etc/subuid or /etc/subgid"
+      - "foremanctl_user + ':' in (check_subuid_subgid_subuid_file.content | b64decode)"
+      - "foremanctl_user + ':' in (check_subuid_subgid_subgid_file.content | b64decode)"
+    fail_msg: "Entries for user {{ foremanctl_user }} are missing in /etc/subuid or /etc/subgid"

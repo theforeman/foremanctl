@@ -4,38 +4,52 @@
     name: openssl
     state: present
 
+- name: 'Create base certificates directory'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory }}"
+    state: directory
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
+    mode: '0755'
+
 - name: 'Create certs directory'
   ansible.builtin.file:
     path: "{{ certificates_ca_directory_certs }}"
     state: directory
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
     mode: '0755'
 
 - name: 'Create keys directory'
   ansible.builtin.file:
     path: "{{ certificates_ca_directory_keys }}"
     state: directory
-    mode: '0755'
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
+    mode: '0700'
 
 - name: 'Create requests directory'
   ansible.builtin.file:
     path: "{{ certificates_ca_directory_requests }}"
     state: directory
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
     mode: '0755'
 
 - name: 'Deploy configuration file'
   ansible.builtin.template:
     src: openssl.cnf.j2
     dest: "{{ certificates_ca_directory }}/openssl.cnf"
-    owner: root
-    group: root
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
     mode: '0644'
 
 - name: 'Create index file'
   ansible.builtin.file:
     path: "{{ certificates_ca_directory }}/index.txt"
     state: touch
-    owner: root
-    group: root
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
     mode: '0644'
 
 - name: 'Ensure serial starting number'
@@ -43,16 +57,16 @@
     src: serial.j2
     dest: "{{ certificates_ca_directory }}/serial"
     force: false
-    owner: root
-    group: root
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
     mode: '0644'
 
 - name: 'Create CA key password file'
   ansible.builtin.copy:
     content: "{{ certificates_ca_password }}"
     dest: "{{ certificates_ca_directory_keys }}/ca.pwd"
-    owner: root
-    group: root
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
     mode: '0600'
   no_log: true
 
@@ -70,3 +84,17 @@
       -passout "file:{{ certificates_ca_directory_keys }}/ca.pwd"
   args:
     creates: "{{ certificates_ca_directory_certs }}/ca.crt"
+
+- name: 'Set CA key ownership and permissions'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_keys }}/ca.key"
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
+    mode: '0600'
+
+- name: 'Set CA certificate ownership and permissions'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_certs }}/ca.crt"
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
+    mode: '0644'

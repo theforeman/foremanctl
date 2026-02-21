@@ -1,14 +1,24 @@
 ---
 - name: Restart foreman
+  environment:
+    XDG_RUNTIME_DIR: "{{ foremanctl_xdg_runtime_dir }}"
+  become: true
+  become_user: "{{ foremanctl_user }}"
   ansible.builtin.systemd:
     name: foreman
     state: restarted
+    scope: user
 
 - name: Restart dynflow-sidekiq@
-  ansible.builtin.systemd:
-    name: "dynflow-sidekiq@{{ item }}"
-    state: restarted
+  environment:
+    XDG_RUNTIME_DIR: "{{ foremanctl_xdg_runtime_dir }}"
+  become: true
+  become_user: "{{ foremanctl_user }}"
   loop:
     - orchestrator
     - worker
     - worker-hosts-queue
+  ansible.builtin.systemd:
+    name: "dynflow-sidekiq@{{ item }}"
+    state: restarted
+    scope: user

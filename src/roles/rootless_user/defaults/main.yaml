@@ -1,0 +1,21 @@
+---
+# Dedicated service user for rootless Podman deployment
+rootless_user_name: foremanctl
+rootless_user_group: foremanctl
+rootless_user_home: "/var/lib/{{ rootless_user_name }}"
+rootless_user_shell: /sbin/nologin
+rootless_user_comment: "Foremanctl Service User"
+
+# Rootless Podman directories
+rootless_user_quadlet_dir: "{{ rootless_user_home }}/.config/containers/systemd"
+rootless_user_systemd_user_dir: "{{ rootless_user_home }}/.config/systemd/user"
+
+# Subuid/subgid ranges for user namespaces
+rootless_user_subuid_start: 100000
+rootless_user_subuid_count: 65536
+rootless_user_subgid_start: 100000
+rootless_user_subgid_count: 65536
+
+# Unprivileged port binding configuration
+rootless_user_unprivileged_port_start: 80
+...
