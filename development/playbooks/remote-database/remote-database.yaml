@@ -9,7 +9,7 @@
     certificates_hostnames:
       - "{{ ansible_facts['fqdn'] }}"
     certificates_ca_password: "CHANGEME"
-    database_ssl: false
+    database_ssl: true
     database_ssl_crt: "{{ certificates_ca_directory }}/certs/{{ ansible_facts['fqdn'] }}.crt"
     database_ssl_key: "{{ certificates_ca_directory }}/private/{{ ansible_facts['fqdn'] }}.key"
     postgresql_ssl_crt: "{{ database_ssl_crt if database_ssl else '' }}"
