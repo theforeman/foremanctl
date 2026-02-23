@@ -73,7 +73,7 @@ jobs:
       - name: Configure remote-database
         if: matrix.database == 'external'
         run: |
-          ./forge remote-database --database-ssl true
+          ./forge remote-database
       - name: Configure repositories
         run: |
           ./forge setup-repositories
