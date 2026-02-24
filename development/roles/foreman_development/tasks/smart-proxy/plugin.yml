@@ -1,25 +1,14 @@
 ---
-- name: "Clone smart-proxy plugin repository for {{ foreman_development_plugin_name }}"  # noqa latest[git]
-  ansible.builtin.git:
-    repo: "{{ foreman_development_plugin_repo_url }}"
-    dest: "{{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}"
-    force: true
-  become: true
-  become_user: "{{ foreman_development_user }}"
+- name: "Deploy smart-proxy plugin git repository for {{ foreman_development_plugin_name }}"
+  ansible.builtin.include_role:
+    name: git_repository
+  vars:
+    git_repository_destination_dir: "{{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}"
+    git_repository_user: "{{ foreman_development_user }}"
+    git_repository_repository_owner: "{{ foreman_development_plugin_org }}"
+    git_repository_repository_name: "{{ foreman_development_plugin_name }}"
+    git_repository_secondary_remote_owner: "{{ foreman_development_github_username }}"
   when: foreman_development_plugin_manage_repo
-
-- name: "Add GitHub username as additional remote for {{ foreman_development_plugin_name }}"
-  community.general.git_config:
-    name: "remote.{{ foreman_development_github_username }}.url"
-    scope: local
-    repo: "{{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}"
-    value: "git@github.com:{{ foreman_development_github_username }}/{{ foreman_development_plugin_name }}.git"
-    state: present
-  become: true
-  become_user: "{{ foreman_development_user }}"
-  when:
-    - foreman_development_plugin_manage_repo
-    - foreman_development_github_username != ""
 
 - name: "Create settings file for {{ foreman_development_plugin_name }}"
   ansible.builtin.template:

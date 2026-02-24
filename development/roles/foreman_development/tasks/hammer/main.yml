@@ -1,22 +1,13 @@
-- name: Clone Hammer repository
-  ansible.builtin.git:
-    repo: "{{ foreman_development_hammer_git_repo }}"
-    dest: "{{ foreman_development_hammer_dir }}"
-    version: "{{ foreman_development_hammer_git_revision }}"
-    force: true
-  become: true
-  become_user: "{{ foreman_development_user }}"
-
-- name: Add GitHub username as additional remote for Foreman
-  community.general.git_config:
-    name: "remote.{{ foreman_development_github_username }}.url"
-    scope: local
-    repo: "{{ foreman_development_hammer_dir }}"
-    value: "git@github.com:{{ foreman_development_github_username }}/hammer-cli.git"
-    state: present
-  become: true
-  become_user: "{{ foreman_development_user }}"
-  when: foreman_development_github_username != ""
+- name: Deploy Hammer git repository
+  ansible.builtin.include_role:
+    name: git_repository
+  vars:
+    git_repository_destination_dir: "{{ foreman_development_hammer_dir }}"
+    git_repository_user: "{{ foreman_development_user }}"
+    git_repository_repository_owner: "theforeman"
+    git_repository_repository_name: "hammer-cli"
+    git_repository_revision: "{{ foreman_development_hammer_git_revision }}"
+    git_repository_secondary_remote_owner: "{{ foreman_development_github_username }}"
 
 - name: Setup hammer-cli-foreman
   ansible.builtin.include_tasks: hammer/plugin.yml

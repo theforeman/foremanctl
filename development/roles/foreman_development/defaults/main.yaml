@@ -19,10 +19,8 @@ foreman_development_git_revision: "develop"
 foreman_development_github_username: ""
 
 foreman_development_hammer_git_repo: "https://github.com/theforeman/hammer-cli.git"
-foreman_development_hammer_git_revision: "master"
 
 foreman_development_smart_proxy_git_repo: "https://github.com/theforeman/smart-proxy.git"
-foreman_development_smart_proxy_git_revision: "develop"
 
 foreman_development_rails_port: 3000
 foreman_development_rails_command: "puma -w 2 -p {{ foreman_development_rails_port }} --preload -b tcp://0.0.0.0"

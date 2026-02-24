@@ -1,23 +1,13 @@
 ---
-- name: Clone smart-proxy repository
-  ansible.builtin.git:
-    repo: "{{ foreman_development_smart_proxy_git_repo }}"
-    dest: "{{ foreman_development_smart_proxy_dir }}"
-    version: "{{ foreman_development_smart_proxy_git_revision }}"
-    force: true
-  become: true
-  become_user: "{{ foreman_development_user }}"
-
-- name: Add GitHub username as additional remote for smart-proxy
-  community.general.git_config:
-    name: "remote.{{ foreman_development_github_username }}.url"
-    scope: local
-    repo: "{{ foreman_development_smart_proxy_dir }}"
-    value: "git@github.com:{{ foreman_development_github_username }}/smart-proxy.git"
-    state: present
-  become: true
-  become_user: "{{ foreman_development_user }}"
-  when: foreman_development_github_username != ""
+- name: Deploy smart-proxy git repository
+  ansible.builtin.include_role:
+    name: git_repository
+  vars:
+    git_repository_destination_dir: "{{ foreman_development_smart_proxy_dir }}"
+    git_repository_user: "{{ foreman_development_user }}"
+    git_repository_repository_owner: "theforeman"
+    git_repository_repository_name: "smart-proxy"
+    git_repository_secondary_remote_owner: "{{ foreman_development_github_username }}"
 
 - name: Create cert directories
   ansible.builtin.file:
