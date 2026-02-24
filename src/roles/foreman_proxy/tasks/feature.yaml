@@ -28,4 +28,4 @@
     - tasks_file is not none
     - tasks_file != ""
   vars:
-    tasks_file: "{{ lookup('ansible.builtin.first_found', files=['feature/' + feature_name + '.yaml'], errors='ignore') }}"
+    tasks_file: "{{ lookup('ansible.builtin.first_found', ['feature/' + feature_name + '.yaml'], errors='ignore') }}"
