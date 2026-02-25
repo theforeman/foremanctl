@@ -231,3 +231,12 @@ The external authentication configuration is managed through `foremanctl` comman
 - `--external-authentication-pam-server`: PAM service name to use when authenticating users, can be changed in case a specific FreeIPA/IDM HBAC service should be used (default: `foreman`)
 
 If `hammer` feature is enabled and `--external-authentication` is set to `ipa_with_api`, `hammer` will be configured to use negotiate-based authentication.
+
+## Deployment architecture
+
+The primary way of deployment is to install `foremanctl` on a system and then let `foremanctl` deploy the various components on the same system.
+As `foremanctl` is Ansible-based, this means that the ["control node"](https://docs.ansible.com/projects/ansible/latest/network/getting_started/basic_concepts.html#control-node) and the ["managed node"](https://docs.ansible.com/projects/ansible/latest/network/getting_started/basic_concepts.html#managed-nodes) are the same system (`localhost`).
+
+To simplify the "install `foremanctl`" step, our test infrastructure uses different systems for the "control node" (the system the source code is cloned to) and the "target node" (the VM created by our development tooling).
+
+There is a desire to allow deployments where a single `foremanctl` control node manages multiple managed nodes, but no code exists yet for this.
