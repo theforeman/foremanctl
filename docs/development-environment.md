@@ -57,6 +57,14 @@ When deploying to remote hosts that require SSH password authentication:
 ANSIBLE_ASK_PASS=true ./forge deploy-dev --target-host=192.168.1.100
 ```
 
+## Feature Management
+
+Similarly to production deployments with `foremanctl`, using `forge` there is support for enabling `hammer` and `foreman-proxy` as features. Features can be enabled with `--add-feature=$feature`, which can be used multiple times.
+
+By default `hammer` feature will set up `hammer-cli` and `hammer-cli-foreman`, `foreman-proxy` will set up `smart-proxy` itself. If any plugins are enabled, they're respective hammer or smart-proxy plugins will be set up as well.
+
+All the projects set up as part of the feature are deployed as git checkouts.
+
 ## Plugin Management
 
 ### Enabled Plugins (Default)
@@ -74,6 +82,13 @@ The system includes a plugin registry with predefined configurations:
 - `foreman_discovery` - Host discovery
 - `foreman_openscap` - OpenSCAP compliance
 - `foreman_bootdisk` - Boot disk creation
+- `foreman_openscap` - Foreman plug-in for displaying OpenSCAP audit reports
+- `foreman_theme_satellite` - Branding for Satellite
+- `foreman_tasks` - Tasks management engine and plugin for Foreman
+- `foreman_webhooks` - Call external webhooks from Foreman
+- `foreman_templates` - A plugin for Foreman to sync provisioning templates from an external source
+- `foreman_leapp` - A plugin that allows to run inplace upgrades for RHEL hosts in Foreman using Leapp tool.
+- `foreman_puppet` - A plugin that adds Puppet External node classification functionality to Foreman.
 
 ### Enabling Additional Plugins
 
@@ -102,6 +117,10 @@ After deployment, the environment includes:
 - Database migrations and seeding
 - Plugin repositories and configurations
 - Development-specific settings
+- if `hammer` feature was enabled, `hammer-cli` and its plugins
+- if `foreman-proxy` feature was enabled
+  - `smart-proxy` and its plugins
+  - the development smart proxy registered into Foreman
 
 ## Architecture
 
@@ -112,6 +131,8 @@ The development environment integrates:
 - **Backend Services**: All services (PostgreSQL, Redis, Candlepin, Pulp) run in containers
 - **Rails Development Server**: Runs directly on the VM for live debugging and development
 - **Pulp Smart Proxy Registration**: Automatically configures Pulp integration during deployment
+- **Hammer CLI**: Automatically sets up hammer for development, if `hammer` feature was enabled
+- **Smart Proxy**: Automatically set up a smart proxy for development and registers it into Foreman, if `foreman-proxy` feature was enabled
 
 ### Certificates
 

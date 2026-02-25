@@ -1,0 +1,14 @@
+[Unit]
+Description=Smart Proxy Development Server
+
+[Service]
+Type=simple
+User={{ foreman_development_user }}
+Group={{ foreman_development_group }}
+WorkingDirectory={{ foreman_development_smart_proxy_dir }}
+Environment=PATH=/usr/bin:/bin:/usr/local/bin
+Environment=BUNDLE_PATH={{ foreman_development_smart_proxy_dir }}/.vendor
+ExecStart=/usr/bin/bundle exec ruby bin/smart-proxy
+
+[Install]
+WantedBy=multi-user.target

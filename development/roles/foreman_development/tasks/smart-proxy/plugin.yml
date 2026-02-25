@@ -1,0 +1,55 @@
+---
+- name: "Deploy smart-proxy plugin git repository for {{ foreman_development_plugin_name }}"
+  ansible.builtin.include_role:
+    name: git_repository
+  vars:
+    git_repository_destination_dir: "{{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}"
+    git_repository_user: "{{ foreman_development_user }}"
+    git_repository_repository_owner: "{{ foreman_development_plugin_org }}"
+    git_repository_repository_name: "{{ foreman_development_plugin_name }}"
+    git_repository_secondary_remote_owner: "{{ foreman_development_github_username }}"
+  when: foreman_development_plugin_manage_repo
+
+- name: "Create settings file for {{ foreman_development_plugin_name }}"
+  ansible.builtin.template:
+    src: "{{ foreman_development_plugin_settings_template }}"
+    dest: "{{ foreman_development_smart_proxy_dir }}/config/settings.d/{{ foreman_development_plugin_settings_template.split('/')[-1] | replace('.j2', '') }}"
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0644"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  when: foreman_development_plugin_settings_template != ""
+
+- name: "Copy smart-proxy plugin settings from repository settings.d for {{ foreman_development_plugin_name }}"
+  ansible.builtin.copy:
+    src: "{{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}/settings.d/{{ foreman_development_plugin_module_config }}.example"
+    dest: "{{ foreman_development_smart_proxy_dir }}/config/settings.d/{{ foreman_development_plugin_module_config }}"
+    remote_src: true
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0644"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  when:
+    - foreman_development_plugin_settings_template == ""
+    - foreman_development_plugin_module_config != ""
+
+- name: "Create bundler configuration for {{ foreman_development_plugin_name }}"
+  ansible.builtin.copy:
+    content: |
+      gem '{{ foreman_development_plugin_gem }}', path: '{{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}'
+    dest: "{{ foreman_development_smart_proxy_dir }}/bundler.d/{{ foreman_development_plugin_name }}.local.rb"
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0644"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  when: foreman_development_plugin_name != ""
+
+- name: "Run plugin-specific tasks for {{ foreman_development_plugin_name }}"
+  ansible.builtin.include_tasks: "{{ item }}"
+  with_fileglob:
+    - "smart-proxy/plugin/{{ foreman_development_plugin_name }}.yml"
+  when:
+    - foreman_development_plugin_name != ""

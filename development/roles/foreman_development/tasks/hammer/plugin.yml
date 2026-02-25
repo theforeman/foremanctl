@@ -1,0 +1,48 @@
+---
+- name: "Deploy plugin git repository for {{ foreman_development_plugin_name }}"
+  ansible.builtin.include_role:
+    name: git_repository
+  vars:
+    git_repository_destination_dir: "{{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}"
+    git_repository_user: "{{ foreman_development_user }}"
+    git_repository_repository_owner: "{{ foreman_development_plugin_org }}"
+    git_repository_repository_name: "{{ foreman_development_plugin_name }}"
+    git_repository_secondary_remote_owner: "{{ foreman_development_github_username }}"
+  when: foreman_development_plugin_manage_repo
+
+- name: "Create settings file for {{ foreman_development_plugin_name }}"
+  ansible.builtin.template:
+    src: "{{ foreman_development_plugin_settings_template }}"
+    dest: "{{ foreman_development_hammer_dir }}/config/cli.modules.d/{{ foreman_development_plugin_settings_template.split('/')[1] | replace('.j2', '') }}"
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0644"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  when: foreman_development_plugin_settings_template != ""
+
+- name: "Copy module config file for {{ foreman_development_plugin_name }}"
+  ansible.builtin.shell: |
+    cp {{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}/config/{{ foreman_development_plugin_module_config }} \
+       {{ foreman_development_hammer_dir }}/config/cli.modules.d/{{ foreman_development_plugin_module_config }}
+  args:
+    creates: "{{ foreman_development_hammer_dir }}/config/cli.modules.d/{{ foreman_development_plugin_module_config }}"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  when:
+    - foreman_development_plugin_settings_template == ""
+    - foreman_development_plugin_module_config | default("") != ""
+
+- name: "Create bundler configuration for {{ foreman_development_plugin_name }}"
+  ansible.builtin.lineinfile:
+    line: >-
+      gem '{{ foreman_development_plugin_gem | default(foreman_development_plugin_name) }}',
+      path: '{{ foreman_development_deployment_dir }}/{{ foreman_development_plugin_name }}'
+    path: "{{ foreman_development_hammer_dir }}/Gemfile.local.rb"
+    create: true
+    state: present
+    regexp: "^\\s*gem '{{ foreman_development_plugin_name }}'"
+    mode: "0644"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  when: foreman_development_plugin_name != ""

@@ -4,6 +4,8 @@ foreman_development_group: "{{ foreman_development_user }}"
 foreman_development_deployment_dir: "/home/{{ foreman_development_user }}"
 foreman_development_foreman_dir: "{{ foreman_development_deployment_dir }}/foreman"
 foreman_development_cert_dir: "{{ foreman_development_deployment_dir }}/foreman-certs"
+foreman_development_hammer_dir: "{{ foreman_development_deployment_dir }}/hammer-cli"
+foreman_development_smart_proxy_dir: "{{ foreman_development_deployment_dir }}/smart-proxy"
 
 foreman_development_ca_certificate: "{{ foreman_ca_certificate }}"
 foreman_development_client_certificate: "{{ foreman_client_certificate }}"
@@ -15,6 +17,10 @@ foreman_development_admin_password: "changeme"
 foreman_development_git_repo: "https://github.com/theforeman/foreman.git"
 foreman_development_git_revision: "develop"
 foreman_development_github_username: ""
+
+foreman_development_hammer_git_repo: "https://github.com/theforeman/hammer-cli.git"
+
+foreman_development_smart_proxy_git_repo: "https://github.com/theforeman/smart-proxy.git"
 
 foreman_development_rails_port: 3000
 foreman_development_rails_command: "puma -w 2 -p {{ foreman_development_rails_port }} --preload -b tcp://0.0.0.0"
@@ -36,43 +42,106 @@ foreman_development_plugin_registry:
     manage_repo: true
     extra_gemfiles:
       - "gemfile.d/test.rb"
+    hammer:
+      gem: hammer_cli_katello
+      name: "Katello/hammer-cli-katello"
+      module_config: katello.yml
   foreman_remote_execution:
     name: "theforeman/foreman_remote_execution"
     manage_repo: true
+    hammer:
+      name: "theforeman/hammer_cli_foreman_remote_execution"
+      module_config: foreman_remote_execution.yml
+    smart_proxy:
+      name: "theforeman/smart_proxy_remote_execution_ssh"
+      module_config: remote_execution_ssh.yml
   foreman_ansible:
     name: "theforeman/foreman_ansible"
     settings_template: "foreman_ansible.yaml.j2"
     manage_repo: true
+    hammer:
+      gem: hammer_cli_foreman_ansible
+      name: "theforeman/hammer-cli-foreman-ansible"
+      module_config: foreman_ansible.yml
+    smart_proxy:
+      name: "theforeman/smart_proxy_ansible"
+      module_config: ansible.yml
   foreman_rh_cloud:
     name: "theforeman/foreman_rh_cloud"
     manage_repo: true
+    hammer:
+      gem: hammer_cli_foreman_rh_cloud
+      name: "theforeman/hammer-cli-foreman-rh-cloud"
+      module_config: foreman_rh_cloud.yml
   foreman_discovery:
     name: "theforeman/foreman_discovery"
     manage_repo: true
+    hammer:
+      gem: hammer_cli_foreman_discovery
+      name: "theforeman/hammer-cli-foreman-discovery"
+      module_config: foreman_discovery.yml
+    smart_proxy:
+      name: "theforeman/smart_proxy_discovery"
+      module_config: discovery.yml
   foreman_openscap:
     name: "theforeman/foreman_openscap"
     manage_repo: true
+    hammer:
+      name: "theforeman/hammer_cli_foreman_openscap"
+      module_config: foreman_openscap.yml
+    smart_proxy:
+      name: "theforeman/smart_proxy_openscap"
+      module_config: openscap.yml
   foreman_bootdisk:
     name: "theforeman/foreman_bootdisk"
     manage_repo: true
+    hammer:
+      name: "theforeman/hammer_cli_foreman_bootdisk"
+      module_config: foreman_bootdisk.yml
   foreman_theme_satellite:
     name: "redhatsatellite/foreman_theme_satellite"
     manage_repo: true
   foreman_tasks:
     name: "theforeman/foreman-tasks"
     manage_repo: true
+    hammer:
+      gem: hammer_cli_foreman_tasks
+      name: "theforeman/hammer-cli-foreman-tasks"
+      module_config: foreman_tasks.yml
+    smart_proxy:
+      name: "theforeman/smart_proxy_dynflow"
+      module_config: dynflow.yml
   foreman_webhooks:
     name: "theforeman/foreman_webhooks"
     manage_repo: true
+    hammer:
+      gem: hammer_cli_foreman_webhooks
+      name: "theforeman/hammer-cli-foreman-webhooks"
+      module_config: foreman_webhooks.yml
+    smart_proxy:
+      name: "theforeman/smart_proxy_shellhooks"
+      module_config: shellhooks.yml
   foreman_templates:
     name: "theforeman/foreman_templates"
     manage_repo: true
+    hammer:
+      gem: hammer_cli_foreman_templates
+      name: "theforeman/hammer-cli-foreman-templates"
+      module_config: foreman_templates.yml
   foreman_leapp:
     name: "theforeman/foreman_leapp"
     manage_repo: true
+    hammer:
+      gem: hammer_cli_foreman_leapp
+      name: "theforeman/hammer-cli-foreman-leapp"
+      module_config: foreman_leapp.yml
   foreman_puppet:
     name: "theforeman/foreman_puppet"
     manage_repo: true
+    hammer:
+      gem: hammer_cli_foreman_puppet
+      name: "theforeman/hammer-cli-foreman-puppet"
+      module_config: foreman_puppet.yml
 
 foreman_development_default_plugins:
   - katello

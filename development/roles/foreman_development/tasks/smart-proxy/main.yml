@@ -1,0 +1,141 @@
+---
+- name: Deploy smart-proxy git repository
+  ansible.builtin.include_role:
+    name: git_repository
+  vars:
+    git_repository_destination_dir: "{{ foreman_development_smart_proxy_dir }}"
+    git_repository_user: "{{ foreman_development_user }}"
+    git_repository_repository_owner: "theforeman"
+    git_repository_repository_name: "smart-proxy"
+    git_repository_secondary_remote_owner: "{{ foreman_development_github_username }}"
+
+- name: Create cert directories
+  ansible.builtin.file:
+    path: "{{ foreman_development_cert_dir }}/smart-proxy"
+    state: directory
+    mode: "0750"
+    owner: "{{ foreman_development_user }}"
+
+- name: Deploy certificates
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ foreman_development_cert_dir }}/smart-proxy/{{ item.dest }}"
+    remote_src: true
+    mode: "0640"
+    owner: "{{ foreman_development_user }}"
+  loop:
+    - src: "{{ httpd_server_ca_certificate }}"
+      dest: "ca.crt"
+    - src: "{{ httpd_server_certificate }}"
+      dest: "proxy.crt"
+    - src: "{{ httpd_server_key }}"
+      dest: "proxy.key"
+
+- name: Create smart-proxy settings.d file from template
+  ansible.builtin.template:
+    src: "smart-proxy/settings.yml.j2"
+    dest: "{{ foreman_development_smart_proxy_dir }}/config/settings.yml"
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0644"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+
+- name: Setup smart-proxy plugins
+  ansible.builtin.include_tasks: smart-proxy/plugin.yml
+  vars:
+    foreman_development_plugin_config: "{{ (foreman_development_plugin_registry[plugin_item] | default({})).smart_proxy | default({}) }}"
+    foreman_development_plugin_name: "{{ foreman_development_plugin_config.name.split('/')[1] }}"
+    foreman_development_plugin_gem: "{{ foreman_development_plugin_config.gem | default(foreman_development_plugin_config.name.split('/')[1]) }}"
+    foreman_development_plugin_org: "{{ foreman_development_plugin_config.name.split('/')[0] }}"
+    foreman_development_plugin_repo_url: "https://github.com/{{ foreman_development_plugin_config.name }}.git"
+    foreman_development_plugin_manage_repo: "{{ foreman_development_plugin_config.manage_repo | default(true) }}"
+    foreman_development_plugin_settings_template: "{{ foreman_development_plugin_config.settings_template | default('') }}"
+    foreman_development_plugin_module_config: "{{ foreman_development_plugin_config.module_config | default('') }}"
+    foreman_development_plugin_bundler_path_prefix: "../../"
+    foreman_development_plugin_extra_gemfiles: []
+  when: foreman_development_plugin_config != {}
+  loop: "{{ foreman_development_default_plugins + foreman_development_enabled_plugins }}"
+  loop_control:
+    loop_var: plugin_item
+
+- name: Ensure the crb repository is enabled
+  community.general.dnf_config_manager:
+    name: crb
+    state: enabled
+
+- name: Install smart-proxy dependencies
+  ansible.builtin.package:
+    name:
+      - libvirt-devel
+      - krb5-devel
+      - libyaml-devel
+      - systemd-devel
+    state: present
+
+- name: Install smart-proxy Ruby dependencies
+  ansible.builtin.command:
+    cmd: bundle install --path .vendor --jobs 3
+    chdir: "{{ foreman_development_smart_proxy_dir }}"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  environment:
+    PATH: "/usr/bin:/bin:/usr/local/bin"
+  changed_when: true
+
+- name: Create smart-proxy development systemd service
+  ansible.builtin.template:
+    src: smart-proxy/smart-proxy-development.service.j2
+    dest: /etc/systemd/system/smart-proxy-development.service
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable and start smart-proxy development service
+  ansible.builtin.systemd:
+    name: smart-proxy-development
+    enabled: true
+    state: started
+
+- name: Wait for smart-proxy development server to be accessible
+  ansible.builtin.uri:
+    url: "http://{{ ansible_facts['fqdn'] }}:8000/features"
+    validate_certs: false
+  until: foreman_development_smart_proxy_status.status == 200
+  retries: 30
+  delay: 5
+  register: foreman_development_smart_proxy_status
+
+- name: Enable and start Foreman development service
+  ansible.builtin.systemd:
+    name: foreman-development
+    enabled: true
+    state: started
+
+- name: Wait for Foreman development server to be accessible
+  ansible.builtin.uri:
+    url: '{{ foreman_development_url }}/api/v2/ping'
+    validate_certs: false
+  until: foreman_development_status.status == 200
+  retries: 30
+  delay: 5
+  register: foreman_development_status
+
+- name: Configure smart-proxy for development
+  theforeman.foreman.smart_proxy:
+    name: "{{ ansible_facts['fqdn'] }}-dev"
+    url: "https://{{ ansible_facts['fqdn'] }}:8443"
+    server_url: "{{ foreman_development_url }}"
+    username: "{{ foreman_development_admin_user }}"
+    password: "{{ foreman_development_admin_password }}"
+    validate_certs: false
+
+- name: Stop smart-proxy development service after smart proxy registration
+  ansible.builtin.systemd:
+    name: smart-proxy-development
+    state: stopped
+    enabled: false
