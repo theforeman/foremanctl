@@ -6,7 +6,6 @@
     git_repository_user: "{{ foreman_development_user }}"
     git_repository_repository_owner: "theforeman"
     git_repository_repository_name: "hammer-cli"
-    git_repository_revision: "{{ foreman_development_hammer_git_revision }}"
     git_repository_secondary_remote_owner: "{{ foreman_development_github_username }}"
 
 - name: Setup hammer-cli-foreman
