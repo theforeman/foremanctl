@@ -157,6 +157,7 @@ foreman_development_packages:
   - libxml2-devel
   - libxslt-devel
   - libcurl-devel
+  - libffi-devel
   - gcc-c++
   - make
   - rubygem-bundler
