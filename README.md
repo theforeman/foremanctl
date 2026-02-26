@@ -6,7 +6,7 @@ This repository provides tooling for a deployment of Foreman and Katello using P
 
 ### Foreman
 
-Foreman 3.17 (with Katello 4.19, Pulp 3.85 and Candlepin 4.6).
+Foreman 3.18 (with Katello 4.20, Pulp 3.85 and Candlepin 4.6).
 
 ### Ansible
 
