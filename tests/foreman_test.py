@@ -20,7 +20,6 @@ RECURRING_INSTANCES = [
 def foreman_status_curl(server):
     return server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' http://{FOREMAN_HOST}:{FOREMAN_PORT}/api/v2/ping")
 
-
 @pytest.fixture(scope="module")
 def foreman_status(foreman_status_curl):
     return json.loads(foreman_status_curl.stdout)
@@ -79,3 +78,7 @@ def test_foreman_recurring_timers_enabled_and_running(server, instance):
 def test_foreman_recurring_services_exist(server, instance):
     service = server.service(f"foreman-recurring@{instance}.service")
     assert service.exists
+
+def test_foreman_delivery_method_setting(foremanapi):
+    delivery_method_setting = foremanapi.list('settings', search='name=delivery_method')
+    assert delivery_method_setting[0]['value'] == 'smtp'
