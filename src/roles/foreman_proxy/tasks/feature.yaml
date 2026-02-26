@@ -1,0 +1,31 @@
+---
+- name: Create config secret for {{ feature_name }}
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-{{ feature_name }}-yml
+    data: "{{ lookup('ansible.builtin.template', 'settings.d/' + feature_name + '.yml.j2') }}"
+  notify:
+    - Restart Foreman Proxy
+    - Refresh Foreman Proxy
+
+- name: Mount config secret for {{ feature_name }}
+  ansible.builtin.copy:
+    dest: /etc/containers/systemd/foreman-proxy.container.d/{{ feature_name }}.conf
+    content: |
+      [Container]
+      Secret=foreman-proxy-{{ feature_name }}-yml,type=mount,target=/etc/foreman-proxy/settings.d/{{ feature_name }}.yml
+    mode: '0644'
+    owner: root
+    group: root
+  notify:
+    - Restart Foreman Proxy
+    - Refresh Foreman Proxy
+
+- name: Include additional tasks for {{ feature_name }}
+  ansible.builtin.include_tasks: '{{ tasks_file }}'
+  when:
+    - feature_enabled != "false"
+    - tasks_file is not none
+    - tasks_file != ""
+  vars:
+    tasks_file: "{{ lookup('ansible.builtin.first_found', ['feature/' + feature_name + '.yaml'], errors='ignore') }}"

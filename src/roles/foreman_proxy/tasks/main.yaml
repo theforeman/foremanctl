@@ -20,7 +20,6 @@
     hostname: "{{ ansible_facts['fqdn'] }}"
     secrets:
       - 'foreman-proxy-settings-yml,type=mount,target=/etc/foreman-proxy/settings.yml'
-      - 'foreman-proxy-logs-yml,type=mount,target=/etc/foreman-proxy/settings.d/logs.yml'
       - 'foreman-proxy-ssl-ca,type=mount,target=/etc/foreman-proxy/ssl_ca.pem'
       - 'foreman-proxy-ssl-cert,type=mount,target=/etc/foreman-proxy/ssl_cert.pem'
       - 'foreman-proxy-ssl-key,type=mount,target=/etc/foreman-proxy/ssl_key.pem'
@@ -35,12 +34,33 @@
         PartOf=foreman.target
   notify: Restart Foreman Proxy
 
+- name: Create foreman-proxy.container.d folder
+  ansible.builtin.file:
+    path: /etc/containers/systemd/foreman-proxy.container.d
+    state: directory
+    mode: '0755'
+    owner: 'root'
+    group: 'root'
+
+- name: Configure features
+  ansible.builtin.include_tasks: feature.yaml
+  vars:
+    feature_enabled: "true"
+  loop: "{{ foreman_proxy_features }}"
+  loop_control:
+    loop_var: feature_name
+
+- name: Disable features
+  ansible.builtin.include_tasks: feature.yaml
+  vars:
+    feature_enabled: "false"
+  loop: "{{ foreman_proxy_disabled_features }}"
+  loop_control:
+    loop_var: feature_name
+
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
     daemon_reload: true
-
-- name: Flush handlers to restart services
-  ansible.builtin.meta: flush_handlers
 
 - name: Start the Foreman Proxy Service
   ansible.builtin.systemd:
@@ -55,3 +75,6 @@
     username: "{{ foreman_initial_admin_username }}"
     password: "{{ foreman_initial_admin_password }}"
     validate_certs: false
+
+- name: Flush handlers to restart services
+  ansible.builtin.meta: flush_handlers
