@@ -177,7 +177,7 @@ jobs:
       fail-fast: false
       matrix:
         upgrade_from:
-          - '3.17'
+          - '3.18'
         upgrade_to:
           - 'nightly'
     runs-on: ubuntu-24.04
