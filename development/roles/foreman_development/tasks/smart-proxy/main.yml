@@ -63,6 +63,17 @@
   community.general.dnf_config_manager:
     name: crb
     state: enabled
+  when:
+    - ansible_facts['distribution'] != "RedHat"
+
+- name: Ensure the crb repository is enabled
+  ansible.builtin.command:
+    cmd: >-
+      subscription-manager repos
+      --enable codeready-builder-for-rhel-{{ ansible_facts['distribution_major_version'] }}-{{ ansible_facts['architecture'] }}-rpms
+  changed_when: true
+  when:
+    - ansible_facts['distribution'] == "RedHat"
 
 - name: Install smart-proxy dependencies
   ansible.builtin.package:
