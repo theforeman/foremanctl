@@ -9,7 +9,7 @@ def set_centos_box_url(vm)
 end
 
 Vagrant.configure("2") do |config|
-  config.vm.synced_folder ".", "/vagrant"
+  config.vm.synced_folder ".", "/vagrant", disabled: true
 
   config.vm.provision("etc_hosts", type: 'ansible') do |ansible|
     ansible.playbook = "development/playbooks/etc_host.yml"
