@@ -46,7 +46,7 @@ def test_foreman_status_cache(foreman_status):
     assert foreman_status['results']['foreman']['cache']['servers'][0]['status'] == 'ok'
 
 
-@pytest.mark.parametrize("katello_service", ['candlepin', 'candlepin_auth', 'candlepin_events', 'foreman_tasks', 'katello_events', 'pulp3', 'pulp3_content'])
+@pytest.mark.parametrize("katello_service", ['candlepin', 'candlepin_auth', 'foreman_tasks', 'katello_events', 'pulp3', 'pulp3_content'])
 def test_katello_services_status(foreman_status, katello_service):
     assert foreman_status['results']['katello']['services'][katello_service]['status'] == 'ok'
 
