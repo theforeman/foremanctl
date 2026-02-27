@@ -42,6 +42,59 @@
         [Unit]
         PartOf=foreman.target
 
+- name: Configure SSL certificates
+  when:
+    - postgresql_ssl_crt is defined
+    - postgresql_ssl_crt != ''
+    - postgresql_ssl_key is defined
+    - postgresql_ssl_key != ''
+  block:
+    - name: Create Podman secret for PostgreSQL SSL cert
+      containers.podman.podman_secret:
+        name: postgresql-ssl-crt
+        path: "{{ postgresql_ssl_crt }}"
+      notify:
+        - Restart postgresql
+
+    - name: Create Podman secret for PostgreSQL SSL key
+      containers.podman.podman_secret:
+        name: postgresql-ssl-key
+        path: "{{ postgresql_ssl_key }}"
+      notify:
+        - Restart postgresql
+
+    - name: Create Podman secret for PostgreSQL SSL config
+      containers.podman.podman_secret:
+        name: postgresql-ssl-conf
+        data: |
+          ssl = on
+          ssl_cert_file = '/opt/app-root/src/certs/ssl.crt'
+          ssl_key_file =  '/opt/app-root/src/certs/ssl.key'
+      notify:
+        - Restart postgresql
+
+    - name: Create postgresql.container.d folder
+      ansible.builtin.file:
+        path: /etc/containers/systemd/postgresql.container.d
+        state: directory
+        mode: '0755'
+        owner: 'root'
+        group: 'root'
+
+    - name: Configure PostgreSQL SSL-related secrets
+      ansible.builtin.copy:
+        dest: /etc/containers/systemd/postgresql.container.d/ssl.conf
+        mode: '0644'
+        owner: root
+        group: root
+        content: |
+          [Container]
+          Secret=postgresql-ssl-crt,type=mount,target=/opt/app-root/src/certs/ssl.crt,mode=0640
+          Secret=postgresql-ssl-key,type=mount,target=/opt/app-root/src/certs/ssl.key,mode=0640
+          Secret=postgresql-ssl-conf,type=mount,target=/opt/app-root/src/postgresql-cfg/ssl.conf
+      notify:
+        - Restart postgresql
+
 - name: Run daemon reload
   ansible.builtin.systemd:
     daemon_reload: true

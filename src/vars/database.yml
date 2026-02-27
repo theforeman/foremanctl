@@ -2,7 +2,7 @@
 database_host: localhost
 database_port: 5432
 database_ssl_mode: disable
-database_ssl_ca: None
+database_ssl_ca:
 
 foreman_database_name: foreman
 foreman_database_user: foreman
