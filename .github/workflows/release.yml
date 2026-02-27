@@ -40,7 +40,7 @@ jobs:
       contents: write  # clone repo and create release
     steps:
       - name: Download tarball from GitHub cache
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: release-tarball
       - name: Create Release Page
