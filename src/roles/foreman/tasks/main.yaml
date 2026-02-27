@@ -3,6 +3,8 @@
   containers.podman.podman_image:
     name: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "{{ foreman_registry_auth_file }}"
 
 - name: Create secret for DATABASE_URL
   containers.podman.podman_secret:
@@ -224,8 +226,7 @@
       - bin/rails db:migrate && bin/rails db:seed
     detach: false
     network: host
-    env:
-      FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
+    env: "{{ {'FOREMAN_ENABLED_PLUGINS': foreman_plugins | join(' ')} }}"
     secrets:
       - 'foreman-database-url,type=env,target=DATABASE_URL'
       - 'foreman-seed-admin-user,type=env,target=SEED_ADMIN_USER'

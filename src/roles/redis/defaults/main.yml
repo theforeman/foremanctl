@@ -1,3 +1,4 @@
 ---
 redis_container_image: quay.io/sclorg/redis-6-c9s
 redis_container_tag: "latest"
+redis_registry_auth_file: /etc/foreman/registry-auth.json

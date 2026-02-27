@@ -1,6 +1,7 @@
 ---
 pulp_container_image: quay.io/foreman/pulp
 pulp_container_tag: "3.73"
+pulp_registry_auth_file: /etc/foreman/registry-auth.json
 pulp_api_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
 pulp_content_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
 pulp_worker_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
