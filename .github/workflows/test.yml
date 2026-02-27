@@ -116,7 +116,7 @@ jobs:
           ./forge smoker
       - name: Archive smoker report
         if: ${{ always() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: smoker-${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.database }}
           path: "/home/runner/smoker/report/"
@@ -125,7 +125,7 @@ jobs:
         run: ./forge sos
       - name: Archive sos reports
         if: ${{ always() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: sosreport-${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.database }}
           path: sos/
@@ -237,7 +237,7 @@ jobs:
         run: ./forge sos
       - name: Archive sos reports
         if: ${{ always() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: sosreport-upgrade
           path: sos/
