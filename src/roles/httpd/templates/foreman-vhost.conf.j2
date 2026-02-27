@@ -2,12 +2,12 @@
   ServerName {{ ansible_facts['fqdn'] }}
 
   ## Load additional static includes
-  IncludeOptional "/etc/httpd/conf.d/05-foreman.d/*.conf"
+  IncludeOptional "{{ httpd_conf_path }}/conf.d/05-foreman.d/*.conf"
 
   ## Logging
-  ErrorLog "/var/log/httpd/foreman_error.log"
+  ErrorLog "{{ httpd_log_path }}/foreman_error.log"
   ServerSignature Off
-  CustomLog "/var/log/httpd/foreman_access.log" combined
+  CustomLog "{{ httpd_log_path }}/foreman_access.log" combined
 
   ## Request header rules
   ## as per http://httpd.apache.org/docs/2.4/mod/mod_headers.html#requestheader

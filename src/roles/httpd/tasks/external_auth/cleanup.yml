@@ -1,7 +1,7 @@
 ---
 - name: Remove external authentication configuration
   ansible.builtin.file:
-    path: "/etc/httpd/conf.d/05-{{ item }}.d/external_auth.conf"
+    path: "{{ httpd_conf_path}} /05-{{ item }}.d/external_auth.conf"
     state: absent
   notify:
     - Restart httpd
@@ -11,7 +11,7 @@
 
 - name: Remove Apache module configuration files for IPA authentication
   ansible.builtin.file:
-    path: /etc/httpd/conf.modules.d/55-{{ item }}.conf
+    path: "{{ httpd_modules_path }}/55-{{ item }}.conf"
     state: absent
   loop:
     - authnz_pam
