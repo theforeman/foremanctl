@@ -1,22 +1,30 @@
 ---
-- name: Define foreman.target
-  ansible.builtin.copy:
-    dest: /etc/systemd/system/foreman.target
-    owner: root
-    group: root
-    mode: '0644'
-    content: |
-      [Unit]
-      Description=Foreman services
-      [Install]
-      WantedBy=default.target
+- name: Configure Foreman systemd target as rootless user
+  environment:
+    XDG_RUNTIME_DIR: "{{ foremanctl_xdg_runtime_dir }}"
+  become: true
+  become_user: "{{ foremanctl_user }}"
+  block:
+    - name: Define foreman.target
+      ansible.builtin.copy:
+        dest: "{{ foremanctl_systemd_user_dir }}/foreman.target"
+        owner: "{{ foremanctl_user }}"
+        group: "{{ foremanctl_group }}"
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=Foreman services
+          [Install]
+          WantedBy=default.target
 
-- name: Run daemon reload to load new target
-  ansible.builtin.systemd:
-    daemon_reload: true
+    - name: Run daemon reload to load new target
+      ansible.builtin.systemd:
+        daemon_reload: true
+        scope: user
 
-- name: Start foreman.target
-  ansible.builtin.systemd_service:
-    name: foreman.target
-    state: started
-    enabled: true
+    - name: Start foreman.target
+      ansible.builtin.systemd_service:
+        name: foreman.target
+        state: started
+        enabled: true
+        scope: user

@@ -42,14 +42,18 @@ foremanctl deploy --certificate-source=installer
 After deployment, certificates are available at:
 
 **Default Source:**
-- CA Certificate: `/root/certificates/certs/ca.crt`
-- Server Certificate: `/root/certificates/certs/<hostname>.crt`
-- Client Certificate: `/root/certificates/certs/<hostname>-client.crt`
+- CA Certificate: `/var/lib/foremanctl/certificates/certs/ca.crt`
+- Server Certificate: `/var/lib/foremanctl/certificates/certs/<hostname>.crt`
+- Client Certificate: `/var/lib/foremanctl/certificates/certs/<hostname>-client.crt`
 
 **Installer Source:**
 - CA Certificate: `/root/ssl-build/katello-default-ca.crt`
 - Server Certificate: `/root/ssl-build/<hostname>/<hostname>-apache.crt`
 - Client Certificate: `/root/ssl-build/<hostname>/<hostname>-foreman-client.crt`
+
+**Note for Rootless Deployments:**
+- Default certificates are owned by `foremanctl:foremanctl` user and group
+- Installer certificates remain in `/root/ssl-build/` with group ownership and permissions automatically configured during deployment to allow the `foremanctl` user to read them
 
 ### Current Limitations
 
@@ -99,6 +103,7 @@ Certificate paths are defined in source-specific variable files:
 
 **Default Source (`src/vars/default_certificates.yml`):**
 ```yaml
+certificates_ca_directory: /var/lib/foremanctl/certificates
 ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
 server_certificate: "{{ certificates_ca_directory }}/certs/{{ ansible_facts['fqdn'] }}.crt"
 client_certificate: "{{ certificates_ca_directory }}/certs/{{ ansible_facts['fqdn'] }}-client.crt"
@@ -106,9 +111,10 @@ client_certificate: "{{ certificates_ca_directory }}/certs/{{ ansible_facts['fqd
 
 **Installer Source (`src/vars/installer_certificates.yml`):**
 ```yaml
-ca_certificate: "/root/ssl-build/katello-default-ca.crt"
-server_certificate: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-apache.crt"
-client_certificate: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-foreman-client.crt"
+certificates_ca_directory: /root/ssl-build
+ca_certificate: "{{ certificates_ca_directory }}/katello-default-ca.crt"
+server_certificate: "{{ certificates_ca_directory }}/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-apache.crt"
+client_certificate: "{{ certificates_ca_directory }}/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-foreman-client.crt"
 ```
 
 #### Integration with Deployment
@@ -138,11 +144,13 @@ The `certificate_checks` role uses `foreman-certificate-check` binary to validat
 
 **Directory Structure:**
 ```
-/root/certificates/
+/var/lib/foremanctl/certificates/
 ├── certs/           # Public certificates
 ├── private/         # Private keys and passwords
 └── requests/        # Certificate signing requests
 ```
+
+All certificate files and directories are owned by `foremanctl:foremanctl` to support rootless Podman deployments.
 
 **OpenSSL Configuration:**
 - Custom configuration template supports SAN extensions

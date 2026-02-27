@@ -1,5 +1,8 @@
 ---
-certificates_ca_directory: /root/certificates
+# Hardcoded path instead of using {{ foremanctl_home }}/certificates
+# because base.yaml (which defines foremanctl_home) loads after this file
+# and base.yaml contains variables that reference certificate paths from this file
+certificates_ca_directory: /var/lib/foremanctl/certificates
 ca_key_password: "{{ certificates_ca_directory }}/private/ca.pwd"
 ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
 ca_key: "{{ certificates_ca_directory }}/private/ca.key"
