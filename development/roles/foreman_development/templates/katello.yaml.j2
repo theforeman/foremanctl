@@ -11,9 +11,4 @@
     :oauth_secret: {{ candlepin_oauth_secret }}
     :ca_cert_file: {{ foreman_development_cert_dir }}/proxy_ca.pem
 
-  :candlepin_events:
-    :ssl_cert_file: {{ foreman_development_cert_dir }}/client_cert.pem
-    :ssl_key_file: {{ foreman_development_cert_dir }}/client_key.pem
-    :ssl_ca_file: {{ foreman_development_cert_dir }}/proxy_ca.pem
-
   :katello_applicability: true
