@@ -20,17 +20,18 @@ feature_two:
 The following properties are defined:
 * `description` (_String_): A human-readable description of the feature, can be used in documentation/help output.
 * `internal` (_Boolean_): Whether the feature is user visible (shows up in documentation/help) or internal (just to perform additional configuration without user interaction).
-* `foreman` (_String_): The name of the Foreman plugin to be enabled (via `FOREMAN_ENABLED_PLUGINS`).
-  If `roles/foreman/tasks/feature/{{ foreman_plugin }}.yaml` exists, it will be executed to perform any plugin-specific setup.
-  * **FIXME**: task file not implemented yet
-* `foreman_proxy` (_String_): The name of the Foreman Proxy plugin to be enabled (by deploying `roles/foreman_proxy/templates/settings.d/{{ foreman_proxy_plugin }}.yml.j2` to `/etc/foreman-proxy/settings.d`).
-  If `roles/foreman/tasks/feature/{{ foreman_proxy_plugin }}.yaml` exists, it will be executed to perform any plugin-specific setup.
+* `foreman` (_Hash_): 
+  * `plugin_name` (_String_): The name of the Foreman plugin to be enabled (via `FOREMAN_ENABLED_PLUGINS`).
+     If `roles/foreman/tasks/feature/{{ foreman_plugin }}.yaml` exists, it will be executed to perform any plugin-specific setup.
+      * **FIXME**: task file not implemented yet
+  * `role` (_String_): The name of the Ansible role to be executed.
+* `foreman_proxy` (_Hash_):
+  * `plugin_name` (_String_): The name of the Foreman Proxy plugin to be enabled (by deploying `roles/foreman_proxy/templates/settings.d/{{ foreman_proxy_plugin }}.yml.j2` to `/etc/foreman-proxy/settings.d`).
+    If `roles/foreman/tasks/feature/{{ foreman_proxy_plugin }}.yaml` exists, it will be executed to perform any plugin-specific setup.
+  * `role` (_String_): The name of the Ansible role to be executed.
 * `hammer` (_String_): The name of the Hammer plugin to be enabled.
   * **FIXME**: Not implemented, right now we use the same list as Foreman plugins, but needs modification for foreman-tasks and friends
-* `role` (_String_): The name of the Ansible role that should be executed if this feature is enabled.
 * `dependencies` (_Array_ of _String_): List of features that are automatically enabled when the user requests this feature. Usually will point at features with `internal: true`.
-* `requirements` (_Array_ of _String_): List of features that are required but can't be automatically enabled (possible reasons: requires manual configuration, can't be enabled after initial deployment).
-  Produces an error when the requirement is not met.
 
 Properties can be omitted.
 
@@ -63,7 +64,7 @@ katello:
 rh_cloud:
   description: Foreman RH Cloud
   foreman: foreman_rh_cloud
-  requirements:
+  dependencies:
     - katello
 ```
 
@@ -83,3 +84,59 @@ katello:
 ```
 
 The `foreman-tasks` feature is automatically enabled when the user requests Katello, thus also gaining the Hammer integration for tasks which would be missing if we'd only let the Ruby gem dependency pull in `foreman-tasks`.
+
+### another example
+
+```yaml
+dynflow:
+  internal: true
+  foreman_proxy:
+    plugin_name: dynflow
+
+foreman-tasks:
+  foreman:
+    plugin_name: foreman-tasks
+  hammer: foreman_tasks
+  dependencies:
+    - dynflow
+
+katello:
+  description: Katello
+  foreman:
+    plugin_name: katello
+  dependencies:
+    - foreman-tasks
+   
+rh_cloud:
+  description: Foreman RH Cloud
+  foreman:
+    plugin_name: foreman_rh_cloud
+  dependencies:
+    - katello
+
+remote_execution:
+  description: REX
+  foreman:
+    plugin_name: foreman_remote_execution
+  foreman_proxy:
+    plugin_name: smart_proxy_remote_execution_ssh
+  dependencies:
+    - dynflow
+
+openscap:
+  description: OpenSCAP
+  foreman:
+    plugin_name: foreman_openscap
+  foreman_proxy:
+    plugin_name: smart_proxy_openscap
+
+iop:
+  description: IoP
+  foreman:
+    role: iop_core
+
+container_gateway:
+  description: gw is a proxy-only plugin
+  foreman_proxy:
+    plugin_name: smart_proxy_container_gateway
+```
