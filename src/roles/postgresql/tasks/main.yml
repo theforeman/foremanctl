@@ -1,58 +1,76 @@
 ---
-- name: Pull PostgreSQL container image
-  containers.podman.podman_image:
-    name: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
-    state: present
-
 - name: Create PostgreSQL storage directory
   ansible.builtin.file:
     path: "{{ postgresql_data_dir }}"
     state: directory
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
     mode: "0700"
-    owner: 26
-    group: 26
+    setype: container_var_lib_t
 
-- name: Create Podman secret for PostgreSQL admin password
-  containers.podman.podman_secret:
-    name: postgresql-admin-password
-    data: "{{ postgresql_admin_password }}"
-  notify:
-    - Restart postgresql
+- name: Set PostgreSQL directory ownership for container UID/GID
+  ansible.builtin.shell: |
+    cd /tmp
+    sudo -u {{ foremanctl_user }} XDG_RUNTIME_DIR={{ foremanctl_xdg_runtime_dir }} \
+      podman unshare chown -R {{ postgresql_container_uid }}:{{ postgresql_container_gid }} {{ postgresql_data_dir }}
+  args:
+    executable: /bin/bash
+  changed_when: true
 
-- name: Deploy PostgreSQL container
-  containers.podman.podman_container:
-    name: "{{ postgresql_container_name }}"
-    image: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
-    state: quadlet
-    healthcheck: pg_isready
-    sdnotify: healthy
-    network: host
-    volumes:
-      - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
-    secrets:
-      - 'postgresql-admin-password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
-    env:
-      POSTGRESQL_MAX_CONNECTIONS: "{{ postgresql_max_connections }}"
-      POSTGRESQL_SHARED_BUFFERS: "{{ postgresql_shared_buffers }}"
-      POSTGRESQL_EFFECTIVE_CACHE_SIZE: "{{ postgresql_effective_cache_size }}"
-    quadlet_options:
-      - |
-        [Install]
-        WantedBy=default.target foreman.target
-        [Unit]
-        PartOf=foreman.target
+- name: Configure PostgreSQL container as rootless user
+  environment:
+    XDG_RUNTIME_DIR: "{{ foremanctl_xdg_runtime_dir }}"
+  become: true
+  become_user: "{{ foremanctl_user }}"
+  block:
+    - name: Pull PostgreSQL container image
+      containers.podman.podman_image:
+        name: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
+        state: present
 
-- name: Run daemon reload
-  ansible.builtin.systemd:
-    daemon_reload: true
+    - name: Create Podman secret for PostgreSQL admin password
+      containers.podman.podman_secret:
+        name: postgresql-admin-password
+        data: "{{ postgresql_admin_password }}"
+      notify:
+        - Restart postgresql
 
-- name: Flush handlers to restart services
-  ansible.builtin.meta: flush_handlers
+    - name: Deploy PostgreSQL container
+      containers.podman.podman_container:
+        name: "{{ postgresql_container_name }}"
+        image: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
+        state: quadlet
+        healthcheck: pg_isready
+        sdnotify: healthy
+        network: host
+        volumes:
+          - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
+        secrets:
+          - 'postgresql-admin-password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
+        env:
+          POSTGRESQL_MAX_CONNECTIONS: "{{ postgresql_max_connections }}"
+          POSTGRESQL_SHARED_BUFFERS: "{{ postgresql_shared_buffers }}"
+          POSTGRESQL_EFFECTIVE_CACHE_SIZE: "{{ postgresql_effective_cache_size }}"
+        quadlet_options:
+          - |
+            [Install]
+            WantedBy=default.target foreman.target
+            [Unit]
+            PartOf=foreman.target
 
-- name: Start the PostgreSQL Service
-  ansible.builtin.systemd:
-    name: "{{ postgresql_container_name }}"
-    state: started
+    - name: Run daemon reload
+      ansible.builtin.systemd:
+        daemon_reload: true
+        scope: user
+
+    - name: Flush handlers to restart services
+      ansible.builtin.meta: flush_handlers
+
+    - name: Start the PostgreSQL Service
+      ansible.builtin.systemd:
+        name: "{{ postgresql_container_name }}"
+        state: started
+        scope: user
 
 # SCRAM-SHA-256 is default for PostgreSQL 14+,
 # after the upgrade, we can drop this task.

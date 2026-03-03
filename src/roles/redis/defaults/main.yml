@@ -1,3 +1,9 @@
 ---
 redis_container_image: quay.io/sclorg/redis-6-c9s
 redis_container_tag: "latest"
+
+# Container user namespace UID/GID (redis user in sclorg/redis-6-c9s)
+redis_container_uid: 1001
+redis_container_gid: 1001
+
+redis_data_dir: /var/lib/redis

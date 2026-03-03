@@ -3,9 +3,11 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    owner: root
-    group: root
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
     mode: '0755'
+    # XXX: Check if it's needed
+    # setype: container_var_lib_t
   loop:
     - /var/log/candlepin
     - /var/log/tomcat
@@ -14,92 +16,100 @@
   ansible.builtin.include_tasks:
     file: certs.yml
 
-- name: Create Candlepin configuration
-  containers.podman.podman_secret:
-    state: present
-    name: candlepin-candlepin-conf
-    data: "{{ lookup('ansible.builtin.template', 'candlepin.conf.j2') }}"
-    labels:
-      filename: candlepin.conf
-      app: candlepin
-  notify:
-    - Restart candlepin
+- name: Configure Candlepin container as rootless user
+  environment:
+    XDG_RUNTIME_DIR: "{{ foremanctl_xdg_runtime_dir }}"
+  become: true
+  become_user: "{{ foremanctl_user }}"
+  block:
+    - name: Create Candlepin configuration
+      containers.podman.podman_secret:
+        state: present
+        name: candlepin-candlepin-conf
+        data: "{{ lookup('ansible.builtin.template', 'candlepin.conf.j2') }}"
+        labels:
+          filename: candlepin.conf
+          app: candlepin
+      notify:
+        - Restart candlepin
 
-- name: Create Tomcat server.xml
-  containers.podman.podman_secret:
-    state: present
-    name: candlepin-tomcat-server-xml
-    data: "{{ lookup('ansible.builtin.template', 'server.xml.j2') }}"
-    labels:
-      filename: server.xml
-      app: tomcat
-  notify:
-    - Restart candlepin
+    - name: Create Tomcat server.xml
+      containers.podman.podman_secret:
+        state: present
+        name: candlepin-tomcat-server-xml
+        data: "{{ lookup('ansible.builtin.template', 'server.xml.j2') }}"
+        labels:
+          filename: server.xml
+          app: tomcat
+      notify:
+        - Restart candlepin
 
-- name: Create Tomcat server configuration
-  containers.podman.podman_secret:
-    state: present
-    name: candlepin-tomcat-conf
-    data: "{{ lookup('ansible.builtin.template', 'tomcat.conf') }}"
-    labels:
-      filename: tomcat.conf
-      app: tomcat
-  notify:
-    - Restart candlepin
+    - name: Create Tomcat server configuration
+      containers.podman.podman_secret:
+        state: present
+        name: candlepin-tomcat-conf
+        data: "{{ lookup('ansible.builtin.template', 'tomcat.conf') }}"
+        labels:
+          filename: tomcat.conf
+          app: tomcat
+      notify:
+        - Restart candlepin
 
-- name: Setup artemis
-  ansible.builtin.include_tasks:
-    file: artemis.yml
+    - name: Setup artemis
+      ansible.builtin.include_tasks:
+        file: artemis.yml
 
-- name: Pull the Candlepin container image
-  containers.podman.podman_image:
-    name: "{{ candlepin_container_image }}:{{ candlepin_container_tag }}"
-    state: present
+    - name: Pull the Candlepin container image
+      containers.podman.podman_image:
+        name: "{{ candlepin_container_image }}:{{ candlepin_container_tag }}"
+        state: present
 
-- name: Deploy Candlepin quadlet
-  containers.podman.podman_container:
-    name: "candlepin"
-    image: "{{ candlepin_container_image }}:{{ candlepin_container_tag }}"
-    state: quadlet
-    network: host
-    hostname: "{{ ansible_facts['fqdn'] }}"
-    secrets:
-      - 'candlepin-ca-cert,target=/etc/candlepin/certs/candlepin-ca.crt,mode=0440,type=mount'
-      - 'candlepin-ca-key,target=/etc/candlepin/certs/candlepin-ca.key,mode=0440,type=mount'
-      - 'candlepin-tomcat-keystore,target=/etc/candlepin/certs/keystore,mode=0440,type=mount'
-      - 'candlepin-tomcat-truststore,target=/etc/candlepin/certs/truststore,mode=0440,type=mount'
-      - 'candlepin-candlepin-conf,target=/etc/candlepin/candlepin.conf,mode=0440,type=mount'
-      - 'candlepin-artemis-broker-xml,target=/etc/candlepin/broker.xml,mode=440,type=mount'
-      - 'candlepin-tomcat-server-xml,target=/etc/tomcat/server.xml,mode=440,type=mount'
-      - 'candlepin-tomcat-conf,target=/etc/tomcat/tomcat.conf,mode=440,type=mount'
-      - 'candlepin-artemis-login-config,target=/etc/tomcat/login.config,mode=440,type=mount'
-      - 'candlepin-artemis-cert-roles-properties,target=/etc/tomcat/cert-roles.properties,mode=440,type=mount'
-      - 'candlepin-artemis-cert-users-properties,target=/etc/tomcat/cert-users.properties,mode=440,type=mount'
-      - 'candlepin-artemis-jaas-conf,target=/etc/tomcat/conf.d/jaas.conf,mode=440,type=mount'
-    volumes:
-      - /var/log/candlepin:/var/log/candlepin:Z
-      - /var/log/tomcat:/var/log/tomcat:Z
-    quadlet_options:
-      - |
-        [Install]
-        WantedBy=default.target foreman.target
-        [Unit]
-        PartOf=foreman.target
-        Wants=redis.service postgresql.service
-        After=redis.service postgresql.service
-        [Service]
-        TimeoutStartSec=300
-    healthcheck: curl --fail --insecure https://localhost:23443/candlepin/status
-    sdnotify: healthy
+    - name: Deploy Candlepin quadlet
+      containers.podman.podman_container:
+        name: "candlepin"
+        image: "{{ candlepin_container_image }}:{{ candlepin_container_tag }}"
+        state: quadlet
+        network: host
+        hostname: "{{ ansible_facts['fqdn'] }}"
+        secrets:
+          - 'candlepin-ca-cert,target=/etc/candlepin/certs/candlepin-ca.crt,mode=0440,type=mount'
+          - 'candlepin-ca-key,target=/etc/candlepin/certs/candlepin-ca.key,mode=0440,type=mount'
+          - 'candlepin-tomcat-keystore,target=/etc/candlepin/certs/keystore,mode=0440,type=mount'
+          - 'candlepin-tomcat-truststore,target=/etc/candlepin/certs/truststore,mode=0440,type=mount'
+          - 'candlepin-candlepin-conf,target=/etc/candlepin/candlepin.conf,mode=0440,type=mount'
+          - 'candlepin-artemis-broker-xml,target=/etc/candlepin/broker.xml,mode=440,type=mount'
+          - 'candlepin-tomcat-server-xml,target=/etc/tomcat/server.xml,mode=440,type=mount'
+          - 'candlepin-tomcat-conf,target=/etc/tomcat/tomcat.conf,mode=440,type=mount'
+          - 'candlepin-artemis-login-config,target=/etc/tomcat/login.config,mode=440,type=mount'
+          - 'candlepin-artemis-cert-roles-properties,target=/etc/tomcat/cert-roles.properties,mode=440,type=mount'
+          - 'candlepin-artemis-cert-users-properties,target=/etc/tomcat/cert-users.properties,mode=440,type=mount'
+          - 'candlepin-artemis-jaas-conf,target=/etc/tomcat/conf.d/jaas.conf,mode=440,type=mount'
+        volumes:
+          - /var/log/candlepin:/var/log/candlepin:Z
+          - /var/log/tomcat:/var/log/tomcat:Z
+        quadlet_options:
+          - |
+            [Install]
+            WantedBy=default.target foreman.target
+            [Unit]
+            PartOf=foreman.target
+            Wants=redis.service postgresql.service
+            After=redis.service postgresql.service
+            [Service]
+            TimeoutStartSec=300
+        healthcheck: curl --fail --insecure https://localhost:23443/candlepin/status
+        sdnotify: healthy
 
-- name: Run daemon reload to make Quadlet create the service files
-  ansible.builtin.systemd:
-    daemon_reload: true
+    - name: Run daemon reload to make Quadlet create the service files
+      ansible.builtin.systemd:
+        daemon_reload: true
+        scope: user
 
-- name: Flush handlers to restart services
-  ansible.builtin.meta: flush_handlers
+    - name: Flush handlers to restart services
+      ansible.builtin.meta: flush_handlers
 
-- name: Start the Candlepin Service
-  ansible.builtin.systemd:
-    name: candlepin
-    state: started
+    - name: Start the Candlepin Service
+      ansible.builtin.systemd:
+        name: candlepin
+        state: started
+        scope: user

@@ -1,4 +1,5 @@
 import json
+from conftest import get_service
 
 FOREMAN_PROXY_PORT = 8443
 
@@ -8,8 +9,8 @@ def test_foreman_proxy_features(server, certificates, server_fqdn):
     features = json.loads(cmd.stdout)
     assert "logs" in features
 
-def test_foreman_proxy_service(server):
-    foreman_proxy = server.service("foreman-proxy")
+def test_foreman_proxy_service(server, user):
+    foreman_proxy = get_service(server, "foreman-proxy", user)
     assert foreman_proxy.is_running
 
 def test_foreman_proxy_port(server):

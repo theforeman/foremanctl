@@ -1,0 +1,80 @@
+---
+- name: "Create system group: {{ rootless_user_group }}"
+  ansible.builtin.group:
+    name: "{{ rootless_user_group }}"
+    system: true
+    state: present
+
+- name: "Create system user: {{ rootless_user_name }}"
+  ansible.builtin.user:
+    name: "{{ rootless_user_name }}"
+    group: "{{ rootless_user_group }}"
+    home: "{{ rootless_user_home }}"
+    shell: "{{ rootless_user_shell }}"
+    comment: "{{ rootless_user_comment }}"
+    system: true
+    create_home: true
+    state: present
+
+- name: Get user info to determine UID
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ rootless_user_name }}"
+
+- name: Set rootless_user_xdg_runtime_dir based on actual UID
+  ansible.builtin.set_fact:
+    rootless_user_xdg_runtime_dir: "/run/user/{{ ansible_facts['getent_passwd'][rootless_user_name][1] }}"
+
+- name: "Add subuid entry for user: {{ rootless_user_name }}"
+  ansible.builtin.lineinfile:
+    path: /etc/subuid
+    regexp: "^{{ rootless_user_name }}:"
+    line: "{{ rootless_user_name }}:{{ rootless_user_subuid_start }}:{{ rootless_user_subuid_count }}"
+    create: true
+    mode: '0644'
+
+- name: "Add subgid entry for user: {{ rootless_user_name }}"
+  ansible.builtin.lineinfile:
+    path: /etc/subgid
+    regexp: "^{{ rootless_user_group }}:"
+    line: "{{ rootless_user_group }}:{{ rootless_user_subgid_start }}:{{ rootless_user_subgid_count }}"
+    create: true
+    mode: '0644'
+
+- name: Configure unprivileged port binding
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_unprivileged_port_start
+    value: "{{ rootless_user_unprivileged_port_start }}"
+    state: present
+    sysctl_set: true
+    reload: true
+
+- name: "Enable lingering for user: {{ rootless_user_name }}"
+  ansible.builtin.command: loginctl enable-linger {{ rootless_user_name }}
+  register: rootless_user_linger_result
+  changed_when: rootless_user_linger_result is succeeded
+  failed_when: rootless_user_linger_result is failed
+
+- name: Verify XDG_RUNTIME_DIR exists
+  ansible.builtin.stat:
+    path: "{{ rootless_user_xdg_runtime_dir }}"
+  register: rootless_user_xdg_stat
+  failed_when: not rootless_user_xdg_stat.stat.exists
+
+- name: Create user config directories
+  become: true
+  become_user: "{{ rootless_user_name }}"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    # XXX: Check this
+    # owner: "{{ rootless_user_name }}"
+    # group: "{{ rootless_user_group }}"
+    mode: '0755'
+  loop:
+    # - "{{ rootless_user_home }}/.config"
+    # - "{{ rootless_user_home }}/.config/containers"
+    - "{{ rootless_user_home }}/.config/containers/systemd"
+    # - "{{ rootless_user_home }}/.config/systemd"
+    - "{{ rootless_user_home }}/.config/systemd/user"
+...

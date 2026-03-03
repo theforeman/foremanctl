@@ -1,15 +1,30 @@
 ---
 - name: Restart pulp-api
+  environment:
+    XDG_RUNTIME_DIR: "{{ foremanctl_xdg_runtime_dir }}"
+  become: true
+  become_user: "{{ foremanctl_user }}"
   ansible.builtin.systemd:
     name: pulp-api
     state: restarted
+    scope: user
 
 - name: Restart pulp-content
+  environment:
+    XDG_RUNTIME_DIR: "{{ foremanctl_xdg_runtime_dir }}"
+  become: true
+  become_user: "{{ foremanctl_user }}"
   ansible.builtin.systemd:
     name: pulp-content
     state: restarted
+    scope: user
 
 - name: Restart pulp-worker
+  environment:
+    XDG_RUNTIME_DIR: "{{ foremanctl_xdg_runtime_dir }}"
+  become: true
+  become_user: "{{ foremanctl_user }}"
   ansible.builtin.systemd:
     name: pulp-worker.target
     state: restarted
+    scope: user

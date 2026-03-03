@@ -7,6 +7,13 @@
   args:
     creates: "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}.key"
 
+- name: 'Set server key ownership and permissions'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}.key"
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
+    mode: '0600'
+
 - name: 'Creating server signing request'
   ansible.builtin.command: >
     openssl req
@@ -18,6 +25,13 @@
       -out "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}.csr"
   args:
     creates: "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}.csr"
+
+- name: 'Set server CSR ownership and permissions'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}.csr"
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
+    mode: '0644'
 
 - name: 'Sign server signing request'
   ansible.builtin.command: >
@@ -32,6 +46,13 @@
   args:
     creates: "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}.crt"
 
+- name: 'Set server certificate ownership and permissions'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}.crt"
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
+    mode: '0644'
+
 - name: 'Create client key'
   ansible.builtin.command: >
     openssl genrsa
@@ -39,6 +60,13 @@
       4096
   args:
     creates: "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}-client.key"
+
+- name: 'Set client key ownership and permissions'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}-client.key"
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
+    mode: '0600'
 
 - name: 'Creating client signing request'
   ansible.builtin.command: >
@@ -52,6 +80,13 @@
   args:
     creates: "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}-client.csr"
 
+- name: 'Set client CSR ownership and permissions'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}-client.csr"
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
+    mode: '0644'
+
 - name: 'Sign client signing request'
   ansible.builtin.command: >
     openssl ca
@@ -64,3 +99,10 @@
       -out "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}-client.crt"
   args:
     creates: "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}-client.crt"
+
+- name: 'Set client certificate ownership and permissions'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}-client.crt"
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
+    mode: '0644'

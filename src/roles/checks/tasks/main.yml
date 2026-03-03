@@ -1,4 +1,24 @@
 ---
+- name: Make installer certificates readable by foremanctl user
+  when: certificate_source == 'installer'
+  block:
+    - name: Add execute permission to /root for foremanctl group traversal
+      ansible.builtin.file:
+        path: /root
+        mode: o+x
+
+    - name: Change group ownership of /root/ssl-build to foremanctl
+      ansible.builtin.file:
+        path: /root/ssl-build
+        group: "{{ foremanctl_group }}"
+        recurse: true
+
+    - name: Add group read/execute permissions to /root/ssl-build
+      ansible.builtin.file:
+        path: /root/ssl-build
+        mode: g+rX
+        recurse: true
+
 - name: Execute checks
   ansible.builtin.include_tasks: execute_check.yml
   loop:
@@ -6,8 +26,46 @@
     - check_database_connection
     - check_system_requirements
 
+- name: Check if linger is enabled for rootless user
+  ansible.builtin.command: loginctl show-user {{ foremanctl_user }}
+  register: checks_linger_status
+  changed_when: false
+  failed_when: false
+
+- name: Verify linger is enabled
+  ansible.builtin.assert:
+    that:
+      - "'Linger=yes' in checks_linger_status.stdout"
+    fail_msg: "Linger is not enabled for {{ foremanctl_user }} user. Run: loginctl enable-linger {{ foremanctl_user }}"
+    success_msg: "Linger is enabled for {{ foremanctl_user }} user"
+
+- name: Read unprivileged port start setting
+  ansible.builtin.slurp:
+    src: /proc/sys/net/ipv4/ip_unprivileged_port_start
+  register: checks_sysctl_ports
+
+- name: Verify unprivileged port configuration
+  ansible.builtin.assert:
+    that:
+      - (checks_sysctl_ports.content | b64decode | trim | int) <= 80
+    fail_msg: "Unprivileged port start is too high: {{ checks_sysctl_ports.content | b64decode | trim }}"
+    success_msg: "Unprivileged port start is configured correctly"
+
+- name: Verify XDG_RUNTIME_DIR exists
+  ansible.builtin.stat:
+    path: "{{ foremanctl_xdg_runtime_dir }}"
+  register: checks_xdg_stat
+
+- name: Assert XDG_RUNTIME_DIR exists
+  ansible.builtin.assert:
+    that:
+      - checks_xdg_stat.stat.exists
+      - checks_xdg_stat.stat.isdir
+    fail_msg: "XDG_RUNTIME_DIR {{ foremanctl_xdg_runtime_dir }} does not exist"
+    success_msg: "XDG_RUNTIME_DIR exists"
+
 - name: Report status of checks
   ansible.builtin.fail:
     msg: "{{ checks_results }}"
   when:
-    - checks_results|default([])|length > 0
+    - checks_results | default([]) | length > 0

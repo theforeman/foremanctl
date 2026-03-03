@@ -1,16 +1,22 @@
 ---
-- name: Create settings config secret
-  containers.podman.podman_secret:
-    state: present
-    name: foreman-proxy-settings-yml
-    data: "{{ lookup('ansible.builtin.template', 'settings.yml.j2') }}"
-  notify:
-    - Restart Foreman Proxy
+- name: Configure Foreman Proxy config secrets as rootless user
+  environment:
+    XDG_RUNTIME_DIR: "{{ foremanctl_xdg_runtime_dir }}"
+  become: true
+  become_user: "{{ foremanctl_user }}"
+  block:
+    - name: Create settings config secret
+      containers.podman.podman_secret:
+        state: present
+        name: foreman-proxy-settings-yml
+        data: "{{ lookup('ansible.builtin.template', 'settings.yml.j2') }}"
+      notify:
+        - Restart Foreman Proxy
 
-- name: Create logs config secret
-  containers.podman.podman_secret:
-    state: present
-    name: foreman-proxy-logs-yml
-    data: "{{ lookup('ansible.builtin.template', 'settings.d/logs.yml.j2') }}"
-  notify:
-    - Restart Foreman Proxy
+    - name: Create logs config secret
+      containers.podman.podman_secret:
+        state: present
+        name: foreman-proxy-logs-yml
+        data: "{{ lookup('ansible.builtin.template', 'settings.d/logs.yml.j2') }}"
+      notify:
+        - Restart Foreman Proxy

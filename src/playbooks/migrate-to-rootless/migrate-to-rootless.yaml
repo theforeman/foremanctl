@@ -1,0 +1,387 @@
+---
+# Migration Playbook: Rootful to Rootless Podman Deployment
+#
+# This playbook migrates an existing rootful Foreman Quadlet deployment to rootless.
+#
+# WARNING: This is a destructive operation that will:
+# - Stop all running services
+# - Transfer ownership of data volumes
+# - Remove system-scoped systemd units
+# - Recreate everything in user scope
+#
+# PREREQUISITES:
+# - Backup all data before running this migration
+# - Ensure no active users or operations are running
+# - Test this in a non-production environment first
+#
+# USAGE:
+#   ansible-playbook -i inventory migrate-to-rootless.yaml
+#
+- name: Migrate Foreman from rootful to rootless deployment
+  hosts:
+    - quadlet
+  become: true
+  vars_files:
+    - "../../vars/defaults.yml"
+    - "../../vars/base.yaml"
+    - "../../roles/postgresql/defaults/main.yml"
+    - "../../roles/redis/defaults/main.yml"
+    - "../../roles/pulp/defaults/main.yaml"
+  vars:
+    migration_backup_dir: "/var/backups/foreman-migration-{{ ansible_date_time.iso8601_basic_short }}"
+    # Storage directories with their container-specific UIDs/GIDs
+    # UIDs are from the container images, not the host
+    migration_data_volumes:
+      - path: "{{ postgresql_data_dir }}"
+        uid: "{{ postgresql_container_uid }}"
+        gid: "{{ postgresql_container_gid }}"
+      - path: "{{ redis_data_dir }}"
+        uid: "{{ redis_container_uid }}"
+        gid: "{{ redis_container_gid }}"
+      - path: /var/lib/pulp
+        uid: "{{ pulp_container_uid }}"
+        gid: "{{ pulp_container_gid }}"
+    # Legacy variable for backwards compatibility
+    migration_data_paths: "{{ migration_data_volumes | map(attribute='path') | list }}"
+
+  tasks:
+    - name: Verify this is a rootful deployment
+      ansible.builtin.stat:
+        path: /etc/containers/systemd/foreman.container
+      register: migration_rootful_check
+      failed_when: not migration_rootful_check.stat.exists
+
+    - name: Display migration warning
+      ansible.builtin.pause:
+        prompt: |
+
+          ================================================================
+          WARNING: DESTRUCTIVE MIGRATION IN PROGRESS
+          ================================================================
+
+          This will migrate your Foreman deployment from rootful to
+          rootless Podman containers.
+
+          ALL SERVICES WILL BE STOPPED during migration.
+
+          Backup directory: {{ migration_backup_dir }}
+
+          Press Ctrl+C to abort, or Enter to continue...
+          ================================================================
+
+    - name: Create backup directory
+      ansible.builtin.file:
+        path: "{{ migration_backup_dir }}"
+        state: directory
+        mode: '0700'
+
+    # ============================================================
+    # Phase 1: Stop and backup rootful deployment
+    # ============================================================
+
+    - name: Stop foreman.target (rootful)
+      ansible.builtin.systemd:
+        name: foreman.target
+        state: stopped
+      failed_when: false
+      register: migration_stop_target
+
+    - name: Stop all Foreman-related services (rootful)
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: stopped
+      loop:
+        - foreman
+        - candlepin
+        - pulp-api
+        - pulp-content
+        - pulp-worker.target
+        - postgresql
+        - redis
+        - foreman-proxy
+      failed_when: false
+
+    - name: Backup rootful quadlet files
+      ansible.builtin.copy:
+        src: /etc/containers/systemd/
+        dest: "{{ migration_backup_dir }}/quadlets/"
+        remote_src: true
+        mode: '0600'
+
+    - name: Backup rootful systemd units
+      ansible.builtin.shell: |
+        mkdir -p {{ migration_backup_dir }}/systemd/
+        cp -a /etc/systemd/system/foreman* {{ migration_backup_dir }}/systemd/ 2>/dev/null || true
+        cp -a /etc/systemd/system/pulp* {{ migration_backup_dir }}/systemd/ 2>/dev/null || true
+        cp -a /etc/systemd/system/dynflow* {{ migration_backup_dir }}/systemd/ 2>/dev/null || true
+      args:
+        executable: /bin/bash
+      changed_when: true
+
+    - name: List rootful Podman secrets
+      ansible.builtin.command: podman secret ls --format json
+      register: migration_rootful_secrets
+      changed_when: false
+
+    - name: Save secret list to backup
+      ansible.builtin.copy:
+        content: "{{ migration_rootful_secrets.stdout }}"
+        dest: "{{ migration_backup_dir }}/secrets.json"
+        mode: '0600'
+
+    # ============================================================
+    # Phase 2: Create rootless user and setup
+    # ============================================================
+
+    - name: Setup rootless user environment (creates user/group with auto-allocated matching UID/GID)
+      ansible.builtin.include_role:
+        name: rootless_user
+
+    - name: Map rootless_user_xdg_runtime_dir to foremanctl namespace
+      ansible.builtin.set_fact:
+        foremanctl_xdg_runtime_dir: "{{ rootless_user_xdg_runtime_dir }}"
+
+    # ============================================================
+    # Phase 3: Migrate data volumes
+    # ============================================================
+
+    - name: Get current ownership of data directories
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop: "{{ migration_data_paths }}"
+      register: migration_data_stat
+      failed_when: false
+
+    - name: Display volume migration plan
+      ansible.builtin.debug:
+        msg: |
+          Migrating volumes with podman unshare (mapping to container UIDs):
+          {% for volume in migration_data_volumes %}
+          - {{ volume.path }}: will be owned by container UID {{ volume.uid }}:{{ volume.gid }}
+          {% endfor %}
+
+    - name: Change ownership of data directories using podman unshare
+      ansible.builtin.shell: |
+        cd /tmp
+        sudo -u {{ foremanctl_user }} XDG_RUNTIME_DIR={{ foremanctl_xdg_runtime_dir }} \
+          podman unshare chown -R {{ item.uid }}:{{ item.gid }} {{ item.path }}
+      args:
+        executable: /bin/bash
+      loop: "{{ migration_data_volumes }}"
+      when: migration_data_stat.results | selectattr('stat.exists') | list | length > 0
+      changed_when: true
+
+    - name: Update directory ownership to rootless user
+      ansible.builtin.file:
+        path: "{{ item }}"
+        owner: "{{ foremanctl_user }}"
+        group: "{{ foremanctl_group }}"
+        mode: '0755'
+        recurse: false
+        state: directory
+      loop: "{{ migration_data_paths }}"
+
+    # ============================================================
+    # Phase 4: Remove rootful configuration
+    # ============================================================
+
+    - name: Disable rootful services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: false
+      loop:
+        - foreman
+        - candlepin
+        - pulp-api
+        - pulp-content
+        - pulp-worker.target
+        - postgresql
+        - redis
+        - foreman-proxy
+        - foreman.target
+      failed_when: false
+
+    - name: Remove rootful quadlet files
+      ansible.builtin.file:
+        path: "/etc/containers/systemd/{{ item }}"
+        state: absent
+      loop:
+        - foreman.container
+        - candlepin.container
+        - pulp-api.container
+        - pulp-content.container
+        - pulp-worker@.container
+        - postgresql.container
+        - redis.container
+        - foreman-proxy.container
+        - dynflow-sidekiq@.container
+        - foreman-recurring@*.container
+
+    - name: Remove rootful systemd units
+      ansible.builtin.file:
+        path: "/etc/systemd/system/{{ item }}"
+        state: absent
+      loop:
+        - foreman.target
+        - pulp-worker.target
+        - foreman-recurring@*.timer
+        - foreman-recurring@*.service
+        - dynflow-sidekiq@*.service
+
+    - name: Remove rootful Podman secrets
+      ansible.builtin.shell: |
+        for secret in $(podman secret ls --format {% raw %}'{{.Name}}'{% endraw %}); do
+          podman secret rm "$secret" 2>/dev/null || true
+        done
+      args:
+        executable: /bin/bash
+      changed_when: true
+
+    - name: Reload systemd daemon (system scope)
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    # ============================================================
+    # Phase 5: Deploy rootless configuration
+    # ============================================================
+
+    - name: Run rootless deployment
+      ansible.builtin.include_role:
+        name: "{{ item }}"
+      loop:
+        - certificates
+        - postgresql
+        - redis
+        - candlepin
+        - pulp
+        - foreman
+        - systemd_target
+        - foreman_proxy
+
+    # ============================================================
+    # Phase 6: Verification
+    # ============================================================
+
+    - name: Wait for services to stabilize
+      ansible.builtin.pause:
+        seconds: 10
+
+    - name: Gather user systemd service facts
+      become: true
+      become_user: "{{ foremanctl_user }}"
+      environment:
+        XDG_RUNTIME_DIR: "{{ foremanctl_xdg_runtime_dir }}"
+      ansible.builtin.service_facts:
+
+    - name: Verify rootless services are running
+      ansible.builtin.assert:
+        that:
+          - "'{{ item }}.service' in ansible_facts.services"
+          - "ansible_facts.services['{{ item }}.service'].state == 'running'"
+        fail_msg: "Service {{ item }} is not running"
+        success_msg: "Service {{ item }} is active"
+      loop:
+        - foreman
+        - postgresql
+        - redis
+        - candlepin
+        - pulp-api
+        - pulp-content
+
+    - name: Get user info for migration summary
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ foremanctl_user }}"
+
+    - name: Set UID/GID facts for display
+      ansible.builtin.set_fact:
+        foremanctl_uid: "{{ ansible_facts['getent_passwd'][foremanctl_user][1] }}"
+        foremanctl_gid: "{{ ansible_facts['getent_passwd'][foremanctl_user][2] }}"
+
+    - name: Display migration summary
+      ansible.builtin.debug:
+        msg: |
+
+          ================================================================
+          MIGRATION COMPLETED SUCCESSFULLY
+          ================================================================
+
+          Foreman is now running in rootless mode.
+
+          Service user: {{ foremanctl_user }} (UID {{ foremanctl_uid }})
+          Quadlets: {{ foremanctl_quadlet_dir }}
+          Systemd units: {{ foremanctl_systemd_user_dir }}
+
+          Backup directory: {{ migration_backup_dir }}
+
+          Verify services:
+            systemctl --machine={{ foremanctl_user }}@ --user status foreman.target
+
+          View logs:
+            journalctl --machine={{ foremanctl_user }}@ --user -u foreman -f
+
+          ================================================================
+
+    - name: Save migration report
+      ansible.builtin.copy:
+        content: |
+          Foreman Rootful to Rootless Migration Report
+          =============================================
+
+          Migration Date: {{ ansible_date_time.iso8601 }}
+          Hostname: {{ ansible_facts['fqdn'] }}
+
+          Service User: {{ foremanctl_user }} (UID {{ foremanctl_uid }})
+          Service Group: {{ foremanctl_group }} (GID {{ foremanctl_gid }})
+
+          Quadlet Directory: {{ foremanctl_quadlet_dir }}
+          Systemd User Directory: {{ foremanctl_systemd_user_dir }}
+          XDG_RUNTIME_DIR: {{ foremanctl_xdg_runtime_dir }}
+
+          Migrated Data Volumes:
+          {% for path in migration_data_paths %}
+          - {{ path }}
+          {% endfor %}
+
+          Backup Location: {{ migration_backup_dir }}
+
+          Active Services:
+          {% for item in migration_service_check.results %}
+          - {{ item.item }}: {{ item.stdout }}
+          {% endfor %}
+
+          Verification Commands:
+          ----------------------
+
+          # Check service status
+          systemctl --machine={{ foremanctl_user }}@ --user status foreman.target
+
+          # List containers
+          sudo -u {{ foremanctl_user }} podman ps
+
+          # View logs
+          journalctl --user --machine={{ foremanctl_user }}@ -u foreman -f
+
+          # Check linger status
+          loginctl show-user {{ foremanctl_user }}
+
+          Rollback Instructions:
+          ----------------------
+
+          If you need to rollback to rootful deployment:
+
+          1. Stop rootless services:
+             systemctl --machine={{ foremanctl_user }}@ --user stop foreman.target
+
+          2. Restore rootful quadlets:
+             sudo cp -a {{ migration_backup_dir }}/quadlets/* /etc/containers/systemd/
+             sudo cp -a {{ migration_backup_dir }}/systemd/* /etc/systemd/system/
+
+          3. Reload and start:
+             sudo systemctl daemon-reload
+             sudo systemctl start foreman.target
+
+          IMPORTANT: Keep the backup directory until you've verified the migration is stable.
+        dest: "{{ migration_backup_dir }}/MIGRATION_REPORT.txt"
+        mode: '0600'
+...
