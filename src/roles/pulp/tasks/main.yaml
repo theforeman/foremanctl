@@ -197,6 +197,7 @@
     image: "{{ pulp_api_image }}"
     command: pulpcore-manager migrate --noinput
     detach: false
+    rm: true
     network: host
     volumes: "{{ pulp_volumes }}"
     secrets:
@@ -210,6 +211,7 @@
     image: "{{ pulp_api_image }}"
     command: pulpcore-manager reset-admin-password --random
     detach: false
+    rm: true
     network: host
     volumes: "{{ pulp_volumes }}"
     secrets:
