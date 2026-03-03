@@ -49,9 +49,12 @@ jobs:
         box:
           - centos/stream9
           - centos/stream10
+          - debian/trixie64
         exclude:
           - certificate_source: installer
             box: centos/stream10
+          - certificate_source: installer
+            box: debian/trixie64
         include:
           - certificate_source: default
             security: fapolicyd
@@ -112,6 +115,7 @@ jobs:
         run: |
           ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com' || '' }}  --foreman-initial-admin-password=changeme --tuning development
       - name: Add optional feature - hammer
+        if: contains(matrix.box, 'centos')
         run: |
           ./foremanctl deploy --add-feature hammer
       - name: Add optional feature - foreman-proxy
