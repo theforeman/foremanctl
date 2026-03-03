@@ -223,6 +223,7 @@
       - -c
       - bin/rails db:migrate && bin/rails db:seed
     detach: false
+    rm: true
     network: host
     env:
       FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
