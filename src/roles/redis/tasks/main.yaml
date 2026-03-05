@@ -18,7 +18,7 @@
     image: "{{ redis_container_image }}:{{ redis_container_tag }}"
     state: quadlet
     sdnotify: true
-    command: ["run-redis", "--supervised", "systemd"]
+    command: ["run-valkey", "--supervised", "systemd"]
     volumes:
       - /var/lib/redis:/data:Z
     ports:
