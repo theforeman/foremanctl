@@ -3,6 +3,8 @@
   containers.podman.podman_image:
     name: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "{{ foreman_registry_auth_file }}"
 
 - name: Create secret for DATABASE_URL
   containers.podman.podman_secret:

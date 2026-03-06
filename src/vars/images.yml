@@ -1,3 +1,11 @@
+registry_auth_file: /etc/foreman/registry-auth.json
+candlepin_registry_auth_file: "{{ registry_auth_file }}"
+foreman_registry_auth_file: "{{ registry_auth_file }}"
+foreman_proxy_registry_auth_file: "{{ registry_auth_file }}"
+postgresql_registry_auth_file: "{{ registry_auth_file }}"
+pulp_registry_auth_file: "{{ registry_auth_file }}"
+redis_registry_auth_file: "{{ registry_auth_file }}"
+
 container_tag_stream: "3.18"
 candlepin_container_image: quay.io/foreman/candlepin
 candlepin_container_tag: "foreman-{{ container_tag_stream }}"
