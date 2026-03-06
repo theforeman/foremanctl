@@ -7,6 +7,8 @@ def test_foreman_proxy_features(server, certificates, server_fqdn):
     assert cmd.succeeded
     features = json.loads(cmd.stdout)
     assert "logs" in features
+    assert "script" in features
+    assert "dynflow" in features
 
 def test_foreman_proxy_service(server):
     foreman_proxy = server.service("foreman-proxy")

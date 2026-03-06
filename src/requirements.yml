@@ -6,3 +6,4 @@ collections:
   - name: containers.podman
     version: ">=1.16.4"
   - name: theforeman.foreman
+    version: ">=5.9.0"
