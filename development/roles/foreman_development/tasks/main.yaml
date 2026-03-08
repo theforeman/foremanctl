@@ -222,10 +222,10 @@
   ansible.builtin.uri:
     url: '{{ foreman_development_url }}/api/v2/ping'
     validate_certs: false
+  register: foreman_development_status
   until: foreman_development_status.status == 200
   retries: 30
   delay: 5
-  register: foreman_development_status
 
 - name: Configure Foreman Proxy for Pulp
   theforeman.foreman.smart_proxy:
