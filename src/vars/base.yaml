@@ -1,7 +1,7 @@
 ---
 certificates_hostnames:
   - "{{ ansible_facts['fqdn'] }}"
-  - localhost
+  - candlepin
 
 certificates_ca_password: "CHANGEME"
 candlepin_keystore_password: "CHANGEME"
@@ -10,8 +10,8 @@ candlepin_oauth_secret: "CHANGEME"
 candlepin_ca_key_password: "{{ ca_key_password }}"
 candlepin_ca_key: "{{ ca_key }}"
 candlepin_ca_certificate: "{{ ca_certificate }}"
-candlepin_tomcat_key: "{{ localhost_key }}"
-candlepin_tomcat_certificate: "{{ localhost_certificate }}"
+candlepin_tomcat_key: "{{ candlepin_key }}"
+candlepin_tomcat_certificate: "{{ candlepin_certificate }}"
 candlepin_client_key: "{{ client_key }}"
 candlepin_client_certificate: "{{ client_certificate }}"
 

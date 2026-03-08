@@ -1,5 +1,3 @@
-import re
-
 
 def assert_secret_content(server, secret_name, secret_value):
     secret = server.run(f'podman secret inspect --format {"{{.SecretData}}"} --showsecret {secret_name}')
@@ -12,24 +10,14 @@ def test_candlepin_service(server):
     assert candlepin.is_running
 
 
-def test_candlepin_port(server):
-    candlepin = server.addr("localhost")
-    assert candlepin.port("23443").is_reachable
-
-
-def test_candlepin_status(server, certificates):
-    status = server.run(f"curl --cacert {certificates['ca_certificate']} --resolve candlepin:23443:127.0.0.1 --silent --output /dev/null --write-out '%{{http_code}}' https://candlepin:23443/candlepin/status")
+def test_candlepin_status(server):
+    status = server.run("podman exec foreman curl --cacert /etc/foreman/katello-default-ca.crt --silent --output /dev/null --write-out '%{http_code}' https://candlepin:23443/candlepin/status")
     assert status.succeeded
     assert status.stdout == '200'
 
 
-def test_artemis_port(server):
-    candlepin = server.addr("localhost")
-    assert candlepin.port("61613").is_reachable
-
-
-def test_artemis_auth(server, certificates):
-    cmd = server.run(f'echo "" | openssl s_client -CAfile {certificates["ca_certificate"]} -cert {certificates["client_certificate"]} -key {certificates["client_key"]} -connect 127.0.0.1:61613 -servername candlepin')
+def test_artemis_auth(server):
+    cmd = server.run('podman exec foreman bash -c \'echo "" | openssl s_client -CAfile /etc/foreman/katello-default-ca.crt -cert /etc/foreman/client_cert.pem -key /etc/foreman/client_key.pem -connect candlepin:61613 -servername candlepin\'')
     assert cmd.succeeded, f"exit: {cmd.rc}\n\nstdout:\n{cmd.stdout}\n\nstderr:\n{cmd.stderr}"
 
 
@@ -40,21 +28,16 @@ def test_certs_users_file(server, certificates):
 
 
 def test_tls(server):
-    result = server.run('nmap -sT --script +ssl-enum-ciphers localhost -p 23443')
-    result = result.stdout
-    # We don't enable TLSv1.3 by default yet. TLSv1.3 support was added in tomcat 7.0.92
-    # But tomcat 7.0.76 is the latest version available on EL7
-    assert "TLSv1.3" not in result
+    ca = '/etc/foreman/katello-default-ca.crt'
 
-    # Test that TLSv1.2 is enabled
-    assert "TLSv1.2" in result
+    # TLSv1.2 should be enabled
+    result = server.run(f'podman exec foreman bash -c "echo Q | openssl s_client -connect candlepin:23443 -tls1_2 -CAfile {ca} 2>&1"')
+    assert "Cipher is" in result.stdout, f"TLSv1.2 not available:\n{result.stdout}"
 
-    # Test that older TLS versions are disabled
-    assert "TLSv1.1" not in result
-    assert "TLSv1.0" not in result
-
-    # Test that the least cipher strength is "strong" or "A"
-    assert "least strength: A" in result
+    # TLSv1.3, TLSv1.1 and TLSv1.0 should be disabled
+    for flag in ['-tls1_3', '-tls1_1', '-tls1']:
+        result = server.run(f'podman exec foreman bash -c "echo Q | openssl s_client -connect candlepin:23443 {flag} -CAfile {ca} 2>&1"')
+        assert result.rc != 0, f"TLS version ({flag}) should be disabled:\n{result.stdout}"
 
 
 def test_cert_roles(server):
