@@ -22,6 +22,7 @@
     network: host
     sdnotify: true
     command: ["run-redis", "--supervised", "systemd"]
+    network: "{{ redis_network }}"
     volumes:
       - /var/lib/redis:/data:Z
     quadlet_options:
