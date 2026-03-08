@@ -21,10 +21,9 @@
     state: quadlet
     sdnotify: true
     command: ["run-redis", "--supervised", "systemd"]
+    network: "{{ redis_network }}"
     volumes:
       - /var/lib/redis:/data:Z
-    ports:
-      - "6379:6379"
     quadlet_options:
       - |
         [Install]

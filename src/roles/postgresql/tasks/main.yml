@@ -14,6 +14,14 @@
     owner: 26
     group: 26
 
+- name: Create PostgreSQL socket directory
+  ansible.builtin.file:
+    path: "{{ postgresql_socket_dir }}"
+    state: directory
+    mode: "0700"
+    owner: 26
+    group: 26
+
 - name: Create Podman secret for PostgreSQL admin password
   containers.podman.podman_secret:
     name: postgresql-admin-password
@@ -28,9 +36,10 @@
     state: quadlet
     healthcheck: pg_isready
     sdnotify: healthy
-    network: host
+    network: "{{ postgresql_network }}"
     volumes:
       - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
+      - "{{ postgresql_socket_dir }}:{{ postgresql_socket_dir }}:Z"
     secrets:
       - 'postgresql-admin-password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
     env:
@@ -115,20 +124,21 @@
 - name: Use scram-sha-256 for password encryption
   community.postgresql.postgresql_set:
     login_user: postgres
-    login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_unix_socket: "{{ postgresql_socket_dir }}"
     name: password_encryption
     value: "scram-sha-256"
   notify:
     - Restart postgresql
+
+- name: Flush handlers to apply password encryption change
+  ansible.builtin.meta: flush_handlers
 
 - name: Create PostgreSQL users
   community.postgresql.postgresql_user:
     name: "{{ item.name }}"
     password: "{{ item.password }}"
     login_user: postgres
-    login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_unix_socket: "{{ postgresql_socket_dir }}"
     role_attr_flags: "{{ item.role_attr_flags | default(omit) }}"
     state: present
   loop: "{{ postgresql_users }}"
@@ -139,7 +149,6 @@
     name: "{{ item.name }}"
     owner: "{{ item.owner }}"
     login_user: postgres
-    login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_unix_socket: "{{ postgresql_socket_dir }}"
     state: present
   loop: "{{ postgresql_databases }}"

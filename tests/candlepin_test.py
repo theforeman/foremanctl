@@ -18,7 +18,7 @@ def test_candlepin_port(server):
 
 
 def test_candlepin_status(server, certificates):
-    status = server.run(f"curl --cacert {certificates['ca_certificate']} --silent --output /dev/null --write-out '%{{http_code}}' https://localhost:23443/candlepin/status")
+    status = server.run(f"curl --cacert {certificates['ca_certificate']} --resolve candlepin:23443:127.0.0.1 --silent --output /dev/null --write-out '%{{http_code}}' https://candlepin:23443/candlepin/status")
     assert status.succeeded
     assert status.stdout == '200'
 
@@ -29,7 +29,7 @@ def test_artemis_port(server):
 
 
 def test_artemis_auth(server, certificates):
-    cmd = server.run(f'echo "" | openssl s_client -CAfile {certificates["ca_certificate"]} -cert {certificates["client_certificate"]} -key {certificates["client_key"]} -connect localhost:61613')
+    cmd = server.run(f'echo "" | openssl s_client -CAfile {certificates["ca_certificate"]} -cert {certificates["client_certificate"]} -key {certificates["client_key"]} -connect 127.0.0.1:61613 -servername candlepin')
     assert cmd.succeeded, f"exit: {cmd.rc}\n\nstdout:\n{cmd.stdout}\n\nstderr:\n{cmd.stderr}"
 
 
@@ -40,7 +40,7 @@ def test_certs_users_file(server, certificates):
 
 
 def test_tls(server):
-    result = server.run('nmap --script +ssl-enum-ciphers localhost -p 23443')
+    result = server.run('nmap -sT --script +ssl-enum-ciphers localhost -p 23443')
     result = result.stdout
     # We don't enable TLSv1.3 by default yet. TLSv1.3 support was added in tomcat 7.0.92
     # But tomcat 7.0.76 is the latest version available on EL7
