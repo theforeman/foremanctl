@@ -63,7 +63,7 @@
     name: "candlepin"
     image: "{{ candlepin_container_image }}:{{ candlepin_container_tag }}"
     state: quadlet
-    network: host
+    network: "{{ candlepin_networks }}"
     hostname: "{{ ansible_facts['fqdn'] }}"
     secrets:
       - 'candlepin-ca-cert,target=/etc/candlepin/certs/candlepin-ca.crt,mode=0440,type=mount'

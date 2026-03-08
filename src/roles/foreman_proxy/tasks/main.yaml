@@ -18,7 +18,9 @@
     image: "{{ foreman_proxy_container_image }}:{{ foreman_proxy_container_tag }}"
     state: quadlet
     sdnotify: true
-    network: host
+    network: foreman-proxy-net
+    ports:
+      - "0.0.0.0:8443:8443"
     hostname: "{{ ansible_facts['fqdn'] }}"
     secrets:
       - 'foreman-proxy-settings-yml,type=mount,target=/etc/foreman-proxy/settings.yml'
