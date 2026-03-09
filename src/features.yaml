@@ -13,7 +13,7 @@ google:
   description: Google Compute Engine plugin for Foreman
   foreman:
     plugin_name: foreman_google
-azure_rm:
+azure-rm:
   description: Azure Resource Manager plugin for Foreman
   foreman:
     plugin_name: foreman_azure_rm
