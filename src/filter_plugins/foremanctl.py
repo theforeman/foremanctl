@@ -29,9 +29,24 @@ def filter_features(items):
     return items
 
 
+def get_dependencies_for_feature(feature):
+    dependencies = set()
+    for dependency in FEATURE_MAP.get(feature, {}).get('dependencies', []):
+        if dependency not in dependencies:
+            dependencies.update(get_dependencies_for_feature(dependency))
+        dependencies.add(dependency)
+    return dependencies
+
+
+def get_dependencies(features):
+    dependencies = set()
+    for feature in features:
+        dependencies.update(get_dependencies_for_feature(feature))
+    return dependencies
+
+
 def foreman_plugins(value):
-    dependencies = [FEATURE_MAP.get(feature, {}).get('dependencies', []) for feature in filter_features(value)]
-    dependencies = list(set([dep for deplist in dependencies for dep in deplist]))
+    dependencies = list(get_dependencies(filter_features(value)))
     plugins = [FEATURE_MAP.get(feature, {}).get('foreman', {}).get('plugin_name') for feature in filter_features(value + dependencies)]
     return compact_list(plugins)
 
@@ -42,8 +57,7 @@ def available_foreman_plugins(_value):
 
 
 def foreman_proxy_plugins(value):
-    dependencies = [FEATURE_MAP.get(feature, {}).get('dependencies', []) for feature in filter_features(value)]
-    dependencies = list(set([dep for deplist in dependencies for dep in deplist]))
+    dependencies = list(get_dependencies(filter_features(value)))
     plugins = [FEATURE_MAP.get(feature, {}).get('foreman_proxy', {}).get('plugin_name') for feature in filter_features(value + dependencies)]
     return compact_list(plugins)
 
