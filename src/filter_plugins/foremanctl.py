@@ -19,10 +19,20 @@ def filter_content(items):
     return filter(lambda x: not x.startswith('content/'), items)
 
 
+def filter_base_features(items):
+    return filter(lambda x: x not in BASE_FEATURES, items)
+
+
+def filter_features(items):
+    items = filter_content(items)
+    items = filter_base_features(items)
+    return items
+
+
 def foreman_plugins(value):
-    dependencies = [FEATURE_MAP.get(feature, {}).get('dependencies', []) for feature in filter_content(value) if feature not in BASE_FEATURES]
+    dependencies = [FEATURE_MAP.get(feature, {}).get('dependencies', []) for feature in filter_features(value)]
     dependencies = list(set([dep for deplist in dependencies for dep in deplist]))
-    plugins = [FEATURE_MAP.get(feature, {}).get('foreman', {}).get('plugin_name') for feature in (value + dependencies) if feature not in BASE_FEATURES]
+    plugins = [FEATURE_MAP.get(feature, {}).get('foreman', {}).get('plugin_name') for feature in filter_features(value + dependencies)]
     return compact_list(plugins)
 
 
@@ -32,9 +42,9 @@ def available_foreman_plugins(_value):
 
 
 def foreman_proxy_plugins(value):
-    dependencies = [FEATURE_MAP.get(feature, {}).get('dependencies', []) for feature in filter_content(value) if feature not in BASE_FEATURES]
+    dependencies = [FEATURE_MAP.get(feature, {}).get('dependencies', []) for feature in filter_features(value)]
     dependencies = list(set([dep for deplist in dependencies for dep in deplist]))
-    plugins = [FEATURE_MAP.get(feature, {}).get('foreman_proxy', {}).get('plugin_name') for feature in (value + dependencies) if feature not in BASE_FEATURES]
+    plugins = [FEATURE_MAP.get(feature, {}).get('foreman_proxy', {}).get('plugin_name') for feature in filter_features(value + dependencies)]
     return compact_list(plugins)
 
 
