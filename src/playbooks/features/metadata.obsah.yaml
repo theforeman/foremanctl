@@ -1,0 +1,5 @@
+---
+help: |
+  List all enabled and available features
+
+script: features.py
