@@ -32,9 +32,11 @@
 - name: Validate requested features
   ansible.builtin.assert:
     that:
-      - features | invalid_features | length == 0
+      - found_invalid_features | length == 0
     fail_msg: |
-      ERROR: Unknown feature(s) requested: {{ features | invalid_features | join(', ') }}
+      ERROR: Unknown feature(s) requested: {{ found_invalid_features | join(', ') }}
 
       Run 'foremanctl features' to list all available features.
+  vars:
+    found_invalid_features: "{{ features | invalid_features }}"
   when: features | length > 0
