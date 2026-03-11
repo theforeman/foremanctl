@@ -51,7 +51,7 @@ Ensure you have a deployment. Now run the tests:
 ```
 
 > [!NOTE]
-> This will trigger all the tests so hammer tests will fail if you don't have [hammer setup](#deploy-hammeroptional)
+> This will trigger all the tests so hammer tests will fail if you don't have [hammer setup](#deploy-hammer-optional)
 
 Additonally, you can run [smoker](https://github.com/theforeman/smoker) based tests with:
 
