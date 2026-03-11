@@ -1,0 +1,40 @@
+---
+- name: Remove invalid features from parameters.yaml
+  block:
+    - name: Check if parameters.yaml file exists
+      ansible.builtin.stat:
+        path: "{{ obsah_state_path }}/parameters.yaml"
+      register: _parameters_stat
+      delegate_to: localhost
+      become: false
+
+    - name: Load current parameters
+      ansible.builtin.include_vars:
+        file: "{{ obsah_state_path }}/parameters.yaml"
+        name: _parameters_content
+      delegate_to: localhost
+      become: false
+      when: _parameters_stat.stat.exists
+
+    - name: Clean invalid features from parameters
+      ansible.builtin.copy:
+        content: "{{ _parameters_content | combine({'features': _cleaned_features}) | to_nice_yaml }}"
+        dest: "{{ obsah_state_path }}/parameters.yaml"
+      delegate_to: localhost
+      become: false
+      vars:
+        _cleaned_features: "{{ (_parameters_content.features | default([])) | difference((_parameters_content.features | default([])) | invalid_features) }}"
+      when:
+        - _parameters_stat.stat.exists
+        - (_parameters_content.features | default([])) | invalid_features | length > 0
+
+- name: Validate requested features
+  ansible.builtin.assert:
+    that:
+      - features | invalid_features | length == 0
+    fail_msg: |
+      ERROR: Unknown feature(s) requested: {{ features | invalid_features | join(', ') }}
+
+      Run 'foremanctl features' to list all available features.
+  when: features | length > 0
+

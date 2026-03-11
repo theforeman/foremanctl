@@ -14,6 +14,7 @@
     - "../../vars/base.yaml"
   roles:
     - role: pre_install
+    - role: validate_features
     - role: checks
     - role: certificates
       when: "certificate_source == 'default'"
