@@ -2,6 +2,7 @@
 - name: Execute checks
   ansible.builtin.include_tasks: execute_check.yml
   loop:
+    - check_features
     - check_hostname
     - check_database_connection
     - check_system_requirements

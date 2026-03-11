@@ -55,6 +55,9 @@ def available_foreman_plugins(_value):
     plugins = [FEATURE_MAP.get(feature).get('foreman', {}).get('plugin_name') for feature in FEATURE_MAP.keys()]
     return compact_list(plugins)
 
+def invalid_features(features):
+    """Return a list of unknown features not defined in features.yaml."""
+    return [feature for feature in features if feature not in FEATURE_MAP]
 
 def foreman_proxy_plugins(value):
     dependencies = list(get_dependencies(filter_features(value)))
@@ -76,4 +79,5 @@ class FilterModule(object):
             'available_foreman_plugins': available_foreman_plugins,
             'features_to_foreman_proxy_plugins': foreman_proxy_plugins,
             'available_foreman_proxy_plugins': available_foreman_proxy_plugins,
+            'invalid_features': invalid_features,
         }
