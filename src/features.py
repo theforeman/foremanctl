@@ -4,12 +4,6 @@ import yaml
 import pathlib
 import os
 
-GREEN = "\033[32m"
-YELLOW = "\033[33m"
-DIM = "\033[2m"
-BOLD = "\033[1m"
-RESET = "\033[0m"
-
 BASE_DIR = pathlib.Path(__file__).resolve().parent
 STATE_DIR = pathlib.Path(os.environ.get('OBSAH_STATE', '.var/lib/foremanctl'))
 
@@ -74,10 +68,10 @@ def main():
             available_list.append((name, 'available', components, description))
 
     for name, state, components, description in enabled_list:
-        print(f"{name:<25} {GREEN}{state:<12}{RESET} {components:<20} {description}")
+        print(f"{name:<25} {state:<12} {components:<20} {description}")
 
     for name, state, components, description in available_list:
-        print(f"{name:<25} {DIM}{state:<12}{RESET} {DIM}{components:<20}{RESET} {description}")
+        print(f"{name:<25} {state:<12} {components:<20} {description}")
 
     print()
     enabled_count = len(enabled_list)
