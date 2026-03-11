@@ -15,7 +15,7 @@ Vagrant.configure("2") do |config|
     override.vm.hostname = "quadlet.example.com"
 
     override.vm.provider "libvirt" do |libvirt, provider|
-      libvirt.memory = 10240
+      libvirt.memory = 20_480
       libvirt.cpus = 4
       libvirt.machine_virtual_size = 30
     end
