@@ -20,6 +20,7 @@
       ansible.builtin.copy:
         content: "{{ _parameters_content | combine({'features': _cleaned_features}) | to_nice_yaml }}"
         dest: "{{ obsah_state_path }}/parameters.yaml"
+        mode: '0644'
       delegate_to: localhost
       become: false
       vars:
@@ -37,4 +38,3 @@
 
       Run 'foremanctl features' to list all available features.
   when: features | length > 0
-
