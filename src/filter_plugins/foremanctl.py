@@ -30,6 +30,15 @@ def known_foreman_plugins(_value):
     plugins = [FEATURE_MAP.get(feature).get('foreman', {}).get('plugin_name') for feature in FEATURE_MAP.keys()]
     return compact_list(plugins)
 
+def invalid_features(features):
+    """Return a list of unknown features not defined in features.yaml."""
+    unknown = []
+    for feature in features:
+        if feature in BASE_FEATURES:
+            continue
+        if feature not in FEATURE_MAP:
+            unknown.append(feature)
+    return unknown
 
 class FilterModule(object):
     '''foremanctl filters'''
@@ -38,4 +47,5 @@ class FilterModule(object):
         return {
             'features_to_foreman_plugins': foreman_plugins,
             'known_foreman_plugins': known_foreman_plugins,
+            'invalid_features': invalid_features,
         }
