@@ -8,3 +8,6 @@
   roles:
     - role: pre_install
     - role: postgresql
+      vars:
+        postgresql_network: host
+        postgresql_ports: []

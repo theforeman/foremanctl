@@ -1,5 +1,5 @@
 ---
-database_host: localhost
+database_host: postgresql
 database_port: 5432
 database_ssl_mode: disable
 database_ssl_ca: None

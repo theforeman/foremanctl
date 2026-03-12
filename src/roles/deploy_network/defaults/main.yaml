@@ -1,0 +1,22 @@
+---
+deploy_network_name: foreman-network
+
+# Network driver
+deploy_network_driver: bridge
+
+# Subnet and gateway (optional - auto-assigned if omitted)
+# deploy_network_subnet: "10.89.0.0/24"
+# deploy_network_gateway: "10.89.0.1"
+
+# Prevent containers on this network from reaching external hosts or the host itself
+deploy_network_internal: false
+
+# Prevent containers on this network from reaching containers on other networks
+deploy_network_isolate: false
+
+# Enable IPv6
+deploy_network_ipv6: false
+
+# DNS servers (optional - uses system defaults if omitted)
+# deploy_network_dns:
+#   - 8.8.8.8

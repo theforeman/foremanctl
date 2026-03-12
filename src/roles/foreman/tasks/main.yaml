@@ -92,7 +92,13 @@
     image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
     state: quadlet
     sdnotify: true
-    network: host
+    network:
+      - foreman-db
+      - foreman-cache
+      - foreman-app
+      - foreman-proxy-net
+    ports:
+      - "127.0.0.1:3000:3000"
     hostname: "{{ ansible_facts['fqdn'] }}"
     volume:
       - 'foreman-data-run:/var/run/foreman:z'
@@ -125,7 +131,10 @@
     image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
     state: quadlet
     sdnotify: true
-    network: host
+    network:
+      - foreman-db
+      - foreman-cache
+      - foreman-app
     hostname: "{{ ansible_facts['fqdn'] }}"
     volume:
       - 'foreman-data-run:/var/run/foreman:z'
@@ -138,7 +147,7 @@
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
       - 'foreman-dynflow-worker-hosts-queue-yaml,type=mount,target=/etc/foreman/dynflow/worker-hosts-queue.yml'
     env:
-      DYNFLOW_REDIS_URL: "redis://localhost:6379/6"
+      DYNFLOW_REDIS_URL: "redis://redis:6379/6"
       REDIS_PROVIDER: "DYNFLOW_REDIS_URL"
       FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
     command: "/usr/libexec/foreman/sidekiq-selinux -e production -r ./extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yml"
@@ -176,7 +185,10 @@
     state: quadlet
     image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
     sdnotify: false
-    network: host
+    network:
+      - foreman-db
+      - foreman-cache
+      - foreman-app
     hostname: "{{ ansible_facts['fqdn'] }}"
     command: "foreman-rake {{ item.rake }}"
     volume:
@@ -226,7 +238,7 @@
       - bin/rails db:migrate && bin/rails db:seed
     detach: false
     rm: true
-    network: host
+    network: "{{ ['foreman-db'] if database_mode == 'internal' else ['foreman-app'] }}"
     env:
       FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
     secrets:

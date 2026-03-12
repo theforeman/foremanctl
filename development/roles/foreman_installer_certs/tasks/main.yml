@@ -14,3 +14,47 @@
 - name: Generate certs
   ansible.builtin.command: foreman-certs --apache true --foreman true --candlepin true
   changed_when: false
+
+# foreman-certs only generates certs for localhost and the server FQDN. Candlepin
+# runs in its own container and is reachable by other containers via the DNS name
+# "candlepin" on the bridge network. Foreman validates the TLS certificate hostname
+# when connecting to https://candlepin:23443, so a dedicated cert with SAN=candlepin
+# is required.
+- name: Create candlepin cert directory
+  ansible.builtin.file:
+    path: /root/ssl-build/candlepin
+    state: directory
+    mode: '0755'
+
+- name: Generate candlepin Tomcat private key
+  ansible.builtin.command: >
+    openssl genrsa
+      -out /root/ssl-build/candlepin/candlepin-tomcat.key
+      4096
+  args:
+    creates: /root/ssl-build/candlepin/candlepin-tomcat.key
+
+- name: Generate candlepin Tomcat certificate signing request
+  ansible.builtin.command: >
+    openssl req
+      -new
+      -key /root/ssl-build/candlepin/candlepin-tomcat.key
+      -subj "/CN=candlepin"
+      -addext "subjectAltName = DNS:candlepin"
+      -out /root/ssl-build/candlepin/candlepin-tomcat.csr
+  args:
+    creates: /root/ssl-build/candlepin/candlepin-tomcat.csr
+
+- name: Sign candlepin certificate with installer CA
+  ansible.builtin.command: >
+    openssl x509
+      -req
+      -in /root/ssl-build/candlepin/candlepin-tomcat.csr
+      -CA /root/ssl-build/katello-default-ca.crt
+      -CAkey /root/ssl-build/katello-default-ca.key
+      -CAcreateserial
+      -days 7300
+      -passin "file:/root/ssl-build/katello-default-ca.pwd"
+      -copy_extensions copy
+      -out /root/ssl-build/candlepin/candlepin-tomcat.crt
+  changed_when: true
