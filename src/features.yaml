@@ -1,4 +1,10 @@
 ---
+foreman:
+  description: Base Foreman Server
+foreman-proxy:
+  description: Base Foreman Proxy
+hammer:
+  description: Foreman CLI
 katello:
   description: Content and Subscription Management plugin for Foreman
   foreman:
