@@ -14,11 +14,11 @@ foreman_container_tag: "{{ container_tag_stream }}"
 foreman_proxy_container_image: "quay.io/foreman/foreman-proxy"
 foreman_proxy_container_tag: "{{ container_tag_stream }}"
 
-postgresql_container_image: quay.io/sclorg/postgresql-13-c9s
+postgresql_container_image: quay.io/sclorg/postgresql-16-c10s
 postgresql_container_tag: "latest"
 pulp_container_image: quay.io/foreman/pulp
 pulp_container_tag: "foreman-{{ container_tag_stream }}"
-redis_container_image: quay.io/sclorg/redis-6-c9s
+redis_container_image: quay.io/sclorg/valkey-8-c10s
 redis_container_tag: "latest"
 
 images:
