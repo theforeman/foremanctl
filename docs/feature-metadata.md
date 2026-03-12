@@ -2,7 +2,7 @@
 
 Users want to enable abstract features, which means the deployment needs to know how to translate a feature name to a set of changes (configuration files, services, etc).
 
-The metadata is a Hash with the feature name as the key and the feature definition as the value.
+The metadata is a Hash with the feature (using dashes, not underscores if needed) name as the key and the feature definition as the value.
 The feature definition itself is again a Hash with the various properties of the feature.
 
 ```yaml
