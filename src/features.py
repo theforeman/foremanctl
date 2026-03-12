@@ -17,17 +17,6 @@ def load_yaml(path: pathlib.Path) -> dict:
         return {}
 
 
-def get_feature_components(meta: dict) -> str:
-    """Return comma-separated string of components a feature touches."""
-    parts = []
-    if meta.get('foreman'):
-        parts.append('foreman')
-    if meta.get('foreman_proxy'):
-        parts.append('proxy')
-    if meta.get('hammer'):
-        parts.append('hammer')
-    return ','.join(parts) if parts else '-'
-
 def main():
     features_yaml = BASE_DIR / "features.yaml"
     all_features = load_yaml(features_yaml)
@@ -46,7 +35,7 @@ def main():
 
     enabled_features = flavor_features + added_features
 
-    print(f"{'FEATURE':<25} {'STATE':<12} {'BASE':<20} DESCRIPTION")
+    print(f"{'FEATURE':<25} {'STATE':<12} DESCRIPTION")
 
     # Separate enabled and available
     enabled_list = []
@@ -59,19 +48,18 @@ def main():
         if meta.get('internal', False):
             continue
 
-        components = get_feature_components(meta)
         description = meta.get('description', '')
 
         if name in enabled_features:
-            enabled_list.append((name, 'enabled', components, description))
+            enabled_list.append((name, 'enabled', description))
         else:
-            available_list.append((name, 'available', components, description))
+            available_list.append((name, 'available', description))
 
-    for name, state, components, description in enabled_list:
-        print(f"{name:<25} {state:<12} {components:<20} {description}")
+    for name, state, description in enabled_list:
+        print(f"{name:<25} {state:<12} {description}")
 
-    for name, state, components, description in available_list:
-        print(f"{name:<25} {state:<12} {components:<20} {description}")
+    for name, state, description in available_list:
+        print(f"{name:<25} {state:<12} {description}")
 
     print()
     enabled_count = len(enabled_list)
