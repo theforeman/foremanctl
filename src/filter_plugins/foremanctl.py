@@ -32,13 +32,7 @@ def known_foreman_plugins(_value):
 
 def invalid_features(features):
     """Return a list of unknown features not defined in features.yaml."""
-    unknown = []
-    for feature in features:
-        if feature in BASE_FEATURES:
-            continue
-        if feature not in FEATURE_MAP:
-            unknown.append(feature)
-    return unknown
+    return [feature for feature in features if feature not in FEATURE_MAP]
 
 class FilterModule(object):
     '''foremanctl filters'''
