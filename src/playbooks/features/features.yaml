@@ -1,0 +1,7 @@
+---
+- hosts: quadlet
+  gather_facts: false
+  tasks:
+    - name: print features
+      ansible.builtin.debug:
+        msg: "Whoa, nice"
