@@ -1,2 +1,9 @@
+---
 - name: List features
   hosts: quadlet
+  gather_facts: false
+
+  tasks:
+    - name: List Enabled features
+      ansible.builtin.debug:
+        msg: ""
