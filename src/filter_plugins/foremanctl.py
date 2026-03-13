@@ -31,11 +31,33 @@ def known_foreman_plugins(_value):
     return compact_list(plugins)
 
 
+def feature_list(value):
+    enabled_list = []
+    available_list = []
+    for name, meta in FEATURE_MAP.items():
+        if meta.get('internal', False):
+            continue
+        description = meta.get('description', '')
+        if name in value:
+            enabled_list.append((name, 'enabled', description))
+        else:
+            available_list.append((name, 'available', description))
+
+    output = [f"{'FEATURE':<25} {'STATE':<12} DESCRIPTION"]
+    for name, state, description in enabled_list:
+        output.append(f"{name:<25} {state:<12} {description}")
+    for name, state, description in available_list:
+        output.append(f"{name:<25} {state:<12} {description}")
+
+    return "\n".join(output)
+
+
 class FilterModule(object):
     '''foremanctl filters'''
 
     def filters(self):
         return {
+            'feature_list': feature_list,
             'features_to_foreman_plugins': foreman_plugins,
             'known_foreman_plugins': known_foreman_plugins,
         }
