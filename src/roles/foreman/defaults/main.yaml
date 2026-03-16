@@ -10,6 +10,7 @@ foreman_database_port: 5432
 foreman_database_pool: 9
 foreman_database_ssl_mode: disable
 foreman_database_ssl_ca:
+foreman_database_ssl_ca_path: /etc/foreman/db-ca.crt
 
 foreman_url: "http://{{ ansible_facts['fqdn'] }}:3000"
 

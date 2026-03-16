@@ -86,7 +86,7 @@
       - 'candlepin-artemis-cert-roles-properties,target=/etc/tomcat/cert-roles.properties,mode=440,type=mount'
       - 'candlepin-artemis-cert-users-properties,target=/etc/tomcat/cert-users.properties,mode=440,type=mount'
       - 'candlepin-artemis-jaas-conf,target=/etc/tomcat/conf.d/jaas.conf,mode=440,type=mount'
-      - 'candlepin-db-ca,target=/etc/candlepin/certs/db-ca.crt,mode=0440,type=mount'
+      - 'candlepin-db-ca,target={{ candlepin_database_ssl_ca_path }},mode=0440,type=mount'
     volumes:
       - /var/log/candlepin:/var/log/candlepin:Z
       - /var/log/tomcat:/var/log/tomcat:Z
