@@ -55,6 +55,25 @@ def available_foreman_plugins(_value):
     plugins = [FEATURE_MAP.get(feature).get('foreman', {}).get('plugin_name') for feature in FEATURE_MAP.keys()]
     return compact_list(plugins)
 
+def feature_list(value):
+    enabled_list = []
+    available_list = []
+    for name, meta in FEATURE_MAP.items():
+        if meta.get('internal', False):
+            continue
+        description = meta.get('description', '')
+        if name in value:
+            enabled_list.append((name, 'enabled', description))
+        else:
+            available_list.append((name, 'available', description))
+
+    output = [f"{'FEATURE':<25} {'STATE':<12} DESCRIPTION"]
+    for name, state, description in enabled_list:
+        output.append(f"{name:<25} {state:<12} {description}")
+    for name, state, description in available_list:
+        output.append(f"{name:<25} {state:<12} {description}")
+
+    return "\n".join(output)
 
 def foreman_proxy_plugins(value):
     dependencies = list(get_dependencies(filter_features(value)))
@@ -76,4 +95,5 @@ class FilterModule(object):
             'available_foreman_plugins': available_foreman_plugins,
             'features_to_foreman_proxy_plugins': foreman_proxy_plugins,
             'available_foreman_proxy_plugins': available_foreman_proxy_plugins,
+            'feature_list': feature_list,
         }

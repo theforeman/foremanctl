@@ -2,8 +2,11 @@
 - name: List features
   hosts: quadlet
   gather_facts: false
-
+  vars_files:
+    - "../../vars/defaults.yml"
+    - "../../vars/flavors/{{ flavor }}.yml"
+    - "../../vars/base.yaml"
   tasks:
-    - name: List Enabled features
+    - name: Print features
       ansible.builtin.debug:
-        msg: ""
+        msg: "{{ enabled_features | feature_list }}"
