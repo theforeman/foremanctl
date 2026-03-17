@@ -24,20 +24,20 @@
         certificate_checks_ca: "{{ ca_certificate }}"
     - role: deploy_network
       vars:
-        deploy_network_name: foreman-db
+        deploy_network_name: foreman
+        deploy_network_isolate: true
+    - role: deploy_network
+      vars:
+        deploy_network_name: pulp
+        deploy_network_isolate: true
+    - role: deploy_network
+      vars:
+        deploy_network_name: candlepin
         deploy_network_internal: true
         deploy_network_isolate: true
     - role: deploy_network
       vars:
-        deploy_network_name: foreman-cache
-        deploy_network_internal: true
-        deploy_network_isolate: true
-    - role: deploy_network
-      vars:
-        deploy_network_name: foreman-app
-    - role: deploy_network
-      vars:
-        deploy_network_name: foreman-proxy-net
+        deploy_network_name: foreman-proxy
     - role: postgresql
       when:
         - database_mode == 'internal'

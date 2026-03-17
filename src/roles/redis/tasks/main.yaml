@@ -21,7 +21,7 @@
     state: quadlet
     sdnotify: true
     command: ["run-redis", "--supervised", "systemd"]
-    network: "{{ redis_network }}"
+    network: "{{ redis_networks }}"
     volumes:
       - /var/lib/redis:/data:Z
     quadlet_options:

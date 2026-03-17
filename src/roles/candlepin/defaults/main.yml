@@ -15,7 +15,9 @@ candlepin_ciphers:
 candlepin_container_image: quay.io/foreman/candlepin
 candlepin_container_tag: "4.4.14"
 candlepin_registry_auth_file: /etc/foreman/registry-auth.json
-candlepin_networks: "{{ (['foreman-db'] if database_mode == 'internal' else []) + ['foreman-app'] }}"
+candlepin_networks:
+  - candlepin
+  - foreman
 
 candlepin_database_host: postgresql
 candlepin_database_port: 5432

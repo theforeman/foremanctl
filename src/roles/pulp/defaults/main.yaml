@@ -36,14 +36,13 @@ pulp_database_user: pulp
 pulp_database_host: postgresql
 pulp_redis_url: "redis://redis:6379/8"
 pulp_networks:
-  - foreman-db
-  - foreman-cache
-  - foreman-app
+  - pulp
 pulp_api_ports:
   - "127.0.0.1:24817:24817"
 pulp_content_ports:
   - "127.0.0.1:24816:24816"
-pulp_migration_networks: "{{ ['foreman-db'] if database_mode == 'internal' else ['foreman-app'] }}"
+pulp_migration_networks:
+  - pulp
 pulp_database_port: 5432
 pulp_database_ssl_mode: disabled
 pulp_database_ssl_ca:

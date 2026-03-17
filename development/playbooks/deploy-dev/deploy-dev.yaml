@@ -17,7 +17,7 @@
     - role: certificates
     - role: postgresql
       vars:
-        postgresql_network: host
+        postgresql_networks: host
         postgresql_databases:
           - name: "{{ candlepin_database_name }}"
             owner: "{{ candlepin_database_user }}"
@@ -37,7 +37,7 @@
             password: "{{ pulp_database_password }}"
     - role: redis
       vars:
-        redis_network: host
+        redis_networks: host
     - role: candlepin
       vars:
         candlepin_networks: host

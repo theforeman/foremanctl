@@ -102,10 +102,10 @@
     state: quadlet
     sdnotify: true
     network:
-      - foreman-db
-      - foreman-cache
-      - foreman-app
-      - foreman-proxy-net
+      - foreman
+      - pulp
+      - candlepin
+      - foreman-proxy
     ports:
       - "127.0.0.1:3000:3000"
     hostname: "{{ ansible_facts['fqdn'] }}"
@@ -144,9 +144,8 @@
     state: quadlet
     sdnotify: true
     network:
-      - foreman-db
-      - foreman-cache
-      - foreman-app
+      - foreman
+      - pulp
     hostname: "{{ ansible_facts['fqdn'] }}"
     volume:
       - 'foreman-data-run:/var/run/foreman:z'
@@ -199,9 +198,8 @@
     image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
     sdnotify: false
     network:
-      - foreman-db
-      - foreman-cache
-      - foreman-app
+      - foreman
+      - pulp
     hostname: "{{ ansible_facts['fqdn'] }}"
     command: "foreman-rake {{ item.rake }}"
     volume:
@@ -252,7 +250,7 @@
       - bin/rails db:migrate && bin/rails db:seed
     detach: false
     rm: true
-    network: "{{ ['foreman-db'] if database_mode == 'internal' else ['foreman-app'] }}"
+    network: foreman
     env:
       FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
     secrets:

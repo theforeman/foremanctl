@@ -18,7 +18,8 @@
     image: "{{ foreman_proxy_container_image }}:{{ foreman_proxy_container_tag }}"
     state: quadlet
     sdnotify: true
-    network: foreman-proxy-net
+    network:
+      - foreman-proxy
     ports:
       - "0.0.0.0:8443:8443"
     hostname: "{{ ansible_facts['fqdn'] }}"

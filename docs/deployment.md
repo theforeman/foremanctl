@@ -241,90 +241,87 @@ There is a desire to allow deployments where a single `foremanctl` control node 
 
 All containers are connected to one or more named Podman bridge networks instead of sharing the host network namespace, limiting lateral movement: a container can only reach the services it is explicitly connected to.
 
+The topology is designed top-down from service communication requirements. Each of the four application services (Foreman, Pulp, Candlepin, Foreman Proxy) owns a network that carries its private backend traffic. Services join each other's networks only where communication is required, making the allowed paths explicit and auditable.
+
 ### Networks
 
-#### `foreman-db`
+#### `foreman`
+
+**Properties:** `internal: false`, `isolate: true`
+
+Foreman's primary network. Provides outbound internet access for Foreman's external API calls. PostgreSQL and Redis attach here for Foreman's data access. Candlepin, Pulp, Dynflow, and Foreman Proxy also attach so that Foreman can reach each of them directly, and they can reach Foreman.
+
+`isolate: true` prevents containers on this network from forwarding packets to containers on other bridge networks, so Candlepin cannot reach Pulp via this network even though both are attached.
+
+| Container | Role |
+|-----------|------|
+| `postgresql` | Server — Foreman database |
+| `redis` | Server — Foreman cache and Dynflow queue |
+| `candlepin` | Server — also joins to make its hostname resolvable from Foreman's primary DNS |
+| `foreman` | Owner |
+| `dynflow-sidekiq@*` | Client |
+| `pulp-api` | Server — reachable from Foreman |
+| `pulp-content` | Server — reachable from Foreman |
+| `pulp-worker@*` | Worker |
+| `foreman-proxy` | Server — reachable from Foreman |
+
+`foreman`, `pulp-api`, and `pulp-content` publish their respective ports to `127.0.0.1` so that the `httpd` reverse proxy running on the host can reach them.
+
+#### `pulp`
+
+**Properties:** `internal: false`, `isolate: true`
+
+Pulp's private network. Provides outbound internet access for content synchronisation. PostgreSQL and Redis attach here for Pulp's data access. Foreman and Dynflow also attach to reach Pulp directly.
+
+| Container | Role |
+|-----------|------|
+| `postgresql` | Server — Pulp database |
+| `redis` | Server — Pulp cache and task queue |
+| `pulp-api` | Owner |
+| `pulp-content` | Owner |
+| `pulp-worker@*` | Owner |
+| `foreman` | Client |
+| `dynflow-sidekiq@*` | Client |
+
+#### `candlepin`
 
 **Properties:** `internal: true`, `isolate: true`
 
-The database network. Only containers that need to read or write persistent data are attached.
+Candlepin's private network. `internal: true` removes the default gateway: Candlepin has no reason to initiate outbound internet connections. PostgreSQL attaches here for Candlepin's data access. Foreman attaches to reach Candlepin directly. Pulp and Foreman Proxy have no route to Candlepin.
 
-- `internal: true` removes the default gateway, so no container on this network can initiate outbound internet connections. Database servers have no reason to reach the internet, and clients that need internet access (e.g. for content sync) are multi-homed and use a different network for that.
-- `isolate: true` prevents containers on this network from forwarding packets to containers on other bridge networks, closing off lateral movement paths between network segments.
-
-| Container | Role |
-|-----------|------|
-| `postgresql` | Server — listens on port 5432 (internal DB only) |
-| `foreman` | Client |
-| `dynflow-sidekiq@*` | Client |
-| `foreman-recurring@*` | Client |
-| `candlepin` | Client (internal DB only) |
-| `pulp-api` | Client |
-| `pulp-content` | Client |
-| `pulp-worker@*` | Client |
-
-Ansible's `community.postgresql.*` modules reach the database during deployment via a Unix socket: `/var/run/postgresql` is bind-mounted from the host into the container so the socket is accessible on the host without publishing a TCP port.
-
-#### `foreman-cache`
-
-**Properties:** `internal: true`, `isolate: true`
-
-The cache network. Only containers that need to reach Redis are attached. The same rationale as `foreman-db` applies: cache servers have no business reaching the internet, and the `isolate` flag prevents bridge pivoting.
+Candlepin also joins the `foreman` network so that its hostname is registered in Foreman's primary DNS zone, avoiding cross-bridge DNAT for the Foreman-to-Candlepin connection.
 
 | Container | Role |
 |-----------|------|
-| `redis` | Server — listens on port 6379 |
-| `foreman` | Client — app cache and Dynflow queue |
-| `dynflow-sidekiq@*` | Client — job queue |
-| `foreman-recurring@*` | Client — job queue |
-| `pulp-api` | Client |
-| `pulp-content` | Client |
-| `pulp-worker@*` | Client |
-
-Redis does not publish any port to the host: it is a purely internal service with no legitimate consumers outside the container network.
-
-#### `foreman-app`
-
-**Properties:** none (`internal: false`, `isolate: false`)
-
-The application network. Containers that need to communicate with each other at the application layer, or that need outbound internet access (e.g. for content synchronisation), are attached here.
-
-| Container | Role |
-|-----------|------|
-| `candlepin` | Server — Tomcat (23443) and Artemis STOMP broker (61613) |
-| `foreman` | Client to Candlepin; serves Foreman Proxy requests |
-| `dynflow-sidekiq@*` | Client |
-| `foreman-recurring@*` | Client |
-| `pulp-api` | Server — API (24817); needs internet for content sync |
-| `pulp-content` | Server — content (24816); needs internet for content sync |
-| `pulp-worker@*` | Worker — needs internet for content sync |
-
-Candlepin does not publish any ports to the host: `foreman` reaches it directly over the bridge using its DNS name. `foreman`, `pulp-api`, and `pulp-content` publish their respective ports to `127.0.0.1` so that the `httpd` reverse proxy running on the host can reach them.
-
-#### `foreman-proxy-net`
-
-**Properties:** none (`internal: false`, `isolate: false`)
-
-The proxy network, used exclusively for communication between Foreman and Foreman Proxy. Keeping this traffic on a dedicated network makes it straightforward to apply stricter controls in future without affecting the rest of the application.
-
-| Container | Role |
-|-----------|------|
-| `foreman-proxy` | Server — listens on 0.0.0.0:8443 (external) |
+| `postgresql` | Server — Candlepin database |
+| `candlepin` | Owner — Tomcat (23443) and Artemis STOMP broker (61613) |
 | `foreman` | Client |
 
-`foreman-proxy` publishes port `0.0.0.0:8443` so that remote Foreman Proxies and clients can register and communicate with it from outside the host.
+Candlepin does not publish any ports to the host: Foreman reaches it directly over the bridge using its DNS name.
+
+#### `foreman-proxy`
+
+**Properties:** `internal: false`, `isolate: false`
+
+The proxy network, used for communication between Foreman and Foreman Proxy. Not isolated because Foreman reaches the proxy at `quadlet.example.com:8443` via host-gateway DNAT, which crosses the `foreman`-to-`foreman-proxy` bridge boundary; netavark isolation rules would block this cross-bridge DNAT forwarding.
+
+| Container | Role |
+|-----------|------|
+| `foreman-proxy` | Owner — listens on `0.0.0.0:8443` |
+| `foreman` | Client |
+
+`foreman-proxy` publishes port `0.0.0.0:8443` so that external managed hosts can communicate with it, and so that Foreman on the `foreman` network can call back to it via host-gateway.
 
 ### Network membership summary
 
-| Container | foreman-db | foreman-cache | foreman-app | foreman-proxy-net |
-|-----------|:----------:|:-------------:|:-----------:|:-----------------:|
-| `postgresql` | ✓ | | | |
-| `redis` | | ✓ | | |
-| `candlepin` | ✓ (internal DB) | | ✓ | |
+| Container | `foreman` | `pulp` | `candlepin` | `foreman-proxy` |
+|-----------|:---------:|:------:|:-----------:|:---------------:|
+| `postgresql` | ✓ | ✓ | ✓ | |
+| `redis` | ✓ | ✓ | | |
+| `candlepin` | ✓ | | ✓ | |
 | `foreman` | ✓ | ✓ | ✓ | ✓ |
-| `dynflow-sidekiq@*` | ✓ | ✓ | ✓ | |
-| `foreman-recurring@*` | ✓ | ✓ | ✓ | |
+| `dynflow-sidekiq@*` | ✓ | ✓ | | |
 | `foreman-proxy` | | | | ✓ |
-| `pulp-api` | ✓ | ✓ | ✓ | |
-| `pulp-content` | ✓ | ✓ | ✓ | |
-| `pulp-worker@*` | ✓ | ✓ | ✓ | |
+| `pulp-api` | ✓ | ✓ | | |
+| `pulp-content` | ✓ | ✓ | | |
+| `pulp-worker@*` | ✓ | ✓ | | |
