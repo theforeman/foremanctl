@@ -43,6 +43,7 @@
         WantedBy=default.target foreman.target
         [Unit]
         PartOf=foreman.target
+        After=foreman.target
 
 - name: Run daemon reload
   ansible.builtin.systemd:
