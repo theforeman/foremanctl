@@ -35,6 +35,7 @@
         WantedBy=default.target foreman.target
         [Unit]
         PartOf=foreman.target
+        After=foreman.target
   notify: Restart Foreman Proxy
 
 - name: Run daemon reload to make Quadlet create the service files

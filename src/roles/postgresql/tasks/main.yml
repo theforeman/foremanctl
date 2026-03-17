@@ -43,6 +43,7 @@
         WantedBy=default.target foreman.target
         [Unit]
         PartOf=foreman.target
+        After=foreman.target
 
 - name: Configure SSL certificates
   when:

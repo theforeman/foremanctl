@@ -119,7 +119,7 @@
         [Unit]
         PartOf=foreman.target
         Wants=redis.service postgresql.service
-        After=redis.service postgresql.service
+        After=foreman.target redis.service postgresql.service
         [Service]
         Restart=always
         RestartSec=3
@@ -150,7 +150,7 @@
         [Unit]
         PartOf=foreman.target
         Wants=redis.service postgresql.service
-        After=redis.service postgresql.service
+        After=foreman.target redis.service postgresql.service
         [Service]
         Restart=always
         RestartSec=3
@@ -181,7 +181,7 @@
         [Unit]
         PartOf=pulp-worker.target foreman.target
         Wants=redis.service postgresql.service
-        After=redis.service postgresql.service
+        After=foreman.target redis.service postgresql.service
         [Service]
         Restart=always
         RestartSec=3
