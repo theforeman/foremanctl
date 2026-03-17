@@ -1,12 +1,12 @@
 from ansible.plugins.callback.default import CallbackModule as DefaultCallbackModule
-from os.path import basename
 
 DOCUMENTATION = """
     name: foremanctl
     type: stdout
-    short_description: default Ansible screen output callback
+    short_description: foremanctl stdout callback
     description:
-        - This is the default output callback for ansible-playbooks.
+        - Suppresses default Ansible output for plays tagged with
+          foremanctl_suppress_default_output, displaying only task msg rather than ansible default output.
     extends_documentation_fragment:
       - default_callback
       - result_format_callback
@@ -22,12 +22,11 @@ class CallbackModule(DefaultCallbackModule):
     CALLBACK_NAME = 'foremanctl'
 
     FALLBACK_TO_DEFAULT = True
-    PLAYBOOKS_TO_SKIP_DEFAULT = ['features.yaml']
 
     def v2_playbook_on_start(self, playbook):
-        playbook_filename = basename(playbook._file_name)
-
-        if playbook_filename in self.PLAYBOOKS_TO_SKIP_DEFAULT:
+        plays = playbook.get_plays()
+        tags = plays[0].tags
+        if 'foremanctl_suppress_default_output' in tags:
             self.FALLBACK_TO_DEFAULT = False
         if self.FALLBACK_TO_DEFAULT:
             super().v2_playbook_on_start(playbook)

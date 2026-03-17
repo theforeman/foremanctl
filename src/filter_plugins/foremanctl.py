@@ -55,14 +55,14 @@ def available_foreman_plugins(_value):
     plugins = [FEATURE_MAP.get(feature).get('foreman', {}).get('plugin_name') for feature in FEATURE_MAP.keys()]
     return compact_list(plugins)
 
-def feature_list(value):
+def list_all_features(enabled_features):
     enabled_list = []
     available_list = []
     for name, meta in FEATURE_MAP.items():
         if meta.get('internal', False):
             continue
         description = meta.get('description', '')
-        if name in value:
+        if name in enabled_features:
             enabled_list.append((name, 'enabled', description))
         else:
             available_list.append((name, 'available', description))
@@ -95,5 +95,5 @@ class FilterModule(object):
             'available_foreman_plugins': available_foreman_plugins,
             'features_to_foreman_proxy_plugins': foreman_proxy_plugins,
             'available_foreman_proxy_plugins': available_foreman_proxy_plugins,
-            'feature_list': feature_list,
+            'list_all_features': list_all_features,
         }

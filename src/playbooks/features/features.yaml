@@ -2,6 +2,8 @@
 - name: List features
   hosts: quadlet
   gather_facts: false
+  tags:
+    - foremanctl_suppress_default_output
   vars_files:
     - "../../vars/defaults.yml"
     - "../../vars/flavors/{{ flavor }}.yml"
@@ -9,4 +11,4 @@
   tasks:
     - name: Print features
       ansible.builtin.debug:
-        msg: "{{ enabled_features | feature_list }}"
+        msg: "{{ enabled_features | list_all_features }}"
