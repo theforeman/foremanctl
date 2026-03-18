@@ -126,8 +126,8 @@
         WantedBy=default.target foreman.target
         [Unit]
         PartOf=foreman.target
-        Wants=redis.service postgresql.service
-        After=foreman.target redis.service postgresql.service
+        Wants=redis.service postgresql.service candlepin.service
+        After=foreman.target redis.service postgresql.service candlepin.service
   notify: Restart foreman
 
 - name: Deploy Dynflow Container
