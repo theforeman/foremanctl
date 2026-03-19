@@ -55,7 +55,7 @@ def available_foreman_plugins(_value):
     plugins = [FEATURE_MAP.get(feature).get('foreman', {}).get('plugin_name') for feature in FEATURE_MAP.keys()]
     return compact_list(plugins)
 
-def list_all_features(enabled_features):
+def list_all_features(enabled_features, only_enabled=False):
     enabled_list = []
     available_list = []
     for name, meta in FEATURE_MAP.items():
@@ -64,13 +64,11 @@ def list_all_features(enabled_features):
         description = meta.get('description', '')
         if name in enabled_features:
             enabled_list.append((name, 'enabled', description))
-        else:
+        elif not only_enabled:
             available_list.append((name, 'available', description))
 
     output = [f"{'FEATURE':<25} {'STATE':<12} DESCRIPTION"]
-    for name, state, description in enabled_list:
-        output.append(f"{name:<25} {state:<12} {description}")
-    for name, state, description in available_list:
+    for name, state, description in enabled_list + available_list:
         output.append(f"{name:<25} {state:<12} {description}")
 
     return "\n".join(output)

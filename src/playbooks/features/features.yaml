@@ -4,6 +4,8 @@
   gather_facts: false
   tags:
     - foremanctl_suppress_default_output
+  vars:
+    list_enabled: false
   vars_files:
     - "../../vars/defaults.yml"
     - "../../vars/flavors/{{ flavor }}.yml"
@@ -11,4 +13,4 @@
   tasks:
     - name: Print features
       ansible.builtin.debug:
-        msg: "{{ enabled_features | list_all_features }}"
+        msg: "{{ enabled_features | list_all_features(list_enabled) }}"
