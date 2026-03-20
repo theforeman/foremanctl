@@ -1,0 +1,9 @@
+---
+help: List all enabled and available features
+
+variables:
+  list_enabled:
+    parameter: --list-enabled
+    help: List only enabled features
+    action: store_true
+    persist: false
