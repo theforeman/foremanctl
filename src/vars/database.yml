@@ -37,9 +37,9 @@ postgresql_databases:
   - name: "{{ pulp_database_name }}"
     owner: "{{ pulp_database_user }}"
 postgresql_users:
-  - name: "{{ candlepin_database_name }}"
+  - name: "{{ candlepin_database_user }}"
     password: "{{ candlepin_database_password }}"
-  - name: "{{ foreman_database_name }}"
+  - name: "{{ foreman_database_user }}"
     password: "{{ foreman_database_password }}"
-  - name: "{{ pulp_database_name }}"
+  - name: "{{ pulp_database_user }}"
     password: "{{ pulp_database_password }}"

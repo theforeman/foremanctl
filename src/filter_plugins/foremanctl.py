@@ -23,9 +23,14 @@ def filter_base_features(items):
     return filter(lambda x: x not in BASE_FEATURES, items)
 
 
+def filter_iop(items):
+    return filter(lambda x: not x.startswith('iop'), items)
+
+
 def filter_features(items):
     items = filter_content(items)
     items = filter_base_features(items)
+    items = filter_iop(items)
     return items
 
 
