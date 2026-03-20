@@ -95,6 +95,12 @@
     - Restart foreman
     - Restart dynflow-sidekiq@
 
+- name: Deploy Foreman socket
+  ansible.builtin.template:
+    src: foreman.socket.j2
+    dest: /etc/systemd/system/foreman.socket
+    mode: '0644'
+
 - name: Deploy Foreman Container
   containers.podman.podman_container:
     name: "foreman"
@@ -122,6 +128,8 @@
       FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
     quadlet_options:
       - |
+        [Unit]
+        Requires=foreman.socket
         [Install]
         WantedBy=default.target foreman.target
         [Unit]
@@ -268,7 +276,7 @@
 - name: Wait for Foreman service to be accessible
   ansible.builtin.uri:
     url: '{{ foreman_url }}/api/v2/ping'
-    validate_certs: false
+    ca_path: '{{ ca_certificate }}'
   until: foreman_status.status == 200
   retries: 60
   delay: 5
@@ -287,7 +295,7 @@
 - name: Wait for Foreman tasks to be ready
   ansible.builtin.uri:
     url: '{{ foreman_url }}/api/v2/ping'
-    validate_certs: false
+    ca_path: '{{ ca_certificate }}'
   until:
     - foreman_tasks_status.status == 200
     - foreman_tasks_status.json['results']['katello']['services']['foreman_tasks']['status'] == 'ok'
@@ -304,4 +312,4 @@
     server_url: "{{ foreman_url }}"
     username: "{{ foreman_initial_admin_username }}"
     password: "{{ foreman_initial_admin_password }}"
-    validate_certs: false
+    ca_path: '{{ ca_certificate }}'
