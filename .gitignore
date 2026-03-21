@@ -14,7 +14,7 @@ repo
 user_playbooks
 playbooks/galaxy_roles
 playbooks/galaxy_collections
-inventories/local_*
+inventories/
 user_devel_env_files/
 .cache
 
