@@ -20,3 +20,13 @@ def test_foremanctl_features_list_enabled():
 
     assert 'enabled' in result.stdout
     assert 'available' not in result.stdout
+
+def test_invalid_feature_rejected():
+    command = ['./foremanctl', 'deploy', '--add-feature', 'invalid-feature']
+    result = subprocess.run(command, capture_output=True, text=True)
+
+    assert result.returncode == 2
+
+    assert 'Unknown feature(s) requested: invalid-feature' in result.stdout
+    assert '--remove-feature=invalid' in result.stdout
+    assert "Run 'foremanctl features' to list all available features." in result.stdout

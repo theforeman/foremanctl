@@ -1,0 +1,15 @@
+---
+- name: Validate requested features
+  ansible.builtin.assert:
+    that:
+      - found_invalid_features | length == 0
+    fail_msg: |
+      ERROR: Unknown feature(s) requested: {{ found_invalid_features | join(', ') }}
+
+      To remove them, run:
+        foremanctl deploy {% for feature in found_invalid_features %}--remove-feature={{ feature }} {% endfor %}
+
+      Run 'foremanctl features' to list all available features.
+  vars:
+    found_invalid_features: "{{ features | invalid_features }}"
+  when: features | length > 0
