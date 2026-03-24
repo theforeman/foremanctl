@@ -88,8 +88,8 @@
       - 'candlepin-artemis-jaas-conf,target=/etc/tomcat/conf.d/jaas.conf,mode=440,type=mount'
       - 'candlepin-db-ca,target={{ candlepin_database_ssl_ca_path }},mode=0440,type=mount'
     volumes:
-      - /var/log/candlepin:/var/log/candlepin:Z
-      - /var/log/tomcat:/var/log/tomcat:Z
+      - /var/log/candlepin:/var/log/candlepin:rw:Z
+      - /var/log/tomcat:/var/log/tomcat:rw:Z
     quadlet_options:
       - |
         [Install]

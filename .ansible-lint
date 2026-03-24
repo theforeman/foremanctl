@@ -2,3 +2,7 @@
 exclude_paths:
   - .ansible/
   - .github/
+
+# Enable custom rules for volume permission validation
+rulesdir:
+  - .ansible-lint-rules
