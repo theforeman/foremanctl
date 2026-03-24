@@ -31,7 +31,6 @@ variables:
     parameter: --certificate-cname
 
 include:
-  - _certificate_source
   - _database_mode
   - _database_connection
   - _tuning

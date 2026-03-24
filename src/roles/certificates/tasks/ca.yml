@@ -1,32 +1,12 @@
 ---
-- name: 'Install crypto dependencies'
-  ansible.builtin.package:
-    name:
-      - python3-cryptography
-    state: present
-
-- name: 'Create certs directory'
-  ansible.builtin.file:
-    path: "{{ certificates_ca_directory_certs }}"
-    state: directory
-    mode: '0755'
-
-- name: 'Create keys directory'
-  ansible.builtin.file:
-    path: "{{ certificates_ca_directory_keys }}"
-    state: directory
-    mode: '0755'
-
-- name: 'Create requests directory'
-  ansible.builtin.file:
-    path: "{{ certificates_ca_directory_requests }}"
-    state: directory
-    mode: '0755'
+- name: 'Setup certificate directory'
+  ansible.builtin.include_tasks: setup.yml
 
 - name: 'Create CA key password file'
   ansible.builtin.copy:
     content: "{{ certificates_ca_password }}"
     dest: "{{ certificates_ca_directory_keys }}/ca.pwd"
+    force: false
     owner: root
     group: root
     mode: '0600'
@@ -67,3 +47,11 @@
     privatekey_passphrase: "{{ certificates_ca_password }}"
     provider: selfsigned
     selfsigned_not_after: "+7300d"
+
+- name: 'Copy CA as server CA certificate'
+  ansible.builtin.copy:
+    src: "{{ certificates_ca_directory_certs }}/ca.crt"
+    dest: "{{ certificates_ca_directory_certs }}/server-ca.crt"
+    remote_src: true
+    force: false
+    mode: '0444'
