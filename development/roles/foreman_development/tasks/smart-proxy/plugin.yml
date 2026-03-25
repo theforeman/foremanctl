@@ -50,6 +50,7 @@
 - name: "Run plugin-specific tasks for {{ foreman_development_plugin_name }}"
   ansible.builtin.include_tasks: "{{ item }}"
   with_fileglob:
-    - "smart-proxy/plugin/{{ foreman_development_plugin_name }}.yml"
+    # Relative to the current file
+    - "plugin/{{ foreman_development_plugin_name }}.yml"
   when:
     - foreman_development_plugin_name != ""
