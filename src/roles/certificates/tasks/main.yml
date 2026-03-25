@@ -3,7 +3,13 @@
   ansible.builtin.include_tasks: ca.yml
   when: certificates_ca
 
-- name: 'Issue other certificates'
+- name: Apply custom server certificates
+  ansible.builtin.include_tasks: custom.yml
+  when:
+    - certificates_source == 'custom_server'
+    - certificates_custom_server_certificate is defined
+
+- name: Issue host certificates
   ansible.builtin.include_tasks: issue.yml
   when: certificates_hostnames is defined
   with_items: "{{ certificates_hostnames }}"
