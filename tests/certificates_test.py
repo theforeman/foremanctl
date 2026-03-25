@@ -12,3 +12,35 @@ def test_certificate_expiry(server, certificates, certificate_type):
     not_after = dateutil.parser.parse(openssl_data['notAfter'])
     now = datetime.datetime.now(tz=not_after.tzinfo)
     assert not_after - now > datetime.timedelta(days=365*10)
+
+def test_custom_server_ca_differs_from_internal_ca(server, certificates, custom_certificates):
+    ca_info = certificate_info(server, certificates['ca_certificate'])
+    server_ca_info = certificate_info(server, certificates['server_ca_certificate'])
+    assert ca_info['subject'] != server_ca_info['subject'], \
+        "Custom server CA should have a different subject than the internal CA"
+
+def test_custom_server_certificate_issued_by_custom_ca(server, certificates, custom_certificates):
+    server_info = certificate_info(server, certificates['server_certificate'])
+    server_ca_info = certificate_info(server, certificates['server_ca_certificate'])
+    assert server_info['issuer'] == server_ca_info['subject'], \
+        "Server certificate should be issued by the custom server CA"
+
+def test_client_certificate_issued_by_internal_ca(server, certificates, custom_certificates):
+    client_info = certificate_info(server, certificates['client_certificate'])
+    ca_info = certificate_info(server, certificates['ca_certificate'])
+    assert client_info['issuer'] == ca_info['subject'], \
+        "Client certificate should still be issued by the internal CA"
+
+def test_ca_bundle_contains_both_cas(server, certificates, custom_certificates):
+    openssl_result = server.run(f"awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/' {certificates['ca_bundle']} | openssl crl2pkcs7 -nocrl -certfile /dev/stdin | openssl pkcs7 -print_certs -noout -text | grep 'Subject:'")
+    subjects = [line.strip() for line in openssl_result.stdout.splitlines()]
+
+    ca_info = certificate_info(server, certificates['ca_certificate'])
+    server_ca_info = certificate_info(server, certificates['server_ca_certificate'])
+
+    assert len(subjects) == 2, f"CA bundle should contain exactly 2 certificates, found {len(subjects)}"
+    assert ca_info['subject'] in subjects[0] or ca_info['subject'] in subjects[1], \
+        f"Internal CA not found in bundle. Expected: {ca_info['subject']}, Found: {subjects}"
+    assert server_ca_info['subject'] in subjects[0] or server_ca_info['subject'] in subjects[1], \
+        f"Server CA not found in bundle. Expected: {server_ca_info['subject']}, Found: {subjects}"
+
