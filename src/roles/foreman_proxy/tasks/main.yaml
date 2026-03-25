@@ -19,7 +19,7 @@
     state: quadlet
     sdnotify: true
     network: host
-    hostname: "{{ ansible_facts['fqdn'] }}"
+    hostname: "{{ ansible_facts['hostname'] }}.local"
     secrets:
       - 'foreman-proxy-settings-yml,type=mount,target=/etc/foreman-proxy/settings.yml'
       - 'foreman-proxy-ssl-ca,type=mount,target=/etc/foreman-proxy/ssl_ca.pem'
