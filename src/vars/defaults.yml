@@ -1,5 +1,5 @@
 ---
-certificate_source: default
+certificates_source: default
 database_mode: internal
 tuning: default
 flavor: katello

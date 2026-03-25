@@ -23,7 +23,7 @@ def test_http_foreman_ping(server, server_fqdn):
     assert cmd.stdout == f'https://{server_fqdn}/api/v2/ping'
 
 def test_https_foreman_ping(server, certificates, server_fqdn):
-    cmd = server.run(f"{CURL_CMD} --cacert {certificates['ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/api/v2/ping")
+    cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/api/v2/ping")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
@@ -33,7 +33,7 @@ def test_http_pulp_api_status(server, server_fqdn):
     assert cmd.stdout == '404'
 
 def test_https_pulp_api_status(server, certificates, server_fqdn):
-    cmd = server.run(f"{CURL_CMD} --cacert {certificates['ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/pulp/api/v3/status/")
+    cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/pulp/api/v3/status/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
@@ -43,12 +43,12 @@ def test_http_pulp_content(server, server_fqdn):
     assert cmd.stderr == '200'
 
 def test_https_pulp_content(server, certificates, server_fqdn):
-    cmd = server.run(f"curl --silent --cacert {certificates['ca_certificate']} https://{server_fqdn}/pulp/content/")
+    cmd = server.run(f"curl --silent --cacert {certificates['server_ca_certificate']} https://{server_fqdn}/pulp/content/")
     assert cmd.succeeded
     assert "Index of /pulp/content/" in cmd.stdout
 
 def test_https_pulp_auth(server, certificates, server_fqdn):
-    cmd = server.run(f"{CURL_CMD} --cacert {certificates['ca_certificate']} --write-out '%{{http_code}}' --cert {certificates['client_certificate']} --key {certificates['client_key']} https://{server_fqdn}/pulp/api/v3/users/")
+    cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' --cert {certificates['client_certificate']} --key {certificates['client_key']} https://{server_fqdn}/pulp/api/v3/users/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
@@ -64,17 +64,17 @@ def test_http_pub_directory_accessible(server, server_fqdn):
     assert cmd.stdout == '200'
 
 def test_https_pub_directory_accessible(server, certificates, server_fqdn):
-    cmd = server.run(f"{CURL_CMD} --cacert {certificates['ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/pub/")
+    cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/pub/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
-def test_http_pub_ca_certificate_downloadable(server, server_fqdn):
+def test_http_pub_server_ca_certificate_downloadable(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/pub/katello-server-ca.crt")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
-def test_https_pub_ca_certificate_downloadable(server, certificates, server_fqdn):
-    cmd = server.run(f"{CURL_CMD} --cacert {certificates['ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/pub/katello-server-ca.crt")
+def test_https_pub_server_ca_certificate_downloadable(server, certificates, server_fqdn):
+    cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/pub/katello-server-ca.crt")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
@@ -84,6 +84,6 @@ def test_http_foreman_login(server, server_fqdn):
     assert cmd.stdout == '301'
 
 def test_https_foreman_login(server, certificates, server_fqdn):
-    cmd = server.run(f"{CURL_CMD} --cacert {certificates['ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/users/login")
+    cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/users/login")
     assert cmd.succeeded
     assert cmd.stdout == '200'

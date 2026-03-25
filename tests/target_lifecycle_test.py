@@ -9,7 +9,7 @@ def _wait_for_foreman(server, server_fqdn, certificates):
     """Poll the Foreman HTTPS frontend until available or timeout."""
     for _ in range(FOREMAN_PING_RETRIES):
         cmd = server.run(
-            f"{CURL_CMD} --cacert {certificates['ca_certificate']}"
+            f"{CURL_CMD} --cacert {certificates['server_ca_certificate']}"
             f" --write-out '%{{http_code}}' https://{server_fqdn}/api/v2/ping"
         )
         if cmd.stdout == '200':
