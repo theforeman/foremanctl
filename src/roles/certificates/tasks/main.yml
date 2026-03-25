@@ -14,6 +14,10 @@
     - certificates_ca
     - not certificates_installer_ca.stat.exists
 
+- name: Apply custom server certificates
+  ansible.builtin.include_tasks: custom.yml
+  when: certificates_custom_server_certificate is defined
+
 - name: Issue host certificates
   ansible.builtin.include_tasks: issue.yml
   when: certificates_hostnames is defined

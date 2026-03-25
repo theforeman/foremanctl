@@ -18,6 +18,13 @@
     force: false
     mode: '0444'
 
+- name: Create CA bundle from installer certificates
+  ansible.builtin.assemble:
+    src: "{{ certificates_ca_directory_certs }}"
+    dest: "{{ ca_bundle }}"
+    regexp: '(ca|server-ca)\.crt$'
+    mode: '0444'
+
 - name: Copy CA key from installer
   ansible.builtin.copy:
     src: /root/ssl-build/katello-default-ca.key

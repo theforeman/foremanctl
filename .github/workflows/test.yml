@@ -61,6 +61,10 @@ jobs:
             security: none
             database: external
             box: centos/stream9
+          - certificate_source: custom
+            security: none
+            database: internal
+            box: centos/stream9
     runs-on: ubuntu-24.04
     env:
       FOREMANCTL_BASE_BOX: ${{ matrix.box }}
@@ -93,6 +97,10 @@ jobs:
         if: contains(matrix.certificate_source, 'installer')
         run: |
           ./forge installer-certs
+      - name: Create custom certificates
+        if: matrix.certificate_source == 'custom'
+        run: |
+          ./forge custom-certs
       - name: Setup security mode ${{ matrix.security }}
         if: matrix.security != 'none'
         run: |
@@ -110,7 +118,7 @@ jobs:
           ./foremanctl pull-images
       - name: Run deployment
         run: |
-          ./foremanctl deploy ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com --database-ssl-ca $(pwd)/.var/lib/foremanctl/db-ca.crt --database-ssl-mode verify-full' || '' }} --foreman-initial-admin-password=changeme --tuning development
+          ./foremanctl deploy ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com --database-ssl-ca $(pwd)/.var/lib/foremanctl/db-ca.crt --database-ssl-mode verify-full' || '' }} ${{ matrix.certificate_source == 'custom' && '--server-certificate /root/custom-certificates/certs/quadlet.example.com.crt --server-key /root/custom-certificates/private/quadlet.example.com.key --server-ca-certificate /root/custom-certificates/certs/server-ca.crt' || '' }} --foreman-initial-admin-password=changeme --tuning development
       - name: Add optional feature - hammer
         run: |
           ./foremanctl deploy --add-feature hammer
@@ -122,7 +130,7 @@ jobs:
           ./foremanctl deploy --add-feature azure-rm --add-feature google --add-feature remote-execution
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--database-mode=${{ matrix.database }}"
+          ./forge test --pytest-args="--database-mode=${{ matrix.database }} --certificate-source=${{ matrix.certificate_source }}"
       - name: Run smoker
         run: |
           ./forge smoker

@@ -15,6 +15,7 @@ SSH_CONFIG='./.tmp/ssh-config'
 
 def pytest_addoption(parser):
     parser.addoption("--database-mode", action="store", default="internal", choices=('internal', 'external'), help="Whether the database is internal or external")
+    parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'installer', 'custom'), help="Certificate source used during deployment")
 
 
 @pytest.fixture(scope="module")
@@ -50,6 +51,15 @@ def certificates(server_fqdn):
                'ansible_facts': {'fqdn': server_fqdn}}
     return yaml.safe_load(template.render(context))
 
+
+@pytest.fixture(scope="module")
+def certificate_source(pytestconfig):
+    return pytestconfig.getoption("certificate_source")
+
+@pytest.fixture(scope="module")
+def custom_certificates(certificate_source):
+    if certificate_source != 'custom':
+        pytest.skip("Only applies to custom certificate deployments")
 
 @pytest.fixture(scope="module")
 def database_mode(pytestconfig):

@@ -20,7 +20,7 @@
       -extensions v3_ca
       -days 7300
       -config "{{ certificates_ca_directory }}/openssl.cnf"
-      -subj "/CN=Foreman Self-signed CA"
+      -subj "{{ certificates_ca_subject }}"
       -keyout "{{ certificates_ca_directory_keys }}/ca.key"
       -out "{{ certificates_ca_directory_certs }}/ca.crt"
       -passout "file:{{ certificates_ca_directory_keys }}/ca.pwd"
@@ -31,6 +31,14 @@
   ansible.builtin.copy:
     src: "{{ certificates_ca_directory_certs }}/ca.crt"
     dest: "{{ certificates_ca_directory_certs }}/server-ca.crt"
+    remote_src: true
+    force: false
+    mode: '0444'
+
+- name: 'Create CA bundle'
+  ansible.builtin.copy:
+    src: "{{ certificates_ca_directory_certs }}/ca.crt"
+    dest: "{{ ca_bundle }}"
     remote_src: true
     force: false
     mode: '0444'
