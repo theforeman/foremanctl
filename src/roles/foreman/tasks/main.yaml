@@ -102,7 +102,7 @@
     state: quadlet
     sdnotify: true
     network: host
-    hostname: "{{ ansible_facts['fqdn'] }}"
+    hostname: "{{ ansible_facts['hostname'] }}.local"
     volume:
       - 'foreman-data-run:/var/run/foreman:z'
     secrets:
@@ -138,7 +138,7 @@
     state: quadlet
     sdnotify: true
     network: host
-    hostname: "{{ ansible_facts['fqdn'] }}"
+    hostname: "{{ ansible_facts['hostname'] }}.local"
     volume:
       - 'foreman-data-run:/var/run/foreman:z'
     secrets:
@@ -190,7 +190,7 @@
     image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
     sdnotify: false
     network: host
-    hostname: "{{ ansible_facts['fqdn'] }}"
+    hostname: "{{ ansible_facts['hostname'] }}.local"
     command: "foreman-rake {{ item.rake }}"
     volume:
       - 'foreman-data-run:/var/run/foreman:z'
