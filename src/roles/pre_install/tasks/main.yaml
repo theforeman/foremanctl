@@ -16,3 +16,4 @@
       - python3-libsemanage
       - python3-psycopg2
       - python3-requests
+      - python3-requests-oauthlib
