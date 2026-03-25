@@ -11,7 +11,8 @@
 - name: Setup hammer-cli-foreman
   ansible.builtin.include_tasks: hammer/plugin.yml
   vars:
-    foreman_development_plugin_name: "hammer_cli_foreman"
+    foreman_development_plugin_name: "hammer-cli-foreman"
+    foreman_development_plugin_gem: "hammer_cli_foreman"
     foreman_development_plugin_org: "theforeman"
     foreman_development_plugin_repo_url: "https://github.com/theforeman/hammer-cli-foreman.git"
     foreman_development_plugin_manage_repo: true
