@@ -2,3 +2,8 @@
 foreman_admin_passwd_file: "{{ obsah_state_path }}/foreman-admin-init-passwd"
 foreman_initial_admin_username: admin
 foreman_initial_admin_password: "{{ lookup('ansible.builtin.password', foreman_admin_passwd_file, chars=['ascii_letters']) }}"
+
+foreman_oauth_consumer_key_file: "{{ obsah_state_path }}/foreman-oauth-consumer-key"
+foreman_oauth_consumer_key: "{{ lookup('ansible.builtin.password', foreman_oauth_consumer_key_file, chars=['ascii_letters', 'digits'], length=32) }}"
+foreman_oauth_consumer_secret_file: "{{ obsah_state_path }}/foreman-oauth-consumer-secret"
+foreman_oauth_consumer_secret: "{{ lookup('ansible.builtin.password', foreman_oauth_consumer_secret_file, chars=['ascii_letters', 'digits'], length=32) }}"

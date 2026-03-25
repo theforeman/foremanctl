@@ -18,8 +18,6 @@ candlepin_client_certificate: "{{ client_certificate }}"
 foreman_ca_certificate: "{{ server_ca_certificate }}"
 foreman_client_key: "{{ client_key }}"
 foreman_client_certificate: "{{ client_certificate }}"
-foreman_oauth_consumer_key: abcdefghijklmnopqrstuvwxyz123456
-foreman_oauth_consumer_secret: abcdefghijklmnopqrstuvwxyz123456
 foreman_plugins: "{{ enabled_features | features_to_foreman_plugins }}"
 foreman_url: "https://{{ ansible_facts['fqdn'] }}"
 
