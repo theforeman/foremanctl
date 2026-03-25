@@ -29,6 +29,22 @@ variables:
     action: append_unique
     type: FQDN
     parameter: --certificate-cname
+  certificates_custom_server_certificate:
+    help: Path to a custom server certificate to use instead of the auto-generated one.
+    type: AbsolutePath
+    parameter: --server-certificate
+  certificates_custom_server_key:
+    help: Path to the private key for the custom server certificate.
+    type: AbsolutePath
+    parameter: --server-key
+  certificates_custom_server_ca_certificate:
+    help: Path to the CA certificate that signed the custom server certificate.
+    type: AbsolutePath
+    parameter: --server-ca-certificate
+
+constraints:
+  required_together:
+    - [certificates_custom_server_certificate, certificates_custom_server_key, certificates_custom_server_ca_certificate]
 
 include:
   - _database_mode

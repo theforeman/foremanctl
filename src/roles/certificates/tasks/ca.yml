@@ -27,7 +27,7 @@
     path: "{{ certificates_ca_directory_requests }}/ca.csr"
     privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
     privatekey_passphrase: "{{ certificates_ca_password }}"
-    common_name: "Foreman Self-signed CA"
+    common_name: "{{ certificates_ca_subject }}"
     use_common_name_for_san: false
     basic_constraints:
       - 'CA:TRUE'
@@ -52,6 +52,14 @@
   ansible.builtin.copy:
     src: "{{ certificates_ca_directory_certs }}/ca.crt"
     dest: "{{ certificates_ca_directory_certs }}/server-ca.crt"
+    remote_src: true
+    force: false
+    mode: '0444'
+
+- name: 'Create CA bundle'
+  ansible.builtin.copy:
+    src: "{{ certificates_ca_directory_certs }}/ca.crt"
+    dest: "{{ certificates_ca_directory_certs }}/ca-bundle.crt"
     remote_src: true
     force: false
     mode: '0444'

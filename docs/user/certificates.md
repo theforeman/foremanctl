@@ -33,6 +33,21 @@ foremanctl deploy
 
 foremanctl detects the existing certificates, normalizes them into its canonical structure, and manages them going forward. The original CA is preserved so existing client trust is maintained. The original `/root/ssl-build/` directory is backed up to `/root/ssl-build.bak/`.
 
+#### Custom Server Certificates
+
+To use certificates signed by your own CA instead of foremanctl's self-signed certificates:
+
+```bash
+foremanctl deploy \
+  --server-certificate /path/to/server.crt \
+  --server-key /path/to/server.key \
+  --server-ca-certificate /path/to/ca-bundle.crt
+```
+
+All three flags must be provided together. The custom server certificate, key, and CA are copied into `/root/certificates/` and used for all server-facing TLS. An internal CA is still generated (or preserved from a previous deploy) to manage client certificates and the localhost certificate.
+
+On subsequent deploys, the custom certificates persist — you only need to pass the flags again if you want to update them (e.g., for certificate rotation).
+
 ### CNAME Support
 
 foremanctl supports Subject Alternative Names (SANs) for multi-domain certificates:
@@ -89,7 +104,8 @@ src/roles/certificates/
 │   ├── setup.yml              # Shared directory/config setup
 │   ├── ca.yml                 # CA certificate generation (fresh installs)
 │   ├── issue.yml              # Host certificate issuance
-│   └── normalize.yml          # Normalizes foreman-installer certs
+│   ├── normalize.yml          # Normalizes foreman-installer certs
+│   └── custom.yml             # Applies user-provided custom server certs
 └── defaults/main.yml          # Default configuration variables
 ```
 
@@ -97,7 +113,8 @@ src/roles/certificates/
 
 1. **Check installer path**: If `/root/ssl-build/katello-default-ca.crt` exists, normalize installer certificates into the canonical structure.
 2. **Fresh install**: If no installer certificates found, generate a new self-signed CA and certificates.
-3. **Issue certificates**: For each hostname in `certificates_hostnames`, issue server and client certificates if they don't already exist.
+3. **Custom server certificates**: If `--server-certificate` flags are provided, copy the custom server cert, key, and CA into the canonical structure, overwriting any existing server certificate.
+4. **Issue certificates**: For each hostname in `certificates_hostnames`, issue server and client certificates if they don't already exist. Server certificate issuance is skipped if a custom certificate was already placed in step 3.
 
 #### Normalization
 

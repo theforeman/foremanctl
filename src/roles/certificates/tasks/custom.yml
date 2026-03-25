@@ -1,0 +1,28 @@
+---
+- name: Copy custom server certificate
+  ansible.builtin.copy:
+    src: "{{ certificates_custom_server_certificate }}"
+    dest: "{{ certificates_ca_directory_certs }}/{{ ansible_facts['fqdn'] }}.crt"
+    remote_src: true
+    mode: '0444'
+
+- name: Copy custom server key
+  ansible.builtin.copy:
+    src: "{{ certificates_custom_server_key }}"
+    dest: "{{ certificates_ca_directory_keys }}/{{ ansible_facts['fqdn'] }}.key"
+    remote_src: true
+    mode: '0440'
+
+- name: Copy custom server CA certificate
+  ansible.builtin.copy:
+    src: "{{ certificates_custom_server_ca_certificate }}"
+    dest: "{{ certificates_ca_directory_certs }}/server-ca.crt"
+    remote_src: true
+    mode: '0444'
+
+- name: Create CA bundle with internal CA and custom server CA
+  ansible.builtin.assemble:
+    src: "{{ certificates_ca_directory_certs }}"
+    dest: "{{ certificates_ca_directory_certs }}/ca-bundle.crt"
+    regexp: '(ca|server-ca)\.crt$'
+    mode: '0444'
