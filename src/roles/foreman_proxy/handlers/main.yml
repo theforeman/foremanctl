@@ -8,6 +8,6 @@
   theforeman.foreman.smart_proxy_refresh:
     smart_proxy: "{{ foreman_proxy_name }}"
     server_url: "{{ foreman_url }}"
-    username: "{{ foreman_initial_admin_username }}"
-    password: "{{ foreman_initial_admin_password }}"
+    oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
     validate_certs: false
