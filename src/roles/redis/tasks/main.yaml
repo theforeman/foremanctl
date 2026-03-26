@@ -23,8 +23,7 @@
     command: ["run-redis", "--supervised", "systemd"]
     volumes:
       - /var/lib/redis:/data:Z
-    ports:
-      - "6379:6379"
+    network: host
     quadlet_options:
       - |
         [Install]
