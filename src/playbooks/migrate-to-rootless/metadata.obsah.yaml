@@ -1,0 +1,15 @@
+---
+help: |
+  Migrate existing rootful Foreman deployment to rootless
+
+  WARNING: This is a destructive operation that will:
+  - Stop all running services
+  - Transfer ownership of data volumes
+  - Remove system-scoped systemd units
+  - Recreate everything in user scope
+
+  PREREQUISITES:
+  - Backup all data before running this migration
+  - Ensure no active users or operations are running
+  - Test this in a non-production environment first
+...
