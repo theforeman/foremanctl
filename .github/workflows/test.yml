@@ -104,6 +104,7 @@ jobs:
         run: |
           vagrant ssh --command "echo 'allow perm=any pattern=ld_so exe=/usr/bin/crun : path=/usr/lib64/libsystemd.so.0' | sudo tee -a /etc/fapolicyd/rules.d/15-foremanctl.rules" quadlet
           vagrant ssh --command "echo 'allow perm=any all : dir=/home/vagrant/.ansible/tmp/' | sudo tee -a /etc/fapolicyd/rules.d/15-foremanctl.rules" quadlet
+          vagrant ssh --command "echo 'allow perm=open exe=/usr/bin/python3.9 : dir=/var/tmp/ ftype=text/x-python' | sudo tee -a /etc/fapolicyd/rules.d/15-foremanctl.rules" quadlet
           vagrant ssh quadlet -- sudo systemctl restart fapolicyd
       - name: Run image pull
         run: |
@@ -122,7 +123,7 @@ jobs:
           ./foremanctl deploy --add-feature azure-rm --add-feature google --add-feature remote-execution
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }} --database-mode=${{ matrix.database }}"
+          ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }} --database-mode=${{ matrix.database }} --user=foremanctl"
       - name: Run smoker
         run: |
           ./forge smoker
@@ -231,7 +232,7 @@ jobs:
           ./foremanctl deploy --add-feature azure-rm --add-feature google --add-feature remote-execution
       - name: Stop services
         run:
-          vagrant ssh quadlet -- sudo systemctl stop foreman.target
+          vagrant ssh quadlet -- sudo systemctl --machine=foremanctl@ --user stop foreman.target
       - name: Configure upgrade version
         run: |
           sed -i '/container_tag_stream:/ s/:.*/: "${{ matrix.upgrade_to }}"/' src/vars/images.yml
@@ -243,7 +244,7 @@ jobs:
           ./foremanctl deploy
       - name: Run tests
         run: |
-          ./forge test
+          ./forge test --pytest-args="--user=foremanctl"
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos

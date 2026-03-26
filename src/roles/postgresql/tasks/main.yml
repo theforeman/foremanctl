@@ -1,114 +1,148 @@
 ---
-- name: Pull PostgreSQL container image
-  containers.podman.podman_image:
-    name: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
-    state: present
-  environment:
-    REGISTRY_AUTH_FILE: "{{ postgresql_registry_auth_file }}"
-
 - name: Create PostgreSQL storage directory
   ansible.builtin.file:
     path: "{{ postgresql_data_dir }}"
     state: directory
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
     mode: "0700"
-    owner: 26
-    group: 26
+    setype: container_var_lib_t
 
-- name: Create Podman secret for PostgreSQL admin password
-  containers.podman.podman_secret:
-    name: postgresql-admin-password
-    data: "{{ postgresql_admin_password }}"
-  notify:
-    - Restart postgresql
+- name: Set PostgreSQL directory ownership for container UID/GID
+  ansible.builtin.shell: |
+    cd /tmp
+    sudo -u {{ foremanctl_user }} XDG_RUNTIME_DIR={{ foremanctl_xdg_runtime_dir }} \
+      podman unshare chown -R {{ postgresql_container_uid }}:{{ postgresql_container_gid }} {{ postgresql_data_dir }}
+  args:
+    executable: /bin/bash
+  changed_when: true
 
-- name: Deploy PostgreSQL container
-  containers.podman.podman_container:
-    name: "{{ postgresql_container_name }}"
-    image: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
-    state: quadlet
-    healthcheck: pg_isready
-    sdnotify: healthy
-    network: host
-    volumes:
-      - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
-    secrets:
-      - 'postgresql-admin-password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
-    env:
-      POSTGRESQL_MAX_CONNECTIONS: "{{ postgresql_max_connections }}"
-      POSTGRESQL_SHARED_BUFFERS: "{{ postgresql_shared_buffers }}"
-      POSTGRESQL_EFFECTIVE_CACHE_SIZE: "{{ postgresql_effective_cache_size }}"
-    quadlet_options:
-      - |
-        [Install]
-        WantedBy=default.target foreman.target
-        [Unit]
-        PartOf=foreman.target
-        After=foreman.target
-
-- name: Configure SSL certificates
+- name: Read PostgreSQL SSL certificate
+  ansible.builtin.slurp:
+    src: "{{ postgresql_ssl_crt }}"
+  register: postgresql_ssl_crt_content
   when:
     - postgresql_ssl_crt is defined
     - postgresql_ssl_crt != ''
+
+- name: Read PostgreSQL SSL key
+  ansible.builtin.slurp:
+    src: "{{ postgresql_ssl_key }}"
+  register: postgresql_ssl_key_content
+  when:
     - postgresql_ssl_key is defined
     - postgresql_ssl_key != ''
+
+- name: Configure PostgreSQL container as rootless user
+  environment:
+    XDG_RUNTIME_DIR: "{{ foremanctl_xdg_runtime_dir }}"
+  become: true
+  become_user: "{{ foremanctl_user }}"
   block:
-    - name: Create Podman secret for PostgreSQL SSL cert
+    - name: Pull PostgreSQL container image
+      containers.podman.podman_image:
+        name: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
+        state: present
+      environment:
+        REGISTRY_AUTH_FILE: "{{ postgresql_registry_auth_file }}"
+
+    - name: Create Podman secret for PostgreSQL admin password
       containers.podman.podman_secret:
-        name: postgresql-ssl-crt
-        path: "{{ postgresql_ssl_crt }}"
+        name: postgresql-admin-password
+        data: "{{ postgresql_admin_password }}"
       notify:
         - Restart postgresql
 
-    - name: Create Podman secret for PostgreSQL SSL key
-      containers.podman.podman_secret:
-        name: postgresql-ssl-key
-        path: "{{ postgresql_ssl_key }}"
-      notify:
-        - Restart postgresql
+    - name: Deploy PostgreSQL container
+      containers.podman.podman_container:
+        name: "{{ postgresql_container_name }}"
+        image: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
+        state: quadlet
+        healthcheck: pg_isready
+        sdnotify: healthy
+        network: host
+        volumes:
+          - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
+        secrets:
+          - 'postgresql-admin-password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
+        env:
+          POSTGRESQL_MAX_CONNECTIONS: "{{ postgresql_max_connections }}"
+          POSTGRESQL_SHARED_BUFFERS: "{{ postgresql_shared_buffers }}"
+          POSTGRESQL_EFFECTIVE_CACHE_SIZE: "{{ postgresql_effective_cache_size }}"
+        quadlet_options:
+          - |
+            [Install]
+            WantedBy=default.target foreman.target
+            [Unit]
+            PartOf=foreman.target
+            After=foreman.target
 
-    - name: Create Podman secret for PostgreSQL SSL config
-      containers.podman.podman_secret:
-        name: postgresql-ssl-conf
-        data: |
-          ssl = on
-          ssl_cert_file = '/opt/app-root/src/certs/ssl.crt'
-          ssl_key_file =  '/opt/app-root/src/certs/ssl.key'
-      notify:
-        - Restart postgresql
+    - name: Configure SSL certificates
+      when:
+        - postgresql_ssl_crt is defined
+        - postgresql_ssl_crt != ''
+        - postgresql_ssl_key is defined
+        - postgresql_ssl_key != ''
+      block:
+        - name: Create Podman secret for PostgreSQL SSL cert
+          containers.podman.podman_secret:
+            name: postgresql-ssl-crt
+            data: "{{ postgresql_ssl_crt_content.content | b64decode }}"
+          notify:
+            - Restart postgresql
 
-    - name: Create postgresql.container.d folder
-      ansible.builtin.file:
-        path: /etc/containers/systemd/postgresql.container.d
-        state: directory
-        mode: '0755'
-        owner: 'root'
-        group: 'root'
+        - name: Create Podman secret for PostgreSQL SSL key
+          containers.podman.podman_secret:
+            name: postgresql-ssl-key
+            data: "{{ postgresql_ssl_key_content.content | b64decode }}"
+          notify:
+            - Restart postgresql
 
-    - name: Configure PostgreSQL SSL-related secrets
-      ansible.builtin.copy:
-        dest: /etc/containers/systemd/postgresql.container.d/ssl.conf
-        mode: '0644'
-        owner: root
-        group: root
-        content: |
-          [Container]
-          Secret=postgresql-ssl-crt,type=mount,target=/opt/app-root/src/certs/ssl.crt,mode=0640
-          Secret=postgresql-ssl-key,type=mount,target=/opt/app-root/src/certs/ssl.key,mode=0640
-          Secret=postgresql-ssl-conf,type=mount,target=/opt/app-root/src/postgresql-cfg/ssl.conf
-      notify:
-        - Restart postgresql
+        - name: Create Podman secret for PostgreSQL SSL config
+          containers.podman.podman_secret:
+            name: postgresql-ssl-conf
+            data: |
+              ssl = on
+              ssl_cert_file = '/opt/app-root/src/certs/ssl.crt'
+              ssl_key_file =  '/opt/app-root/src/certs/ssl.key'
+          notify:
+            - Restart postgresql
 
-- name: Run daemon reload
-  ansible.builtin.systemd:
-    daemon_reload: true
+        - name: Create postgresql.container.d folder
+          ansible.builtin.file:
+            path: "{{ foremanctl_quadlet_dir }}/postgresql.container.d"
+            state: directory
+            owner: "{{ foremanctl_user }}"
+            group: "{{ foremanctl_group }}"
+            mode: '0755'
 
-- name: Flush handlers to restart services
-  ansible.builtin.meta: flush_handlers
+        - name: Configure PostgreSQL SSL-related secrets
+          ansible.builtin.copy:
+            dest: "{{ foremanctl_quadlet_dir }}/postgresql.container.d/ssl.conf"
+            mode: '0644'
+            owner: "{{ foremanctl_user }}"
+            group: "{{ foremanctl_group }}"
+            content: |
+              [Container]
+              Secret=postgresql-ssl-crt,type=mount,target=/opt/app-root/src/certs/ssl.crt,mode=0640
+              Secret=postgresql-ssl-key,type=mount,target=/opt/app-root/src/certs/ssl.key,mode=0640
+              Secret=postgresql-ssl-conf,type=mount,target=/opt/app-root/src/postgresql-cfg/ssl.conf
+          notify:
+            - Restart postgresql
 
-- name: Start the PostgreSQL Service
-  ansible.builtin.systemd:
-    name: "{{ postgresql_container_name }}"
-    state: started
+    - name: Run daemon reload
+      ansible.builtin.systemd:
+        daemon_reload: true
+        scope: user
+
+    - name: Flush handlers to restart services
+      ansible.builtin.meta: flush_handlers
+
+    - name: Start the PostgreSQL Service
+      ansible.builtin.systemd:
+        name: "{{ postgresql_container_name }}"
+        state: started
+        scope: user
 
 # SCRAM-SHA-256 is default for PostgreSQL 14+,
 # after the upgrade, we can drop this task.

@@ -10,13 +10,13 @@
 
 - name: Mount config secret for {{ feature_name }}
   ansible.builtin.copy:
-    dest: /etc/containers/systemd/foreman-proxy.container.d/{{ feature_name }}.conf
+    dest: "{{ foremanctl_quadlet_dir }}/foreman-proxy.container.d/{{ feature_name }}.conf"
     content: |
       [Container]
       Secret=foreman-proxy-{{ feature_name }}-yml,type=mount,target=/etc/foreman-proxy/settings.d/{{ feature_name }}.yml
     mode: '0644'
-    owner: root
-    group: root
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
   notify:
     - Restart Foreman Proxy
     - Refresh Foreman Proxy

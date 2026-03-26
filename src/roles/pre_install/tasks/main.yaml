@@ -11,6 +11,7 @@
 - name: Install other dependencies
   ansible.builtin.package:
     name:
+      - acl
       - bash-completion
       - python3-cryptography
       - python3-libsemanage
