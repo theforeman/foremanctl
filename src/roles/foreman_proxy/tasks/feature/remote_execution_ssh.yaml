@@ -1,13 +1,13 @@
 ---
 - name: Create SSH Key
   community.crypto.openssh_keypair:
-    path: "/root/foreman-proxy-ssh"
+    path: "{{ foremanctl_home }}/foreman-proxy-ssh"
 
 - name: Create SSH Key podman secret
   containers.podman.podman_secret:
     state: present
     name: foreman_proxy-remote_execution_ssh-id_rsa_foreman_proxy
-    path: "/root/foreman-proxy-ssh"
+    path: "{{ foremanctl_home }}/foreman-proxy-ssh"
   notify:
     - Restart Foreman Proxy
     - Refresh Foreman Proxy
@@ -16,21 +16,21 @@
   containers.podman.podman_secret:
     state: present
     name: foreman_proxy-remote_execution_ssh-id_rsa_foreman_proxy-pub
-    path: "/root/foreman-proxy-ssh.pub"
+    path: "{{ foremanctl_home }}/foreman-proxy-ssh.pub"
   notify:
     - Restart Foreman Proxy
     - Refresh Foreman Proxy
 
 - name: Mount SSH secrets
   ansible.builtin.copy:
-    dest: /etc/containers/systemd/foreman-proxy.container.d/remote_execution_ssh-keys.conf
+    dest: "{{ foremanctl_quadlet_dir }}/foreman-proxy.container.d/remote_execution_ssh-keys.conf"
     content: |
       [Container]
       Secret=foreman_proxy-remote_execution_ssh-id_rsa_foreman_proxy,type=mount,target=/usr/share/foreman-proxy/.ssh/id_rsa_foreman_proxy
       Secret=foreman_proxy-remote_execution_ssh-id_rsa_foreman_proxy-pub,type=mount,target=/usr/share/foreman-proxy/.ssh/id_rsa_foreman_proxy.pub
     mode: '0644'
-    owner: root
-    group: root
+    owner: "{{ foremanctl_user }}"
+    group: "{{ foremanctl_group }}"
   notify:
     - Restart Foreman Proxy
     - Refresh Foreman Proxy

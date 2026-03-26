@@ -1,8 +1,13 @@
 ---
 - name: Restart Foreman Proxy
+  environment:
+    XDG_RUNTIME_DIR: "{{ foremanctl_xdg_runtime_dir }}"
+  become: true
+  become_user: "{{ foremanctl_user }}"
   ansible.builtin.systemd:
     name: foreman-proxy
-    state: "{{ (_foreman_proxy_service is changed) | ternary('started', 'restarted') }}"
+    state: restarted
+    scope: user
 
 - name: Refresh Foreman Proxy
   theforeman.foreman.smart_proxy_refresh:
