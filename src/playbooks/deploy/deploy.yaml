@@ -1,5 +1,16 @@
 ---
-- name: Setup quadlet demo machine
+- name: Setup rootless user environment
+  hosts:
+    - quadlet
+  become: true
+  roles:
+    - role: rootless_user
+  tasks:
+    - name: Map rootless_user_xdg_runtime_dir to foremanctl namespace
+      ansible.builtin.set_fact:
+        foremanctl_xdg_runtime_dir: "{{ rootless_user_xdg_runtime_dir }}"
+
+- name: Deploy Foreman services
   hosts:
     - quadlet
   become: true
