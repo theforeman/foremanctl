@@ -34,7 +34,7 @@ dynflow:
   foreman_proxy:
     plugin_name: dynflow
 rh-cloud:
-  description: Connection to RH Cloud and handling iop
+  description: Connection to Red Hat Cloud
   foreman:
     plugin_name: foreman_rh_cloud
   hammer: foreman_rh_cloud

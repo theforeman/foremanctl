@@ -42,6 +42,16 @@ These base features control which plugins are enabled when a feature is requeste
 
 A deployment can have multiple base features enabled.
 
+### Enabling IOP
+
+IOP (Insights Operating Platform) deploys on-premise Insights services for advisor, vulnerability, and remediation. It requires internal database mode and depends on the `rh-cloud` and `katello` features.
+
+```bash
+./foremanctl deploy --add-feature iop
+```
+
+See [IOP Architecture](iop.md) for details on the services deployed and configuration options.
+
 ### Authenticated Registry Handling
 
 If you need to pull images from private or authenticated container registries, you can configure registry authentication using Podman's auth file.
