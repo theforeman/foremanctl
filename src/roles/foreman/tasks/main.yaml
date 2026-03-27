@@ -302,6 +302,6 @@
     name: "{{ ansible_facts['fqdn'] }}-pulp"
     url: "https://{{ ansible_facts['fqdn'] }}/pulp/api/v3/smart_proxy"
     server_url: "{{ foreman_url }}"
-    username: "{{ foreman_initial_admin_username }}"
-    password: "{{ foreman_initial_admin_password }}"
+    oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
+    oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
     validate_certs: false
