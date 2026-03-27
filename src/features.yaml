@@ -9,12 +9,15 @@ katello:
   description: Content and Subscription Management plugin for Foreman
   foreman:
     plugin_name: katello
+  hammer: katello
 google:
   description: Google Compute Engine plugin for Foreman
+  hammer: foreman_google
   foreman:
     plugin_name: foreman_google
 azure-rm:
   description: Azure Resource Manager plugin for Foreman
+  hammer: foreman_azure_rm
   foreman:
     plugin_name: foreman_azure_rm
 remote-execution:
@@ -23,6 +26,7 @@ remote-execution:
     plugin_name: foreman_remote_execution
   foreman_proxy:
     plugin_name: remote_execution_ssh
+  hammer: foreman_remote_execution
   dependencies:
     - dynflow
 dynflow:

@@ -77,6 +77,12 @@ def invalid_features(features):
     """Return a list of unknown features not defined in features.yaml."""
     return [feature for feature in features if feature not in FEATURE_MAP]
 
+def hammer_plugins(value):
+    dependencies = list(get_dependencies(filter_features(value)))
+    plugins = [FEATURE_MAP.get(feature, {}).get('hammer') for feature in filter_features(value + dependencies)]
+    return compact_list(plugins)
+
+
 def foreman_proxy_plugins(value):
     dependencies = list(get_dependencies(filter_features(value)))
     plugins = [FEATURE_MAP.get(feature, {}).get('foreman_proxy', {}).get('plugin_name') for feature in filter_features(value + dependencies)]
@@ -95,6 +101,7 @@ class FilterModule(object):
         return {
             'features_to_foreman_plugins': foreman_plugins,
             'available_foreman_plugins': available_foreman_plugins,
+            'features_to_hammer_plugins': hammer_plugins,
             'features_to_foreman_proxy_plugins': foreman_proxy_plugins,
             'available_foreman_proxy_plugins': available_foreman_proxy_plugins,
             'list_all_features': list_all_features,
