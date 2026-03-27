@@ -1,0 +1,48 @@
+---
+- name: 'Install openssl'
+  ansible.builtin.package:
+    name: openssl
+    state: present
+
+- name: 'Create certs directory'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_certs }}"
+    state: directory
+    mode: '0755'
+
+- name: 'Create keys directory'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_keys }}"
+    state: directory
+    mode: '0755'
+
+- name: 'Create requests directory'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_requests }}"
+    state: directory
+    mode: '0755'
+
+- name: 'Deploy configuration file'
+  ansible.builtin.template:
+    src: openssl.cnf.j2
+    dest: "{{ certificates_ca_directory }}/openssl.cnf"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: 'Create index file'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory }}/index.txt"
+    state: touch
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: 'Ensure serial starting number'
+  ansible.builtin.template:
+    src: serial.j2
+    dest: "{{ certificates_ca_directory }}/serial"
+    force: false
+    owner: root
+    group: root
+    mode: '0644'

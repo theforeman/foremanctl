@@ -1,0 +1,102 @@
+---
+- name: 'Setup certificate directory'
+  ansible.builtin.include_tasks: setup.yml
+
+- name: Copy CA certificate from installer
+  ansible.builtin.copy:
+    src: /root/ssl-build/katello-default-ca.crt
+    dest: "{{ certificates_ca_directory_certs }}/ca.crt"
+    remote_src: true
+    force: false
+    mode: '0444'
+
+- name: Copy server CA certificate from installer
+  ansible.builtin.copy:
+    src: /root/ssl-build/katello-server-ca.crt
+    dest: "{{ certificates_ca_directory_certs }}/server-ca.crt"
+    remote_src: true
+    force: false
+    mode: '0444'
+
+- name: Create CA bundle from installer certificates
+  ansible.builtin.assemble:
+    src: "{{ certificates_ca_directory_certs }}"
+    dest: "{{ ca_bundle }}"
+    regexp: '(ca|server-ca)\.crt$'
+    mode: '0444'
+
+- name: Copy CA key from installer
+  ansible.builtin.copy:
+    src: /root/ssl-build/katello-default-ca.key
+    dest: "{{ certificates_ca_directory_keys }}/ca.key"
+    remote_src: true
+    force: false
+    mode: '0440'
+
+- name: Copy CA password from installer
+  ansible.builtin.copy:
+    src: /root/ssl-build/katello-default-ca.pwd
+    dest: "{{ certificates_ca_directory_keys }}/ca.pwd"
+    remote_src: true
+    force: false
+    mode: '0440'
+
+- name: Copy server certificate from installer
+  ansible.builtin.copy:
+    src: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-apache.crt"
+    dest: "{{ certificates_ca_directory_certs }}/{{ ansible_facts['fqdn'] }}.crt"
+    remote_src: true
+    force: false
+    mode: '0444'
+
+- name: Copy server key from installer
+  ansible.builtin.copy:
+    src: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-apache.key"
+    dest: "{{ certificates_ca_directory_keys }}/{{ ansible_facts['fqdn'] }}.key"
+    remote_src: true
+    force: false
+    mode: '0440'
+
+- name: Copy client certificate from installer
+  ansible.builtin.copy:
+    src: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-foreman-client.crt"
+    dest: "{{ certificates_ca_directory_certs }}/{{ ansible_facts['fqdn'] }}-client.crt"
+    remote_src: true
+    force: false
+    mode: '0444'
+
+- name: Copy client key from installer
+  ansible.builtin.copy:
+    src: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-foreman-client.key"
+    dest: "{{ certificates_ca_directory_keys }}/{{ ansible_facts['fqdn'] }}-client.key"
+    remote_src: true
+    force: false
+    mode: '0440'
+
+- name: Copy localhost certificate from installer
+  ansible.builtin.copy:
+    src: /root/ssl-build/localhost/localhost-tomcat.crt
+    dest: "{{ certificates_ca_directory_certs }}/localhost.crt"
+    remote_src: true
+    force: false
+    mode: '0444'
+
+- name: Copy localhost key from installer
+  ansible.builtin.copy:
+    src: /root/ssl-build/localhost/localhost-tomcat.key
+    dest: "{{ certificates_ca_directory_keys }}/localhost.key"
+    remote_src: true
+    force: false
+    mode: '0440'
+
+- name: Backup installer certificate directory
+  ansible.builtin.copy:
+    src: /root/ssl-build/
+    dest: /root/ssl-build.bak/
+    remote_src: true
+    mode: preserve
+
+- name: Remove original installer certificate directory
+  ansible.builtin.file:
+    path: /root/ssl-build
+    state: absent

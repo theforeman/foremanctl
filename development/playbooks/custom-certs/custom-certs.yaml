@@ -1,0 +1,13 @@
+---
+- name: Generate custom certificates for testing
+  hosts:
+    - quadlet
+  become: true
+  vars:
+    certificates_ca_directory: /root/custom-certificates
+    certificates_ca_password: "CUSTOMCA"
+    certificates_ca_subject: '/CN=Custom Test CA'
+    certificates_hostnames:
+      - "{{ ansible_facts['fqdn'] }}"
+  roles:
+    - role: certificates
