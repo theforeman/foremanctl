@@ -21,6 +21,9 @@ foreman_client_certificate: "{{ client_certificate }}"
 foreman_plugins: "{{ enabled_features | features_to_foreman_plugins }}"
 foreman_url: "https://{{ ansible_facts['fqdn'] }}"
 
+foreman_listen_stream: /run/httpd.foreman.sock
+httpd_foreman_backend: "unix://{{ foreman_listen_stream }}|http://%{HTTP_HOST}/"
+
 httpd_server_ca_certificate: "{{ server_ca_certificate }}"
 httpd_client_ca_certificate: "{{ client_ca_certificate }}"
 httpd_server_certificate: "{{ server_certificate }}"
