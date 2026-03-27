@@ -31,6 +31,6 @@ pulp_pulp_url: "https://{{ ansible_facts['fqdn'] }}"
 pulp_plugins: "{{ enabled_features | select('contains', 'content/') | map('replace', 'content/', 'pulp_') | list }}"
 
 hammer_ca_certificate: "{{ server_ca_certificate }}"
-hammer_plugins: "{{ foreman_plugins | map('replace', 'foreman-tasks', 'foreman_tasks') | list }}"
+hammer_plugins: "{{ enabled_features | features_to_hammer_plugins }}"
 
 foreman_proxy_plugins: "{{ enabled_features | features_to_foreman_proxy_plugins }}"
