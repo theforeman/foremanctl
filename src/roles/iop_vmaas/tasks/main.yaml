@@ -1,0 +1,110 @@
+---
+- name: Create VMAAS database secrets
+  containers.podman.podman_secret:
+    name: "{{ item.name }}"
+    data: "{{ item.data }}"
+    state: present
+  loop:
+    - name: "iop-service-vmaas-reposcan-database-username"
+      data: "{{ iop_vmaas_database_user }}"
+    - name: "iop-service-vmaas-reposcan-database-password"
+      data: "{{ iop_vmaas_database_password }}"
+    - name: "iop-service-vmaas-reposcan-database-name"
+      data: "{{ iop_vmaas_database_name }}"
+    - name: "iop-service-vmaas-reposcan-database-host"
+      data: "{{ iop_vmaas_database_host }}"
+    - name: "iop-service-vmaas-reposcan-database-port"
+      data: "{{ iop_vmaas_database_port }}"
+  no_log: true
+
+- name: Create VMAAS data volume
+  containers.podman.podman_volume:
+    name: iop-service-vmaas-data
+    state: present
+
+- name: Deploy VMAAS Reposcan container
+  containers.podman.podman_container:
+    name: iop-service-vmaas-reposcan
+    image: "{{ iop_vmaas_container_image }}:{{ iop_vmaas_container_tag }}"
+    state: quadlet
+    quadlet_dir: /etc/containers/systemd
+    network: iop-core-network
+    volumes:
+      - iop-service-vmaas-data:/data:rw
+    command: "/vmaas/entrypoint.sh database-upgrade reposcan"
+    env:
+      PROMETHEUS_PORT: "8085"
+      PROMETHEUS_MULTIPROC_DIR: "/tmp/prometheus_multiproc_dir"
+      SYNC_REPO_LIST_SOURCE: "katello"
+      SYNC_REPOS: "yes"
+      SYNC_CVE_MAP: "yes"
+      SYNC_CPE: "no"
+      SYNC_CSAF: "no"
+      SYNC_RELEASES: "no"
+      SYNC_RELEASE_GRAPH: "no"
+      KATELLO_URL: "http://iop-core-gateway:9090"
+      REDHAT_CVEMAP_URL: "http://iop-core-gateway:9090/pub/iop/data/meta/v1/cvemap.xml"
+      POSTGRESQL_SSL_MODE: "disable"
+    secrets:
+      - "iop-service-vmaas-reposcan-database-username,type=env,target=POSTGRESQL_USER"
+      - "iop-service-vmaas-reposcan-database-password,type=env,target=POSTGRESQL_PASSWORD"
+      - "iop-service-vmaas-reposcan-database-name,type=env,target=POSTGRESQL_DATABASE"
+      - "iop-service-vmaas-reposcan-database-host,type=env,target=POSTGRESQL_HOST"
+      - "iop-service-vmaas-reposcan-database-port,type=env,target=POSTGRESQL_PORT"
+    quadlet_options:
+      - |
+        [Unit]
+        Description=VMAAS Reposcan Service
+        [Service]
+        Restart=on-failure
+        Environment=REGISTRY_AUTH_FILE=/etc/foreman/registry-auth.json
+        [Install]
+        WantedBy=default.target
+
+- name: Deploy VMAAS Webapp-Go container
+  containers.podman.podman_container:
+    name: iop-service-vmaas-webapp-go
+    image: "{{ iop_vmaas_container_image }}:{{ iop_vmaas_container_tag }}"
+    state: quadlet
+    quadlet_dir: /etc/containers/systemd
+    network: iop-core-network
+    command: "/vmaas/entrypoint.sh webapp-go"
+    env:
+      REPOSCAN_PUBLIC_URL: "http://iop-service-vmaas-reposcan:8000"
+      REPOSCAN_PRIVATE_URL: "http://iop-service-vmaas-reposcan:10000"
+      CSAF_UNFIXED_EVAL_ENABLED: "FALSE"
+      GIN_MODE: "release"
+      POSTGRESQL_SSL_MODE: "disable"
+    secrets:
+      - "iop-service-vmaas-reposcan-database-username,type=env,target=POSTGRESQL_USER"
+      - "iop-service-vmaas-reposcan-database-password,type=env,target=POSTGRESQL_PASSWORD"
+      - "iop-service-vmaas-reposcan-database-name,type=env,target=POSTGRESQL_DATABASE"
+      - "iop-service-vmaas-reposcan-database-host,type=env,target=POSTGRESQL_HOST"
+      - "iop-service-vmaas-reposcan-database-port,type=env,target=POSTGRESQL_PORT"
+    quadlet_options:
+      - |
+        [Unit]
+        Description=VMAAS Webapp-Go Service
+        Wants=iop-service-vmaas-reposcan.service
+        After=iop-service-vmaas-reposcan.service
+        [Service]
+        Restart=on-failure
+        Environment=REGISTRY_AUTH_FILE=/etc/foreman/registry-auth.json
+        [Install]
+        WantedBy=default.target
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start VMAAS Reposcan service
+  ansible.builtin.systemd:
+    name: iop-service-vmaas-reposcan
+    enabled: true
+    state: started
+
+- name: Start VMAAS Webapp-Go service
+  ansible.builtin.systemd:
+    name: iop-service-vmaas-webapp-go
+    enabled: true
+    state: started
