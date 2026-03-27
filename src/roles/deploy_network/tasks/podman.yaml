@@ -1,0 +1,12 @@
+---
+- name: Create network {{ deploy_network_name }}
+  containers.podman.podman_network:
+    name: "{{ deploy_network_name }}"
+    driver: "{{ deploy_network_driver }}"
+    internal: "{{ deploy_network_internal }}"
+    ipv6: "{{ deploy_network_ipv6 }}"
+    subnet: "{{ deploy_network_subnet | default(omit) }}"
+    gateway: "{{ deploy_network_gateway | default(omit) }}"
+    dns: "{{ deploy_network_dns | default(omit) }}"
+    opt: "{{ {'isolate': deploy_network_isolate} if deploy_network_isolate else omit }}"
+    state: present

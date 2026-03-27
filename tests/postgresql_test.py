@@ -7,9 +7,9 @@ def test_postgresql_service(database):
     assert postgresql.is_running
 
 
-def test_postgresql_port(database):
-    postgresql = database.addr("localhost")
-    assert postgresql.port("5432").is_reachable
+def test_postgresql_socket(database):
+    socket = database.file("/var/run/postgresql/.s.PGSQL.5432")
+    assert socket.exists
 
 
 def test_postgresql_databases(database):

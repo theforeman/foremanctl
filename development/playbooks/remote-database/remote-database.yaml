@@ -15,6 +15,9 @@
     - role: pre_install
     - role: certificates
     - role: postgresql
+      vars:
+        postgresql_network: host
+        postgresql_ports: []
 
   tasks:
     - name: Fetch PostgreSQL SSL CA
