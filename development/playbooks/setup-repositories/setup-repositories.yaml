@@ -30,6 +30,15 @@
       when:
         - ansible_distribution_major_version == '10'
 
+    - name: Setup Foreman repositories (Debian)
+      ansible.builtin.include_role:
+        name: theforeman.operations.foreman_repositories
+      vars:
+        foreman_repositories_version: nightly
+        foreman_repositories_katello_version: nightly
+      when:
+        - ansible_os_family == 'Debian'
+
     - name: Refresh package cache
       ansible.builtin.package:
         update_cache: true
