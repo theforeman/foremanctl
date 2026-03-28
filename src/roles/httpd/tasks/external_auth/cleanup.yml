@@ -1,7 +1,7 @@
 ---
 - name: Remove external authentication configuration
   ansible.builtin.file:
-    path: "{{ httpd_conf_path}} /05-{{ item }}.d/external_auth.conf"
+    path: "{{ httpd_conf_path }}/05-{{ item }}.d/external_auth.conf"
     state: absent
   notify:
     - Restart httpd
@@ -18,5 +18,19 @@
     - intercept_form_submit
     - lookup_identity
     - auth_gssapi
+  when: httpd_ipa_load_modules | bool
+  notify:
+    - Restart httpd
+
+- name: Disable Apache modules for IPA authentication (Debian)
+  community.general.apache2_module:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - authnz_pam
+    - intercept_form_submit
+    - lookup_identity
+    - auth_gssapi
+  when: not (httpd_ipa_load_modules | bool)
   notify:
     - Restart httpd
