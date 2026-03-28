@@ -1,4 +1,7 @@
 ---
+- name: Set OS dependent variables
+  ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yaml"
+
 - name: Install Hammer and plugins
   ansible.builtin.package:
     name: "{{ hammer_packages }}"

@@ -10,3 +10,9 @@ httpd_log_path: /var/log/httpd
 httpd_user: apache
 httpd_group: apache
 httpd_modules: []
+httpd_ipa_packages:
+  - mod_authnz_pam
+  - mod_intercept_form_submit
+  - mod_lookup_identity
+  - mod_auth_gssapi
+httpd_ipa_load_modules: true

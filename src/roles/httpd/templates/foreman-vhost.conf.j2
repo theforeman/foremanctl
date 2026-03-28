@@ -2,7 +2,7 @@
   ServerName {{ ansible_facts['fqdn'] }}
 
   ## Load additional static includes
-  IncludeOptional "{{ httpd_conf_path }}/conf.d/05-foreman.d/*.conf"
+  IncludeOptional "{{ httpd_conf_path }}/05-foreman.d/*.conf"
 
   ## Logging
   ErrorLog "{{ httpd_log_path }}/foreman_error.log"
