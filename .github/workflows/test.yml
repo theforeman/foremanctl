@@ -171,10 +171,8 @@ jobs:
             --content-import-path /custom/import \
             --content-export-path /custom/export
       - name: Deploy hammer
-        if: contains(matrix.box, 'centos')
         run: |
-          ./foremanctl deploy \
-            --add-feature hammer \
+          ./foremanctl deploy --add-feature hammer
       - name: Deploy features
         run: |
           ./foremanctl deploy \
