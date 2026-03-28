@@ -154,7 +154,7 @@
       - 'foreman-data-run:/var/run/foreman:rw,z,U'
     secrets: "{{ foreman_dynflow_secrets }}"
     env: "{{ foreman_dynflow_env }}"
-    command: "/usr/libexec/foreman/sidekiq-selinux -e production -r ./extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yml"
+    command: "/usr/libexec/foreman/foreman-worker %i"
     quadlet_options:
       - |
         [Install]
