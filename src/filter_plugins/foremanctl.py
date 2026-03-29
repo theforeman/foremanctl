@@ -94,6 +94,10 @@ def available_foreman_proxy_plugins(_value):
     return compact_list(plugins)
 
 
+def has_feature(features, feature):
+    """Check if a feature is enabled - exact match or prefix (feature/)."""
+    return feature in features or any(f.startswith(feature + '/') for f in features)
+
 class FilterModule(object):
     '''foremanctl filters'''
 
@@ -106,4 +110,5 @@ class FilterModule(object):
             'available_foreman_proxy_plugins': available_foreman_proxy_plugins,
             'list_all_features': list_all_features,
             'invalid_features': invalid_features,
+            'has_feature': has_feature,
         }

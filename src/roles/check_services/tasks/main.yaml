@@ -1,0 +1,66 @@
+---
+- name: Gather service facts
+  ansible.builtin.service_facts:
+
+- name: Check core services are running
+  ansible.builtin.assert:
+    that:
+      - "ansible_facts.services[item + '.service'] is defined"
+      - "ansible_facts.services[item + '.service']['state'] == 'running'"
+    fail_msg: "Service {{ item }} is not running"
+    success_msg: "Service {{ item }} is running"
+  loop:
+    - foreman
+    - httpd
+    - redis
+
+- name: Check PostgreSQL service is running
+  ansible.builtin.assert:
+    that:
+      - "ansible_facts.services['postgresql.service'] is defined"
+      - "ansible_facts.services['postgresql.service']['state'] == 'running'"
+    fail_msg: "Service postgresql is not running"
+    success_msg: "Service postgresql is running"
+  when: database_mode | default('internal') == 'internal'
+
+- name: Check dynflow services are running
+  ansible.builtin.assert:
+    that:
+      - "ansible_facts.services[item + '.service'] is defined"
+      - "ansible_facts.services[item + '.service']['state'] == 'running'"
+    fail_msg: "Service {{ item }} is not running"
+    success_msg: "Service {{ item }} is running"
+  loop:
+    - dynflow-sidekiq@orchestrator
+    - dynflow-sidekiq@worker
+    - dynflow-sidekiq@worker-hosts-queue
+
+- name: Check Pulp services are running
+  ansible.builtin.assert:
+    that:
+      - "ansible_facts.services[item + '.service'] is defined"
+      - "ansible_facts.services[item + '.service']['state'] == 'running'"
+    fail_msg: "Service {{ item }} is not running"
+    success_msg: "Service {{ item }} is running"
+  loop:
+    - pulp-api
+    - pulp-content
+  when: enabled_features | has_feature('content')
+
+- name: Check Candlepin service is running
+  ansible.builtin.assert:
+    that:
+      - "ansible_facts.services['candlepin.service'] is defined"
+      - "ansible_facts.services['candlepin.service']['state'] == 'running'"
+    fail_msg: "Service candlepin is not running"
+    success_msg: "Service candlepin is running"
+  when: enabled_features | has_feature('content')
+
+- name: Check Foreman Proxy service is running
+  ansible.builtin.assert:
+    that:
+      - "ansible_facts.services['foreman-proxy.service'] is defined"
+      - "ansible_facts.services['foreman-proxy.service']['state'] == 'running'"
+    fail_msg: "Service foreman-proxy is not running"
+    success_msg: "Service foreman-proxy is running"
+  when: enabled_features | has_feature('foreman-proxy')
