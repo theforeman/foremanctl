@@ -1,0 +1,121 @@
+---
+- name: Run Foreman health checks
+  hosts: quadlet
+  become: true
+  gather_facts: true
+  tags:
+    - foremanctl_suppress_default_output
+  vars_files:
+    - "../../vars/defaults.yml"
+    - "../../vars/base.yaml"
+  tasks:
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Check core services are running
+      ansible.builtin.assert:
+        that:
+          - "ansible_facts.services[item + '.service'] is defined"
+          - "ansible_facts.services[item + '.service']['state'] == 'running'"
+        fail_msg: "Service {{ item }} is not running"
+        success_msg: "Service {{ item }} is running"
+      loop:
+        - foreman
+        - httpd
+        - redis
+        - postgresql
+      ignore_errors: true
+      register: service_checks
+
+    - name: Check dynflow services are running
+      ansible.builtin.assert:
+        that:
+          - "ansible_facts.services[item + '.service'] is defined"
+          - "ansible_facts.services[item + '.service']['state'] == 'running'"
+        fail_msg: "Service {{ item }} is not running"
+        success_msg: "Service {{ item }} is running"
+      loop:
+        - dynflow-sidekiq@orchestrator
+        - dynflow-sidekiq@worker
+        - dynflow-sidekiq@worker-hosts-queue
+      ignore_errors: true
+      register: dynflow_checks
+
+    - name: Check Pulp services are running
+      ansible.builtin.assert:
+        that:
+          - "ansible_facts.services[item + '.service'] is defined"
+          - "ansible_facts.services[item + '.service']['state'] == 'running'"
+        fail_msg: "Service {{ item }} is not running"
+        success_msg: "Service {{ item }} is running"
+      loop:
+        - pulp-api
+        - pulp-content
+      ignore_errors: true
+      register: pulp_checks
+
+    - name: Check Candlepin service is running
+      ansible.builtin.assert:
+        that:
+          - "ansible_facts.services['candlepin.service'] is defined"
+          - "ansible_facts.services['candlepin.service']['state'] == 'running'"
+        fail_msg: "Service candlepin is not running"
+        success_msg: "Service candlepin is running"
+      ignore_errors: true
+      register: candlepin_check
+
+    - name: Check Foreman API responds
+      ansible.builtin.uri:
+        url: "{{ foreman_url }}/api/v2/ping"
+        validate_certs: false
+        status_code: 200
+        timeout: 10
+      register: foreman_ping
+      ignore_errors: true
+
+    - name: Report Foreman API status
+      ansible.builtin.debug:
+        msg: >-
+          Foreman API: {{ 'OK' if foreman_ping is success else 'FAILED - ' + (foreman_ping.msg | default('unreachable')) }}
+
+    - name: Check Foreman tasks status
+      ansible.builtin.uri:
+        url: "{{ foreman_url }}/api/v2/ping"
+        validate_certs: false
+        status_code: 200
+        timeout: 10
+      register: foreman_ping_detail
+      ignore_errors: true
+
+    - name: Report Foreman tasks status
+      ansible.builtin.debug:
+        msg: >-
+          Foreman tasks: {{ foreman_ping_detail.json.results.katello.services.foreman_tasks.status | default('unknown') }}
+      when: foreman_ping_detail is success and foreman_ping_detail.json.results.katello is defined
+      ignore_errors: true
+
+    - name: Collect failed checks
+      ansible.builtin.set_fact:
+        failed_services: >-
+          {{
+            (service_checks.results | default([]) | selectattr('failed', 'equalto', true) | map(attribute='item') | list) +
+            (dynflow_checks.results | default([]) | selectattr('failed', 'equalto', true) | map(attribute='item') | list) +
+            (pulp_checks.results | default([]) | selectattr('failed', 'equalto', true) | map(attribute='item') | list) +
+            ([('candlepin')] if candlepin_check is failed else [])
+          }}
+
+    - name: Health check summary
+      ansible.builtin.debug:
+        msg: >-
+          {% if failed_services | length == 0 and foreman_ping is success %}
+          All health checks passed.
+          {% else %}
+          Health check issues found:
+          {% if failed_services | length > 0 %}Failed services: {{ failed_services | join(', ') }}{% endif %}
+          {% if foreman_ping is failed %}Foreman API is not responding.{% endif %}
+          {% endif %}
+
+    - name: Fail if any checks failed
+      ansible.builtin.fail:
+        msg: "Health check failed: {{ failed_services | length }} service(s) down, Foreman API {{ 'OK' if foreman_ping is success else 'unreachable' }}"
+      when: failed_services | length > 0 or foreman_ping is failed
