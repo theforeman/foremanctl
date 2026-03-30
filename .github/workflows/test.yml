@@ -132,6 +132,9 @@ jobs:
         with:
           name: smoker-${{ env.ARTIFACT_SUFFIX }}
           path: "/home/runner/smoker/report/"
+      - name: Run health check
+        run: |
+          ./foremanctl health
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
