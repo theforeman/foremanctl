@@ -101,6 +101,7 @@
         [Service]
         TimeoutStartSec=300
     healthcheck: curl --fail --insecure https://localhost:23443/candlepin/status
+    healthcheck_interval: 5s
     sdnotify: healthy
 
 - name: Run daemon reload to make Quadlet create the service files
