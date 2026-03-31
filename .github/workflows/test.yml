@@ -59,17 +59,19 @@ jobs:
             security: fapolicyd
             database: internal
             box: centos/stream9
+            iop: disabled
           - certificate_source: default
             security: none
             database: external
             box: centos/stream9
+            iop: disabled
     runs-on: ubuntu-24.04
     env:
       FOREMANCTL_BASE_BOX: ${{ matrix.box }}
     name: "Tests (certificates: ${{ matrix.certificate_source }}, database: ${{ matrix.database }}, security: ${{ matrix.security }}, box: ${{ matrix.box }}, iop: ${{ matrix.iop }})"
     steps:
       - name: generate artifact suffix
-        run: echo "ARTIFACT_SUFFIX=$(echo '${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.database }}-${{ matrix.box }}' | tr -cd '[:alnum:]-')" >> "${GITHUB_ENV}"
+        run: echo "ARTIFACT_SUFFIX=$(echo '${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.database }}-${{ matrix.box }}-iop${{ matrix.iop }}' | tr -cd '[:alnum:]-')" >> "${GITHUB_ENV}"
       - uses: actions/checkout@v6
       - name: Set up Python
         uses: actions/setup-python@v6
