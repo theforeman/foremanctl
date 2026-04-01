@@ -1,6 +1,6 @@
 ---
 iop_remediation_container_image: "quay.io/iop/remediations"
-iop_remediation_container_tag: "foreman-3.16"
+iop_remediation_container_tag: "foreman-3.18"
 
 iop_remediation_database_name: remediations_db
 iop_remediation_database_user: remediations_user
