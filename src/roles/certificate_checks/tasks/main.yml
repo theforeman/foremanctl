@@ -1,4 +1,10 @@
 ---
+- name: Install openssl
+  ansible.builtin.package:
+    name:
+      - openssl
+    state: present
+
 - name: Install foreman-certificate-check
   ansible.builtin.copy:
     src: foreman-certificate-check

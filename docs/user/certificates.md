@@ -65,6 +65,12 @@ foremanctl deploy \
 
 When CNAMEs are specified, certificates will include all names in the Subject Alternative Name field, allowing the same certificate to be valid for multiple hostnames.
 
+If certificates already exist from a previous deployment, passing `--certificate-cname` will automatically regenerate the server certificate and CSR to include the new CNAMEs. Existing private keys are reused.
+
+To remove all CNAMEs from an existing certificate, use `--reset-certificate-cname`.
+
+On each run the role compares the Subject Alternative Names in the existing server certificate against the desired list (hostname + any `--certificate-cname` values). If they differ, the CSR and certificate are regenerated automatically. This means both adding and removing CNAMEs are handled transparently without manual cleanup.
+
 ### Current Limitations
 
 - Cannot provide custom certificate files during deployment
