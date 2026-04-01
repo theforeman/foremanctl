@@ -3,6 +3,8 @@
   containers.podman.podman_image:
     name: "{{ iop_ingress_container_image }}:{{ iop_ingress_container_tag }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "{{ iop_ingress_registry_auth_file }}"
 
 - name: Deploy Ingress container
   containers.podman.podman_container:
