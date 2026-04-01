@@ -16,6 +16,7 @@
     - name: "iop-service-vmaas-reposcan-database-port"
       data: "{{ iop_vmaas_database_port }}"
   no_log: true
+  notify: Restart vmaas
 
 - name: Create VMAAS data volume
   containers.podman.podman_volume:
