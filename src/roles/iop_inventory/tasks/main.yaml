@@ -3,6 +3,8 @@
   containers.podman.podman_image:
     name: "{{ iop_inventory_container_image }}:{{ iop_inventory_container_tag }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "{{ iop_inventory_registry_auth_file }}"
 
 - name: Create podman secret for inventory database username
   containers.podman.podman_secret:

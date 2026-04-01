@@ -3,6 +3,8 @@
   containers.podman.podman_image:
     name: "{{ iop_engine_container_image }}:{{ iop_engine_container_tag }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "{{ iop_engine_registry_auth_file }}"
 
 - name: Create Engine config secret
   containers.podman.podman_secret:

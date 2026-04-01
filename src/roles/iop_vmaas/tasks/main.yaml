@@ -5,6 +5,13 @@
     name: iop-service-vmaas-reposcan-client-ca-cert
     path: "{{ iop_vmaas_client_ca_certificate }}"
 
+- name: Pull VMAAS container image
+  containers.podman.podman_image:
+    name: "{{ iop_vmaas_container_image }}:{{ iop_vmaas_container_tag }}"
+    state: present
+  environment:
+    REGISTRY_AUTH_FILE: "{{ iop_vmaas_registry_auth_file }}"
+
 - name: Create VMAAS database secrets
   containers.podman.podman_secret:
     name: "{{ item.name }}"

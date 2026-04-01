@@ -3,6 +3,8 @@
   containers.podman.podman_image:
     name: "{{ iop_gateway_container_image }}:{{ iop_gateway_container_tag }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "{{ iop_gateway_registry_auth_file }}"
 
 - name: Create Gateway server certificate secret
   containers.podman.podman_secret:

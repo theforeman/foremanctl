@@ -3,6 +3,8 @@
   containers.podman.podman_image:
     name: "{{ iop_yuptoo_container_image }}:{{ iop_yuptoo_container_tag }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "{{ iop_yuptoo_registry_auth_file }}"
 
 - name: Deploy Yuptoo container
   containers.podman.podman_container:
