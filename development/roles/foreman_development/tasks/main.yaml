@@ -236,12 +236,6 @@
     password: "{{ foreman_development_admin_password }}"
     ca_path: "{{ foreman_development_ca_certificate }}"
 
-- name: Stop Foreman development service after smart proxy registration
-  ansible.builtin.systemd:
-    name: foreman-development
-    state: stopped
-    enabled: false
-
 - name: Configure smart-proxy for development
   ansible.builtin.include_tasks: smart-proxy/main.yml
   when:

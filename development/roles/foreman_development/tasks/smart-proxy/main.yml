@@ -144,12 +144,10 @@
     oauth1_consumer_key: "{{ foreman_development_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ foreman_development_oauth_consumer_secret }}"
     ca_path: "{{ foreman_development_ca_certificate }}"
+    validate_certs: false
 
-- name: Stop development services after smart proxy registration
+- name: Stop smart-proxy-development service
   ansible.builtin.systemd:
-    name: "{{ item }}-development"
+    name: "smart-proxy-development"
     state: stopped
     enabled: false
-  with_items:
-    - smart-proxy
-    - foreman

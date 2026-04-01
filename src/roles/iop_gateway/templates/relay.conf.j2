@@ -3,4 +3,5 @@ proxy_ssl_name "{{ foreman_servername | default(ansible_fqdn) }}";
 
 # URI to forman
 # Example of host.containers.internal is the container network gateway.
+proxy_set_header Host localhost;
 proxy_pass "https://host.containers.internal";
