@@ -1,6 +1,7 @@
 ---
 iop_remediation_container_image: "quay.io/iop/remediations"
 iop_remediation_container_tag: "foreman-3.18"
+iop_remediation_registry_auth_file: /etc/foreman/registry-auth.json
 
 iop_remediation_database_name: remediations_db
 iop_remediation_database_user: remediations_user

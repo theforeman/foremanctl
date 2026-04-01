@@ -1,3 +1,4 @@
 ---
 iop_puptoo_container_image: "quay.io/iop/puptoo"
 iop_puptoo_container_tag: "foreman-3.18"
+iop_puptoo_registry_auth_file: /etc/foreman/registry-auth.json

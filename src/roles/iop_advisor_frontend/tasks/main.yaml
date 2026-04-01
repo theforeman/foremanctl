@@ -3,6 +3,8 @@
   containers.podman.podman_image:
     name: "{{ iop_advisor_frontend_container_image }}:{{ iop_advisor_frontend_container_tag }}"
     state: present
+  environment:
+    REGISTRY_AUTH_FILE: "{{ iop_advisor_frontend_registry_auth_file }}"
 
 - name: Ensure parent assets directory exists
   ansible.builtin.file:
