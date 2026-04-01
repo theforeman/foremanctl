@@ -12,11 +12,9 @@
     - "../../../src/vars/base.yaml"
   vars:
     httpd_foreman_backend: "http://localhost:3000"
-  roles:
-    - role: pre_install
-    - role: certificates
-    - role: postgresql
-      vars:
+  pre_tasks:
+    - name: Set development postgresql databases
+      ansible.builtin.set_fact:
         postgresql_databases:
           - name: "{{ candlepin_database_name }}"
             owner: "{{ candlepin_database_user }}"
@@ -34,12 +32,51 @@
             role_attr_flags: SUPERUSER
           - name: "{{ pulp_database_user }}"
             password: "{{ pulp_database_password }}"
+
+    - name: Setup iop requirements
+      when:
+        - "'iop' in enabled_features"
+      block:
+        - name: Include iop databases
+          ansible.builtin.include_vars:
+            file: "../../../src/vars/database_iop.yml"
+
+        - name: Combine lists
+          ansible.builtin.set_fact:
+            postgresql_databases: "{{ postgresql_databases + iop_postgresql_databases }}"
+            postgresql_users: "{{ postgresql_users + iop_postgresql_users }}"
+
+        - name: Enable foreman_rh_cloud plugin for iop
+          ansible.builtin.set_fact:
+            foreman_development_enabled_plugins: "{{ foreman_development_enabled_plugins + ['foreman_rh_cloud'] }}"
+
+        - name: Enable foreman_ansible plugin for iop
+          ansible.builtin.set_fact:
+            foreman_development_enabled_plugins: "{{ foreman_development_enabled_plugins + ['foreman_ansible'] }}"
+  roles:
+    - role: pre_install
+    - role: certificates
+    - role: postgresql
     - role: redis
     - role: candlepin
     - role: httpd
     - role: pulp
     - role: foreman_development
+      vars:
+        foreman_development_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
+        foreman_development_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+    - role: iop_core
+      when:
+        - "'iop' in enabled_features"
+      vars:
+        iop_core_foreman_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
+        iop_core_foreman_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
   post_tasks:
+    - name: Stop Foreman development service
+      ansible.builtin.include_role:
+        name: foreman_development
+        tasks_from: stop-server.yml
+
     - name: Display development environment information
       ansible.builtin.debug:
         msg: |
