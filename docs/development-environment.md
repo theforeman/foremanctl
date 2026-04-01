@@ -67,45 +67,20 @@ All the projects set up as part of the feature are deployed as git checkouts.
 
 ## Custom Container Images
 
-### Building Custom Pulp Containers
+### Using Official Pulp Containers
 
-For development scenarios requiring specific Pulp plugin versions or compatibility fixes, you can build custom Pulp container images using the provided `development/custom-pulp-containerfile`.
+The Foreman development environment uses official Pulp containers from [pulp-oci-images](https://github.com/theforeman/pulp-oci-images) which include all necessary plugins including `pulp-smart-proxy` by default.
 
-This approach was particularly useful during the Django 4 to 5 upgrade, where version constraints between pulpcore and plugins needed careful management.
+No custom container building is needed for standard development workflows. The official containers provide:
+- All Katello-supported Pulp plugins (ansible, container, deb, ostree, rpm, python, smart_proxy)
+- Proper service wrapper scripts and configuration
 
-#### Building the Container
+### Deploying with Custom Pulp Images
 
-```bash
-# Build custom Pulp container with specific plugin versions
-podman build -f development/custom-pulp-containerfile -t quay.io/yourusername/pulp:custom .
+For development scenarios requiring specific Pulp plugin versions or compatibility fixes, you can build custom Pulp container images using the [pulp-oci-images repository](https://github.com/theforeman/pulp-oci-images).
 
-# Push to registry for deployment
-podman push quay.io/yourusername/pulp:custom
-```
-
-#### Customizing Pulp Plugin Versions
-
-Edit `development/custom-pulp-containerfile` to specify the plugin versions you need:
-
-```dockerfile
-# Install specific plugin versions
-# Edit these versions as needed for your environment
-RUN pip install --upgrade pip && \
-    pip install \
-        pulpcore==3.105.1 \
-        pulp-ansible==0.29.6 \
-        pulp-container==2.27.3 \
-        pulp-rpm==3.35.2 \
-        pulp-ostree==2.6.0 \
-        pulp-python==3.27.0 \
-        pulp-deb==3.8.1 \
-        pulp-smart-proxy
-```
-
-The containerfile also contains commented lines for increaseing the maximum Pulpcore version.
-This is helpful for when pulp_smart_proxy isn't yet tested with a newer version of Pulpcore.
-
-#### Deploying with Custom Pulp Images
+*TODO UPDATE THE LINK BELOW*
+The repository includes a development container configuration (see [PR #13](https://github.com/theforeman/pulp-oci-images/pull/13)) that supports building containers with arbitrary Pulp versions and plugins.
 
 Use the custom Pulp container image during deployment:
 
@@ -129,7 +104,7 @@ You can override the default PostgreSQL version, which is useful when testing da
     --extra-vars postgresql_container_tag="latest"
 ```
 
-#### Complete Custom Deployment Example
+### Complete Custom Deployment Example
 
 Combining custom Pulp and PostgreSQL images:
 
@@ -137,7 +112,7 @@ Combining custom Pulp and PostgreSQL images:
 # Deploy with custom Pulp image and specific PostgreSQL version
 ./forge deploy-dev \
     --target-host=katello-dev-newer-pulp \
-    --extra-vars pulp_container_tag="custom" \
+    --extra-vars pulp_container_tag="3.105.1" \
     --extra-vars pulp_container_image="quay.io/yourusername/pulp" \
     --extra-vars postgresql_container_image="quay.io/sclorg/postgresql-16-c9s" \
     --extra-vars postgresql_container_tag="latest" \
