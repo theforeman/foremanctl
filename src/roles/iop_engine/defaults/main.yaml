@@ -1,6 +1,6 @@
 ---
 iop_engine_container_image: "quay.io/iop/insights-engine"
-iop_engine_container_tag: "foreman-3.16"
+iop_engine_container_tag: "foreman-3.18"
 
 iop_engine_packages:
   - "insights.specs.default"
