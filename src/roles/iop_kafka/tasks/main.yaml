@@ -23,6 +23,7 @@
     state: present
     name: iop-core-kafka-init
     data: "{{ lookup('ansible.builtin.file', 'kafka/init') }}"
+  notify: Restart kafka
 
 - name: Create Kafka data volume
   containers.podman.podman_volume:
