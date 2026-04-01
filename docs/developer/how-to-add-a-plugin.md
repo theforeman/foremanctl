@@ -14,7 +14,7 @@ Before adding a plugin, you should:
 - Know what configuration the plugin needs (settings files, credentials, extra mounts, etc.)
 - Be aware that Smart Proxy plugins only take effect when `foreman-proxy` is an enabled feature, and Hammer plugins only when `hammer` is enabled. Depending on the deployment's flavor, these may already be included -- see [Deployment Design](deployment.md) for details.
 
-### Feature Components
+## Step 1: Register the Feature
 
 A feature can belong to three components:
 
@@ -48,15 +48,15 @@ See [Feature Metadata Reference](feature-metadata.md) for the full list of prope
 
 ### Naming
 
-Names must match what upstream expects:
+Plugin names must match what the ecosystem expects:
 
 - `foreman.plugin_name` -- the plugin/gem name for foreman (e.g. `foreman_remote_execution`)
-- `foreman_proxy.plugin_name` -- the plugin/gem name for smart-proxy without `smart_proxy_` prefix (e.g. `smart_proxy_remote_execution_ssh`)
+- `foreman_proxy.plugin_name` -- the smart proxy plugin/gem name without `smart_proxy_` prefix (e.g. `smart_proxy_remote_execution_ssh`)
 - `hammer` -- the suffix for the RPM package (e.g. `foreman_remote_execution` → `hammer-cli-plugin-foreman_remote_execution`)
 
 ### Dependencies
 
-Use `dependencies` to pull in other features automatically. Mark dependency-only features with `internal: true` to hide them from users:
+Use `dependencies` to pull in other dependent features automatically(which are required for a feature to work). Mark these non-user facing features with `internal: true` to hide them from users:
 
 ```yaml
 dynflow:
@@ -69,7 +69,7 @@ dynflow:
 
 If the feature has no `foreman_proxy` section, skip to Step 3.
 
-Every Smart Proxy plugin needs a **settings template**. If the plugin also requires host-side setup (generating credentials, mounting extra files), you add an **additional tasks file**. Both are keyed by `foreman_proxy.plugin_name`.
+Every Smart Proxy plugin needs a settings template. If the plugin also requires custom setup/configurations (generating credentials, mounting extra files), you add an additional tasks file. Both are keyed by `foreman_proxy.plugin_name`.
 
 ### Settings Template (required for Smart Proxy plugins)
 
@@ -96,13 +96,15 @@ Example:- REX needs additional settings:
 
 ### Additional Tasks (optional)
 
-If the plugin needs host-side setup beyond the settings file, create a task file at:
+If the plugin needs addtional setup beyond the settings file, create a feature specific task file at:
 
 ```
 src/roles/foreman_proxy/tasks/feature/<plugin_name>.yaml
 ```
 
 The filename must exactly match `foreman_proxy.plugin_name` with `.yaml` extension. These tasks only run when the feature is enabled. If the file doesn't exist, nothing happens.
+
+> **Note:** This works because [`feature.yaml`](../../src/roles/foreman_proxy/tasks/feature.yaml) uses `ansible.builtin.first_found` to look up `feature/<plugin_name>.yaml` -- if the file is present, it gets included; if not, it's silently skipped.
 
 For example, REX needs SSH keys generated and mounted into the container -- see [`remote_execution_ssh.yaml`](../src/roles/foreman_proxy/tasks/feature/remote_execution_ssh.yaml).
 
@@ -122,7 +124,7 @@ Configuration Tasks must notify `Restart Foreman Proxy` and `Refresh Foreman Pro
 
 Here you should be able to see your feature as enabled
 
-**Foreman-only** (no template or tasks needed):
+**Foreman-only** (no settings template or additional tasks needed):
 
 ```yaml
 google:
@@ -132,7 +134,7 @@ google:
   hammer: foreman_google
 ```
 
-**Smart Proxy-only** (template needed, no tasks):
+**Smart Proxy-only** (setting template needed, no additional tasks):
 
 ```yaml
 logs:
@@ -155,5 +157,5 @@ src/
 ├── features.yaml                                        # Feature registry
 └── roles/foreman_proxy/
     ├── templates/settings.d/<plugin_name>.yml.j2        # Smart Proxy settings
-    └── tasks/feature/<plugin_name>.yaml                 # Setup tasks (optional)
+    └── tasks/feature/<plugin_name>.yaml                 # Additional tasks (optional)
 ```
