@@ -1,0 +1,174 @@
+---
+katello:
+  development:
+    foreman:
+      github_repo: Katello/katello
+      settings_template: katello.yaml.j2
+      extra_gemfiles:
+        - gemfile.d/test.rb
+    hammer:
+      gem: hammer_cli_katello
+      github_repo: Katello/hammer-cli-katello
+      module_config: katello.yml
+
+dynflow:
+  development:
+    foreman_proxy:
+      github_repo: theforeman/smart_proxy_dynflow
+      module_config: dynflow.yml
+
+remote-execution:
+  development:
+    foreman:
+      github_repo: theforeman/foreman_remote_execution
+    hammer:
+      github_repo: theforeman/hammer_cli_foreman_remote_execution
+      module_config: foreman_remote_execution.yml
+    foreman_proxy:
+      github_repo: theforeman/smart_proxy_remote_execution_ssh
+      module_config: remote_execution_ssh.yml
+
+ansible:
+  development:
+    foreman:
+      github_repo: theforeman/foreman_ansible
+      settings_template: foreman_ansible.yaml.j2
+    hammer:
+      gem: hammer_cli_foreman_ansible
+      github_repo: theforeman/hammer-cli-foreman-ansible
+      module_config: foreman_ansible.yml
+    foreman_proxy:
+      github_repo: theforeman/smart_proxy_ansible
+      module_config: ansible.yml
+
+rh-cloud:
+  development:
+    foreman:
+      github_repo: theforeman/foreman_rh_cloud
+    hammer:
+      gem: hammer_cli_foreman_rh_cloud
+      github_repo: theforeman/hammer-cli-foreman-rh-cloud
+      module_config: foreman_rh_cloud.yml
+
+# Features not yet in src/features.yaml — full definitions below.
+
+foreman-tasks:
+  description: Foreman Tasks plugin
+  foreman:
+    plugin_name: foreman_tasks
+  hammer: foreman_tasks
+  dependencies:
+    - dynflow
+  development:
+    foreman:
+      github_repo: theforeman/foreman-tasks
+    hammer:
+      gem: hammer_cli_foreman_tasks
+      github_repo: theforeman/hammer-cli-foreman-tasks
+      module_config: foreman_tasks.yml
+
+discovery:
+  description: Discovery plugin for Foreman
+  foreman:
+    plugin_name: foreman_discovery
+  hammer: foreman_discovery
+  development:
+    foreman:
+      github_repo: theforeman/foreman_discovery
+    hammer:
+      gem: hammer_cli_foreman_discovery
+      github_repo: theforeman/hammer-cli-foreman-discovery
+      module_config: foreman_discovery.yml
+    foreman_proxy:
+      github_repo: theforeman/smart_proxy_discovery
+      module_config: discovery.yml
+
+openscap:
+  description: OpenSCAP plugin for Foreman
+  foreman:
+    plugin_name: foreman_openscap
+  hammer: foreman_openscap
+  development:
+    foreman:
+      github_repo: theforeman/foreman_openscap
+    hammer:
+      github_repo: theforeman/hammer_cli_foreman_openscap
+      module_config: foreman_openscap.yml
+    foreman_proxy:
+      github_repo: theforeman/smart_proxy_openscap
+      module_config: openscap.yml
+
+bootdisk:
+  description: Bootdisk plugin for Foreman
+  foreman:
+    plugin_name: foreman_bootdisk
+  hammer: foreman_bootdisk
+  development:
+    foreman:
+      github_repo: theforeman/foreman_bootdisk
+    hammer:
+      github_repo: theforeman/hammer_cli_foreman_bootdisk
+      module_config: foreman_bootdisk.yml
+
+theme-satellite:
+  description: Red Hat Satellite theme for Foreman
+  foreman:
+    plugin_name: foreman_theme_satellite
+  development:
+    foreman:
+      github_repo: redhatsatellite/foreman_theme_satellite
+
+webhooks:
+  description: Webhooks plugin for Foreman
+  foreman:
+    plugin_name: foreman_webhooks
+  hammer: foreman_webhooks
+  development:
+    foreman:
+      github_repo: theforeman/foreman_webhooks
+    hammer:
+      gem: hammer_cli_foreman_webhooks
+      github_repo: theforeman/hammer-cli-foreman-webhooks
+      module_config: foreman_webhooks.yml
+    foreman_proxy:
+      github_repo: theforeman/smart_proxy_shellhooks
+      module_config: shellhooks.yml
+
+templates:
+  description: Templates plugin for Foreman
+  foreman:
+    plugin_name: foreman_templates
+  hammer: foreman_templates
+  development:
+    foreman:
+      github_repo: theforeman/foreman_templates
+    hammer:
+      gem: hammer_cli_foreman_templates
+      github_repo: theforeman/hammer-cli-foreman-templates
+      module_config: foreman_templates.yml
+
+leapp:
+  description: Leapp plugin for Foreman
+  foreman:
+    plugin_name: foreman_leapp
+  hammer: foreman_leapp
+  development:
+    foreman:
+      github_repo: theforeman/foreman_leapp
+    hammer:
+      gem: hammer_cli_foreman_leapp
+      github_repo: theforeman/hammer-cli-foreman-leapp
+      module_config: foreman_leapp.yml
+
+puppet:
+  description: Puppet plugin for Foreman
+  foreman:
+    plugin_name: foreman_puppet
+  hammer: foreman_puppet
+  development:
+    foreman:
+      github_repo: theforeman/foreman_puppet
+    hammer:
+      gem: hammer_cli_foreman_puppet
+      github_repo: theforeman/hammer-cli-foreman-puppet
+      module_config: foreman_puppet.yml
