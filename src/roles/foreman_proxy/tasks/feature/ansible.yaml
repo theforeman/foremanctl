@@ -1,0 +1,22 @@
+---
+- name: Create ansible.env secret
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-ansible-env
+    data: "{{ lookup('ansible.builtin.template', 'ansible.env.j2') }}"
+  notify:
+    - Restart Foreman Proxy
+    - Refresh Foreman Proxy
+
+- name: Mount ansible.env secret
+  ansible.builtin.copy:
+    dest: /etc/containers/systemd/foreman-proxy.container.d/ansible-env.conf
+    content: |
+      [Container]
+      Secret=foreman-proxy-ansible-env,type=mount,target=/etc/foreman-proxy/ansible.env
+    mode: '0644'
+    owner: root
+    group: root
+  notify:
+    - Restart Foreman Proxy
+    - Refresh Foreman Proxy

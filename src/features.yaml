@@ -29,6 +29,15 @@ remote-execution:
   hammer: foreman_remote_execution
   dependencies:
     - dynflow
+foreman-ansible:
+  description: Ansible plugin for Foreman
+  foreman:
+    plugin_name: foreman_ansible
+  foreman_proxy:
+    plugin_name: ansible
+  hammer: foreman_ansible
+  dependencies:
+    - dynflow
 dynflow:
   internal: true
   foreman_proxy:
