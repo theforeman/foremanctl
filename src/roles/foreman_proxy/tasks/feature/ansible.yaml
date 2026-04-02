@@ -1,0 +1,48 @@
+---
+- name: Create ansible.env secret
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-proxy-ansible-env
+    data: "{{ lookup('ansible.builtin.template', 'ansible.env.j2') }}"
+  notify:
+    - Restart Foreman Proxy
+    - Refresh Foreman Proxy
+
+- name: Mount ansible.env secret
+  ansible.builtin.copy:
+    dest: /etc/containers/systemd/foreman-proxy.container.d/ansible-env.conf
+    content: |
+      [Container]
+      Secret=foreman-proxy-ansible-env,type=mount,target=/etc/foreman-proxy/ansible.env
+    mode: '0644'
+    owner: root
+    group: root
+  notify:
+    - Restart Foreman Proxy
+    - Refresh Foreman Proxy
+
+- name: Create ansible roles directory
+  ansible.builtin.file:
+    path: /var/lib/foreman-proxy/ansible/roles
+    state: directory
+    mode: '0755'
+
+- name: Create ansible collections directory
+  ansible.builtin.file:
+    path: /var/lib/foreman-proxy/ansible/collections
+    state: directory
+    mode: '0755'
+
+- name: Mount ansible directories
+  ansible.builtin.copy:
+    dest: /etc/containers/systemd/foreman-proxy.container.d/ansible-volumes.conf
+    content: |
+      [Container]
+      Volume=/var/lib/foreman-proxy/ansible/roles:/etc/ansible/roles:rw,Z,U
+      Volume=/var/lib/foreman-proxy/ansible/collections:/etc/ansible/collections:rw,Z,U
+    mode: '0644'
+    owner: root
+    group: root
+  notify:
+    - Restart Foreman Proxy
+    - Refresh Foreman Proxy
