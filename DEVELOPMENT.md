@@ -1,16 +1,25 @@
-# Development
+# Development Guide
 
-## Requirements
+This guide helps you set up foremanctl development enviornment.
 
-* Vagrant - 2.2+
-* Ansible - 2.14+
-* [Vagrant Libvirt provider plugin](https://github.com/vagrant-libvirt/vagrant-libvirt)
-* Virtualization enabled in BIOS
+## Table of Contents
 
-Follow [instruction](https://github.com/theforeman/forklift/blob/master/docs/vagrant.md) to install vagrant
+- [Development Environment Setup](#development-environment-setup)
+- [Testing](#testing)
+- [Service Configuration](#service-configuration)
 
+## Development Environment Setup
 
-## Development environment
+### Requirements
+
+- Vagrant - 2.2+
+- Ansible - 2.14+
+- [Vagrant Libvirt provider plugin](https://github.com/vagrant-libvirt/vagrant-libvirt)
+- Virtualization enabled in BIOS
+
+Follow [instructions](https://github.com/theforeman/forklift/blob/master/docs/vagrant.md) to install Vagrant and Libvirt.
+
+### Development environment
 
 To setup the environment, run the setup script which will create a virtualenv and populate all of the dependencies:
 
@@ -19,7 +28,7 @@ To setup the environment, run the setup script which will create a virtualenv an
 source .venv/bin/activate
 ```
 
-## Deployment
+### Deployment
 
 This setup uses Vagrant to create a basic VM for running the deployment on:
 
@@ -30,12 +39,13 @@ source .venv/bin/activate
 ./foremanctl deploy --foreman-initial-admin-password=changeme --tuning development
 ```
 
-## Deploy hammer (optional)
+### Deploy hammer (optional)
 
 ```
 ./forge setup-repositories
 ./foremanctl deploy --add-feature hammer
 ```
+
 To teardown the environment:
 
 ```
@@ -52,6 +62,13 @@ Ensure you have a deployment. Now run the tests:
 
 > [!NOTE]
 > This will trigger all the tests so hammer tests will fail if you don't have [hammer setup](#deploy-hammer-optional)
+
+You can also directly run specific tests:
+
+```
+pytest tests/postgresql_test.py
+pytest tests/foreman_test.py::test_foreman_service
+```
 
 Additonally, you can run [smoker](https://github.com/theforeman/smoker) based tests with:
 
