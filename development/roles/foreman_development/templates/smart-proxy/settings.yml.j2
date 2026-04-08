@@ -40,9 +40,9 @@
 # SSL settings for client authentication against Foreman. If undefined, the values
 # from general SSL options are used instead. Mainly useful when Foreman uses
 # different certificates for its web UI and for smart-proxy requests.
-#:foreman_ssl_ca: ssl/certs/ca.pem
-#:foreman_ssl_cert: ssl/certs/fqdn.pem
-#:foreman_ssl_key: ssl/private_keys/fqdn.pem
+:foreman_ssl_ca: {{ foreman_development_cert_dir }}/proxy_ca.pem
+:foreman_ssl_cert: {{ foreman_development_cert_dir }}/client_cert.pem
+:foreman_ssl_key: {{ foreman_development_cert_dir }}/client_key.pem
 
 # host and ports configuration
 # an array of interfaces to bind ports to (possible values: *, localhost, 0.0.0.0)
