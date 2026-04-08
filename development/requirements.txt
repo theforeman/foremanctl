@@ -1,3 +1,4 @@
+ansible-lint
 apypie>=0.5.0
 jinja2
 paramiko
