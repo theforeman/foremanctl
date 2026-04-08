@@ -1,0 +1,38 @@
+---
+- name: Migrate foreman-installer answer file to foremanctl format
+  hosts:
+    - localhost
+  connection: local
+  gather_facts: false
+  vars:
+    root_dir: "{{ root | default('/') }}"
+    default_answer_file: "{{ root_dir }}/etc/foreman-installer/scenarios.d/satellite.yaml"
+  tasks:
+    - name: Run migration
+      migrate_answers:
+        answer_file: "{{ answer_file | default(default_answer_file) }}"
+        output: "{{ output | default(omit) }}"
+      register: migration_result
+
+    - name: Display migration results
+      ansible.builtin.debug:
+        msg: |
+          Migration completed successfully!
+
+          Mapped parameters: {{ migration_result.mapped_count }}
+          Unmappable parameters: {{ migration_result.unmappable_count }}
+
+          {% if migration_result.unmappable | length > 0 %}
+          Warning: The following parameters could not be mapped:
+          {% for param in migration_result.unmappable %}
+            - {{ param }}
+          {% endfor %}
+
+          These will need to be added to the mapping table.
+          {% endif %}
+
+          {% if output is defined %}
+          Output written to: {{ output }}
+          {% else %}
+          Output written to stdout
+          {% endif %}
