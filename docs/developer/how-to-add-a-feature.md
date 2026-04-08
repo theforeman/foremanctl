@@ -4,13 +4,13 @@ This guide covers what you need to do to add a feature to foremanctl, using Remo
 
 ## What is a feature?
 
-A feature in foremanctl extends the functionality of Foreman, Smart Proxy, and Hammer CLI by installing and configuring the relevant plugin packages in each. The foremanctl tool automatically resolves dependencies, installs packages, and deploys configuration based on what you define in `src/features.yaml`.
+A feature in foremanctl extends the functionality of Foreman, Smart Proxy, and Hammer CLI by installing and configuring the relevant plugin packages in each component. The foremanctl tool automatically resolves dependencies, installs packages, and deploys configuration based on what you define in `src/features.yaml`.
 
 ## Prerequisites
 
 Before adding a feature, you should:
 
-- Know which services your plugin extends (does it add a Foreman plugin, a Smart Proxy plugin, a Hammer CLI plugin, or some combination?)
+- Know which components your plugin extends (does it add a Foreman plugin, a Smart Proxy plugin, a Hammer CLI plugin, or some combination?)
 - Know what configuration the plugin needs (settings files, credentials, extra mounts, etc.)
 - Be aware that Smart Proxy plugins only take effect when `foreman-proxy` is an enabled feature, and Hammer plugins only when `hammer` is enabled. Depending on the deployment's flavor, these may already be included, see [Deployment Design](deployment.md) for details.
 
@@ -18,17 +18,15 @@ Before adding a feature, you should:
 
 A feature can belong to three components:
 
-1. **Foreman plugin** - Installed into the Foreman container
-2. **Smart Proxy plugin** - Installed into foreman-proxy container
-3. **Hammer CLI plugin** - Installed on host machine(as we currently don't ship hammer in container)
-
-## Step 1: Register the Feature
+1. **Foreman plugin** — installed into the Foreman container
+2. **Smart Proxy plugin** — installed into the foreman-proxy container
+3. **Hammer CLI plugin** — installed on the host machine (Hammer is not containerized)
 
 All features must be registered in the central feature registry.
 
-**File:** `src/features.yaml`
+**Feature Registry:** `src/features.yaml`
 
-Add your feature definition to this file:
+Add your feature definition to above file:
 
 Example: Remote Execution Feature
 
