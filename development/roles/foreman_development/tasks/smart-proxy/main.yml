@@ -145,8 +145,11 @@
     password: "{{ foreman_development_admin_password }}"
     validate_certs: false
 
-- name: Stop smart-proxy development service after smart proxy registration
+- name: Stop development services after smart proxy registration
   ansible.builtin.systemd:
-    name: smart-proxy-development
+    name: "{{ item }}-development"
     state: stopped
     enabled: false
+  with_items:
+    - smart-proxy
+    - foreman
