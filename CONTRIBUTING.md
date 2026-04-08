@@ -7,7 +7,7 @@ Issues are tracked via [github.com/theforeman/foremanctl/issues](https://github.
 - foremanctl version
 - OS version
 - installation method (RPM/source)
-- error trace or logs with debug level (podman logs, journalctl output)
+- error trace or logs with debug level (podman logs, journalctl output and ansible output logs)
 - steps to reproduce
 
 Since foremanctl is part of the Foreman project you can use its communication channels. 

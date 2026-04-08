@@ -1,18 +1,18 @@
-# How to Add a Plugin/Feature
+# How to Add a Feature
 
-This guide covers what you need to do to add a plugin/feature to foremanctl, using Remote Execution (REX) as a running example.
+This guide covers what you need to do to add a feature to foremanctl, using Remote Execution (REX) as a running example.
 
-## Overview
+## What is a feature?
 
 A feature in foremanctl extends the functionality of Foreman, Smart Proxy, and Hammer CLI by installing and configuring the relevant plugin packages in each. The foremanctl tool automatically resolves dependencies, installs packages, and deploys configuration based on what you define in `src/features.yaml`.
 
 ## Prerequisites
 
-Before adding a plugin, you should:
+Before adding a feature, you should:
 
-- Know which services your plugin extends -- does it add a Foreman plugin, a Smart Proxy plugin, a Hammer CLI plugin, or some combination?
+- Know which services your plugin extends (does it add a Foreman plugin, a Smart Proxy plugin, a Hammer CLI plugin, or some combination?)
 - Know what configuration the plugin needs (settings files, credentials, extra mounts, etc.)
-- Be aware that Smart Proxy plugins only take effect when `foreman-proxy` is an enabled feature, and Hammer plugins only when `hammer` is enabled. Depending on the deployment's flavor, these may already be included -- see [Deployment Design](deployment.md) for details.
+- Be aware that Smart Proxy plugins only take effect when `foreman-proxy` is an enabled feature, and Hammer plugins only when `hammer` is enabled. Depending on the deployment's flavor, these may already be included, see [Deployment Design](deployment.md) for details.
 
 ## Step 1: Register the Feature
 
@@ -22,15 +22,15 @@ A feature can belong to three components:
 2. **Smart Proxy plugin** - Installed into foreman-proxy container
 3. **Hammer CLI plugin** - Installed on host machine(as we currently don't ship hammer in container)
 
-## Step 1: Register the Plugin
+## Step 1: Register the Feature
 
-All plugins must be registered in the central feature registry.
+All features must be registered in the central feature registry.
 
 **File:** `src/features.yaml`
 
-Add your plugin definition to this file:
+Add your feature definition to this file:
 
-Example:- Remote Execution Feature
+Example: Remote Execution Feature
 
 ```yaml
 remote-execution:
@@ -82,7 +82,7 @@ src/roles/foreman_proxy/templates/settings.d/<plugin_name>.yml.j2
 The filename must exactly match `foreman_proxy.plugin_name`. The template must start with `:enabled: {{ feature_enabled }}` -- the system sets this to `"true"` or `"false"` automatically. Add any plugin-specific settings after that using Ruby symbol notation (`:key: value`).
 
 
-Example:- REX needs additional settings:
+Example: REX needs additional settings:
 
 ```yaml
 ---
@@ -104,9 +104,9 @@ src/roles/foreman_proxy/tasks/feature/<plugin_name>.yaml
 
 The filename must exactly match `foreman_proxy.plugin_name` with `.yaml` extension. These tasks only run when the feature is enabled. If the file doesn't exist, nothing happens.
 
-> **Note:** This works because [`feature.yaml`](../../src/roles/foreman_proxy/tasks/feature.yaml) uses `ansible.builtin.first_found` to look up `feature/<plugin_name>.yaml` -- if the file is present, it gets included; if not, it's silently skipped.
+> **Note:** This works because [`feature.yaml`](../../src/roles/foreman_proxy/tasks/feature.yaml) uses `ansible.builtin.first_found` to look up `feature/<plugin_name>.yaml`, if the file is present, it gets included; if not, it's silently skipped.
 
-For example, REX needs SSH keys generated and mounted into the container -- see [`remote_execution_ssh.yaml`](../src/roles/foreman_proxy/tasks/feature/remote_execution_ssh.yaml).
+For example, REX needs SSH keys generated and mounted into the container, see [`remote_execution_ssh.yaml`](../src/roles/foreman_proxy/tasks/feature/remote_execution_ssh.yaml).
 
 Configuration Tasks must notify `Restart Foreman Proxy` and `Refresh Foreman Proxy` handlers when making changes to configs or secrets.
 
