@@ -49,6 +49,8 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--pulp-database-password` | Password for Pulp database | `--foreman-proxy-content-pulpcore-postgresql-password` |
 | `--foreman-initial-admin-username` | Initial username for the admin user | `--foreman-initial-admin-username` |
 | `--foreman-initial-admin-password` | Initial password for the admin user | `--foreman-initial-admin-password` |
+| `--initial-organization` | Name of an initial organization | `--foreman-initial-organization` |
+| `--initial-location` | Name of an initial location | `--foreman-initial-location` |
 | `--foreman-puma-workers` | Number of workers for Puma | `--foreman-foreman-service-puma-workers` |
 | `--pulp-worker-count` | Number of pulp workers | `--foreman-proxy-content-pulpcore-worker-count` |
 | `--tuning` | Sets the tuning profile | `--tuning` |
@@ -87,8 +89,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--certs-server-ca-cert` | | certs | server_ca_cert |
 | `--certs-update-server` | Parameter to mark server certs for update | foreman-installer | No |
 | `--certs-reset` | Parameter to reset all certificates to default | foreman-installer | No |
-| `--foreman-initial-location` | | |
-| `--foreman-initial-organization` | | |
 | `--foreman-keycloak` | | |
 | `--foreman-keycloak-app-name` | | |
 | `--foreman-keycloak-realm` | | |
