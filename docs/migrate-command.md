@@ -1,82 +1,81 @@
-# Migrate Command
+# Migrating from foreman-installer to foremanctl
 
 ## Overview
 
-The `foremanctl migrate` command converts foreman-installer answer files to the new foremanctl configuration format.
+When upgrading from foreman-installer to foremanctl, the `foremanctl migrate` command helps convert your existing configuration to the new format.
 
-## Usage
+This guide explains how to migrate your foreman-installer answer files to foremanctl configuration files.
 
-### Basic Usage
+## Migration Workflow
 
+1. **Generate the migrated configuration**:
+   ```bash
+   foremanctl migrate --output /etc/foreman/config.yaml
+   ```
+
+2. **Review the output** for any warnings about unmapped parameters
+
+3. **Use the migrated configuration** with foremanctl:
+   ```bash
+   foremanctl deploy
+   ```
+   (foremanctl automatically loads configuration from `/etc/foreman/config.yaml`)
+
+## Command Usage
+
+### Basic Migration
+
+Migrate from the default location (reads the currently active scenario):
 ```bash
-# Migrate from default location
-foremanctl migrate --output /tmp/new-config.yaml
-
-# Migrate from custom location
-foremanctl migrate --answer-file /path/to/answers.yaml --output /tmp/config.yaml
-
-# Migrate from backup
-foremanctl migrate --root /backup --output /tmp/config.yaml
-
-# Output to stdout
-foremanctl migrate --answer-file /path/to/answers.yaml
+foremanctl migrate --output /etc/foreman/config.yaml
 ```
 
-### Command Options
+### Custom Answer File
 
-- `--answer-file PATH` - Path to the foreman-installer answer file (default: `/etc/foreman-installer/scenarios.d/satellite.yaml`)
+Migrate from a specific answer file:
+```bash
+foremanctl migrate --answer-file /path/to/custom-answers.yaml --output /etc/foreman/config.yaml
+```
+
+### Output to stdout
+
+Preview the migrated configuration without writing a file:
+```bash
+foremanctl migrate
+```
+
+## Command Options
+
+- `--answer-file PATH` - Path to the foreman-installer answer file (default: `/etc/foreman-installer/scenarios.d/last_scenario.yaml`)
 - `--output PATH` - Path for the migrated configuration (default: stdout)
-- `--root PATH` - Root directory for finding the answer file, useful for migrations from backups (default: /)
+- `--root PATH` - Root directory prefix for finding the answer file (default: `/`)
 
-## How It Works
-
-1. **Reads** the old YAML answer file
-2. **Parses** the nested parameter structure (e.g., `foreman::db_host`)
-3. **Maps** old parameter names to new names using a mapping table
-4. **Transforms** values where needed (e.g., boolean to string)
-5. **Writes** the new configuration file
-6. **Reports** any unmappable parameters as warnings (does not fail)
-
-## Parameter Mapping
-
-The migration uses a hardcoded mapping table in `src/playbooks/migrate/library/migrate_answers.py`:
-
-```python
-PARAMETER_MAP = {
-    # Database
-    ('foreman', 'db_host'): 'database_host',
-    ('foreman', 'db_port'): 'database_port',
-    ('foreman', 'db_database'): 'foreman_database_name',
-    ('foreman', 'db_username'): 'foreman_database_user',
-    ('foreman', 'db_password'): 'foreman_database_password',
-    ('foreman', 'db_manage'): ('database_mode', cast_database_mode),
-
-    # Foreman
-    ('foreman', 'initial_admin_username'): 'foreman_initial_admin_username',
-    ('foreman', 'initial_admin_password'): 'foreman_initial_admin_password',
-
-    # Certificates
-    ('foreman', 'server_ssl_cert'): 'server_certificate',
-    ('foreman', 'server_ssl_key'): 'server_key',
-    ('foreman', 'server_ssl_ca'): 'ca_certificate',
-
-    # TODO: Add more mappings here...
-}
+The `--root` option is useful when migrating from a backup or mounted filesystem. For example, if you have a backup mounted at `/backup`, use:
+```bash
+foremanctl migrate --root /backup --output /etc/foreman/config.yaml
 ```
+This will read from `/backup/etc/foreman-installer/scenarios.d/last_scenario.yaml`.
 
-### Adding New Mappings
 
-To add new parameter mappings:
+## Parameter Mappings
 
-1. Open `src/playbooks/migrate/library/migrate_answers.py`
-2. Add entries to the `PARAMETER_MAP` dictionary
-3. Use format: `(old_module, old_param): new_param`
-4. For transformations: `(old_module, old_param): (new_param, transform_function)`
-5. To ignore a parameter: `(old_module, old_param): 'IGNORE'`
+| Old Parameter | New Parameter | Transformation |
+|---------------|---------------|----------------|
+| `foreman::db_host` | `database_host` | - |
+| `foreman::db_port` | `database_port` | - |
+| `foreman::db_database` | `foreman_database_name` | - |
+| `foreman::db_username` | `foreman_database_user` | - |
+| `foreman::db_password` | `foreman_database_password` | - |
+| `foreman::db_manage` | `database_mode` | true→"internal", false→"external" |
+| `foreman::initial_admin_username` | `foreman_initial_admin_username` | - |
+| `foreman::initial_admin_password` | `foreman_initial_admin_password` | - |
+| `foreman::server_ssl_cert` | `server_certificate` | - |
+| `foreman::server_ssl_key` | `server_key` | - |
+| `foreman::server_ssl_ca` | `ca_certificate` | - |
 
 ## Example
 
-### Input (Old Format)
+### Input (foreman-installer format)
 
 ```yaml
 foreman:
@@ -90,13 +89,12 @@ foreman:
   initial_admin_password: changeme
 ```
 
-### Output (New Format)
+### Output (foremanctl format)
 
 ```yaml
-ca_certificate: /etc/pki/tls/certs/ca.crt
 database_host: database.example.com
-database_mode: internal
 database_port: 5432
+database_mode: internal
 foreman_database_name: foreman
 foreman_database_password: secret123
 foreman_database_user: foreman_user
@@ -104,25 +102,14 @@ foreman_initial_admin_password: changeme
 foreman_initial_admin_username: admin
 ```
 
-## Testing
+## Handling Unmapped Parameters
 
-Run the unit tests:
+When the migration completes, you may see warnings like:
 
-```bash
-python -m pytest tests/unit/migrate_test.py -v
+```
+Warning: The following parameters could not be mapped:
+  - katello::enable_ostree
+  - foreman::some_other_param
 ```
 
-Test with a sample file:
-
-```bash
-# Create test file
-cat > /tmp/test-answers.yaml <<EOF
-foreman:
-  db_host: localhost
-  db_port: 5432
-  db_manage: true
-EOF
-
-# Run migration
-./foremanctl migrate --answer-file /tmp/test-answers.yaml
-```
+These parameters need to be manually reviewed and added to the new configuration if needed. Check the [parameters documentation](parameters.md) for equivalent foremanctl parameters.
