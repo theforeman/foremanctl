@@ -57,6 +57,9 @@ foremanctl migrate --root /backup --output /etc/foreman/config.yaml
 This will read from `/backup/etc/foreman-installer/scenarios.d/last_scenario.yaml`.
 
 
+> [!NOTE]
+> Unlike other `foremanctl` commands, migrate does not persist parameters between runs. Each migration is independent.
+
 ## Parameter Mappings
 
 | Old Parameter | New Parameter | Transformation |

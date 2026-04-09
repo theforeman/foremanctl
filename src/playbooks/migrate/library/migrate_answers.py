@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import sys
@@ -113,7 +113,8 @@ def apply_mappings(old_config):
                 new_key = mapping
                 new_value = old_value
 
-            result[new_key] = new_value
+            if new_value is not None:
+                result[new_key] = new_value
         else:
             if isinstance(old_key, tuple):
                 param_name = '::'.join(old_key)
