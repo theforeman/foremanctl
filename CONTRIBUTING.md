@@ -17,13 +17,7 @@ You can also use the [Foreman community forum](https://community.theforeman.org/
 
 
 ## Code Contributions
-To get started:
 
-1. Fork and clone the repository
-2. Set up development environment
-3. Make the required changes
-4. Test the changes and add tests to `tests/` (see [Testing guide](docs/developer/testing.md))
-5. Run `ansible-lint` against your changes to check for linting errors (if you changed ansible code)
-6. Submit a pull request with a description of changes
+For setting up a foremanctl development environment, see the [Developer setup](DEVELOPMENT.md) guide.
 
-Need help with setting up foremanctl? Have a look at: [Developer setup](DEVELOPMENT.md)
+If you are looking to develop Foreman, checkout the [Foreman Development Environment](docs/developer/development-environment.md) guide.
