@@ -65,6 +65,62 @@ By default `hammer` feature will set up `hammer-cli` and `hammer-cli-foreman`, `
 
 All the projects set up as part of the feature are deployed as git checkouts.
 
+## Custom Container Images
+
+### Using Official Pulp Containers
+
+The Foreman development environment uses official Pulp containers from [pulp-oci-images](https://github.com/theforeman/pulp-oci-images) which include all necessary plugins including `pulp-smart-proxy` by default.
+
+No custom container building is needed for standard development workflows. The official containers provide:
+- All Katello-supported Pulp plugins (ansible, container, deb, ostree, rpm, python, smart_proxy)
+- Proper service wrapper scripts and configuration
+
+### Deploying with Custom Pulp Images
+
+For development scenarios requiring specific Pulp plugin versions or compatibility fixes, you can build custom Pulp container images using the [pulp-oci-images repository](https://github.com/theforeman/pulp-oci-images).
+
+*TODO UPDATE THE LINK BELOW*
+The repository includes a development container configuration (see [PR #13](https://github.com/theforeman/pulp-oci-images/pull/13)) that supports building containers with arbitrary Pulp versions and plugins.
+
+Use the custom Pulp container image during deployment:
+
+```bash
+./forge deploy-dev \
+    --target-host=my-dev-box \
+    --extra-vars pulp_container_image="quay.io/yourusername/pulp" \
+    --extra-vars pulp_container_tag="custom" \
+    --add-feature=foreman-proxy
+```
+
+### Customizing PostgreSQL Version
+
+You can override the default PostgreSQL version, which is useful when testing database compatibility changes:
+
+```bash
+# Deploy with PostgreSQL 16 (explicit)
+./forge deploy-dev \
+    --target-host=my-dev-box \
+    --extra-vars postgresql_container_image="quay.io/sclorg/postgresql-16-c9s" \
+    --extra-vars postgresql_container_tag="latest"
+```
+
+### Complete Custom Deployment Example
+
+Combining custom Pulp and PostgreSQL images:
+
+```bash
+# Deploy with custom Pulp image and specific PostgreSQL version
+./forge deploy-dev \
+    --target-host=katello-dev-newer-pulp \
+    --extra-vars pulp_container_tag="3.105.1" \
+    --extra-vars pulp_container_image="quay.io/yourusername/pulp" \
+    --extra-vars postgresql_container_image="quay.io/sclorg/postgresql-16-c9s" \
+    --extra-vars postgresql_container_tag="latest" \
+    --add-feature=foreman-proxy
+```
+
+This approach allows testing compatibility between different versions of backend services during major framework upgrades or when integrating newer plugin versions.
+
 ## Plugin Management
 
 ### Enabled Plugins (Default)
