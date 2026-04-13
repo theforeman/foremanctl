@@ -67,44 +67,24 @@ All the projects set up as part of the feature are deployed as git checkouts.
 
 ## Plugin Management
 
-### Enabled Plugins (Default)
+Plugins are managed through the feature system. The development environment uses the same `--add-feature` mechanism as production deployments. Feature definitions in `development/features.yaml` extend `src/features.yaml` with development-specific metadata (git repos, settings templates, etc.).
 
-- `katello`
-- `foreman_remote_execution`
+### Default Features
 
-### Plugin Registry
+- `remote-execution` (and its dependency `dynflow`)
 
-The system includes a plugin registry with predefined configurations:
-- `katello` - Katello subscription management
-- `foreman_remote_execution` - Remote execution plugin
-- `foreman_ansible` - Ansible integration
-- `foreman_rh_cloud` - Red Hat Cloud integration
-- `foreman_discovery` - Host discovery
-- `foreman_openscap` - OpenSCAP compliance
-- `foreman_bootdisk` - Boot disk creation
-- `foreman_openscap` - Foreman plug-in for displaying OpenSCAP audit reports
-- `foreman_theme_satellite` - Branding for Satellite
-- `foreman_tasks` - Tasks management engine and plugin for Foreman
-- `foreman_webhooks` - Call external webhooks from Foreman
-- `foreman_templates` - A plugin for Foreman to sync provisioning templates from an external source
-- `foreman_leapp` - A plugin that allows to run inplace upgrades for RHEL hosts in Foreman using Leapp tool.
-- `foreman_puppet` - A plugin that adds Puppet External node classification functionality to Foreman.
+Additional features enabled via `--add-feature` (e.g., `katello`, `ansible`) will automatically pull in their dependencies and configure the corresponding foreman plugins, hammer plugins, and smart-proxy plugins for development.
 
 ### Enabling Additional Plugins
 
-#### At Deployment Time
-
-Use the `--foreman-development-enabled-plugin` parameter (can be used multiple times):
+Use the `--add-feature` parameter (can be used multiple times):
 
 ```bash
-# Enable specific plugins
-./forge deploy-dev start --foreman-development-enabled-plugin katello --foreman-development-enabled-plugin foreman_ansible --foreman-development-enabled-plugin foreman_discovery
+# Enable specific features
+./forge deploy-dev --add-feature=katello --add-feature=ansible --add-feature=discovery
 
-# Enable single plugin
-./forge deploy-dev start --foreman-development-enabled-plugin katello
-
-# Enable all available plugins
-./forge deploy-dev start --foreman-development-enabled-plugin katello --foreman-development-enabled-plugin foreman_remote_execution --foreman-development-enabled-plugin foreman_ansible --foreman-development-enabled-plugin foreman_rh_cloud --foreman-development-enabled-plugin foreman_discovery --foreman-development-enabled-plugin foreman_openscap --foreman-development-enabled-plugin foreman_bootdisk
+# Enable a single feature
+./forge deploy-dev --add-feature=katello
 ```
 
 ## Development Workflow
