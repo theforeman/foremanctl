@@ -111,6 +111,9 @@ jobs:
       - name: Run deployment
         run: |
           ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com --database-ssl-ca $(pwd)/.var/lib/foremanctl/db-ca.crt --database-ssl-mode verify-full' || '' }} --foreman-initial-admin-password=changeme --tuning development
+      - name: Generate certificate bundle for second system
+        run: |
+          ./foremanctl certificate-bundle --certificate-source=${{ matrix.certificate_source }} proxy.example.com
       - name: Add optional feature - hammer
         run: |
           ./foremanctl deploy --add-feature hammer
