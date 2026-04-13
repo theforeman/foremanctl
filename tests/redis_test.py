@@ -1,15 +1,9 @@
-import pytest
-
-
-REDIS_HOST = 'localhost'
-REDIS_PORT = 6379
-
-
 def test_redis_service(server):
     redis = server.service("redis")
     assert redis.is_running
 
 
-def test_redis_port(server):
-    redis = server.addr(REDIS_HOST)
-    assert redis.port(REDIS_PORT).is_reachable
+def test_redis_ping(server):
+    result = server.run("podman exec redis redis-cli ping")
+    assert result.succeeded
+    assert result.stdout.strip() == "PONG"

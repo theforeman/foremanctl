@@ -71,7 +71,7 @@
     name: "candlepin"
     image: "{{ candlepin_container_image }}:{{ candlepin_container_tag }}"
     state: quadlet
-    network: host
+    network: "{{ candlepin_networks }}"
     hostname: "{{ ansible_facts['hostname'] }}.local"
     secrets:
       - 'candlepin-ca-cert,target=/etc/candlepin/certs/candlepin-ca.crt,mode=0440,type=mount'
@@ -100,7 +100,7 @@
         After=redis.service postgresql.service
         [Service]
         TimeoutStartSec=300
-    healthcheck: curl --fail --insecure https://localhost:23443/candlepin/status
+    healthcheck: curl --fail --cacert /etc/candlepin/certs/candlepin-ca.crt --resolve candlepin:23443:127.0.0.1 https://candlepin:23443/candlepin/status
     sdnotify: healthy
 
 - name: Run daemon reload to make Quadlet create the service files

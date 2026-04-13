@@ -22,6 +22,22 @@
         certificate_checks_certificate: "{{ server_certificate }}"
         certificate_checks_key: "{{ server_key }}"
         certificate_checks_ca: "{{ ca_certificate }}"
+    - role: deploy_network
+      vars:
+        deploy_network_name: foreman-db
+        deploy_network_internal: true
+        deploy_network_isolate: true
+    - role: deploy_network
+      vars:
+        deploy_network_name: foreman-cache
+        deploy_network_internal: true
+        deploy_network_isolate: true
+    - role: deploy_network
+      vars:
+        deploy_network_name: foreman-app
+    - role: deploy_network
+      vars:
+        deploy_network_name: foreman-proxy-net
     - role: postgresql
       when:
         - database_mode == 'internal'

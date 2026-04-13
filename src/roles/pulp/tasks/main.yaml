@@ -101,7 +101,8 @@
     state: quadlet
     sdnotify: true
     command: pulp-api
-    network: host
+    network: "{{ pulp_networks }}"
+    ports: "{{ pulp_api_ports | default(omit) }}"
     hostname: "pulp-api.{{ ansible_facts['hostname'] }}.local"
     volumes: "{{ pulp_volumes }}"
     security_opt:
@@ -132,7 +133,8 @@
     state: quadlet
     sdnotify: true
     command: pulp-content
-    network: host
+    network: "{{ pulp_networks }}"
+    ports: "{{ pulp_content_ports | default(omit) }}"
     hostname: "pulp-content.{{ ansible_facts['hostname'] }}.local"
     volumes: "{{ pulp_volumes }}"
     security_opt:
@@ -163,7 +165,7 @@
     image: "{{ pulp_worker_image }}"
     state: quadlet
     command: pulp-worker
-    network: host
+    network: "{{ pulp_networks }}"
     hostname: "pulp-worker-%i.{{ ansible_facts['hostname'] }}.local"
     volumes: "{{ pulp_volumes }}"
     security_opt:
@@ -218,7 +220,7 @@
     command: pulpcore-manager migrate --noinput
     detach: false
     rm: true
-    network: host
+    network: "{{ pulp_migration_networks }}"
     volumes: "{{ pulp_volumes }}"
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
@@ -233,7 +235,7 @@
     command: pulpcore-manager reset-admin-password --random
     detach: false
     rm: true
-    network: host
+    network: "{{ pulp_migration_networks }}"
     volumes: "{{ pulp_volumes }}"
     secrets:
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'

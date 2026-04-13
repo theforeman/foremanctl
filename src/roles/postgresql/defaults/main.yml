@@ -3,7 +3,8 @@ postgresql_container_image: quay.io/sclorg/postgresql-13-c9s
 postgresql_container_tag: "latest"
 postgresql_registry_auth_file: /etc/foreman/registry-auth.json
 postgresql_container_name: postgresql
-postgresql_network: host
+postgresql_network: foreman-db
+postgresql_socket_dir: /run/postgresql
 postgresql_restart_policy: always
 
 postgresql_data_dir: /var/lib/pgsql/data
