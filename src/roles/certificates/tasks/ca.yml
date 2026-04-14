@@ -66,4 +66,4 @@
     privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
     privatekey_passphrase: "{{ certificates_ca_password }}"
     provider: selfsigned
-    selfsigned_not_after: "+7300d"
+    selfsigned_not_after: "+{{ certificates_ca_validity_days }}d"

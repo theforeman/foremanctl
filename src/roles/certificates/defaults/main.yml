@@ -7,3 +7,7 @@ certificates_ca_directory_requests: "{{ certificates_ca_directory }}/requests"
 certificates_cnames: []
 certificates_algorithm_type: RSA
 certificates_algorithm_size: 4096
+# Validity periods in days (used as +Nd for community.crypto not_after).
+certificates_ca_validity_days: 7300
+certificates_server_validity_days: 7300
+certificates_client_validity_days: 7300
