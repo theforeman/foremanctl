@@ -45,8 +45,6 @@ Directories prefixed with `_` (underscore) contain reusable metadata that can be
 - Name them after the concept they represent.
 - When a subcommand includes a fragment, the fragment's variables and constraints are merged into its CLI interface.
 
-Current fragments in `src/playbooks/`:
-
 Here are a few examples:
 
 | Fragment               | What it provides                              |

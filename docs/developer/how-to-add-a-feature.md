@@ -4,7 +4,7 @@ This guide covers what you need to do to add a feature to foremanctl, using Remo
 
 ## What is a feature?
 
-A feature in foremanctl extends the functionality of Foreman, Smart Proxy, and Hammer CLI by installing and configuring the relevant plugin packages in each component. The foremanctl tool automatically resolves dependencies, installs packages, and deploys configuration based on what you define in `src/features.yaml`.
+A feature in foremanctl extends the functionality the deployment by installing and configuring the additional components. The foremanctl tool automatically resolves dependencies, installs packages, and deploys configuration based on what you define in `src/features.yaml`.
 
 ## Prerequisites
 
@@ -54,7 +54,7 @@ Plugin names must match what the ecosystem expects:
 
 ### Dependencies
 
-Use `dependencies` to pull in other dependent features automatically(which are required for a feature to work). Mark these non-user facing features with `internal: true` to hide them from users:
+Use `dependencies` to pull in dependencies automatically(which are required for a feature to work). Mark these non-user facing dependencies with `internal: true` to hide them from users:
 
 ```yaml
 dynflow:
