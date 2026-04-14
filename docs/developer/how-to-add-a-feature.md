@@ -49,8 +49,8 @@ See [Feature Metadata Reference](feature-metadata.md) for the full list of prope
 Plugin names must match what the ecosystem expects:
 
 - `foreman.plugin_name` -- the plugin/gem name for foreman (e.g. `foreman_remote_execution`)
-- `foreman_proxy.plugin_name` -- the smart proxy plugin/gem name without `smart_proxy_` prefix (e.g. `smart_proxy_remote_execution_ssh`)
-- `hammer` -- the suffix for the RPM package (e.g. `foreman_remote_execution` → `hammer-cli-plugin-foreman_remote_execution`)
+- `foreman_proxy.plugin_name` -- the smart proxy plugin/gem name without `smart_proxy_` prefix (e.g. `remote_execution_ssh`)
+- `hammer` -- plugin/gem name without the `hammer_cli_` prefix (e.g. `hammer_cli_foreman_remote_execution` → `foreman_remote_execution`)
 
 ### Dependencies
 
@@ -101,8 +101,6 @@ src/roles/foreman_proxy/tasks/feature/<plugin_name>.yaml
 ```
 
 The filename must exactly match `foreman_proxy.plugin_name` with `.yaml` extension. These tasks only run when the feature is enabled. If the file doesn't exist, nothing happens.
-
-> **Note:** This works because [`feature.yaml`](../../src/roles/foreman_proxy/tasks/feature.yaml) uses `ansible.builtin.first_found` to look up `feature/<plugin_name>.yaml`, if the file is present, it gets included; if not, it's silently skipped.
 
 For example, REX needs SSH keys generated and mounted into the container, see [`remote_execution_ssh.yaml`](../src/roles/foreman_proxy/tasks/feature/remote_execution_ssh.yaml).
 
