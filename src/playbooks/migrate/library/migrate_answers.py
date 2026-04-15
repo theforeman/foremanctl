@@ -13,13 +13,6 @@ def cast_database_mode(value):
     return value
 
 
-def cast_certificate_source(value):
-    """Map certificate management boolean to certificate source."""
-    if isinstance(value, bool):
-        return 'default' if value else 'installer'
-    return value
-
-
 PARAMETER_MAP = {
     # Database configuration
     ('foreman', 'db_host'): 'database_host',
@@ -47,12 +40,6 @@ IGNORE_PARAMS = {'IGNORE'}
 
 def load_answer_file(file_path):
     """Load and parse YAML answer file."""
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"Answer file not found: {file_path}")
-
-    if not os.access(file_path, os.R_OK):
-        raise PermissionError(f"Cannot read answer file: {file_path}")
-
     with open(file_path, 'r') as f:
         try:
             data = yaml.safe_load(f)
@@ -129,14 +116,15 @@ def apply_mappings(old_config):
 
 
 def write_output(data, output_path=None):
-    """Write migrated configuration to file or stdout."""
+    """Write migrated configuration to file or return as string."""
     yaml_content = yaml.dump(data, default_flow_style=False, sort_keys=True)
 
     if output_path:
         with open(output_path, 'w') as f:
             f.write(yaml_content)
+        return None
     else:
-        print(yaml_content)
+        return yaml_content
 
 
 def run_module():
@@ -150,6 +138,7 @@ def run_module():
         mapped_count=0,
         unmappable_count=0,
         unmappable=[],
+        output_content='',
     )
 
     module = AnsibleModule(
@@ -166,21 +155,25 @@ def run_module():
         result['unmappable_count'] = len(migration_result['unmappable'])
         result['unmappable'] = migration_result['unmappable']
 
+        # Issue warnings for unmappable parameters
+        if migration_result['unmappable']:
+            for param in migration_result['unmappable']:
+                module.warn(f"Parameter '{param}' could not be mapped and will need manual review")
+
         if not module.check_mode:
             output_path = module.params.get('output')
-            write_output(migration_result['mapped'], output_path)
+            yaml_content = write_output(migration_result['mapped'], output_path)
 
             if output_path:
                 result['output_file'] = output_path
                 result['changed'] = True  # File was written
+            else:
+                # Output to stdout - store in result so Ansible displays it
+                result['output_content'] = yaml_content
 
         module.exit_json(**result)
 
-    except FileNotFoundError as e:
-        module.fail_json(msg=str(e), **result)
-    except PermissionError as e:
-        module.fail_json(msg=str(e), **result)
-    except ValueError as e:
+    except (FileNotFoundError, PermissionError, ValueError) as e:
         module.fail_json(msg=str(e), **result)
     except Exception as e:
         module.fail_json(msg=f"Unexpected error: {e}", **result)

@@ -108,3 +108,25 @@ Warning: The following parameters could not be mapped:
 ```
 
 These parameters need to be manually reviewed and added to the new configuration if needed. Check the [parameters documentation](parameters.md) for equivalent foremanctl parameters.
+
+## Using the Migrated Configuration
+
+Once you've generated and reviewed the migrated configuration:
+
+1. **Save it to the foremanctl parameters file**:
+   ```bash
+   # Either generate directly to the parameters file
+   foremanctl migrate --output /var/lib/foremanctl/parameters.yaml
+
+   # Or copy after review
+   foremanctl migrate --output /tmp/migrated.yaml
+   # Review /tmp/migrated.yaml
+   cp /tmp/migrated.yaml /var/lib/foremanctl/parameters.yaml
+   ```
+
+2. **Deploy using foremanctl**:
+   ```bash
+   foremanctl deploy
+   ```
+
+   The `foremanctl deploy` command automatically loads configuration from `/var/lib/foremanctl/parameters.yaml`.
