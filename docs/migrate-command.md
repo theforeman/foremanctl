@@ -46,7 +46,7 @@ foremanctl migrate
 
 ## Command Options
 
-- `--answer-file PATH` - Path to the foreman-installer answer file (default: `/etc/foreman-installer/scenarios.d/last_scenario.yaml`)
+- `--answer-file PATH` - Path to the foreman-installer answer file. If not specified, reads the currently active scenario and extracts the answer file path from it.
 - `--output PATH` - Path for the migrated configuration (default: stdout)
 
 > [!NOTE]
