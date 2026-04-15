@@ -48,14 +48,6 @@ foremanctl migrate
 
 - `--answer-file PATH` - Path to the foreman-installer answer file (default: `/etc/foreman-installer/scenarios.d/last_scenario.yaml`)
 - `--output PATH` - Path for the migrated configuration (default: stdout)
-- `--root PATH` - Root directory prefix for finding the answer file (default: `/`)
-
-The `--root` option is useful when migrating from a backup or mounted filesystem. For example, if you have a backup mounted at `/backup`, use:
-```bash
-foremanctl migrate --root /backup --output /etc/foreman/config.yaml
-```
-This will read from `/backup/etc/foreman-installer/scenarios.d/last_scenario.yaml`.
-
 
 > [!NOTE]
 > Unlike other `foremanctl` commands, migrate does not persist parameters between runs. Each migration is independent.

@@ -5,8 +5,7 @@
   connection: local
   gather_facts: false
   vars:
-    root_dir: "{{ root | default('/') }}"
-    default_answer_file: "{{ root_dir }}/etc/foreman-installer/scenarios.d/last_scenario.yaml"
+    default_answer_file: "/etc/foreman-installer/scenarios.d/last_scenario.yaml"
   tasks:
     - name: Run migration
       migrate_answers:
