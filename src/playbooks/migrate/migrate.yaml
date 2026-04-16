@@ -9,6 +9,7 @@
       migrate_answers:
         answer_file: "{{ answer_file | default(omit) }}"
         output: "{{ output | default(omit) }}"
+        working_directory: "{{ lookup('env', 'PWD') }}"
       register: migration_result
 
     - name: Display migrated configuration to stdout
@@ -18,21 +19,12 @@
 
     - name: Display migration results
       ansible.builtin.debug:
-        msg: |
-          Migration completed successfully!
-
-          Mapped parameters: {{ migration_result.mapped_count }}
-          Unmappable parameters: {{ migration_result.unmappable_count }}
-
-          {% if migration_result.unmappable | length > 0 %}
-          Warning: The following parameters could not be mapped:
-          {% for param in migration_result.unmappable %}
-            - {{ param }}
-          {% endfor %}
-
-          These will need to be added to the mapping table.
-          {% endif %}
-
-          {% if migration_result.output_file is defined %}
-          Output written to: {{ migration_result.output_file }}
-          {% endif %}
+        msg:
+          - "Migration completed successfully!"
+          - "Mapped parameters: {{ migration_result.mapped_count }}"
+          - "Unmappable parameters: {{ migration_result.unmappable_count }}"
+          - "{{ _unmappable_warning if migration_result.unmappable | length > 0 else '' }}"
+          - "{{ _output_file_msg if migration_result.output_file is defined else '' }}"
+      vars:
+        _unmappable_warning: "Warning: {{ migration_result.unmappable | length }} parameter(s) could not be mapped - see warnings above"
+        _output_file_msg: "Output written to: {{ migration_result.output_file }}"

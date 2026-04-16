@@ -132,14 +132,18 @@ def apply_mappings(old_config):
     }
 
 
-def write_output(data, output_path=None):
+def write_output(data, output_path=None, working_directory=None):
     """Write migrated configuration to file or return as string."""
     yaml_content = yaml.dump(data, default_flow_style=False, sort_keys=True)
 
     if output_path:
-        with open(output_path, 'w') as f:
+        if working_directory and not os.path.isabs(output_path):
+            absolute_path = os.path.join(working_directory, output_path)
+        else:
+            absolute_path = os.path.abspath(output_path)
+        with open(absolute_path, 'w') as f:
             f.write(yaml_content)
-        return None
+        return absolute_path
     else:
         return yaml_content
 
@@ -148,6 +152,7 @@ def run_module():
     module_args = dict(
         answer_file=dict(type='str', required=False, default=None),
         output=dict(type='str', required=False, default=None),
+        working_directory=dict(type='str', required=False, default=None),
     )
 
     result = dict(
@@ -183,13 +188,15 @@ def run_module():
 
         if not module.check_mode:
             output_path = module.params.get('output')
-            yaml_content = write_output(migration_result['mapped'], output_path)
+            working_directory = module.params.get('working_directory')
 
             if output_path:
-                result['output_file'] = output_path
-                result['changed'] = True  # File was written
+                absolute_path = write_output(migration_result['mapped'], output_path, working_directory)
+                result['output_file'] = absolute_path
+                result['changed'] = True
             else:
                 # Output to stdout - store in result so Ansible displays it
+                yaml_content = write_output(migration_result['mapped'], output_path, working_directory)
                 result['output_content'] = yaml_content
 
         module.exit_json(**result)
