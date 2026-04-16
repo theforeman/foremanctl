@@ -21,3 +21,6 @@ iop_gateway_client_certificate: "{{ certificates_ca_directory }}/certs/localhost
 iop_gateway_client_key: "{{ certificates_ca_directory }}/private/localhost-client.key"
 iop_gateway_client_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
 iop_vmaas_client_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
+iop_cvemap_downloader_client_cert: "{{ client_certificate }}"
+iop_cvemap_downloader_client_key: "{{ client_key }}"
+iop_cvemap_downloader_client_ca: "{{ client_ca_certificate }}"
