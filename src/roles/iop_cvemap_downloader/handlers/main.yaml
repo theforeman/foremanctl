@@ -1,0 +1,10 @@
+---
+- name: Restart cvemap download timer
+  ansible.builtin.systemd:
+    name: iop-cvemap-download.timer
+    state: restarted
+
+- name: Restart cvemap download path
+  ansible.builtin.systemd:
+    name: iop-cvemap-download.path
+    state: restarted
