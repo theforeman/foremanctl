@@ -1,0 +1,9 @@
+---
+iop_cvemap_downloader_base_url: "https://security.access.redhat.com/data/meta/v1/cvemap.xml"
+iop_cvemap_downloader_timer_interval: "24h"
+iop_cvemap_downloader_output_dir: "/var/www/html/pub"
+iop_cvemap_downloader_relative_path: "iop/data/meta/v1/cvemap.xml"
+
+iop_cvemap_downloader_client_cert: "/root/certificates/certs/{{ ansible_facts['fqdn'] }}-client.crt"
+iop_cvemap_downloader_client_key: "/root/certificates/private/{{ ansible_facts['fqdn'] }}-client.key"
+iop_cvemap_downloader_client_ca: "/root/certificates/certs/ca.crt"
