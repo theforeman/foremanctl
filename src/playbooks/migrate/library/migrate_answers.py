@@ -61,10 +61,35 @@ def load_answer_file(file_path):
         try:
             data = yaml.safe_load(f)
             if data is None:
-                return {}
+                raise ValueError(f"Answer file {file_path} is empty")
             return data
         except yaml.YAMLError as e:
             raise ValueError(f"Invalid YAML in answer file: {e}")
+
+
+def validate_answer_file(data, file_path):
+    """
+    Validate that the loaded YAML has the expected structure of a foreman-installer answer file.
+
+    Expected structure: Top-level keys should be module names (strings) with nested dictionaries.
+    Example: {'foreman': {'db_host': 'localhost'}, 'katello': {...}}
+    """
+    if not isinstance(data, dict):
+        raise ValueError(
+            f"Answer file {file_path} has invalid structure. "
+            f"Expected a dictionary but got {type(data).__name__}"
+        )
+
+    if len(data) == 0:
+        raise ValueError(f"Answer file {file_path} is empty (contains no configuration)")
+
+    dict_values = sum(1 for v in data.values() if isinstance(v, dict))
+
+    if dict_values == 0:
+        raise ValueError(
+            f"Answer file {file_path} does not appear to be a valid foreman-installer answer file. "
+            f"Expected nested module configurations (e.g., 'foreman:', 'katello:') but found flat structure"
+        )
 
 
 def flatten_nested_dict(nested_dict, parent_key=''):
@@ -174,6 +199,7 @@ def run_module():
             answer_file = resolve_answer_file_from_scenario()
 
         old_config = load_answer_file(answer_file)
+        validate_answer_file(old_config, answer_file)
 
         migration_result = apply_mappings(old_config)
 
