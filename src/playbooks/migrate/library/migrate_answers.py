@@ -38,6 +38,23 @@ PARAMETER_MAP = {
 IGNORE_PARAMS = {'IGNORE'}
 
 
+def resolve_answer_file_from_scenario(scenario_file='/etc/foreman-installer/scenarios.d/last_scenario.yaml'):
+    """Read scenario file and extract answer file path from :answer_file: key."""
+    with open(scenario_file, 'r') as f:
+        try:
+            scenario_data = yaml.safe_load(f)
+            if scenario_data is None:
+                raise ValueError(f"Scenario file {scenario_file} is empty")
+
+            answer_file = scenario_data.get(':answer_file')
+            if not answer_file:
+                raise ValueError(f"Scenario file does not contain :answer_file: key")
+
+            return answer_file
+        except yaml.YAMLError as e:
+            raise ValueError(f"Invalid YAML in scenario file: {e}")
+
+
 def load_answer_file(file_path):
     """Load and parse YAML answer file."""
     with open(file_path, 'r') as f:
@@ -129,7 +146,7 @@ def write_output(data, output_path=None):
 
 def run_module():
     module_args = dict(
-        answer_file=dict(type='str', required=True),
+        answer_file=dict(type='str', required=False, default=None),
         output=dict(type='str', required=False, default=None),
     )
 
@@ -147,7 +164,11 @@ def run_module():
     )
 
     try:
-        old_config = load_answer_file(module.params['answer_file'])
+        answer_file = module.params.get('answer_file')
+        if not answer_file:
+            answer_file = resolve_answer_file_from_scenario()
+
+        old_config = load_answer_file(answer_file)
 
         migration_result = apply_mappings(old_config)
 

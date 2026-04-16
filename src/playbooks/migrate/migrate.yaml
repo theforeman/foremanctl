@@ -4,33 +4,10 @@
     - localhost
   connection: local
   gather_facts: false
-  vars:
-    default_scenario_file: "/etc/foreman-installer/scenarios.d/last_scenario.yaml"
   tasks:
-    - name: Determine answer file to migrate
-      when: answer_file is not defined
-      block:
-        - name: Read scenario file
-          ansible.builtin.slurp:
-            src: "{{ default_scenario_file }}"
-          register: scenario_content
-
-        - name: Parse scenario file
-          ansible.builtin.set_fact:
-            scenario_data: "{{ scenario_content['content'] | b64decode | from_yaml }}"
-
-        - name: Extract answer file path from scenario
-          ansible.builtin.set_fact:
-            resolved_answer_file: "{{ scenario_data[':answer_file'] | default('') }}"
-
-        - name: Fail if no answer file found in scenario
-          ansible.builtin.fail:
-            msg: "Scenario file does not contain :answer_file: key"
-          when: resolved_answer_file == ''
-
     - name: Run migration
       migrate_answers:
-        answer_file: "{{ answer_file | default(resolved_answer_file) }}"
+        answer_file: "{{ answer_file | default(omit) }}"
         output: "{{ output | default(omit) }}"
       register: migration_result
 
