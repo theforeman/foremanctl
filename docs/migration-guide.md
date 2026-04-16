@@ -54,21 +54,11 @@ foremanctl migrate
 
 ## Parameter Mappings
 
-| Old Parameter | New Parameter | Transformation |
-|---------------|---------------|----------------|
-| `foreman::db_host` | `database_host` | - |
-| `foreman::db_port` | `database_port` | - |
-| `foreman::db_database` | `foreman_database_name` | - |
-| `foreman::db_username` | `foreman_database_user` | - |
-| `foreman::db_password` | `foreman_database_password` | - |
-| `foreman::db_manage` | `database_mode` | true→"internal", false→"external" |
-| `foreman::initial_admin_username` | `foreman_initial_admin_username` | - |
-| `foreman::initial_admin_password` | `foreman_initial_admin_password` | - |
-| `foreman::server_ssl_cert` | `server_certificate` | - |
-| `foreman::server_ssl_key` | `server_key` | - |
-| `foreman::server_ssl_ca` | `ca_certificate` | - |
+The migrate command automatically maps foreman-installer parameters to foremanctl parameters. For a complete list of all parameter mappings, see the [Parameters documentation](parameters.md#mapping).
 
 ## Example
+
+Below is an example showing how the transformation works:
 
 ### Input (foreman-installer format)
 
