@@ -23,6 +23,17 @@ variables:
     action: append_unique
     type: FQDN
     parameter: --certificate-cname
+  pulp_extra_import_paths:
+    help: Extra file path that Pulp can use for content imports. Argument may be used more than once.
+    action: append_unique
+    type: AbsolutePath
+    parameter: --pulp-extra-import-path
+  pulp_extra_export_paths:
+    help: Extra file path that Pulp can use for conent exports. Argument may be used more than once.
+    action: append_unique
+    type: AbsolutePath
+    parameter: --pulp-extra-export-path
+
 
 include:
   - _certificate_source
