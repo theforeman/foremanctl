@@ -73,9 +73,9 @@ pulp_settings_other_env:
   PULP_CONTENT_WORKERS: "{{ pulp_content_service_worker_count }}"
   PULP_TOKEN_AUTH_DISABLED: "true"
   PULP_FLATPAK_INDEX: "true"
-  PULP_IMPORT_PATHS: >-
+  PULP_ALLOWED_IMPORT_PATHS: >-
     {{ pulp_default_import_path + pulp_extra_import_paths }}
-  PULP_EXPORT_PATHS: >-
+  PULP_ALLOWED_EXPORT_PATHS: >-
     {{ pulp_default_export_path + pulp_extra_export_paths }}
 
 pulp_settings_env: "{{ pulp_settings_database_env | ansible.builtin.combine(pulp_settings_other_env) }}"
