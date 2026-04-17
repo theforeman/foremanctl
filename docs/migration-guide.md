@@ -6,11 +6,28 @@ When upgrading from foreman-installer to foremanctl, the `foremanctl migrate` co
 
 This guide explains how to migrate your foreman-installer answer files to foremanctl configuration files.
 
+## Prerequisites
+
+Before migrating, ensure the following:
+
+1. **Foreman deployment using foreman-installer** - You should have an existing Foreman deployment has been installed using foreman-installer and has an answers file to migrate from.
+
+2. **foremanctl is installed** on the system:
+   ```bash
+   # Enable the foremanctl repository
+   dnf copr enable @theforeman/foremanctl rhel-9-x86_64
+
+   # Install foremanctl
+   dnf install foremanctl
+   ```
+
+   For more installation options, see the main [README](../README.md#packages).
+
 ## Migration Workflow
 
 1. **Generate the migrated configuration**:
    ```bash
-   foremanctl migrate --output /etc/foreman/config.yaml
+   foremanctl migrate --output /var/lib/foremanctl/parameters.yaml
    ```
 
 2. **Review the output** for any warnings about unmapped parameters
@@ -19,7 +36,7 @@ This guide explains how to migrate your foreman-installer answer files to forema
    ```bash
    foremanctl deploy
    ```
-   (foremanctl automatically loads configuration from `/etc/foreman/config.yaml`)
+   (foremanctl automatically loads configuration from `/var/lib/foremanctl/parameters.yaml`)
 
 ## Command Usage
 
@@ -27,14 +44,14 @@ This guide explains how to migrate your foreman-installer answer files to forema
 
 Migrate from the default location (reads the currently active scenario):
 ```bash
-foremanctl migrate --output /etc/foreman/config.yaml
+foremanctl migrate --output /var/lib/foremanctl/parameters.yaml
 ```
 
 ### Custom Answer File
 
 Migrate from a specific answer file:
 ```bash
-foremanctl migrate --answer-file /path/to/custom-answers.yaml --output /etc/foreman/config.yaml
+foremanctl migrate --answer-file /path/to/custom-answers.yaml --output /var/lib/foremanctl/parameters.yaml
 ```
 
 ### Output to stdout
@@ -79,7 +96,7 @@ foreman:
 ```yaml
 database_host: database.example.com
 database_port: 5432
-database_mode: internal
+database_mode: external
 foreman_database_name: foreman
 foreman_database_password: secret123
 foreman_database_user: foreman_user
@@ -91,11 +108,10 @@ foreman_initial_admin_username: admin
 
 When the migration completes, you may see warnings like:
 
-```
-Warning: The following parameters could not be mapped:
-  - katello::enable_ostree
-  - foreman::some_other_param
-```
+> [!WARNING]  
+> The following parameters could not be mapped:
+>  - katello::enable_ostree
+> - foreman::some_other_param
 
 These parameters need to be manually reviewed and added to the new configuration if needed. Check the [parameters documentation](parameters.md) for equivalent foremanctl parameters.
 
