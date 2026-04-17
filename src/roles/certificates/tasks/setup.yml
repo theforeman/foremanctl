@@ -1,0 +1,24 @@
+---
+- name: 'Install crypto dependencies'
+  ansible.builtin.package:
+    name:
+      - python3-cryptography
+    state: present
+
+- name: 'Create certs directory'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_certs }}"
+    state: directory
+    mode: '0755'
+
+- name: 'Create keys directory'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_keys }}"
+    state: directory
+    mode: '0755'
+
+- name: 'Create requests directory'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_requests }}"
+    state: directory
+    mode: '0755'

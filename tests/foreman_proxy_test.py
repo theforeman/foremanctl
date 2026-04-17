@@ -3,7 +3,7 @@ import json
 FOREMAN_PROXY_PORT = 8443
 
 def test_foreman_proxy_features(server, certificates, server_fqdn):
-    cmd = server.run(f"curl --cacert {certificates['ca_certificate']} --silent https://{server_fqdn}:{FOREMAN_PROXY_PORT}/features")
+    cmd = server.run(f"curl --cacert {certificates['server_ca_certificate']} --silent https://{server_fqdn}:{FOREMAN_PROXY_PORT}/features")
     assert cmd.succeeded
     features = json.loads(cmd.stdout)
     assert "logs" in features

@@ -4,52 +4,49 @@ This document describes how certificate generation and management works in forem
 
 ## User Guide
 
-### Certificate Sources
+### How Certificates Work
 
-foremanctl supports two certificate sources that determine how certificates are obtained:
+foremanctl automatically manages certificates for all deployed services. On first deploy, it detects existing certificates or generates new ones:
 
-**Default Source (`certificate_source: default`)**
-- Automatically generates self-signed certificates during deployment
-- Creates a complete PKI infrastructure with CA, server, and client certificates
-- Recommended for development and testing environments
+1. Fresh install — If no installer certificates exist, a self-signed CA and certificates are generated automatically.
+2. Existing foreman-installer certificates — If certificates from a previous `foreman-installer` deployment exist at `/root/ssl-build/`, they are automatically adopted and normalized into `/root/certificates/`. All certificates are copied and the original directory is backed up to `/root/ssl-build.bak/` so foremanctl can manage their full lifecycle going forward.
 
-**Installer Source (`certificate_source: installer`)**
-- Uses existing certificates from a previous `foreman-installer` deployment
-- Useful for migration scenarios where certificates already exist
-- Certificate files must be present at expected foreman-installer paths
+On subsequent deploys, existing certificates at `/root/certificates/` are reused and any new host certificates are issued as needed.
 
 ### Usage
 
-#### Using Auto-Generated Certificates (Default)
+#### Auto-Generated Certificates (Default)
 
 ```bash
 # Deploy with auto-generated certificates
 foremanctl deploy
-
-# Explicitly specify default certificate source
-foremanctl deploy --certificate-source=default
 ```
 
-#### Using Existing Installer Certificates
+No flags are needed — certificates are generated automatically on first deploy.
+
+#### Upgrading from foreman-installer
 
 ```bash
-# Use certificates from previous foreman-installer
-foremanctl deploy --certificate-source=installer
+# Just deploy — installer certificates at /root/ssl-build/ are auto-detected
+foremanctl deploy
 ```
 
-### Certificate Locations
+foremanctl detects the existing certificates, normalizes them into its canonical structure, and manages them going forward. The original CA is preserved so existing client trust is maintained. The original `/root/ssl-build/` directory is backed up to `/root/ssl-build.bak/`.
 
-After deployment, certificates are available at:
+#### Custom Server Certificates
 
-**Default Source:**
-- CA Certificate: `/root/certificates/certs/ca.crt`
-- Server Certificate: `/root/certificates/certs/<hostname>.crt`
-- Client Certificate: `/root/certificates/certs/<hostname>-client.crt`
+To use certificates signed by your own CA instead of foremanctl's self-signed certificates:
 
-**Installer Source:**
-- CA Certificate: `/root/ssl-build/katello-default-ca.crt`
-- Server Certificate: `/root/ssl-build/<hostname>/<hostname>-apache.crt`
-- Client Certificate: `/root/ssl-build/<hostname>/<hostname>-foreman-client.crt`
+```bash
+foremanctl deploy \
+  --server-certificate /path/to/server.crt \
+  --server-key /path/to/server.key \
+  --server-ca-certificate /path/to/ca-bundle.crt
+```
+
+All three flags must be provided together. The custom server certificate, key, and CA are copied into `/root/certificates/` and used for all server-facing TLS. An internal CA is still generated (or preserved from a previous deploy) to manage client certificates and the localhost certificate.
+
+On subsequent deploys, the custom certificates persist — you only need to pass the flags again if you want to update them (e.g., for certificate rotation).
 
 ### CNAME Support
 
@@ -71,71 +68,80 @@ To remove all CNAMEs from an existing certificate, use `--reset-certificate-cnam
 
 On each run the role compares the Subject Alternative Names in the existing server certificate against the desired list (hostname + any `--certificate-cname` values). If they differ, the CSR and certificate are regenerated automatically. This means both adding and removing CNAMEs are handled transparently without manual cleanup.
 
-### Current Limitations
+### Certificate Locations
 
-- Cannot provide custom certificate files during deployment
-- Fixed 20-year certificate validity period
-- Limited certificate customization options
+After deployment, certificates are at:
+
+```
+/root/certificates/
+├── certs/
+│   ├── ca.crt                 # CA certificate
+│   ├── server-ca.crt          # Server CA certificate
+│   ├── <hostname>.crt         # Server certificate
+│   ├── <hostname>-client.crt  # Client certificate
+│   └── localhost.crt          # Localhost certificate (for Candlepin)
+├── private/
+│   ├── ca.key                 # CA private key
+│   ├── ca.pwd                 # CA key password
+│   ├── <hostname>.key         # Server private key
+│   ├── <hostname>-client.key  # Client private key
+│   └── localhost.key          # Localhost private key
+└── requests/                  # Certificate signing requests
+```
 
 ## Internal Design
 
 ### Architecture
 
-The certificate system uses a modular Ansible role-based approach with clear separation between generation, validation, and usage phases.
+The certificate system uses a modular Ansible role-based approach with auto-detection, normalization, and clear separation between generation, validation, and usage phases.
 
 #### Certificate Role Structure
 
 ```
 src/roles/certificates/
 ├── tasks/
-│   ├── main.yml          # Entry point - orchestrates CA and certificate generation
-│   ├── ca.yml            # CA certificate generation
-│   └── issue.yml         # Host certificate issuance
-├── defaults/main.yml     # Default configuration variables
-└── templates/
-    ├── openssl.cnf.j2    # OpenSSL configuration template
-    └── serial.j2         # Serial number template
+│   ├── main.yml               # Entry point — auto-detects source and dispatches
+│   ├── setup.yml              # Shared directory/config setup
+│   ├── ca.yml                 # CA certificate generation (fresh installs)
+│   ├── issue.yml              # Host certificate issuance
+│   ├── normalize.yml          # Normalizes foreman-installer certs
+│   └── custom.yml             # Applies user-provided custom server certs
+└── defaults/main.yml          # Default configuration variables
 ```
 
-#### Certificate Generation Workflow
+#### Auto-Detection Workflow
 
-1. **CA Generation** (when `certificates_ca: true`):
-   - Install OpenSSL and create directory structure
-   - Generate 4096-bit RSA private key
-   - Create self-signed CA certificate (CN: "Foreman Self-signed CA", 20-year validity)
+1. **Check installer path**: If `/root/ssl-build/katello-default-ca.crt` exists, normalize installer certificates into the canonical structure.
+2. **Fresh install**: If no installer certificates found, generate a new self-signed CA and certificates.
+3. **Custom server certificates**: If `--server-certificate` flags are provided, copy the custom server cert, key, and CA into the canonical structure, overwriting any existing server certificate.
+4. **Issue certificates**: For each hostname in `certificates_hostnames`, issue server and client certificates if they don't already exist. Server certificate issuance is skipped if a custom certificate was already placed in step 3.
 
-2. **Host Certificate Issuance** (for each hostname in `certificates_hostnames`):
-   - Generate 4096-bit RSA private key
-   - Create certificate signing request (CSR) with Subject Alternative Names
-   - Include primary hostname and any additional CNAMEs from `certificate_cname`
-   - Sign certificate with CA (includes serverAuth/clientAuth extensions)
-   - Generate both server and client certificates per hostname
+#### Normalization
+
+Installer certificates are copied from `/root/ssl-build/` into the canonical `/root/certificates/` structure. The original directory is backed up to `/root/ssl-build.bak/`. This means:
+- Only one variable file (`src/vars/default_certificates.yml`) is needed
+- All downstream roles (httpd, foreman, candlepin, etc.) use the same paths
+- The `certificates` role always runs during deployment
+- The CA key is preserved, enabling foremanctl to issue new certificates using the original CA
 
 #### Variable System
 
-Certificate paths are defined in source-specific variable files:
+Certificate paths are defined in `src/vars/default_certificates.yml`:
 
-**Default Source (`src/vars/default_certificates.yml`):**
 ```yaml
 ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
 server_certificate: "{{ certificates_ca_directory }}/certs/{{ ansible_facts['fqdn'] }}.crt"
+server_ca_certificate: "{{ certificates_ca_directory }}/certs/server-ca.crt"
 client_certificate: "{{ certificates_ca_directory }}/certs/{{ ansible_facts['fqdn'] }}-client.crt"
-```
-
-**Installer Source (`src/vars/installer_certificates.yml`):**
-```yaml
-ca_certificate: "/root/ssl-build/katello-default-ca.crt"
-server_certificate: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-apache.crt"
-client_certificate: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-foreman-client.crt"
 ```
 
 #### Integration with Deployment
 
 In `src/playbooks/deploy/deploy.yaml`:
 
-1. **Variable Loading**: Loads certificate variables based on `certificate_source`
-2. **Certificate Generation**: Runs `certificates` role when `certificate_source == 'default'`
-3. **Certificate Validation**: Runs `certificate_checks` role for all sources
+1. **Variable Loading**: Loads `default_certificates.yml` (always the same paths)
+2. **Certificate Management**: Runs `certificates` role (auto-detects, normalizes, and generates as needed)
+3. **Certificate Validation**: Runs `certificate_checks` role
 4. **Service Configuration**: Passes certificate paths to dependent roles
 
 #### Validation System
@@ -152,18 +158,10 @@ The `certificate_checks` role uses `foreman-certificate-check` binary to validat
 - Key Size: 4096-bit RSA
 - Hash Algorithm: SHA256
 - Validity Period: 7300 days (20 years)
-- Extensions: serverAuth, clientAuth, nsSGC, msSGC
+- Server extensions: serverAuth
+- Client extensions: clientAuth
 
-**Directory Structure:**
-```
-/root/certificates/
-├── certs/           # Public certificates
-├── private/         # Private keys and passwords
-└── requests/        # Certificate signing requests
-```
-
-**OpenSSL Configuration:**
-- Custom configuration template supports SAN extensions
-- Multiple DNS entries supported: `subjectAltName = DNS:{{ certificates_hostname }}{% for cname in certificate_cname %},DNS:{{ cname }}{% endfor %}`
-- Uses OpenSSL's `req` and `ca` commands for generation and signing
-- CNAMEs configured via `certificate_cname` variable (list of additional DNS names)
+**Certificate Generation:**
+- Uses `community.crypto` Ansible modules for all certificate operations
+- SAN entries automatically derived from hostname and `certificates_cnames` variable
+- CNAMEs configured via `certificates_cnames` variable (list of additional DNS names)
