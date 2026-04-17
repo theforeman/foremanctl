@@ -27,6 +27,7 @@
     image: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
     state: quadlet
     healthcheck: pg_isready
+    healthcheck_interval: 5s
     sdnotify: healthy
     network: host
     volumes:
