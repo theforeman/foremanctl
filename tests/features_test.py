@@ -9,7 +9,7 @@ def test_foremanctl_features():
     for noise in ['PLAY [', 'TASK [', 'ok:', 'changed:', 'PLAY RECAP']:
         assert noise not in result.stdout, f"Ansible output not suppressed: found '{noise}'"
 
-    for feature in ['foreman', 'foreman-proxy', 'azure-rm']:
+    for feature in ['foreman', 'foreman-proxy', 'azure-rm', 'foreman-ansible']:
         assert feature in result.stdout, f"Expected feature '{feature}' in output"
 
 def test_foremanctl_features_list_enabled():
