@@ -54,6 +54,8 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-puma-workers` | Number of workers for Puma | `--foreman-foreman-service-puma-workers` |
 | `--pulp-worker-count` | Number of pulp workers | `--foreman-proxy-content-pulpcore-worker-count` |
 | `--tuning` | Sets the tuning profile | `--tuning` |
+| `--content-import-path` | Extra file path that Pulp can use for content imports | `--foreman-proxy-content-pulpcore-additional-import-paths` |
+| `--content-export-path` | Extra file path that Pulp can use for content exports | |
 | `--external-authentication={ipa,ipa_with_api}` | Enable configuration for external authentication via IPA for web UI (or webUI and API for `ipa_with_api`), expects the target machine to [be enrolled into FreeIPA/IDM](https://docs.theforeman.org/3.16/Configuring_User_Authentication/index-katello.html#enrolling-foreman-server-in-freeipa-domain) | `--foreman-ipa-authentication`<br/> `--foreman-ipa-authentication-api` |
 | `--external-authentication-pam-service` | PAM service used for host-based access control in IPA | `--foreman-pam-service` |
 
@@ -155,7 +157,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-proxy-bmc` | | | |
 | `--foreman-proxy-bmc-default-provider` | | | |
 | `--foreman-proxy-content-enable-ostree` | | | |
-| `--foreman-proxy-content-pulpcore-additional-import-paths` | | | |
 | `--foreman-proxy-http` | | | |
 | `--foreman-proxy-log` | | | |
 | `--foreman-proxy-log-level` | | | |

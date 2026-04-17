@@ -32,3 +32,4 @@ variables:
 
 include:
   - _flavor_features
+  - _pulp

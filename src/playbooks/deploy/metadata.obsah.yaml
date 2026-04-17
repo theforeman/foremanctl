@@ -53,6 +53,7 @@ constraints:
   forbidden_if:
     - [certificates_source, installer, [certificates_custom_server_certificate, certificates_custom_server_key, certificates_custom_server_ca_certificate]]
 
+
 include:
   - _certificate_source
   - _certificate_validity
@@ -60,3 +61,4 @@ include:
   - _database_connection
   - _tuning
   - _flavor_features
+  - _pulp
