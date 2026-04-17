@@ -147,7 +147,9 @@ jobs:
             --initial-admin-password=changeme \
             --initial-organization "Foreman CI" \
             --initial-location "Internet" \
-            --tuning development
+            --tuning development \
+            --content-import-path /custom/import \
+            --content-export-path /custom/export
       - name: Deploy features
         run: |
           ./foremanctl deploy \

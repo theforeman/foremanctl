@@ -1,10 +1,26 @@
 import json
+import os
 
 import pytest
+import yaml
 
 PULP_HOST = 'localhost'
 PULP_API_PORT = 24817
 PULP_CONTENT_PORT = 24816
+
+
+def load_pulp_paths_from_parameters():
+    test_dir = os.path.dirname(os.path.abspath(__file__))
+    foremanctl_dir = os.path.dirname(test_dir)
+    params_file = os.path.join(foremanctl_dir, '.var', 'lib', 'foremanctl', 'parameters.yaml')
+
+    if os.path.exists(params_file):
+        with open(params_file, 'r') as f:
+            params = yaml.safe_load(f)
+            import_paths = params.get('pulp_import_paths', [])
+            export_paths = params.get('pulp_export_paths', [])
+
+    return import_paths, export_paths
 
 
 @pytest.fixture(scope="module")
@@ -15,6 +31,11 @@ def pulp_status_curl(server):
 @pytest.fixture(scope="module")
 def pulp_status(pulp_status_curl):
     return json.loads(pulp_status_curl.stdout)
+
+
+@pytest.fixture(scope="module")
+def pulp_import_export_paths():
+    return load_pulp_paths_from_parameters()
 
 
 def test_pulp_api_service(server):
@@ -85,3 +106,40 @@ def test_pulp_worker_target(server):
 def test_pulp_manager_check(server):
     result = server.run("podman exec -ti pulp-api pulpcore-manager check --deploy")
     assert result.succeeded
+
+
+def test_pulp_import_export_settings(server, pulp_import_export_paths):
+    expected_import_paths, expected_export_paths = pulp_import_export_paths
+    py = 'from django.conf import settings; import json; print(json.dumps({"import": list(settings.ALLOWED_IMPORT_PATHS), "export": list(settings.ALLOWED_EXPORT_PATHS)}))'
+    result = server.run(f"podman exec pulp-api pulpcore-manager shell -c '{py}'")
+    assert result.succeeded
+    data = json.loads(result.stdout)
+    for path in expected_import_paths:
+        assert path in data['import'], f"expected {path} in Pulp ALLOWED_IMPORT_PATHS"
+    for path in expected_export_paths:
+        assert path in data['export'], f"expected {path} in Pulp ALLOWED_EXPORT_PATHS"
+
+
+def test_pulp_import_directories(server, pulp_import_export_paths):
+    import_paths, _ = pulp_import_export_paths
+    for path in import_paths:
+        assert server.file(path).is_directory
+
+
+def test_pulp_export_directories(server, pulp_import_export_paths):
+    _, export_paths = pulp_import_export_paths
+    for path in export_paths:
+        assert server.file(path).is_directory
+
+
+@pytest.mark.parametrize("container", ["pulp-api", "pulp-content", "pulp-worker-1"])
+def test_pulp_import_export_volume_mounts(server, container, pulp_import_export_paths):
+    import_paths, export_paths = pulp_import_export_paths
+    result = server.run(f"podman inspect {container} --format '{{{{json .Mounts}}}}'")
+    assert result.succeeded
+    mounts = json.loads(result.stdout)
+    destinations = [mount['Destination'] for mount in mounts]
+
+    for path in import_paths + export_paths:
+        mounted = path in destinations or any(path.startswith(d + '/') for d in destinations)
+        assert mounted, f"expected {path} to be mounted as a volume in {container}"
