@@ -22,12 +22,9 @@ pulp_pulp_url: "http://{{ ansible_facts['fqdn'] }}:24817"
 
 pulp_enable_analytics: false
 
-pulp_default_import_path:
-  - /var/lib/pulp/imports
-pulp_default_export_path:
-  - /var/lib/pulp/exports
-pulp_extra_import_paths: []
-pulp_extra_export_paths: []
+# pulp import/export paths
+pulp_import_paths: ["/var/lib/pulp/sync_imports", "/var/lib/pulp/imports"]
+pulp_export_paths: ["/var/lib/pulp/exports"]
 
 pulp_default_plugins:
   - pulp_certguard
@@ -74,9 +71,9 @@ pulp_settings_other_env:
   PULP_TOKEN_AUTH_DISABLED: "true"
   PULP_FLATPAK_INDEX: "true"
   PULP_ALLOWED_IMPORT_PATHS: >-
-    {{ pulp_default_import_path + pulp_extra_import_paths }}
+    {{ pulp_import_paths }}
   PULP_ALLOWED_EXPORT_PATHS: >-
-    {{ pulp_default_export_path + pulp_extra_export_paths }}
+    {{ pulp_export_paths }}
 
 pulp_settings_env: "{{ pulp_settings_database_env | ansible.builtin.combine(pulp_settings_other_env) }}"
 
