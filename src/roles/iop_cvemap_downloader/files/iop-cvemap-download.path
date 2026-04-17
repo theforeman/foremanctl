@@ -1,0 +1,9 @@
+[Unit]
+Description=Path unit for cvemap.xml manual file watcher
+
+[Path]
+PathChanged=/var/lib/foreman/cvemap.xml
+PathModified=/var/lib/foreman/cvemap.xml
+
+[Install]
+WantedBy=multi-user.target

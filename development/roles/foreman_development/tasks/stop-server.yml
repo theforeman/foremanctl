@@ -1,0 +1,6 @@
+---
+- name: Stop Foreman development service
+  ansible.builtin.systemd:
+    name: foreman-development
+    state: stopped
+    enabled: false

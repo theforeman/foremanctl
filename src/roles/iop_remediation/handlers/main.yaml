@@ -1,0 +1,5 @@
+---
+- name: Restart remediation
+  ansible.builtin.systemd:
+    name: iop-service-remediations-api
+    state: restarted

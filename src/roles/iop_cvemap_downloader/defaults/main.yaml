@@ -1,0 +1,8 @@
+---
+iop_cvemap_downloader_base_url: "https://security.access.redhat.com/data/meta/v1/cvemap.xml"
+iop_cvemap_downloader_timer_interval: "24h"
+iop_cvemap_downloader_output_dir: "/var/www/html/pub"
+iop_cvemap_downloader_relative_path: "iop/data/meta/v1/cvemap.xml"
+iop_cvemap_downloader_client_cert: "{{ iop_gateway_client_certificate }}"
+iop_cvemap_downloader_client_key: "{{ iop_gateway_client_key }}"
+iop_cvemap_downloader_client_ca: "{{ iop_gateway_client_ca_certificate }}"
