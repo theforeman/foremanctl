@@ -1,0 +1,18 @@
+---
+- name: Check Foreman API responds
+  ansible.builtin.uri:
+    url: "{{ foreman_url }}/api/v2/ping"
+    validate_certs: false
+    status_code: 200
+    timeout: 10
+  register: check_foreman_api_ping
+
+- name: Check Foreman tasks status
+  ansible.builtin.assert:
+    that:
+      - check_foreman_api_ping.json.results.katello.services.foreman_tasks.status == 'ok'
+    fail_msg: "Foreman tasks status: {{ check_foreman_api_ping.json.results.katello.services.foreman_tasks.status | default('unknown') }}"
+    success_msg: "Foreman tasks status: ok"
+  when:
+    - enabled_features | has_feature('content')
+    - check_foreman_api_ping.json.results.katello is defined

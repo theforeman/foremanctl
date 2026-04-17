@@ -1,0 +1,22 @@
+---
+- name: Run Foreman health checks
+  hosts: quadlet
+  become: true
+  gather_facts: true
+  vars_files:
+    - "../../vars/defaults.yml"
+    - "../../vars/flavors/{{ flavor }}.yml"
+    - "../../vars/base.yaml"
+  tasks:
+    - name: Execute health checks
+      ansible.builtin.include_role:
+        name: checks
+        tasks_from: execute_check
+      loop:
+        - check_services
+        - check_foreman_api
+    - name: Report status of health checks
+      ansible.builtin.fail:
+        msg: "{{ checks_results }}"
+      when:
+        - checks_results|default([])|length > 0
