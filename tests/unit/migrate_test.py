@@ -121,14 +121,14 @@ class TestFileOperations:
             os.unlink(temp_file)
 
     def test_load_empty_yaml(self):
-        """Test loading an empty YAML file"""
+        """Test loading an empty YAML file raises ValueError"""
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
             f.write('---\n')
             temp_file = f.name
 
         try:
-            result = migrate_answers.load_answer_file(temp_file)
-            assert result == {}
+            with pytest.raises(ValueError, match="is empty"):
+                migrate_answers.load_answer_file(temp_file)
         finally:
             os.unlink(temp_file)
 
