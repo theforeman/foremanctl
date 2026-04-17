@@ -1,0 +1,73 @@
+---
+- name: Deploy IOP Network
+  ansible.builtin.include_role:
+    name: iop_network
+
+- name: Deploy IOP Kafka service
+  ansible.builtin.include_role:
+    name: iop_kafka
+
+- name: Deploy IOP Ingress service
+  ansible.builtin.include_role:
+    name: iop_ingress
+
+- name: Deploy IOP Puptoo service
+  ansible.builtin.include_role:
+    name: iop_puptoo
+
+- name: Deploy IOP Yuptoo service
+  ansible.builtin.include_role:
+    name: iop_yuptoo
+
+- name: Deploy IOP Engine service
+  ansible.builtin.include_role:
+    name: iop_engine
+
+- name: Deploy IOP Gateway service
+  ansible.builtin.include_role:
+    name: iop_gateway
+
+- name: Register IOP Gateway as smart proxy
+  theforeman.foreman.smart_proxy:
+    name: "iop-gateway"
+    url: "https://localhost:24443"
+    server_url: "{{ iop_core_foreman_url }}"
+    username: "{{ iop_core_foreman_admin_username }}"
+    password: "{{ iop_core_foreman_admin_password }}"
+    validate_certs: false
+
+- name: Deploy IOP Inventory service
+  ansible.builtin.include_role:
+    name: iop_inventory
+
+- name: Deploy IOP Advisor service
+  ansible.builtin.include_role:
+    name: iop_advisor
+
+- name: Deploy IOP Remediation service
+  ansible.builtin.include_role:
+    name: iop_remediation
+
+- name: Deploy IOP CVE Map Downloader
+  ansible.builtin.include_role:
+    name: iop_cvemap_downloader
+
+- name: Deploy IOP VMAAS service
+  ansible.builtin.include_role:
+    name: iop_vmaas
+
+- name: Deploy IOP Vulnerability service
+  ansible.builtin.include_role:
+    name: iop_vulnerability
+
+- name: Deploy IOP Inventory Frontend
+  ansible.builtin.include_role:
+    name: iop_inventory_frontend
+
+- name: Deploy IOP Advisor Frontend
+  ansible.builtin.include_role:
+    name: iop_advisor_frontend
+
+- name: Deploy IOP Vulnerability Frontend
+  ansible.builtin.include_role:
+    name: iop_vulnerability_frontend

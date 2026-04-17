@@ -1,0 +1,5 @@
+---
+- name: Restart ingress
+  ansible.builtin.systemd:
+    name: iop-core-ingress
+    state: restarted
