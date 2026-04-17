@@ -37,6 +37,20 @@
     - assets
     - media
 
+- name: Create import directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ pulp_import_paths }}"
+
+- name: Create export directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ pulp_export_paths }}"
+
 - name: Create DB password secret
   containers.podman.podman_secret:
     state: present

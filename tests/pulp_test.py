@@ -73,3 +73,9 @@ def test_pulp_worker_target(server):
 def test_pulp_manager_check(server):
     result = server.run("podman exec -ti pulp-api pulpcore-manager check --deploy")
     assert result.succeeded
+
+def test_pulp_default_import_directory(server):
+    assert server.file("/var/lib/pulp/imports").is_directory
+
+def test_pulp_default_export_directory(server):
+    assert server.file("/var/lib/pulp/exports").is_directory
