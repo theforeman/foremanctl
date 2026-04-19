@@ -1,0 +1,11 @@
+---
+variables:
+  certificates_ca_validity_days:
+    help: Lifetime of the generated CA certificate, in days.
+    parameter: --cert-ca-validity-days
+  certificates_server_validity_days:
+    help: Lifetime of the generated TLS server certificate, in days.
+    parameter: --cert-server-validity-days
+  certificates_client_validity_days:
+    help: Lifetime of the generated TLS client certificate, in days.
+    parameter: --cert-client-validity-days
