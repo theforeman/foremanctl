@@ -32,6 +32,7 @@ variables:
 
 include:
   - _certificate_source
+  - _certificate_validity
   - _database_mode
   - _database_connection
   - _tuning

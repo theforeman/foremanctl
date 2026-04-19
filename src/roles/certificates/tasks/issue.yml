@@ -28,7 +28,7 @@
     ownca_path: "{{ certificates_ca_directory_certs }}/ca.crt"
     ownca_privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
     ownca_privatekey_passphrase: "{{ certificates_ca_password }}"
-    ownca_not_after: "+7300d"
+    ownca_not_after: "+{{ certificates_server_validity_days }}d"
 
 - name: 'Create client private key'
   community.crypto.openssl_privatekey:
@@ -58,4 +58,4 @@
     ownca_path: "{{ certificates_ca_directory_certs }}/ca.crt"
     ownca_privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
     ownca_privatekey_passphrase: "{{ certificates_ca_password }}"
-    ownca_not_after: "+7300d"
+    ownca_not_after: "+{{ certificates_client_validity_days }}d"

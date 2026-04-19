@@ -1,4 +1,7 @@
 ---
+certificates_ca_validity_days: 7300
+certificates_server_validity_days: 7300
+certificates_client_validity_days: 7300
 ca_key_password: "/root/ssl-build/katello-default-ca.pwd"
 ca_certificate: "/root/ssl-build/katello-default-ca.crt"
 ca_key: "/root/ssl-build/katello-default-ca.key"
