@@ -63,6 +63,14 @@ def test_https_pulp_auth(server, certificates, server_fqdn):
     assert cmd.stdout == '200'
 
 
+def test_https_pypi_endpoint(server, certificates, server_fqdn):
+    cmd = server.run(f"curl --cacert {certificates['server_ca_certificate']} https://{server_fqdn}/pypi/test/")
+    assert cmd.succeeded
+    # Verify route proxies to Pulp's Python plugin by checking for PythonDistribution in response
+    # (Rails or unconfigured routes would return different errors)
+    assert "PythonDistribution" in cmd.stdout
+
+
 def test_pub_directory_exists(server):
     pub_dir = server.file(HTTPD_PUB_DIR)
     assert pub_dir.exists
