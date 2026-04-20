@@ -68,6 +68,10 @@
     ProxyPassReverse {{ httpd_pulp_content_backend }}/pulp/content
   </Location>
 
+{% for httpd_pulp_snippet in httpd_enabled_pulp_snippets %}
+{% include httpd_pulp_snippet+'.j2' %}
+{% endfor %}
+
   <Location "/pulp/api/v3">
     RequestHeader unset REMOTE_USER
     RequestHeader unset REMOTE-USER
