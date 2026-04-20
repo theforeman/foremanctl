@@ -68,6 +68,7 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       FOREMANCTL_BASE_BOX: ${{ matrix.box }}
+      ANSIBLE_DIFF_ALWAYS: "true"
     name: "Tests (certificates: ${{ matrix.certificate_source }}, database: ${{ matrix.database }}, security: ${{ matrix.security }}, box: ${{ matrix.box }})"
     steps:
       - name: generate artifact suffix
