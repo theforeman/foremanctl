@@ -1,7 +1,6 @@
 ---
 certificates_ca_validity_days: 7300
-certificates_server_validity_days: 7300
-certificates_client_validity_days: 7300
+certificates_validity_days: 7300
 certificates_ca_directory: /root/certificates
 ca_key_password: "{{ certificates_ca_directory }}/private/ca.pwd"
 ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
