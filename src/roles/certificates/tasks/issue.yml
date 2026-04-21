@@ -29,6 +29,7 @@
     ownca_privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
     ownca_privatekey_passphrase: "{{ certificates_ca_password }}"
     ownca_not_after: "+{{ certificates_validity_days }}d"
+    force: "{{ certificates_renew | bool }}"
 
 - name: 'Create client private key'
   community.crypto.openssl_privatekey:
@@ -59,3 +60,4 @@
     ownca_privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
     ownca_privatekey_passphrase: "{{ certificates_ca_password }}"
     ownca_not_after: "+{{ certificates_validity_days }}d"
+    force: "{{ certificates_renew | bool }}"
