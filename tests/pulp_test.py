@@ -13,6 +13,16 @@ def pulp_status_curl(server):
 def pulp_status(pulp_status_curl):
     return json.loads(pulp_status_curl.stdout)
 
+@pytest.fixture(scope="module")
+def pulp_import_export_paths(server):
+        result = server.run("podman inspect pulp-api --format '{{json .Config.Env}}'")
+        assert result.succeeded
+        env = {v.split('=', 1)[0]: v.split('=', 1)[1] for v in json.loads(result.stdout)}
+        import_paths = json.loads(env['PULP_ALLOWED_IMPORT_PATHS'].replace("'", '"'))
+        export_paths = json.loads(env['PULP_ALLOWED_EXPORT_PATHS'].replace("'", '"'))
+        return import_paths, export_paths
+
+
 def test_pulp_api_service(server):
     pulp_api = server.service("pulp-api")
     assert pulp_api.is_running
@@ -74,8 +84,23 @@ def test_pulp_manager_check(server):
     result = server.run("podman exec -ti pulp-api pulpcore-manager check --deploy")
     assert result.succeeded
 
-def test_pulp_default_import_directory(server):
-    assert server.file("/var/lib/pulp/imports").is_directory
+def test_pulp_import_directories(server, pulp_import_export_paths):
+    import_paths, _ = pulp_import_export_paths
+    for path in import_paths:
+        assert server.file(path).is_directory
 
-def test_pulp_default_export_directory(server):
-    assert server.file("/var/lib/pulp/exports").is_directory
+def test_pulp_export_directories(server, pulp_import_export_paths):
+    _, export_paths = pulp_import_export_paths
+    for path in export_paths:
+        assert server.file(path).is_directory
+
+@pytest.mark.parametrize("container", ["pulp-api", "pulp-content", "pulp-worker-1"])
+def test_pulp_import_export_volume_mounts(server, container, pulp_import_export_paths):
+    import_paths, export_paths = pulp_import_export_paths
+    result = server.run(f"podman inspect {container} --format '{{{{json .Mounts}}}}'")
+    assert result.succeeded
+    mounts = json.loads(result.stdout)
+    destinations = [mount['Destination'] for mount in mounts]
+
+    for path in import_paths + export_paths:
+        assert path in destinations, f"expected {path} to be mounted as a volume in {container}"
