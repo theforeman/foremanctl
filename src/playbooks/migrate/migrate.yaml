@@ -1,8 +1,7 @@
 ---
 - name: Migrate foreman-installer answer file to foremanctl format
   hosts:
-    - localhost
-  connection: local
+    - quadlet
   gather_facts: false
   tasks:
     - name: Run migration

@@ -145,11 +145,12 @@ def apply_mappings(old_config):
             if new_value is not None:
                 result[new_key] = new_value
         else:
-            if isinstance(old_key, tuple):
-                param_name = '::'.join(old_key)
-            else:
-                param_name = str(old_key)
-            unmappable.append(param_name)
+            if old_value is not None:
+                if isinstance(old_key, tuple):
+                    param_name = '::'.join(old_key)
+                else:
+                    param_name = str(old_key)
+                unmappable.append(param_name)
 
     return {
         'mapped': result,

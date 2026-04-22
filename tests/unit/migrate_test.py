@@ -104,6 +104,23 @@ class TestParameterMapping:
         assert 'foreman::unknown_param' in result['unmappable']
         assert len(result['unmappable']) == 1
 
+    def test_skip_none_values_in_unmappable(self):
+        """Test that None values are not added to unmappable list"""
+        old_config = {
+            'foreman': {
+                'db_host': 'localhost',
+                'unknown_param': None,
+                'another_unknown': 'value'
+            }
+        }
+
+        result = migrate_answers.apply_mappings(old_config)
+
+        assert result['mapped']['database_host'] == 'localhost'
+        assert 'foreman::unknown_param' not in result['unmappable']
+        assert 'foreman::another_unknown' in result['unmappable']
+        assert len(result['unmappable']) == 1
+
 
 class TestFileOperations:
     """Test file loading and writing"""
