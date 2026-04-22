@@ -77,7 +77,7 @@
     server_url: "{{ foreman_proxy_foreman_server_url }}"
     oauth1_consumer_key: "{{ foreman_proxy_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ foreman_proxy_oauth_consumer_secret }}"
-    validate_certs: false
+    ca_path: "{{ foreman_proxy_foreman_ca_certificate | default(omit) }}"
 
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers
