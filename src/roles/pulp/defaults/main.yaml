@@ -66,6 +66,8 @@ pulp_settings_other_env:
   PULP_CONTENT_WORKERS: "{{ pulp_content_service_worker_count }}"
   PULP_TOKEN_AUTH_DISABLED: "true"
   PULP_FLATPAK_INDEX: "true"
+  PULP_ALLOWED_CONTENT_CHECKSUMS: >-
+    ['sha1', 'sha224', 'sha256', 'sha384', 'sha512']
 
 pulp_settings_env: "{{ pulp_settings_database_env | ansible.builtin.combine(pulp_settings_other_env) }}"
 
