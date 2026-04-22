@@ -4,7 +4,7 @@ import os
 import tempfile
 import yaml
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src/playbooks/migrate/library'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src/plugins/modules'))
 
 import migrate_answers
 
