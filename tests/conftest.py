@@ -14,9 +14,8 @@ SSH_CONFIG='./.tmp/ssh-config'
 
 
 def pytest_addoption(parser):
-    parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'installer'), help="Where to obtain certificates from")
-    parser.addoption("--database-mode", action="store", default="internal", choices=('internal', 'external'), help="Whether the database is internal or external")
     parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'installer', 'custom'), help="Certificate source used during deployment")
+    parser.addoption("--database-mode", action="store", default="internal", choices=('internal', 'external'), help="Whether the database is internal or external")
 
 
 @pytest.fixture(scope="module")
@@ -45,8 +44,11 @@ def client_fqdn(client_hostname):
 
 
 @pytest.fixture(scope="module")
-def certificates(pytestconfig, server_fqdn):
-    source = pytestconfig.getoption("certificate_source")
+def certificates(certificate_source, server_fqdn):
+    if certificate_source == 'custom':
+        source = 'default'
+    else:
+        source = certificate_source
     env = Environment(loader=FileSystemLoader("."), autoescape=select_autoescape())
     template = env.get_template(f"./src/vars/{source}_certificates.yml")
     context = {'certificates_ca_directory': '/root/certificates',

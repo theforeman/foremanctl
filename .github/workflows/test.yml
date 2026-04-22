@@ -118,7 +118,7 @@ jobs:
           ./foremanctl pull-images
       - name: Run deployment
         run: |
-          ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com --database-ssl-ca $(pwd)/.var/lib/foremanctl/db-ca.crt --database-ssl-mode verify-full' || '' }} ${{ matrix.certificate_source == 'custom' && '--tls-server-certificate /root/custom-certificates/certs/quadlet.example.com.crt --tls-server-key /root/custom-certificates/private/quadlet.example.com.key --tls-server-ca-certificate /root/custom-certificates/certs/server-ca.crt' || '' }} --foreman-initial-admin-password=changeme --initial-organization "Foreman CI" --initial-location "Internet" --tuning development
+          ./foremanctl deploy --certificate-source=${{ matrix.certificate_source == 'custom' && 'default' || matrix.certificate_source }} ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com --database-ssl-ca $(pwd)/.var/lib/foremanctl/db-ca.crt --database-ssl-mode verify-full' || '' }} ${{ matrix.certificate_source == 'custom' && '--tls-server-certificate /root/custom-certificates/certs/quadlet.example.com.crt --tls-server-key /root/custom-certificates/private/quadlet.example.com.key --tls-server-ca-certificate /root/custom-certificates/certs/server-ca.crt' || '' }} --foreman-initial-admin-password=changeme --initial-organization "Foreman CI" --initial-location "Internet" --tuning development
       - name: Add optional feature - hammer
         run: |
           ./foremanctl deploy --add-feature hammer
