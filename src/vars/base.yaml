@@ -36,5 +36,6 @@ hammer_foreman_server_url: "{{ foreman_url }}"
 
 foreman_proxy_plugins: "{{ enabled_features | features_to_foreman_proxy_plugins }}"
 foreman_proxy_foreman_server_url: "{{ foreman_url }}"
+foreman_proxy_foreman_ca_certificate: "{{ foreman_ca_certificate }}"
 foreman_proxy_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
 foreman_proxy_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
