@@ -32,15 +32,15 @@ variables:
   certificates_custom_server_certificate:
     help: Path to a custom server certificate to use instead of the auto-generated one.
     type: AbsolutePath
-    parameter: --tls-server-certificate
+    parameter: --certificate-server-certificate
   certificates_custom_server_key:
     help: Path to the private key for the custom server certificate.
     type: AbsolutePath
-    parameter: --tls-server-key
+    parameter: --certificate-server-key
   certificates_custom_server_ca_certificate:
     help: Path to the CA certificate that signed the custom server certificate.
     type: AbsolutePath
-    parameter: --tls-server-ca-certificate
+    parameter: --certificate-server-ca-certificate
 
 constraints:
   required_together:

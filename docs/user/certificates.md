@@ -57,9 +57,9 @@ To use certificates signed by your own CA instead of foremanctl's self-signed ce
 
 ```bash
 foremanctl deploy \
-  --tls-server-certificate /path/to/server.crt \
-  --tls-server-key /path/to/server.key \
-  --tls-server-ca-certificate /path/to/ca-bundle.crt
+  --certificate-server-certificate /path/to/server.crt \
+  --certificate-server-key /path/to/server.key \
+  --certificate-server-ca-certificate /path/to/ca-bundle.crt
 ```
 
 All three flags must be provided together. The custom server certificate, key, and CA are copied into `/root/certificates/` and used for all server-facing TLS. An internal CA is still generated (or preserved from a previous deploy) to manage client certificates and the localhost certificate.
@@ -114,7 +114,7 @@ src/roles/certificates/
 For `certificate_source: default`:
 
 1. **CA Generation**: Generate self-signed CA certificate and key with 20-year validity
-2. **Custom Server Certificates** (optional): If `--tls-server-certificate` flags are provided, copy the custom server cert, key, and CA bundle into place
+2. **Custom Server Certificates** (optional): If `--certificate-server-certificate` flags are provided, copy the custom server cert, key, and CA bundle into place
 3. **Host Certificate Issuance**: For each hostname, generate server and client certificates signed by the internal CA (skipped for server cert if custom cert provided)
 
 For `certificate_source: installer`:
