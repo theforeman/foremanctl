@@ -4,6 +4,7 @@
     - database
   become: true
   vars_files:
+    - "../../../src/vars/defaults.yml"
     - "../../../src/vars/database.yml"
   vars:
     certificates_hostnames:
