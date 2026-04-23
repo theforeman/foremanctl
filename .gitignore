@@ -47,3 +47,7 @@ foremanctl-*.tar.gz
 
 .var
 .tmp
+
+# AI
+.agents/settings.local.json
+.agents/settings.json
