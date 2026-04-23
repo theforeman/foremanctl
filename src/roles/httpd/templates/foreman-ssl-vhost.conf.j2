@@ -68,6 +68,16 @@
     ProxyPassReverse {{ httpd_pulp_content_backend }}/pulp/content
   </Location>
 
+{% if 'pulp_python' in (pulp_enabled_plugins | default([])) %}
+  <Location "/pypi">
+    RequestHeader unset X-CLIENT-CERT
+    RequestHeader set X-CLIENT-CERT "%{SSL_CLIENT_CERT}s" env=SSL_CLIENT_CERT
+    RequestHeader set X-FORWARDED-PROTO expr=%{REQUEST_SCHEME}
+    ProxyPass {{ httpd_pulp_api_backend }}/pypi timeout=600
+    ProxyPassReverse {{ httpd_pulp_api_backend }}/pypi
+  </Location>
+{% endif %}
+
   <Location "/pulp/api/v3">
     RequestHeader unset REMOTE_USER
     RequestHeader unset REMOTE-USER
