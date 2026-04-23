@@ -1,6 +1,9 @@
 ---
 :foreman_url: {{ foreman_url }}
 
+:hosts:
+  - {{ foreman_name }}
+
 :ssl_certificate: /etc/foreman/client_cert.pem
 :ssl_ca_file: /etc/foreman/katello-default-ca.crt
 :ssl_priv_key: /etc/foreman/client_key.pem
