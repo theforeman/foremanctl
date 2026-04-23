@@ -1,4 +1,15 @@
 ---
+- name: 'Load CA data'
+  ansible.builtin.slurp:
+    src: "{{ certificates_ca_directory_keys }}/ca.pwd"
+  register: _certificates_ca_key_password
+  no_log: true
+
+- name: 'Parse CA data'
+  ansible.builtin.set_fact:
+    certificates_ca_password: "{{ _certificates_ca_key_password['content'] | b64decode }}"
+  no_log: true
+
 - name: 'Create server private key'
   community.crypto.openssl_privatekey:
     path: "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}.key"
@@ -29,6 +40,8 @@
     ownca_privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
     ownca_privatekey_passphrase: "{{ certificates_ca_password }}"
     ownca_not_after: "+7300d"
+  when:
+    - (certificates_custom_server_certificate is not defined) or (certificates_hostname == 'localhost')
 
 - name: 'Create client private key'
   community.crypto.openssl_privatekey:
