@@ -23,11 +23,7 @@ def test_candlepin_status(server, certificates):
 def test_tls(server):
     result = server.run('nmap --script +ssl-enum-ciphers localhost -p 23443')
     result = result.stdout
-    # We don't enable TLSv1.3 by default yet. TLSv1.3 support was added in tomcat 7.0.92
-    # But tomcat 7.0.76 is the latest version available on EL7
-    assert "TLSv1.3" not in result
-
-    # Test that TLSv1.2 is enabled
+    assert "TLSv1.3" in result
     assert "TLSv1.2" in result
 
     # Test that older TLS versions are disabled

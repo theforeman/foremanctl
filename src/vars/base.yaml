@@ -5,8 +5,6 @@ certificates_hostnames:
 
 certificates_ca_password_file: "{{ obsah_state_path }}/certificates-ca-password"
 certificates_ca_password: "{{ lookup('ansible.builtin.password', certificates_ca_password_file, chars=['ascii_letters', 'digits']) }}"
-candlepin_keystore_password_file: "{{ obsah_state_path }}/candlepin-keystore-password"
-candlepin_keystore_password: "{{ lookup('ansible.builtin.password', candlepin_keystore_password_file, chars=['ascii_letters', 'digits']) }}"
 candlepin_oauth_secret_file: "{{ obsah_state_path }}/candlepin-oauth-secret"
 candlepin_oauth_secret: "{{ lookup('ansible.builtin.password', candlepin_oauth_secret_file, chars=['ascii_letters', 'digits'], length=32) }}"
 
