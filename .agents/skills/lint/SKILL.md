@@ -28,11 +28,11 @@ Run linting tools across the foremanctl codebase.
 ansible-lint must be run from within each data directory separately, matching CI behavior:
 
 ```bash
-cd src; ansible-lint
+cd src; ../.venv/bin/ansible-lint
 ```
 
 ```bash
-cd development; ansible-lint
+cd development; ../.venv/bin/ansible-lint
 ```
 
 ### 2. Categorize Results

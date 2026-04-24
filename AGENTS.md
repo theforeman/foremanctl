@@ -13,15 +13,6 @@ The repository contains two main wrapper scripts:
 
 Both scripts wrap `obsah`, which provides a structured way to run Ansible playbooks with parameter validation and persistence.
 
-## Supported Platforms
-
-- **Target OS**: CentOS Stream 9, RHEL 9
-- **Ansible**: ansible-core 2.16+
-- **Python**: 3.9+ (as shipped with CentOS Stream 9)
-- **Podman**: As shipped with CentOS Stream 9 / RHEL 9
-- **Vagrant**: 2.2+ (for development VMs)
-- **Virtualization**: Libvirt with Vagrant Libvirt provider
-
 ## AI Specifications
 
 Detailed agent, command, rule, and skill specifications live under `.agents/`. These are tool-agnostic Markdown files with YAML frontmatter that any AI tool can parse or ignore.
@@ -35,63 +26,15 @@ Detailed agent, command, rule, and skill specifications live under `.agents/`. T
   skills/          # Domain knowledge references
 ```
 
-### Agents (`.agents/agents/`)
+### Workflow Chains
 
-Focused personas with defined scopes and technology boundaries:
+These pipelines connect skills into end-to-end workflows. Individual skill files don't describe these relationships.
 
-| Agent | Purpose |
-|-------|---------|
-| `ansible-playbook-agent` | Playbooks and `metadata.obsah.yaml` files |
-| `ansible-role-agent` | Roles, tasks, handlers, templates |
-| `feature-agent` | End-to-end feature addition workflow |
-| `test-agent` | pytest/testinfra tests |
-| `lint-agent` | ansible-lint and Python linting |
-| `podman-agent` | Podman quadlets, containers, secrets |
-| `code-review-agent` | Read-only code review and analysis |
-
-### Commands (`.agents/commands/`)
-
-Reusable workflows invoked by name:
-
-| Command | Purpose |
-|---------|---------|
-| `add-feature` | Register and configure a new foremanctl feature |
-| `run-tests` | Run the test suite with prerequisites check |
-| `lint` | Run ansible-lint across both codebases |
-| `deploy-dev` | Full development environment setup |
-| `add-playbook` | Scaffold a new CLI subcommand |
-| `catchup` | Branch activity summary since last contribution |
-
-### Rules (`.agents/rules/`)
-
-Hard constraints all agents must follow:
-
-| Rule | Scope |
-|------|-------|
-| `ansible-conventions` | Playbook/role naming, FQCN, metadata requirements |
-| `podman-secrets` | Secret naming conventions and required labels |
-| `testing-conventions` | Test file naming, fixture usage, patterns |
-| `safety` | Destructive command blocklist, production awareness |
-| `project-structure` | Canonical directory layout reference |
-
-### Skills (`.agents/skills/`)
-
-Domain knowledge references (each has `SKILL.md` and optional `references/`):
-
-| Skill | Domain |
-|-------|--------|
-| `obsah-metadata` | `metadata.obsah.yaml` schema deep reference |
-| `podman-quadlets` | Podman quadlets, images, systemd integration |
-| `foreman-ecosystem` | Foreman, Katello, Pulp, Candlepin, Smart Proxy |
-| `ansible-collections` | Galaxy collections, installation, FQCN usage |
-| `certificate-management` | Certificate sources, roles, and configuration |
+TODO
 
 ## Development Setup
 
-```bash
-./setup-environment
-source .venv/bin/activate
-```
+See [Development Guide](DEVELOPMENT.md) for the instructions.
 
 This creates a virtualenv and installs all dependencies including ansible-core 2.16+.
 
@@ -136,17 +79,6 @@ See [docs/developer/testing.md](docs/developer/testing.md) for the full testing 
 # Run ansible-lint (configured in .ansible-lint)
 cd src; ansible-lint
 cd development; ansible-lint
-```
-
-### Building
-
-```bash
-# Build distribution tarball
-make dist
-
-# Build collections (automatically happens as part of dist)
-make build/collections/foremanctl
-make build/collections/forge
 ```
 
 ## Architecture
@@ -267,32 +199,14 @@ Tests use pytest with testinfra for infrastructure testing. Key fixtures in `tes
 
 Test files follow the pattern `tests/<component>_test.py` and use testinfra's server fixture to execute commands and check system state.
 
-## Build System
-
-The Makefile handles:
-
-- Building the distribution tarball (includes git archive + collections)
-- Installing Ansible collections into `build/collections/foremanctl` and `build/collections/forge`
-- Collections are installed from `src/requirements-lock.yml` (preferred) or `src/requirements.yml`
-
-## Inventories
-
-Three inventory configurations:
-
-- `localhost` - Local deployment
-- `local_vagrant` - Vagrant-managed local VMs
-- `broker.py` - Dynamic inventory script
-
 ## Developer Documentation
 
-Additional developer guides (from PR [#435](https://github.com/theforeman/foremanctl/pull/435)):
-
-- [How to Add a Feature](docs/developer/how-to-add-a-feature.md) -- end-to-end feature development
-- [Playbooks and Roles](docs/developer/playbooks-and-roles.md) -- playbook structure, naming, metadata
-- [Testing](docs/developer/testing.md) -- test infrastructure, fixtures, patterns
+- [How to Add a Feature](docs/developer/how-to-add-a-feature.md) - end-to-end feature development
+- [Playbooks and Roles](docs/developer/playbooks-and-roles.md) - playbook structure, naming, metadata
+- [Testing](docs/developer/testing.md) - test infrastructure, fixtures, patterns
 - [Deployment Design](docs/developer/deployment.md) -- deployment architecture
-- [Container Image Builds](docs/developer/container-image-builds.md) -- image naming, registries
-- [Development Environment](docs/developer/development-environment.md) -- dev setup with git Foreman
+- [Container Image Builds](docs/developer/container-image-builds.md) - image naming, registries
+- [Development Environment](docs/developer/development-environment.md) - dev setup with git Foreman
 
 ## Git Workflow
 
