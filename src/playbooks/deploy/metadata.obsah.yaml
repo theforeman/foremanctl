@@ -33,18 +33,25 @@ variables:
     help: Path to a custom server certificate to use instead of the auto-generated one.
     type: AbsolutePath
     parameter: --certificate-server-certificate
+    persist: false
   certificates_custom_server_key:
     help: Path to the private key for the custom server certificate.
     type: AbsolutePath
     parameter: --certificate-server-key
+    persist: false
   certificates_custom_server_ca_certificate:
     help: Path to the CA certificate that signed the custom server certificate.
     type: AbsolutePath
     parameter: --certificate-server-ca-certificate
+    persist: false
 
 constraints:
   required_together:
     - [certificates_custom_server_certificate, certificates_custom_server_key, certificates_custom_server_ca_certificate]
+  required_if:
+    - [certificates_source, custom_server, [certificates_custom_server_certificate, certificates_custom_server_key, certificates_custom_server_ca_certificate]]
+  mutually_exclusive_if:
+    - [certificates_source, installer, [certificates_custom_server_certificate, certificates_custom_server_key, certificates_custom_server_ca_certificate]]
 
 include:
   - _certificate_source

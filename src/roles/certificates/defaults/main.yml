@@ -1,4 +1,5 @@
 ---
+certificates_source: default
 certificates_ca: true
 certificates_ca_directory: /root/certificates # Change this to /var/lib?
 certificates_ca_directory_keys: "{{ certificates_ca_directory }}/private"

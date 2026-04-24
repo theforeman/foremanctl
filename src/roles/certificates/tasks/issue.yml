@@ -1,36 +1,38 @@
 ---
-- name: 'Create server private key'
-  community.crypto.openssl_privatekey:
-    path: "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}.key"
-    type: "{{ certificates_algorithm_type }}"
-    size: "{{ certificates_algorithm_size }}"
-    mode: '0600'
-
-- name: 'Create server CSR'
-  community.crypto.openssl_csr:
-    path: "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}.csr"
-    privatekey_path: "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}.key"
-    common_name: "{{ certificates_hostname }}"
-    subject_alt_name: "{{ _certificates_desired_server_sans }}"
-    key_usage:
-      - digitalSignature
-      - keyEncipherment
-    extended_key_usage:
-      - serverAuth
-  vars:
-    _certificates_desired_server_sans: "{{ (([certificates_hostname] + certificates_cnames) | map('regex_replace', '^', 'DNS:') | list) }}"
-
-- name: 'Sign server certificate'
-  community.crypto.x509_certificate:
-    path: "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}.crt"
-    csr_path: "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}.csr"
-    provider: ownca
-    ownca_path: "{{ certificates_ca_directory_certs }}/ca.crt"
-    ownca_privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
-    ownca_privatekey_passphrase: "{{ certificates_ca_password }}"
-    ownca_not_after: "+7300d"
+- name: Issue server certificate
   when:
-    - (certificates_custom_server_certificate is not defined) or (certificates_hostname == 'localhost')
+    - (certificates_source != 'custom_server') or (certificates_hostname == 'localhost')
+  block:
+    - name: 'Create server private key'
+      community.crypto.openssl_privatekey:
+        path: "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}.key"
+        type: "{{ certificates_algorithm_type }}"
+        size: "{{ certificates_algorithm_size }}"
+        mode: '0600'
+
+    - name: 'Create server CSR'
+      community.crypto.openssl_csr:
+        path: "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}.csr"
+        privatekey_path: "{{ certificates_ca_directory_keys }}/{{ certificates_hostname }}.key"
+        common_name: "{{ certificates_hostname }}"
+        subject_alt_name: "{{ _certificates_desired_server_sans }}"
+        key_usage:
+          - digitalSignature
+          - keyEncipherment
+        extended_key_usage:
+          - serverAuth
+      vars:
+        _certificates_desired_server_sans: "{{ (([certificates_hostname] + certificates_cnames) | map('regex_replace', '^', 'DNS:') | list) }}"
+
+    - name: 'Sign server certificate'
+      community.crypto.x509_certificate:
+        path: "{{ certificates_ca_directory_certs }}/{{ certificates_hostname }}.crt"
+        csr_path: "{{ certificates_ca_directory_requests }}/{{ certificates_hostname }}.csr"
+        provider: ownca
+        ownca_path: "{{ certificates_ca_directory_certs }}/ca.crt"
+        ownca_privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
+        ownca_privatekey_passphrase: "{{ certificates_ca_password }}"
+        ownca_not_after: "+7300d"
 
 - name: 'Create client private key'
   community.crypto.openssl_privatekey:
