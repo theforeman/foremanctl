@@ -1,0 +1,5 @@
+---
+- name: Restart kafka
+  ansible.builtin.systemd:
+    name: iop-core-kafka
+    state: restarted

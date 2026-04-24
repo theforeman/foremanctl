@@ -1,0 +1,10 @@
+---
+- name: Restart inventory
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: restarted
+  loop:
+    - iop-core-host-inventory-migrate
+    - iop-core-host-inventory
+    - iop-core-host-inventory-api
+    - iop-core-host-inventory-cleanup

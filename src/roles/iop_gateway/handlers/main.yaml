@@ -1,0 +1,5 @@
+---
+- name: Restart gateway
+  ansible.builtin.systemd:
+    name: iop-core-gateway
+    state: restarted

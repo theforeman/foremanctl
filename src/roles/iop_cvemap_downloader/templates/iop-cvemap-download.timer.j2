@@ -1,0 +1,9 @@
+[Unit]
+Description=Timer for cvemap.xml download
+
+[Timer]
+OnActiveSec=0
+OnUnitActiveSec={{ iop_cvemap_downloader_timer_interval }}
+
+[Install]
+WantedBy=timers.target
