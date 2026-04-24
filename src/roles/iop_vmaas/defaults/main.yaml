@@ -1,0 +1,12 @@
+---
+iop_vmaas_container_image: "quay.io/iop/vmaas"
+iop_vmaas_container_tag: "foreman-3.18"
+iop_vmaas_registry_auth_file: /etc/foreman/registry-auth.json
+
+iop_vmaas_database_name: vmaas_db
+iop_vmaas_database_user: vmaas_admin
+iop_vmaas_database_password: CHANGEME
+iop_vmaas_database_host: "host.containers.internal"
+iop_vmaas_database_port: "5432"
+
+iop_vmaas_client_ca_certificate: "/root/certificates/certs/ca.crt"

@@ -1,0 +1,2 @@
+---
+iop_core_foreman_url: "https://{{ ansible_facts['fqdn'] }}"
