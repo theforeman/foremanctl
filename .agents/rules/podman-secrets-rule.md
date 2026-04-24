@@ -13,45 +13,6 @@ references:
 
 Configuration files and credentials for containerized services are stored as Podman secrets and mounted into containers. All new secrets must follow these conventions.
 
-## Naming
-
-### Config Files
-
-```shell
-<role_namespace>-<filename>-<extension>
-```
-
-When additional application context is needed:
-
-```shell
-<role_namespace>-<app>-<filename>-<extension>
-```
-
-### Strings (Passwords, Tokens, etc.)
-
-```shell
-<role_namespace>-<descriptive_name>
-```
-
-When additional application context is needed:
-
-```shell
-<role_namespace>-<app>-<descriptive_name>
-```
-
-## Required Labels
-
-Every Podman secret MUST include these labels:
-
-### Config Files
-
-- `filename` -- the file name with extension (e.g. `settings.yml`)
-- `app` -- the application that uses the configuration file (e.g. `foreman`)
-
-### Strings
-
-- `app` -- the application that uses the string (e.g. `postgresql`)
-
 ## Inspection Commands
 
 ```bash

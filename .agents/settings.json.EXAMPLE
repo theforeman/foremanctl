@@ -8,7 +8,6 @@
       "Bash(pytest)",
       "Bash(make)",
       "Bash(git diff)",
-      "Bash(source .venv/bin/activate)"
     ]
   }
 }
