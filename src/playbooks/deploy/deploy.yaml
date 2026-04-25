@@ -6,7 +6,7 @@
   vars_files:
     - "../../vars/defaults.yml"
     - "../../vars/flavors/{{ flavor }}.yml"
-    - "../../vars/{{ certificate_source }}_certificates.yml"
+    - "../../vars/{{ certificates_source }}_certificates.yml"
     - "../../vars/images.yml"
     - "../../vars/tuning/{{ tuning }}.yml"
     - "../../vars/database.yml"
@@ -16,12 +16,12 @@
     - role: pre_install
     - role: checks
     - role: certificates
-      when: "certificate_source == 'default'"
+      when: "certificates_source in ['default', 'custom_server']"
     - role: certificate_checks
       vars:
         certificate_checks_certificate: "{{ server_certificate }}"
         certificate_checks_key: "{{ server_key }}"
-        certificate_checks_ca: "{{ ca_certificate }}"
+        certificate_checks_ca: "{{ server_ca_certificate }}"
     - role: postgresql
       when:
         - database_mode == 'internal'
