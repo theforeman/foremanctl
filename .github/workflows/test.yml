@@ -174,7 +174,7 @@ jobs:
           ./forge setup-repositories
       - name: Run deployment
         run: |
-          ./forge deploy-dev --foreman-development-enabled-plugin foreman_ansible
+          ./forge deploy-dev --foreman-development-enabled-plugin foreman_ansible --add-feature foreman-proxy --add-feature hammer
       - name: Setup upterm session
         if: ${{ failure() }}
         uses: owenthereal/action-upterm@v1
