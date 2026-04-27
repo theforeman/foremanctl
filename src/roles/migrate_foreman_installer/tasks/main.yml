@@ -1,0 +1,128 @@
+---
+- name: Check if installer certificates exist
+  ansible.builtin.stat:
+    path: /root/ssl-build/katello-default-ca.crt
+  register: migrate_foreman_installer_installer_ca
+
+- name: Normalize installer certificates
+  when: migrate_foreman_installer_installer_ca.stat.exists
+  block:
+    - name: Install crypto dependencies
+      ansible.builtin.package:
+        name:
+          - python3-cryptography
+        state: present
+
+    - name: Create certificate directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ migrate_foreman_installer_ca_directory }}/certs"
+        - "{{ migrate_foreman_installer_ca_directory }}/private"
+        - "{{ migrate_foreman_installer_ca_directory }}/requests"
+
+    - name: Copy CA certificate from installer
+      ansible.builtin.copy:
+        src: /root/ssl-build/katello-default-ca.crt
+        dest: "{{ migrate_foreman_installer_ca_directory }}/certs/ca.crt"
+        remote_src: true
+        mode: '0444'
+
+    - name: Copy server CA certificate from installer
+      ansible.builtin.copy:
+        src: /root/ssl-build/katello-server-ca.crt
+        dest: "{{ migrate_foreman_installer_ca_directory }}/certs/server-ca.crt"
+        remote_src: true
+        mode: '0444'
+
+    - name: Create CA bundle from installer certificates
+      ansible.builtin.assemble:
+        src: "{{ migrate_foreman_installer_ca_directory }}/certs"
+        dest: "{{ migrate_foreman_installer_ca_directory }}/certs/ca-bundle.crt"
+        regexp: '(ca|server-ca)\.crt$'
+        mode: '0444'
+
+    - name: Copy CA key from installer
+      ansible.builtin.copy:
+        src: /root/ssl-build/katello-default-ca.key
+        dest: "{{ migrate_foreman_installer_ca_directory }}/private/ca.key"
+        remote_src: true
+        mode: '0440'
+
+    - name: Copy CA password from installer
+      ansible.builtin.copy:
+        src: /root/ssl-build/katello-default-ca.pwd
+        dest: "{{ migrate_foreman_installer_ca_directory }}/private/ca.pwd"
+        remote_src: true
+        mode: '0600'
+
+    - name: Read CA password from installer
+      ansible.builtin.slurp:
+        src: /root/ssl-build/katello-default-ca.pwd
+      register: migrate_foreman_installer_installer_ca_password
+      no_log: true
+
+    - name: Persist CA password to foremanctl configuration
+      ansible.builtin.lineinfile:
+        path: /var/lib/foremanctl/parameters.yaml
+        regexp: '^certificates_ca_password:'
+        line: "certificates_ca_password: \"{{ migrate_foreman_installer_installer_ca_password.content | b64decode | trim }}\""
+        create: true
+        mode: '0600'
+      no_log: true
+
+    - name: Copy server certificate from installer
+      ansible.builtin.copy:
+        src: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-apache.crt"
+        dest: "{{ migrate_foreman_installer_ca_directory }}/certs/{{ ansible_facts['fqdn'] }}.crt"
+        remote_src: true
+        mode: '0444'
+
+    - name: Copy server key from installer
+      ansible.builtin.copy:
+        src: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-apache.key"
+        dest: "{{ migrate_foreman_installer_ca_directory }}/private/{{ ansible_facts['fqdn'] }}.key"
+        remote_src: true
+        mode: '0440'
+
+    - name: Copy client certificate from installer
+      ansible.builtin.copy:
+        src: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-foreman-client.crt"
+        dest: "{{ migrate_foreman_installer_ca_directory }}/certs/{{ ansible_facts['fqdn'] }}-client.crt"
+        remote_src: true
+        mode: '0444'
+
+    - name: Copy client key from installer
+      ansible.builtin.copy:
+        src: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-foreman-client.key"
+        dest: "{{ migrate_foreman_installer_ca_directory }}/private/{{ ansible_facts['fqdn'] }}-client.key"
+        remote_src: true
+        mode: '0440'
+
+    - name: Copy localhost certificate from installer
+      ansible.builtin.copy:
+        src: /root/ssl-build/localhost/localhost-tomcat.crt
+        dest: "{{ migrate_foreman_installer_ca_directory }}/certs/localhost.crt"
+        remote_src: true
+        mode: '0444'
+
+    - name: Copy localhost key from installer
+      ansible.builtin.copy:
+        src: /root/ssl-build/localhost/localhost-tomcat.key
+        dest: "{{ migrate_foreman_installer_ca_directory }}/private/localhost.key"
+        remote_src: true
+        mode: '0440'
+
+    - name: Backup installer certificate directory
+      ansible.builtin.copy:
+        src: /root/ssl-build/
+        dest: /root/ssl-build.bak/
+        remote_src: true
+        mode: preserve
+
+    - name: Remove original installer certificate directory
+      ansible.builtin.file:
+        path: /root/ssl-build
+        state: absent
