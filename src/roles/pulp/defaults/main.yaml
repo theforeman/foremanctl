@@ -26,7 +26,6 @@ pulp_pulp_url: "http://{{ ansible_facts['fqdn'] }}:24817"
 
 pulp_enable_analytics: false
 
-# pulp import/export paths
 pulp_import_paths: ["/var/lib/pulp/sync_imports", "/var/lib/pulp/imports"]
 pulp_export_paths: ["/var/lib/pulp/exports"]
 

@@ -29,16 +29,7 @@ variables:
   foreman_development_github_username:
     help: GitHub username to add as additional remote for git checkouts
     action: store
-  pulp_import_paths:
-    help: Extra file path that Pulp can use for content imports. Argument may be used more than once.
-    action: append_unique
-    type: AbsolutePath
-    parameter: --content-import-path
-  pulp_export_paths:
-    help: Extra file path that Pulp can use for content exports. Argument may be used more than once.
-    action: append_unique
-    type: AbsolutePath
-    parameter: --content-export-path
 
 include:
   - _flavor_features
+  - _pulp

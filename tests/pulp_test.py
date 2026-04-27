@@ -15,12 +15,12 @@ def pulp_status(pulp_status_curl):
 
 @pytest.fixture(scope="module")
 def pulp_import_export_paths(server):
-        result = server.run("podman inspect pulp-api --format '{{json .Config.Env}}'")
-        assert result.succeeded
-        env = {v.split('=', 1)[0]: v.split('=', 1)[1] for v in json.loads(result.stdout)}
-        import_paths = json.loads(env['PULP_ALLOWED_IMPORT_PATHS'].replace("'", '"'))
-        export_paths = json.loads(env['PULP_ALLOWED_EXPORT_PATHS'].replace("'", '"'))
-        return import_paths, export_paths
+    result = server.run("podman inspect pulp-api --format '{{json .Config.Env}}'")
+    assert result.succeeded
+    env = {v.split('=', 1)[0]: v.split('=', 1)[1] for v in json.loads(result.stdout)}
+    import_paths = json.loads(env['PULP_ALLOWED_IMPORT_PATHS'].replace("'", '"'))
+    export_paths = json.loads(env['PULP_ALLOWED_EXPORT_PATHS'].replace("'", '"'))
+    return import_paths, export_paths
 
 
 def test_pulp_api_service(server):

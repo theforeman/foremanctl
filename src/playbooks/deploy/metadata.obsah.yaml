@@ -34,7 +34,6 @@ variables:
     type: AbsolutePath
     parameter: --content-export-path
 
-
 include:
   - _certificate_source
   - _database_mode
