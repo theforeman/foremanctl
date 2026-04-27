@@ -27,3 +27,10 @@
       vars:
         _unmappable_warning: "Warning: {{ migration_result.unmappable | length }} parameter(s) could not be mapped - see warnings above"
         _output_file_msg: "Output written to: {{ migration_result.output_file }}"
+
+- name: Migrate foreman-installer certificates
+  hosts:
+    - quadlet
+  become: true
+  roles:
+    - role: migrate_certificates
