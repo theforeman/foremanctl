@@ -142,7 +142,7 @@ For `certificate_source: custom_server`:
 
 #### Migration from foreman-installer
 
-The `foremanctl migrate` command includes a `migrate_certificates` role that normalizes `foreman-installer` certificates into the canonical `/root/certificates/` structure. It also reads the CA passphrase from the installer's password file and persists it into foremanctl's configuration so that subsequent deploys can issue new certificates using the original CA.
+The `foremanctl migrate` command includes a `migrate_foreman_installer` role that normalizes `foreman-installer` certificates into the canonical `/root/certificates/` structure. It also reads the CA passphrase from the installer's password file and persists it into foremanctl's configuration so that subsequent deploys can issue new certificates using the original CA.
 
 #### Variable System
 

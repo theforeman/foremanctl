@@ -33,4 +33,4 @@
     - quadlet
   become: true
   roles:
-    - role: migrate_certificates
+    - role: migrate_foreman_installer
