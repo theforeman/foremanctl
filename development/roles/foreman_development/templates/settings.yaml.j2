@@ -9,9 +9,9 @@
 
 # The following values are used for providing default settings during db migrate
 :oauth_active: true
-:oauth_map_users: true
-:oauth_consumer_key: {{ candlepin_oauth_key | default('katello') }}
-:oauth_consumer_secret: {{ candlepin_oauth_secret }}
+:oauth_map_users: false
+:oauth_consumer_key: {{ foreman_development_oauth_consumer_key }}
+:oauth_consumer_secret: {{ foreman_development_oauth_consumer_secret }}
 
 # SSL settings
 :ssl_ca_file: {{ foreman_development_cert_dir }}/proxy_ca.pem

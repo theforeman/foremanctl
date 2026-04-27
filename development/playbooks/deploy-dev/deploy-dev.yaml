@@ -39,6 +39,10 @@
     - role: httpd
     - role: pulp
     - role: foreman_development
+      vars:
+        foreman_development_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
+        foreman_development_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+        foreman_development_candlepin_oauth_secret: "{{ candlepin_oauth_secret }}"
   post_tasks:
     - name: Display development environment information
       ansible.builtin.debug:
