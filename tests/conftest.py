@@ -50,7 +50,8 @@ def client_fqdn(client_hostname):
 def certificates(certificate_source, server_fqdn):
     env = Environment(loader=FileSystemLoader("."), autoescape=select_autoescape())
     template = env.get_template(f"./src/vars/{certificate_source}_certificates.yml")
-    context = {'ansible_facts': {'fqdn': server_fqdn}}
+    context = {'certificates_ca_directory': '/var/lib/foremanctl/certs',
+               'ansible_facts': {'fqdn': server_fqdn}}
     # we have vars that refer to other vars, so load them once and then re-render the template
     context.update(yaml.safe_load(template.render(context)))
     return yaml.safe_load(template.render(context))

@@ -71,9 +71,9 @@ foremanctl deploy --certificate-source=installer
 After deployment, certificates are available at:
 
 **Default Source:**
-- CA Certificate: `/root/certificates/certs/ca.crt`
-- Server Certificate: `/root/certificates/certs/<hostname>.crt`
-- Client Certificate: `/root/certificates/certs/<hostname>-client.crt`
+- CA Certificate: `/var/lib/foremanctl/certs/certs/ca.crt`
+- Server Certificate: `/var/lib/foremanctl/certs/certs/<hostname>.crt`
+- Client Certificate: `/var/lib/foremanctl/certs/certs/<hostname>-client.crt`
 
 **Custom Server Source:**
 - CA Certificate: `/root/certificates/certs/ca.crt` (internal CA)
@@ -234,10 +234,10 @@ The `certificate_checks` role uses `foreman-certificate-check` binary to validat
 
 **Directory Structure:**
 ```
-/root/certificates/
-├── certs/           # Public certificates (ca.crt, server-ca.crt, ca-bundle.crt, *.crt)
-├── private/         # Private keys and passwords (ca.key, ca.pwd, *.key)
-└── requests/        # Certificate signing requests (*.csr)
+/var/lib/foremanctl/certs/
+├── certs/           # Public certificates
+├── private/         # Private keys and passwords
+└── requests/        # Certificate signing requests
 ```
 
 **SANs and CNAMEs:**
