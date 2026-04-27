@@ -1,0 +1,15 @@
+---
+help: |
+  Migrate foreman-installer answer file to foremanctl configuration format.
+
+  This command reads foreman-installer answer files and converts them to the
+  new foremanctl configuration format. Unmappable parameters are reported
+  as warnings but do not cause the command to fail.
+
+variables:
+  answer_file:
+    help: Path to the foreman-installer answer file to migrate. If not specified, attempts to read from the default location.
+    persist: false
+  output:
+    help: Path where the migrated configuration should be written. If not specified, outputs to stdout.
+    persist: false
