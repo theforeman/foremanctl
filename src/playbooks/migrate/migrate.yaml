@@ -1,0 +1,29 @@
+---
+- name: Migrate foreman-installer answer file to foremanctl format
+  hosts:
+    - quadlet
+  gather_facts: false
+  tasks:
+    - name: Run migration
+      migrate_answers:
+        answer_file: "{{ answer_file | default(omit) }}"
+        output: "{{ output | default(omit) }}"
+        working_directory: "{{ lookup('env', 'PWD') }}"
+      register: migration_result
+
+    - name: Display migrated configuration to stdout
+      when: migration_result.output_content | default('') != ''
+      ansible.builtin.debug:
+        msg: "{{ migration_result.output_content }}"
+
+    - name: Display migration results
+      ansible.builtin.debug:
+        msg:
+          - "Migration completed successfully!"
+          - "Mapped parameters: {{ migration_result.mapped_count }}"
+          - "Unmappable parameters: {{ migration_result.unmappable_count }}"
+          - "{{ _unmappable_warning if migration_result.unmappable | length > 0 else '' }}"
+          - "{{ _output_file_msg if migration_result.output_file is defined else '' }}"
+      vars:
+        _unmappable_warning: "Warning: {{ migration_result.unmappable | length }} parameter(s) could not be mapped - see warnings above"
+        _output_file_msg: "Output written to: {{ migration_result.output_file }}"

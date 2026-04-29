@@ -114,8 +114,8 @@
 
 - name: Wait for smart-proxy development server to be accessible
   ansible.builtin.uri:
-    url: "http://{{ ansible_facts['fqdn'] }}:8000/features"
-    validate_certs: false
+    url: "https://{{ ansible_facts['fqdn'] }}:8443/features"
+    ca_path: "{{ foreman_development_ca_certificate }}"
   until: foreman_development_smart_proxy_status.status == 200
   retries: 30
   delay: 5
@@ -130,7 +130,7 @@
 - name: Wait for Foreman development server to be accessible
   ansible.builtin.uri:
     url: '{{ foreman_development_url }}/api/v2/ping'
-    validate_certs: false
+    ca_path: '{{ foreman_development_ca_certificate }}'
   until: foreman_development_status.status == 200
   retries: 30
   delay: 5
@@ -141,9 +141,9 @@
     name: "{{ ansible_facts['fqdn'] }}-dev"
     url: "https://{{ ansible_facts['fqdn'] }}:8443"
     server_url: "{{ foreman_development_url }}"
-    username: "{{ foreman_development_admin_user }}"
-    password: "{{ foreman_development_admin_password }}"
-    validate_certs: false
+    oauth1_consumer_key: "{{ foreman_development_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ foreman_development_oauth_consumer_secret }}"
+    ca_path: "{{ foreman_development_ca_certificate }}"
 
 - name: Stop development services after smart proxy registration
   ansible.builtin.systemd:

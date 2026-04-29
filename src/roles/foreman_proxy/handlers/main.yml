@@ -7,7 +7,7 @@
 - name: Refresh Foreman Proxy
   theforeman.foreman.smart_proxy_refresh:
     smart_proxy: "{{ foreman_proxy_name }}"
-    server_url: "{{ foreman_url }}"
-    oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
-    oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
-    validate_certs: false
+    server_url: "{{ foreman_proxy_foreman_server_url }}"
+    oauth1_consumer_key: "{{ foreman_proxy_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ foreman_proxy_oauth_consumer_secret }}"
+    ca_path: "{{ foreman_proxy_foreman_ca_certificate | default(omit) }}"

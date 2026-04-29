@@ -110,7 +110,7 @@ jobs:
           ./foremanctl pull-images
       - name: Run deployment
         run: |
-          ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com --database-ssl-ca $(pwd)/.var/lib/foremanctl/db-ca.crt --database-ssl-mode verify-full' || '' }} --foreman-initial-admin-password=changeme --tuning development
+          ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }} ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com --database-ssl-ca $(pwd)/.var/lib/foremanctl/db-ca.crt --database-ssl-mode verify-full' || '' }} --foreman-initial-admin-password=changeme --initial-organization "Foreman CI" --initial-location "Internet" --tuning development
       - name: Add optional feature - hammer
         run: |
           ./foremanctl deploy --add-feature hammer
@@ -174,7 +174,7 @@ jobs:
           ./forge setup-repositories
       - name: Run deployment
         run: |
-          ./forge deploy-dev --foreman-development-enabled-plugin foreman_ansible
+          ./forge deploy-dev --foreman-development-enabled-plugin foreman_ansible --add-feature foreman-proxy --add-feature hammer
       - name: Setup upterm session
         if: ${{ failure() }}
         uses: owenthereal/action-upterm@v1
@@ -219,7 +219,7 @@ jobs:
           ./foremanctl pull-images
       - name: Run deployment
         run: |
-          ./foremanctl deploy --foreman-initial-admin-password=changeme --tuning development
+          ./foremanctl deploy --foreman-initial-admin-password=changeme --initial-organization "Foreman CI" --initial-location "Internet" --tuning development
       - name: Add optional feature - hammer
         run: |
           ./foremanctl deploy --add-feature hammer

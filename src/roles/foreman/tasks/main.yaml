@@ -116,6 +116,8 @@
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
       - 'foreman-db-ca,type=mount,target={{ foreman_database_ssl_ca_path }}'
     env:
+      SEED_ORGANIZATION: "{{ foreman_initial_organization }}"
+      SEED_LOCATION: "{{ foreman_initial_location }}"
       FOREMAN_PUMA_THREADS_MIN: "{{ foreman_puma_threads_min }}"
       FOREMAN_PUMA_THREADS_MAX: "{{ foreman_puma_threads_max }}"
       FOREMAN_PUMA_WORKERS: "{{ foreman_puma_workers }}"
@@ -203,6 +205,9 @@
       - 'foreman-ca-cert,type=mount,target=/etc/foreman/katello-default-ca.crt'
       - 'foreman-client-cert,type=mount,target=/etc/foreman/client_cert.pem'
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
+    env:
+      SEED_ORGANIZATION: "{{ foreman_initial_organization }}"
+      SEED_LOCATION: "{{ foreman_initial_location }}"
     quadlet_options:
       - |
         [Unit]
@@ -242,6 +247,8 @@
     network: host
     env:
       FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
+      SEED_ORGANIZATION: "{{ foreman_initial_organization }}"
+      SEED_LOCATION: "{{ foreman_initial_location }}"
     secrets:
       - 'foreman-database-url,type=env,target=DATABASE_URL'
       - 'foreman-seed-admin-user,type=env,target=SEED_ADMIN_USER'
@@ -267,7 +274,7 @@
 - name: Wait for Foreman service to be accessible
   ansible.builtin.uri:
     url: '{{ foreman_url }}/api/v2/ping'
-    validate_certs: false
+    ca_path: '{{ foreman_ca_certificate }}'
   until: foreman_status.status == 200
   retries: 60
   delay: 5
@@ -286,7 +293,7 @@
 - name: Wait for Foreman tasks to be ready
   ansible.builtin.uri:
     url: '{{ foreman_url }}/api/v2/ping'
-    validate_certs: false
+    ca_path: '{{ foreman_ca_certificate }}'
   until:
     - foreman_tasks_status.status == 200
     - foreman_tasks_status.json['results']['katello']['services']['foreman_tasks']['status'] == 'ok'
@@ -303,4 +310,4 @@
     server_url: "{{ foreman_url }}"
     oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
-    validate_certs: false
+    ca_path: "{{ foreman_ca_certificate }}"

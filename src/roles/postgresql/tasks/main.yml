@@ -43,6 +43,8 @@
         WantedBy=default.target foreman.target
         [Unit]
         PartOf=foreman.target
+  notify:
+    - Restart postgresql
 
 - name: Configure SSL certificates
   when:

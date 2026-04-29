@@ -14,6 +14,8 @@ foreman_development_client_key: "{{ foreman_client_key }}"
 foreman_development_admin_user: "admin"
 foreman_development_admin_password: "changeme"
 
+foreman_development_candlepin_url: "https://localhost:23443/candlepin"
+
 foreman_development_git_repo: "https://github.com/theforeman/foreman.git"
 foreman_development_git_revision: "develop"
 foreman_development_github_username: ""

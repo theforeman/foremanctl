@@ -77,6 +77,8 @@ pulp_settings_other_env:
     {{ pulp_import_paths }}
   PULP_ALLOWED_EXPORT_PATHS: >-
     {{ pulp_export_paths }}
+  PULP_ALLOWED_CONTENT_CHECKSUMS: >-
+    ['sha1', 'sha224', 'sha256', 'sha384', 'sha512']
 
 pulp_settings_env: "{{ pulp_settings_database_env | ansible.builtin.combine(pulp_settings_other_env) }}"
 

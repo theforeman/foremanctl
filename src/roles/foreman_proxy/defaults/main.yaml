@@ -17,3 +17,5 @@ foreman_proxy_plugins: []
 foreman_proxy_features: "{{ foreman_proxy_base_features + foreman_proxy_plugins }}"
 foreman_proxy_available_features: "{{ [] | available_foreman_proxy_plugins }}"
 foreman_proxy_disabled_features: "{{ foreman_proxy_available_features | difference(foreman_proxy_features) }}"
+
+foreman_proxy_foreman_server_url: "https://{{ ansible_facts['fqdn'] }}"

@@ -7,6 +7,12 @@ variables:
     help: Initial username for the admin user.
   foreman_initial_admin_password:
     help: Initial password for the admin user.
+  foreman_initial_organization:
+    help: Name of an initial organization.
+    parameter: --initial-organization
+  foreman_initial_location:
+    help: Name of an initial location.
+    parameter: --initial-location
   foreman_puma_workers:
     help: Number of workers for Puma.
   pulp_worker_count:
@@ -36,6 +42,7 @@ variables:
 
 include:
   - _certificate_source
+  - _certificate_validity
   - _database_mode
   - _database_connection
   - _tuning

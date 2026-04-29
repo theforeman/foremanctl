@@ -6,9 +6,9 @@
   :katello_applicability: true
 
   :candlepin:
-    :url: {{ candlepin_url | default('https://localhost:23443/candlepin') }}
+    :url: {{ foreman_development_candlepin_url }}
     :oauth_key: katello
-    :oauth_secret: {{ candlepin_oauth_secret }}
+    :oauth_secret: {{ foreman_development_candlepin_oauth_secret }}
     :ca_cert_file: {{ foreman_development_cert_dir }}/proxy_ca.pem
 
   :candlepin_events:
