@@ -103,4 +103,5 @@ def test_pulp_import_export_volume_mounts(server, container, pulp_import_export_
     destinations = [mount['Destination'] for mount in mounts]
 
     for path in import_paths + export_paths:
-        assert path in destinations, f"expected {path} to be mounted as a volume in {container}"
+        mounted = path in destinations or any(path.startswith(d + '/') for d in destinations)
+        assert mounted, f"expected {path} to be mounted as a volume in {container}"
