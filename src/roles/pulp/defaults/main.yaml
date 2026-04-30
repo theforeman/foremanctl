@@ -13,8 +13,8 @@ pulp_api_service_worker_count: "{{ ([4, ansible_facts['processor_nproc']] | min)
 pulp_volumes: >-
   {{
     ['/var/lib/pulp:/var/lib/pulp'] +
-    ((pulp_default_import_paths + pulp_import_paths) | map('regex_replace', '^(.+)$', '\1:\1') | list) +
-    ((pulp_default_export_paths + pulp_export_paths) | map('regex_replace', '^(.+)$', '\1:\1') | list)
+    ((pulp_import_paths) | map('regex_replace', '^(.+)$', '\1:\1') | list) +
+    ((pulp_export_paths) | map('regex_replace', '^(.+)$', '\1:\1') | list)
   }}
 
 pulp_api_container_name: pulp-api
