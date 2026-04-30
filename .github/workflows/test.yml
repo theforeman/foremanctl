@@ -120,6 +120,9 @@ jobs:
       - name: Add optional features - azure-rm, google and remote-execution
         run: |
           ./foremanctl deploy --add-feature azure-rm --add-feature google --add-feature remote-execution
+      - name: Run health check
+        run: |
+          ./foremanctl health
       - name: Run tests
         run: |
           ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }} --database-mode=${{ matrix.database }}"
@@ -241,6 +244,9 @@ jobs:
       - name: Run deployment
         run: |
           ./foremanctl deploy
+      - name: Run health check
+        run: |
+          ./foremanctl health
       - name: Run tests
         run: |
           ./forge test
