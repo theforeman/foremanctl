@@ -1,0 +1,9 @@
+---
+- name: Deploy postgresql image unit
+  ansible.builtin.include_role:
+    name: images
+    tasks_from: deploy_image.yaml
+  vars:
+    images_definition:
+      name: postgresql
+      image: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"

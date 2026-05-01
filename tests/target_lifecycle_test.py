@@ -1,6 +1,6 @@
 import time
 
-FOREMAN_PING_RETRIES = 60
+FOREMAN_PING_RETRIES = 90
 FOREMAN_PING_DELAY = 10
 CURL_CMD = "curl --silent --output /dev/null"
 

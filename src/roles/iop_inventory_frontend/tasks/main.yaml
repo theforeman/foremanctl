@@ -1,10 +1,15 @@
 ---
-- name: Pull Inventory Frontend container image
-  containers.podman.podman_image:
-    name: "{{ iop_inventory_frontend_container_image }}:{{ iop_inventory_frontend_container_tag }}"
-    state: present
-  environment:
-    REGISTRY_AUTH_FILE: "{{ iop_inventory_frontend_registry_auth_file }}"
+- name: Deploy iop-inventory-frontend image
+  ansible.builtin.include_tasks: image.yaml
+
+- name: Run daemon reload for image unit
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Pull Inventory Frontend image via quadlet unit
+  ansible.builtin.systemd:
+    name: iop-inventory-frontend-image.service
+    state: started
 
 - name: Ensure parent assets directory exists
   ansible.builtin.file:

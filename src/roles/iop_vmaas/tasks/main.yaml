@@ -1,16 +1,12 @@
 ---
+- name: Deploy iop-vmaas image
+  ansible.builtin.include_tasks: image.yaml
+
 - name: Create VMAAS client CA certificate secret
   containers.podman.podman_secret:
     state: present
     name: iop-service-vmaas-reposcan-client-ca-cert
     path: "{{ iop_vmaas_client_ca_certificate }}"
-
-- name: Pull VMAAS container image
-  containers.podman.podman_image:
-    name: "{{ iop_vmaas_container_image }}:{{ iop_vmaas_container_tag }}"
-    state: present
-  environment:
-    REGISTRY_AUTH_FILE: "{{ iop_vmaas_registry_auth_file }}"
 
 - name: Create VMAAS database secrets
   containers.podman.podman_secret:
@@ -39,7 +35,7 @@
 - name: Deploy VMAAS Reposcan container
   containers.podman.podman_container:
     name: iop-service-vmaas-reposcan
-    image: "{{ iop_vmaas_container_image }}:{{ iop_vmaas_container_tag }}"
+    image: iop-vmaas.image
     state: quadlet
     quadlet_dir: /etc/containers/systemd
     network: iop-core-network
@@ -72,14 +68,13 @@
         Description=VMAAS Reposcan Service
         [Service]
         Restart=on-failure
-        Environment=REGISTRY_AUTH_FILE=/etc/foreman/registry-auth.json
         [Install]
         WantedBy=default.target
 
 - name: Deploy VMAAS Webapp-Go container
   containers.podman.podman_container:
     name: iop-service-vmaas-webapp-go
-    image: "{{ iop_vmaas_container_image }}:{{ iop_vmaas_container_tag }}"
+    image: iop-vmaas.image
     state: quadlet
     quadlet_dir: /etc/containers/systemd
     network: iop-core-network
@@ -104,7 +99,6 @@
         After=iop-service-vmaas-reposcan.service
         [Service]
         Restart=on-failure
-        Environment=REGISTRY_AUTH_FILE=/etc/foreman/registry-auth.json
         [Install]
         WantedBy=default.target
 
