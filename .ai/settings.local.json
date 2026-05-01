@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(obsah)",
+      "Bash(find)",
+      "Bash(grep)",
+      "Bash(ansible-lint)",
+      "Bash(pytest)",
+      "Bash(make)",
+      "Bash(git diff)",
+      "Bash(source .venv/bin/activate)"
+    ]
+  }
+}
