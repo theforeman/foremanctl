@@ -46,6 +46,26 @@
   notify:
     - Restart candlepin
 
+- name: Create the podman secret for Tomcat certificate
+  containers.podman.podman_secret:
+    state: present
+    name: candlepin-tomcat-cert
+    path: "{{ candlepin_tomcat_certificate }}"
+    labels:
+      app: tomcat
+  notify:
+    - Restart candlepin
+
+- name: Create the podman secret for Tomcat key
+  containers.podman.podman_secret:
+    state: present
+    name: candlepin-tomcat-key
+    path: "{{ candlepin_tomcat_key }}"
+    labels:
+      app: tomcat
+  notify:
+    - Restart candlepin
+
 - name: Create the podman secret for Tomcat keystore
   containers.podman.podman_secret:
     state: present
