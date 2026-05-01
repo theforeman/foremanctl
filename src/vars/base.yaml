@@ -25,6 +25,7 @@ httpd_server_ca_certificate: "{{ server_ca_certificate }}"
 httpd_client_ca_certificate: "{{ client_ca_certificate }}"
 httpd_server_certificate: "{{ server_certificate }}"
 httpd_server_key: "{{ server_key }}"
+httpd_enabled_pulp_snippets: "{{ ['pypi'] if 'pulp_python' in pulp_enabled_plugins else [] }}"
 
 pulp_content_origin: "https://{{ ansible_facts['fqdn'] }}"
 pulp_pulp_url: "https://{{ ansible_facts['fqdn'] }}"

@@ -3,6 +3,7 @@ httpd_pulp_api_backend: http://localhost:24817
 httpd_pulp_content_backend: http://localhost:24816
 httpd_foreman_backend: http://localhost:3000
 httpd_pub_dir: /var/www/html/pub
+httpd_enabled_pulp_snippets: []
 
 # External authentication configuration
 httpd_external_authentication: "{{ external_authentication | default(None) }}"
