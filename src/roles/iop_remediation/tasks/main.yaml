@@ -1,10 +1,6 @@
 ---
-- name: Pull Remediation container image
-  containers.podman.podman_image:
-    name: "{{ iop_remediation_container_image }}:{{ iop_remediation_container_tag }}"
-    state: present
-  environment:
-    REGISTRY_AUTH_FILE: "{{ iop_remediation_registry_auth_file }}"
+- name: Deploy iop-remediation image
+  ansible.builtin.include_tasks: image.yaml
 
 - name: Create Remediation database username secret
   containers.podman.podman_secret:
@@ -44,7 +40,7 @@
 - name: Deploy Remediation API container
   containers.podman.podman_container:
     name: iop-service-remediations-api
-    image: "{{ iop_remediation_container_image }}:{{ iop_remediation_container_tag }}"
+    image: iop-remediation.image
     state: quadlet
     network:
       - iop-core-network
@@ -56,7 +52,6 @@
       ADVISOR_HOST: "http://iop-service-advisor-backend-api:8000"
       INVENTORY_HOST: "http://iop-core-host-inventory-api:8081"
       DB_SSL_ENABLED: "false"
-      REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
     secrets:
       - 'iop-service-remediations-db-username,type=env,target=DB_USERNAME'
       - 'iop-service-remediations-db-password,type=env,target=DB_PASSWORD'

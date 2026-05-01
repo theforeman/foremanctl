@@ -1,10 +1,6 @@
 ---
-- name: Pull Gateway container image
-  containers.podman.podman_image:
-    name: "{{ iop_gateway_container_image }}:{{ iop_gateway_container_tag }}"
-    state: present
-  environment:
-    REGISTRY_AUTH_FILE: "{{ iop_gateway_registry_auth_file }}"
+- name: Deploy iop-gateway image
+  ansible.builtin.include_tasks: image.yaml
 
 - name: Create Gateway server certificate secret
   containers.podman.podman_secret:
@@ -58,14 +54,12 @@
 - name: Deploy Gateway container
   containers.podman.podman_container:
     name: iop-core-gateway
-    image: "{{ iop_gateway_container_image }}:{{ iop_gateway_container_tag }}"
+    image: iop-gateway.image
     state: quadlet
     network:
       - iop-core-network
     publish:
       - "127.0.0.1:24443:8443"
-    env:
-      REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
     secrets:
       - 'iop-core-gateway-server-cert,target=/etc/nginx/certs/nginx.crt,mode=0440,uid=998,gid=998,type=mount'
       - 'iop-core-gateway-server-key,target=/etc/nginx/certs/nginx.key,mode=0440,uid=998,gid=998,type=mount'

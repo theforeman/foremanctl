@@ -1,0 +1,23 @@
+---
+- name: Generate image file for {{ images_definition.name }}
+  containers.podman.podman_image:
+    name: "{{ images_definition.image }}"
+    state: quadlet
+    quadlet_dir: "{{ images_quadlet_dir }}"
+    quadlet_filename: "{{ images_definition.name }}"
+    quadlet_file_mode: "0644"
+    quadlet_options:
+      - "Policy=missing"
+      - |
+        [Service]
+        Environment=REGISTRY_AUTH_FILE={{ images_registry_auth_file }}
+
+- name: Create drop-in directory for {{ images_definition.name }}
+  ansible.builtin.file:
+    path: "{{ images_quadlet_dir }}/{{ images_definition.name }}.image.d"
+    state: directory
+    mode: "0755"
+
+- name: Register deployed image name
+  ansible.builtin.set_fact:
+    images_deployed_names: "{{ images_deployed_names + [images_definition.name] }}"

@@ -1,10 +1,6 @@
 ---
-- name: Pull the Foreman container image
-  containers.podman.podman_image:
-    name: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
-    state: present
-  environment:
-    REGISTRY_AUTH_FILE: "{{ foreman_registry_auth_file }}"
+- name: Deploy foreman image
+  ansible.builtin.include_tasks: image.yaml
 
 - name: Create secret for DATABASE_URL
   containers.podman.podman_secret:
@@ -98,7 +94,7 @@
 - name: Deploy Foreman Container
   containers.podman.podman_container:
     name: "foreman"
-    image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
+    image: foreman.image
     state: quadlet
     sdnotify: true
     network: host
@@ -130,13 +126,15 @@
         PartOf=foreman.target
         Wants=redis.service postgresql.service candlepin.service
         After=redis.service postgresql.service candlepin.service
+        Requires=foreman-db-migrate.service
+        After=foreman-db-migrate.service
   notify: Restart foreman
 
 - name: Deploy Dynflow Container
   containers.podman.podman_container:
     name: "dynflow-sidekiq-%i"
     quadlet_filename: "dynflow-sidekiq@"
-    image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
+    image: foreman.image
     state: quadlet
     sdnotify: true
     network: host
@@ -165,6 +163,8 @@
         PartOf=foreman.target
         Wants=redis.service postgresql.service
         After=redis.service postgresql.service
+        Requires=foreman-db-migrate.service
+        After=foreman-db-migrate.service
       - |
         [Service]
         Restart=on-failure
@@ -191,7 +191,7 @@
     name: "foreman-recurring-{{ item.instance }}"
     quadlet_filename: "foreman-recurring@{{ item.instance }}"
     state: quadlet
-    image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
+    image: foreman.image
     sdnotify: false
     network: host
     hostname: "{{ ansible_facts['hostname'] }}.local"
@@ -232,21 +232,14 @@
   loop_control:
     label: "{{ item.instance }}"
 
-- name: Run daemon reload to make Quadlet create the service files
-  ansible.builtin.systemd:
-    daemon_reload: true
-
-- name: Migrate and seed the Foreman database
+- name: Deploy foreman database migration container
   containers.podman.podman_container:
     name: foreman-db-migrate
-    image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
-    command:
-      - bash
-      - -c
-      - bin/rails db:migrate && bin/rails db:seed
-    detach: false
-    rm: true
+    state: quadlet
+    image: foreman.image
+    sdnotify: false
     network: host
+    command: bash -c "bin/rails db:migrate && bin/rails db:seed"
     env:
       FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
       SEED_ORGANIZATION: "{{ foreman_initial_organization }}"
@@ -257,6 +250,21 @@
       - 'foreman-seed-admin-password,type=env,target=SEED_ADMIN_PASSWORD'
       - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
       - 'foreman-db-ca,type=mount,target={{ foreman_database_ssl_ca_path }}'
+    quadlet_options:
+      - |
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        TimeoutStartSec=30m
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Migrate and seed the Foreman database
+  ansible.builtin.systemd:
+    name: foreman-db-migrate.service
+    state: restarted
 
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers

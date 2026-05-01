@@ -1,0 +1,9 @@
+---
+- name: Deploy iop-vmaas image unit
+  ansible.builtin.include_role:
+    name: images
+    tasks_from: deploy_image.yaml
+  vars:
+    images_definition:
+      name: iop-vmaas
+      image: "{{ iop_vmaas_container_image }}:{{ iop_vmaas_container_tag }}"

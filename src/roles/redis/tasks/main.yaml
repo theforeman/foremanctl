@@ -1,10 +1,6 @@
 ---
-- name: Pull Redis container image
-  containers.podman.podman_image:
-    name: "{{ redis_container_image }}:{{ redis_container_tag }}"
-    state: present
-  environment:
-    REGISTRY_AUTH_FILE: "{{ redis_registry_auth_file }}"
+- name: Deploy redis image
+  ansible.builtin.include_tasks: image.yaml
 
 - name: Create directory for Redis data
   ansible.builtin.file:
@@ -17,7 +13,7 @@
 - name: Run Redis as a container
   containers.podman.podman_container:
     name: redis
-    image: "{{ redis_container_image }}:{{ redis_container_tag }}"
+    image: redis.image
     state: quadlet
     network: host
     sdnotify: true
