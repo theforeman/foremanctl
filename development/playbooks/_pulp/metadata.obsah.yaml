@@ -1,0 +1,12 @@
+---
+variables:
+  pulp_import_paths:
+    help: Extra file path that Pulp can use for content imports. Argument may be used more than once.
+    action: append_unique
+    type: AbsolutePath
+    parameter: --content-import-path
+  pulp_export_paths:
+    help: Extra file path that Pulp can use for content exports. Argument may be used more than once.
+    action: append_unique
+    type: AbsolutePath
+    parameter: --content-export-path

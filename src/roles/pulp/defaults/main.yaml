@@ -10,8 +10,12 @@ pulp_worker_count: "{{ [8, ansible_facts['processor_nproc']] | min }}"
 pulp_content_service_worker_count: "{{ (2 * ([8, ansible_facts['processor_nproc']] | min)) + 1 }}"
 pulp_api_service_worker_count: "{{ ([4, ansible_facts['processor_nproc']] | min) + 1 }}"
 
-pulp_volumes:
-  - /var/lib/pulp:/var/lib/pulp
+pulp_volumes: >-
+  {{
+    ['/var/lib/pulp:/var/lib/pulp'] +
+    ((pulp_import_paths) | map('regex_replace', '^(.+)$', '\1:\1') | list) +
+    ((pulp_export_paths) | map('regex_replace', '^(.+)$', '\1:\1') | list)
+  }}
 
 pulp_api_container_name: pulp-api
 pulp_content_container_name: pulp-content
@@ -21,6 +25,11 @@ pulp_content_origin: "http://{{ ansible_facts['fqdn'] }}:24816"
 pulp_pulp_url: "http://{{ ansible_facts['fqdn'] }}:24817"
 
 pulp_enable_analytics: false
+
+pulp_default_import_paths: ["/var/lib/pulp/sync_imports", "/var/lib/pulp/imports"]
+pulp_default_export_paths: ["/var/lib/pulp/exports"]
+pulp_import_paths: []
+pulp_export_paths: []
 
 pulp_default_plugins:
   - pulp_certguard
@@ -66,6 +75,10 @@ pulp_settings_other_env:
   PULP_CONTENT_WORKERS: "{{ pulp_content_service_worker_count }}"
   PULP_TOKEN_AUTH_DISABLED: "true"
   PULP_FLATPAK_INDEX: "true"
+  PULP_ALLOWED_IMPORT_PATHS: >-
+    {{ pulp_default_import_paths + pulp_import_paths }}
+  PULP_ALLOWED_EXPORT_PATHS: >-
+    {{ pulp_default_export_paths + pulp_export_paths }}
   PULP_ALLOWED_CONTENT_CHECKSUMS: >-
     ['sha1', 'sha224', 'sha256', 'sha384', 'sha512']
 
