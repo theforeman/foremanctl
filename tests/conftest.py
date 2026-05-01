@@ -15,7 +15,7 @@ SSH_CONFIG='./.tmp/ssh-config'
 
 
 def pytest_addoption(parser):
-    parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'installer'), help="Where to obtain certificates from")
+    parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'installer', 'custom_server'), help="Certificate source used during deployment")
     parser.addoption("--database-mode", action="store", default="internal", choices=('internal', 'external'), help="Whether the database is internal or external")
 
 
@@ -45,18 +45,36 @@ def client_fqdn(client_hostname):
 
 
 @pytest.fixture(scope="module")
-def certificates(pytestconfig, server_fqdn):
-    source = pytestconfig.getoption("certificate_source")
+def certificates(certificate_source, server_fqdn):
     env = Environment(loader=FileSystemLoader("."), autoescape=select_autoescape())
-    template = env.get_template(f"./src/vars/{source}_certificates.yml")
-    context = {'certificates_ca_directory': '/root/certificates',
-               'ansible_facts': {'fqdn': server_fqdn}}
+    template = env.get_template(f"./src/vars/{certificate_source}_certificates.yml")
+    context = {'ansible_facts': {'fqdn': server_fqdn}}
+    # we have vars that refer to other vars, so load them once and then re-render the template
+    context.update(yaml.safe_load(template.render(context)))
     return yaml.safe_load(template.render(context))
+
+
+@pytest.fixture(scope="module")
+def certificate_source(pytestconfig):
+    return pytestconfig.getoption("certificate_source")
+
+
+@pytest.fixture(scope="module")
+def custom_certificates(certificate_source):
+    if certificate_source != 'custom_server':
+        pytest.skip("Only applies to custom certificate deployments")
+
+
+@pytest.fixture(scope="module")
+def default_certificates(certificate_source):
+    if certificate_source == 'custom_server':
+        pytest.skip("Only applies to non-custom certificate deployments")
 
 
 @pytest.fixture(scope="module")
 def database_mode(pytestconfig):
     return pytestconfig.getoption("database_mode")
+
 
 @pytest.fixture(scope="module")
 def server(server_hostname):
