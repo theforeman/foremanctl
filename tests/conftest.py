@@ -49,7 +49,7 @@ def certificates(pytestconfig, server_fqdn):
     source = pytestconfig.getoption("certificate_source")
     env = Environment(loader=FileSystemLoader("."), autoescape=select_autoescape())
     template = env.get_template(f"./src/vars/{source}_certificates.yml")
-    context = {'certificates_ca_directory': '/root/certificates',
+    context = {'certificates_ca_directory': '/var/lib/foremanctl/certs',
                'ansible_facts': {'fqdn': server_fqdn}}
     return yaml.safe_load(template.render(context))
 
