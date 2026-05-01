@@ -32,6 +32,19 @@ The following properties are defined:
 * `hammer` (_String_): The name of the Hammer plugin to be enabled (the package installed will be `hammer-cli-plugin-{{ hammer }}`).
 * `dependencies` (_Array_ of _String_): List of features that are automatically enabled when the user requests this feature. Usually will point at features with `internal: true`.
 
+* `development` (_Hash_): Development environment metadata for this feature, used by the `development/` playbooks. This block is typically defined in `development/features.yaml` rather than `src/features.yaml`, and is deep-merged into the feature definition at runtime. Contains component-specific sub-hashes:
+  * `foreman` (_Hash_): Development config for the Foreman plugin.
+    * `github_repo` (_String_): GitHub `org/repo` for git checkout (e.g., `theforeman/foreman_remote_execution`).
+    * `settings_template` (_String_): Jinja2 template for plugin settings (optional).
+    * `extra_gemfiles` (_Array_ of _String_): Additional Gemfile paths to include (optional).
+  * `hammer` (_Hash_): Development config for the Hammer CLI plugin.
+    * `gem` (_String_): Ruby gem name, if different from the repo name (optional).
+    * `github_repo` (_String_): GitHub `org/repo` for git checkout.
+    * `module_config` (_String_): Hammer module config filename (optional).
+  * `foreman_proxy` (_Hash_): Development config for the Smart Proxy plugin.
+    * `github_repo` (_String_): GitHub `org/repo` for git checkout.
+    * `module_config` (_String_): Smart proxy module config filename (optional).
+
 Properties can be omitted.
 
 ## Examples
@@ -139,3 +152,41 @@ container_gateway:
   foreman_proxy:
     plugin_name: smart_proxy_container_gateway
 ```
+
+## Development Feature Overlay
+
+The development environment extends `src/features.yaml` with `development/features.yaml`. At runtime, the development filter plugin deep-merges the two files:
+
+- **Existing features** (those already in `src/features.yaml`): The development file adds a `development:` block only. All other fields (`plugin_name`, `hammer`, `dependencies`, etc.) are inherited from `src/`.
+- **New features** (not in `src/features.yaml`): The development file carries a full feature definition including top-level properties and a `development:` block.
+
+### Example
+
+In `src/features.yaml`:
+```yaml
+remote-execution:
+  description: Remote Execution plugin for Foreman
+  foreman:
+    plugin_name: foreman_remote_execution
+  foreman_proxy:
+    plugin_name: remote_execution_ssh
+  hammer: foreman_remote_execution
+  dependencies:
+    - dynflow
+```
+
+In `development/features.yaml`:
+```yaml
+remote-execution:
+  development:
+    foreman:
+      github_repo: theforeman/foreman_remote_execution
+    hammer:
+      github_repo: theforeman/hammer_cli_foreman_remote_execution
+      module_config: foreman_remote_execution.yml
+    foreman_proxy:
+      github_repo: theforeman/smart_proxy_remote_execution_ssh
+      module_config: remote_execution_ssh.yml
+```
+
+The merged result retains all `src/` fields and adds the `development:` block with git repository and config information used by the development playbooks.
