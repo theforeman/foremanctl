@@ -1,10 +1,6 @@
 ---
-- name: Pull Engine container image
-  containers.podman.podman_image:
-    name: "{{ iop_engine_container_image }}:{{ iop_engine_container_tag }}"
-    state: present
-  environment:
-    REGISTRY_AUTH_FILE: "{{ iop_engine_registry_auth_file }}"
+- name: Deploy iop-engine image
+  ansible.builtin.include_tasks: image.yaml
 
 - name: Create Engine config secret
   containers.podman.podman_secret:
@@ -16,7 +12,7 @@
 - name: Deploy Engine container
   containers.podman.podman_container:
     name: iop-core-engine
-    image: "{{ iop_engine_container_image }}:{{ iop_engine_container_tag }}"
+    image: iop-engine.image
     state: quadlet
     command: insights-core-engine /var/config.yml
     secrets:
@@ -32,7 +28,6 @@
         After=iop-core-kafka.service iop-core-ingress.service iop-core-puptoo.service
         Wants=iop-core-kafka.service iop-core-ingress.service iop-core-puptoo.service
         [Service]
-        Environment=REGISTRY_AUTH_FILE=/etc/foreman/registry-auth.json
         Restart=on-failure
         [Install]
         WantedBy=default.target

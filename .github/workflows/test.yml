@@ -137,7 +137,7 @@ jobs:
           vagrant ssh quadlet -- sudo systemctl restart fapolicyd
       - name: Run image pull
         run: |
-          ./foremanctl pull-images
+          ./foremanctl pull-images ${{ matrix.database == 'external' && '--database-mode=external' || '' }}
       - name: Run deployment
         run: |
           ./foremanctl deploy \

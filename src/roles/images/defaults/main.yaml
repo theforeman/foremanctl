@@ -1,0 +1,4 @@
+---
+images_quadlet_dir: /etc/containers/systemd
+images_registry_auth_file: /etc/foreman/registry-auth.json
+images_deployed_names: []

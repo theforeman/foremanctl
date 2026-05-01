@@ -1,10 +1,6 @@
 ---
-- name: Pull Host Inventory container image
-  containers.podman.podman_image:
-    name: "{{ iop_inventory_container_image }}:{{ iop_inventory_container_tag }}"
-    state: present
-  environment:
-    REGISTRY_AUTH_FILE: "{{ iop_inventory_registry_auth_file }}"
+- name: Deploy iop-inventory image
+  ansible.builtin.include_tasks: image.yaml
 
 - name: Create podman secret for inventory database username
   containers.podman.podman_secret:
@@ -39,7 +35,7 @@
 - name: Deploy Host Inventory Database Migration Container
   containers.podman.podman_container:
     name: iop-core-host-inventory-migrate
-    image: "{{ iop_inventory_container_image }}:{{ iop_inventory_container_tag }}"
+    image: iop-inventory.image
     state: quadlet
     command: make upgrade_db
     network:
@@ -48,7 +44,6 @@
       KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
       USE_SUBMAN_ID: "true"
       INVENTORY_DB_SSL_MODE: "disable"
-      REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
     secrets:
       - 'iop-core-host-inventory-database-username,type=env,target=INVENTORY_DB_USER'
       - 'iop-core-host-inventory-database-password,type=env,target=INVENTORY_DB_PASS'
@@ -68,7 +63,7 @@
 - name: Deploy Host Inventory MQ Service Container
   containers.podman.podman_container:
     name: iop-core-host-inventory
-    image: "{{ iop_inventory_container_image }}:{{ iop_inventory_container_tag }}"
+    image: iop-inventory.image
     state: quadlet
     command: make run_inv_mq_service
     network:
@@ -77,7 +72,6 @@
       KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
       USE_SUBMAN_ID: "true"
       INVENTORY_DB_SSL_MODE: "disable"
-      REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
     secrets:
       - 'iop-core-host-inventory-database-username,type=env,target=INVENTORY_DB_USER'
       - 'iop-core-host-inventory-database-password,type=env,target=INVENTORY_DB_PASS'
@@ -98,7 +92,7 @@
 - name: Deploy Host Inventory API Container
   containers.podman.podman_container:
     name: iop-core-host-inventory-api
-    image: "{{ iop_inventory_container_image }}:{{ iop_inventory_container_tag }}"
+    image: iop-inventory.image
     state: quadlet
     command: python run_gunicorn.py
     network:
@@ -109,7 +103,6 @@
       BYPASS_RBAC: "true"
       USE_SUBMAN_ID: "true"
       INVENTORY_DB_SSL_MODE: "disable"
-      REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
     secrets:
       - 'iop-core-host-inventory-database-username,type=env,target=INVENTORY_DB_USER'
       - 'iop-core-host-inventory-database-password,type=env,target=INVENTORY_DB_PASS'
@@ -128,7 +121,7 @@
 - name: Deploy Host Inventory Cleanup Container
   containers.podman.podman_container:
     name: iop-core-host-inventory-cleanup
-    image: "{{ iop_inventory_container_image }}:{{ iop_inventory_container_tag }}"
+    image: iop-inventory.image
     state: quadlet
     command: make run_host_delete_access_tags
     network:
@@ -138,7 +131,6 @@
       USE_SUBMAN_ID: "true"
       INVENTORY_DB_SSL_MODE: "disable"
       PYTHONPATH: "/opt/app-root/src"
-      REGISTRY_AUTH_FILE: "/etc/foreman/registry-auth.json"
     secrets:
       - 'iop-core-host-inventory-database-username,type=env,target=INVENTORY_DB_USER'
       - 'iop-core-host-inventory-database-password,type=env,target=INVENTORY_DB_PASS'

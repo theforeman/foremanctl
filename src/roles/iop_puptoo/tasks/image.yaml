@@ -1,0 +1,9 @@
+---
+- name: Deploy iop-puptoo image unit
+  ansible.builtin.include_role:
+    name: images
+    tasks_from: deploy_image.yaml
+  vars:
+    images_definition:
+      name: iop-puptoo
+      image: "{{ iop_puptoo_container_image }}:{{ iop_puptoo_container_tag }}"

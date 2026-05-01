@@ -1,15 +1,11 @@
 ---
-- name: Pull Yuptoo container image
-  containers.podman.podman_image:
-    name: "{{ iop_yuptoo_container_image }}:{{ iop_yuptoo_container_tag }}"
-    state: present
-  environment:
-    REGISTRY_AUTH_FILE: "{{ iop_yuptoo_registry_auth_file }}"
+- name: Deploy iop-yuptoo image
+  ansible.builtin.include_tasks: image.yaml
 
 - name: Deploy Yuptoo container
   containers.podman.podman_container:
     name: iop-core-yuptoo
-    image: "{{ iop_yuptoo_container_image }}:{{ iop_yuptoo_container_tag }}"
+    image: iop-yuptoo.image
     state: quadlet
     command: python -m main
     env:
@@ -22,7 +18,6 @@
         [Unit]
         Description=IOP Core Yuptoo Container
         [Service]
-        Environment=REGISTRY_AUTH_FILE=/etc/foreman/registry-auth.json
         Restart=on-failure
         [Install]
         WantedBy=default.target

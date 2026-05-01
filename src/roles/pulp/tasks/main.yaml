@@ -1,24 +1,6 @@
 ---
-- name: Pull the Pulp API container image
-  containers.podman.podman_image:
-    name: "{{ pulp_api_image }}"
-    state: present
-  environment:
-    REGISTRY_AUTH_FILE: "{{ pulp_registry_auth_file }}"
-
-- name: Pull the Pulp Content container image
-  containers.podman.podman_image:
-    name: "{{ pulp_content_image }}"
-    state: present
-  environment:
-    REGISTRY_AUTH_FILE: "{{ pulp_registry_auth_file }}"
-
-- name: Pull the Pulp Worker container image
-  containers.podman.podman_image:
-    name: "{{ pulp_worker_image }}"
-    state: present
-  environment:
-    REGISTRY_AUTH_FILE: "{{ pulp_registry_auth_file }}"
+- name: Deploy pulp image
+  ansible.builtin.include_tasks: image.yaml
 
 - name: Create Pulp storage
   ansible.builtin.file:
@@ -111,7 +93,7 @@
 - name: Deploy Pulp API Container
   containers.podman.podman_container:
     name: "{{ pulp_api_container_name }}"
-    image: "{{ pulp_api_image }}"
+    image: pulp.image
     state: quadlet
     sdnotify: true
     command: pulp-api
@@ -142,7 +124,7 @@
 - name: Deploy Pulp Content Container
   containers.podman.podman_container:
     name: "{{ pulp_content_container_name }}"
-    image: "{{ pulp_content_image }}"
+    image: pulp.image
     state: quadlet
     sdnotify: true
     command: pulp-content
@@ -174,7 +156,7 @@
   containers.podman.podman_container:
     name: "{{ pulp_worker_container_name }}-%i"
     quadlet_filename: "{{ pulp_worker_container_name }}@"
-    image: "{{ pulp_worker_image }}"
+    image: pulp.image
     state: quadlet
     command: pulp-worker
     network: host
@@ -221,39 +203,61 @@
       [Install]
       WantedBy=foreman.target
 
+- name: Deploy Pulp database migration container
+  containers.podman.podman_container:
+    name: pulpcore-manager-migrate
+    state: quadlet
+    image: pulp.image
+    sdnotify: false
+    command: pulpcore-manager migrate --noinput
+    network: host
+    volumes: "{{ pulp_volumes }}"
+    secrets:
+      - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
+      - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+      - 'pulp-db-ca,type=mount,target={{ pulp_database_ssl_ca_path }}'
+    env: "{{ pulp_settings_database_env }}"
+    quadlet_options:
+      - |
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        TimeoutStartSec=30m
+
+- name: Deploy Pulp admin password container
+  containers.podman.podman_container:
+    name: pulpcore-manager-admin-password
+    state: quadlet
+    image: pulp.image
+    sdnotify: false
+    command: pulpcore-manager reset-admin-password --random
+    network: host
+    volumes: "{{ pulp_volumes }}"
+    secrets:
+      - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
+      - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+      - 'pulp-db-ca,type=mount,target={{ pulp_database_ssl_ca_path }}'
+    env: "{{ pulp_settings_database_env }}"
+    quadlet_options:
+      - |
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        TimeoutStartSec=10m
+
 - name: Run daemon reload to load service files
   ansible.builtin.systemd:
     daemon_reload: true
 
 - name: Migrate the Pulp database
-  containers.podman.podman_container:
-    name: pulpcore-manager-migrate
-    image: "{{ pulp_api_image }}"
-    command: pulpcore-manager migrate --noinput
-    detach: false
-    rm: true
-    network: host
-    volumes: "{{ pulp_volumes }}"
-    secrets:
-      - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
-      - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
-      - 'pulp-db-ca,type=mount,target={{ pulp_database_ssl_ca_path }}'
-    env: "{{ pulp_settings_database_env }}"
+  ansible.builtin.systemd:
+    name: pulpcore-manager-migrate.service
+    state: restarted
 
 - name: Ensure Pulp admin user exists
-  containers.podman.podman_container:
-    name: pulpcore-manager-admin-password
-    image: "{{ pulp_api_image }}"
-    command: pulpcore-manager reset-admin-password --random
-    detach: false
-    rm: true
-    network: host
-    volumes: "{{ pulp_volumes }}"
-    secrets:
-      - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
-      - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
-      - 'pulp-db-ca,type=mount,target={{ pulp_database_ssl_ca_path }}'
-    env: "{{ pulp_settings_database_env }}"
+  ansible.builtin.systemd:
+    name: pulpcore-manager-admin-password.service
+    state: restarted
 
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers
