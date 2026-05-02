@@ -2,6 +2,9 @@
 min_cpu_cores: 8
 min_ram_mb: 32768
 
+httpd_server_limit: 64
+httpd_max_request_workers: 1024
+
 postgresql_max_connections: 1000
 postgresql_shared_buffers: 4GB
 postgresql_effective_cache_size: 8GB
