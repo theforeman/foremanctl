@@ -1,0 +1,12 @@
+<IfModule mpm_event_module>
+  ServerLimit            {{ httpd_server_limit }}
+  StartServers           {{ httpd_start_servers }}
+{% if httpd_max_request_workers is defined %}
+  MaxRequestWorkers      {{ httpd_max_request_workers }}
+{% endif %}
+  MinSpareThreads        {{ httpd_min_spare_threads }}
+  MaxSpareThreads        {{ httpd_max_spare_threads }}
+  ThreadsPerChild        {{ httpd_threads_per_child }}
+  ThreadLimit            {{ httpd_thread_limit }}
+  ListenBacklog          {{ httpd_listen_backlog }}
+</IfModule>
