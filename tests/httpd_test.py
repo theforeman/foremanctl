@@ -87,3 +87,20 @@ def test_https_foreman_login(server, certificates, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --cacert {certificates['ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/users/login")
     assert cmd.succeeded
     assert cmd.stdout == '200'
+
+def test_httpd_event_conf_exists(server):
+    event_conf = server.file("/etc/httpd/conf.modules.d/event.conf")
+    assert event_conf.exists
+    assert event_conf.is_file
+
+def test_httpd_event_conf_contains_server_limit(server):
+    event_conf = server.file("/etc/httpd/conf.modules.d/event.conf")
+    assert event_conf.contains("ServerLimit")
+
+def test_httpd_event_conf_contains_threads_per_child(server):
+    event_conf = server.file("/etc/httpd/conf.modules.d/event.conf")
+    assert event_conf.contains("ThreadsPerChild")
+
+def test_httpd_config_syntax(server):
+    cmd = server.run("httpd -t")
+    assert cmd.succeeded
