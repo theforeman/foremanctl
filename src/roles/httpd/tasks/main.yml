@@ -60,6 +60,14 @@
     remote_src: true
     mode: "0644"
 
+- name: Configure MPM event module
+  ansible.builtin.template:
+    src: event.conf.j2
+    dest: /etc/httpd/conf.modules.d/event.conf
+    mode: "0644"
+  notify:
+    - Restart httpd
+
 - name: Configure external authentication
   ansible.builtin.include_tasks: "external_auth/{{ httpd_external_authentication }}.yml"
   when: httpd_external_authentication in ['ipa', 'ipa_with_api']

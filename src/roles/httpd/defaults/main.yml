@@ -4,6 +4,15 @@ httpd_pulp_content_backend: http://localhost:24816
 httpd_foreman_backend: http://localhost:3000
 httpd_pub_dir: /var/www/html/pub
 
+# MPM event module defaults (matching puppet-apache base values)
+httpd_server_limit: 25
+httpd_start_servers: 2
+httpd_min_spare_threads: 16
+httpd_max_spare_threads: 32
+httpd_threads_per_child: 16
+httpd_thread_limit: 64
+httpd_listen_backlog: 511
+
 # External authentication configuration
 httpd_external_authentication: "{{ external_authentication | default(None) }}"
 httpd_ipa_manage_sssd: true
