@@ -13,6 +13,12 @@ httpd_threads_per_child: 16
 httpd_thread_limit: 64
 httpd_listen_backlog: 511
 
+# Registration admission control: maximum concurrent connections to Puma
+# for /rhsm and /register endpoints via an Apache balancer pool.
+# Set to 0 to disable. When enabled, requests beyond this limit are queued
+# by Apache instead of overwhelming Puma during registration bursts.
+httpd_registration_admission_max: 0
+
 # External authentication configuration
 httpd_external_authentication: "{{ external_authentication | default(None) }}"
 httpd_ipa_manage_sssd: true
