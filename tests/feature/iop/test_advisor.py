@@ -1,8 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.iop
-
-
 def test_advisor_backend_api_service(server):
     service = server.service("iop-service-advisor-backend-api")
     assert service.is_running
