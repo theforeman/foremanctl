@@ -1,5 +1,14 @@
 import json
 
+import pytest
+
+from conftest import has_feature
+
+pytestmark = pytest.mark.skipif(
+    not has_feature("foreman-proxy"),
+    reason="foreman-proxy not enabled",
+)
+
 FOREMAN_PROXY_PORT = 8443
 
 def test_foreman_proxy_features(server, certificates, server_fqdn):

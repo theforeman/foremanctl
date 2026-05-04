@@ -1,8 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.iop
-
-
 def test_remediation_api_service(server):
     service = server.service("iop-service-remediations-api")
     assert service.is_running

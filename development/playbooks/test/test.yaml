@@ -47,3 +47,14 @@
       args:
         chdir: "{{ inventory_dir }}/../"
       changed_when: false
+      register: pytest_result
+      ignore_errors: true
+
+    - name: Display pytest results
+      ansible.builtin.debug:
+        msg: "{{ pytest_result.stdout }}"
+
+    - name: Fail if tests did not pass
+      ansible.builtin.fail:
+        msg: "Tests failed. See output above for details."
+      when: pytest_result.rc != 0

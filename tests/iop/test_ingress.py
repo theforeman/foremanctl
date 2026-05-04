@@ -1,8 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.iop
-
-
 def test_ingress_service(server):
     service = server.service("iop-core-ingress")
     assert service.is_running

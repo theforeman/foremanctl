@@ -83,11 +83,20 @@ def ssh_config(server_hostname):
 
 
 @pytest.fixture(scope="module")
-def foremanapi(ssh_config, server_fqdn):
+def foreman_admin_password():
+    test_dir = os.path.dirname(os.path.abspath(__file__))
+    foremanctl_dir = os.path.dirname(test_dir)
+    passwd_file = os.path.join(foremanctl_dir, '.var', 'lib', 'foremanctl', 'foreman-admin-init-passwd')
+    with open(passwd_file) as f:
+        return f.read().strip()
+
+
+@pytest.fixture(scope="module")
+def foremanapi(ssh_config, server_fqdn, foreman_admin_password):
     api = apypie.ForemanApi(
         uri=f'https://{ssh_config["hostname"]}',
         username='admin',
-        password='changeme',
+        password=foreman_admin_password,
         verify_ssl=False,
     )
     api._session.headers['Host'] = server_fqdn
@@ -174,31 +183,37 @@ def wait_for_metadata_generate(foremanapi):
     wait_for_tasks(foremanapi, 'label = Actions::Katello::Repository::MetadataGenerate')
 
 
-def is_iop_enabled():
+def get_enabled_features():
     test_dir = os.path.dirname(os.path.abspath(__file__))
     foremanctl_dir = os.path.dirname(test_dir)
     params_file = os.path.join(foremanctl_dir, '.var', 'lib', 'foremanctl', 'parameters.yaml')
+    defaults_file = os.path.join(foremanctl_dir, 'src', 'vars', 'defaults.yml')
 
+    params = {}
     if os.path.exists(params_file):
         with open(params_file, 'r') as f:
-            params = yaml.safe_load(f)
-            features = params.get('features', [])
-            if isinstance(features, str):
-                features = features.split()
-            return 'iop' in features
+            params = yaml.safe_load(f) or {}
 
-    return False
+    defaults = {}
+    if os.path.exists(defaults_file):
+        with open(defaults_file, 'r') as f:
+            defaults = yaml.safe_load(f) or {}
+
+    flavor = params.get('flavor', defaults.get('flavor', 'katello'))
+    flavor_file = os.path.join(foremanctl_dir, 'src', 'vars', 'flavors', f'{flavor}.yml')
+
+    flavor_features = []
+    if os.path.exists(flavor_file):
+        with open(flavor_file, 'r') as f:
+            flavor_data = yaml.safe_load(f) or {}
+            flavor_features = flavor_data.get('flavor_features', [])
+
+    features = params.get('features', [])
+    if isinstance(features, str):
+        features = features.split()
+
+    return set(flavor_features + features)
 
 
-def pytest_configure(config):
-    config.addinivalue_line("markers", "iop: tests requiring IOP to be enabled")
-
-
-def pytest_collection_modifyitems(config, items):
-    if is_iop_enabled():
-        return
-
-    skip_iop = pytest.mark.skip(reason="IOP not enabled - skipping IOP tests ('iop' not in enabled_features)")
-    for item in items:
-        if "iop" in item.keywords:
-            item.add_marker(skip_iop)
+def has_feature(name):
+    return name in get_enabled_features()
