@@ -1,8 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.iop
-
-
 def test_advisor_frontend_assets_directory(server):
     assets_dir = server.file("/var/www/iop/assets/apps/advisor")
     assert assets_dir.exists

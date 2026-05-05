@@ -1,3 +1,8 @@
+import pytest
+
+from conftest import has_feature
+
+
 def test_foreman_content_view(client_environment, activation_key, organization, foremanapi, client):
     client.run('dnf install -y subscription-manager')
     rcmd = foremanapi.create('registration_commands', {'organization_id': organization['id'], 'insecure': True, 'activation_keys': [activation_key['name']], 'force': True})
@@ -9,6 +14,8 @@ def test_foreman_content_view(client_environment, activation_key, organization, 
     client.run('subscription-manager unregister')
     client.run('subscription-manager clean')
 
+@pytest.mark.skipif(not has_feature("remote-execution"), reason="remote-execution not enabled")
+@pytest.mark.skipif(not has_feature("foreman-proxy"), reason="foreman-proxy not enabled")
 def test_foreman_rex(client_environment, activation_key, organization, foremanapi, client, client_fqdn):
     client.run('dnf install -y subscription-manager')
     rcmd = foremanapi.create('registration_commands', {'organization_id': organization['id'], 'insecure': True, 'activation_keys': [activation_key['name']], 'force': True})

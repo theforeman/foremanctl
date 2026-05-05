@@ -1,8 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.iop
-
-
 def test_gateway_service(server):
     service = server.service("iop-core-gateway")
     assert service.is_running
