@@ -32,6 +32,25 @@ Testinfra fixtures in `tests/conftest.py` open Paramiko sessions through that SS
 
 GitHub Actions mirrors the same workflow: start VMs, deploy, run tests. The [`.github/workflows/test.yml`](../../.github/workflows/test.yml) matrix covers combinations of certificate source, database mode, security profile, and base box.
 
+#### Two-step deploy pattern
+
+CI workflows must separate the base deployment from feature addition into two distinct `foremanctl deploy` calls:
+
+```yaml
+- name: Run deployment
+  run: |
+    ./foremanctl deploy \
+      --foreman-initial-admin-password=changeme \
+      --tuning development
+- name: Deploy features
+  run: |
+    ./foremanctl deploy \
+      --add-feature hammer \
+      --add-feature foreman-proxy
+```
+
+Do not combine `--add-feature` flags into the initial deploy step. The base deploy establishes the core system; features are layered on afterward with a second deploy invocation. This mirrors how users add features to an existing deployment and ensures that code path is tested.
+
 ## Running tests
 
 A working deployment is required before running tests.
