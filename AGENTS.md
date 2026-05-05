@@ -151,18 +151,9 @@ Configuration is managed through:
 
 Features are modular capabilities that can be enabled. See [docs/developer/how-to-add-a-feature.md](docs/developer/how-to-add-a-feature.md) for the complete feature development guide.
 
-Current features:
+For the list of current features, read the `src/features.yaml` file.
 
-- `hammer` - CLI tool
-- `foreman-proxy` - Smart proxy functionality
-- `remote-execution` - Remote execution via SSH
-- `google` - Google Compute Engine integration
-- `azure-rm` - Azure Resource Manager integration
-- `katello` - Content and subscription management
-
-Flavors define the base feature set:
-
-- `katello` - Currently the only flavor (Foreman 3.18 + Katello 4.20 + Pulp 3.85 + Candlepin 4.6)
+Flavors define the base feature set, see the flavor files in the `src/vars/flavors` directory.
 
 The `enabled_features` variable is computed as: `flavor_features + features`
 
