@@ -1,7 +1,7 @@
 plugins:
   default_component_enabled: true
   packages:
-{% for package in iop_engine_packages %}
+{% for package in iop_engine_packages + iop_engine_extra_packages %}
       - {{ package }}
 {% endfor %}
 configs: []

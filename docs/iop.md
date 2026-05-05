@@ -136,4 +136,14 @@ Gateway certificates are configured per certificate source:
 
 ### Container Images
 
-All IOP images default to `quay.io/iop/<service>:foreman-3.16`. Each role exposes `iop_<role>_container_image` and `iop_<role>_container_tag` variables to override.
+All IOP images default to `quay.io/iop/<service>:foreman-3.18`. Each role exposes `iop_<role>_container_image` and `iop_<role>_container_tag` variables to override.
+
+### Engine Rule Packages
+
+The engine loads Python rule packages listed in `iop_engine_packages`. A separate `iop_engine_extra_packages` list (default: `[]`) is available for downstream deployments to add packages that are not present in the community images:
+
+```yaml
+iop_engine_extra_packages:
+  - "prodsec.rules"
+  - "telemetry.rules.plugins"
+```
