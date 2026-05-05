@@ -75,6 +75,20 @@ def test_foreman_recurring_services_exist(server, instance):
     service = server.service(f"foreman-recurring@{instance}.service")
     assert service.exists
 
+
 def test_foreman_delivery_method_setting(foremanapi):
     delivery_method_setting = foremanapi.list('settings', search='name=delivery_method')
     assert delivery_method_setting[0]['value'] == 'smtp'
+
+
+@pytest.mark.parametrize("setting", ["foreman_url", "unattended_url"])
+def test_foreman_fqdn_in_url_settings(foremanapi, server_fqdn, setting):
+    settings = foremanapi.list('settings', search=f'name={setting}')
+    assert server_fqdn in settings[0]['value']
+
+
+@pytest.mark.parametrize("setting", ["administrator", "email_reply_address"])
+def test_foreman_domain_in_mail_settings(foremanapi, server_fqdn, setting):
+    settings = foremanapi.list('settings', search=f'name={setting}')
+    domain = str.join('.', server_fqdn.split('.')[1:])
+    assert domain in settings[0]['value']

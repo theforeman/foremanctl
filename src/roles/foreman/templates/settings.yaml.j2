@@ -1,4 +1,6 @@
 ---
+:domain: {{ ansible_facts['domain'] }}
+:fqdn: {{ foreman_name }}
 :foreman_url: {{ foreman_url }}
 
 :ssl_certificate: /etc/foreman/client_cert.pem
