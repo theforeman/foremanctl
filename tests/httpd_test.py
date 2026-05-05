@@ -104,3 +104,7 @@ def test_httpd_event_conf_contains_threads_per_child(server):
 def test_httpd_config_syntax(server):
     cmd = server.run("httpd -t")
     assert cmd.succeeded
+
+def test_httpd_headers_use_dashes(server):
+    cmd = server.run("grep -rPn 'RequestHeader\\s+set\\s+\\S*_\\S*\\s' /etc/httpd/conf.d/foreman.conf /etc/httpd/conf.d/foreman-ssl.conf /etc/httpd/conf.d/05-foreman.d/ /etc/httpd/conf.d/05-foreman-ssl.d/ 2>/dev/null")
+    assert cmd.stdout.strip() == '', f"HTTP header names should use dashes, not underscores:\n{cmd.stdout}"

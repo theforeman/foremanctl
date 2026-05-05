@@ -11,10 +11,10 @@
 
   ## Request header rules
   ## as per http://httpd.apache.org/docs/2.4/mod/mod_headers.html#requestheader
-  RequestHeader set X_FORWARDED_PROTO "https"
-  RequestHeader set SSL_CLIENT_S_DN "%{SSL_CLIENT_S_DN}s"
-  RequestHeader set SSL_CLIENT_CERT "%{SSL_CLIENT_CERT}s"
-  RequestHeader set SSL_CLIENT_VERIFY "%{SSL_CLIENT_VERIFY}s"
+  RequestHeader set X-FORWARDED-PROTO "https"
+  RequestHeader set SSL-CLIENT-S-DN "%{SSL_CLIENT_S_DN}s"
+  RequestHeader set SSL-CLIENT-CERT "%{SSL_CLIENT_CERT}s"
+  RequestHeader set SSL-CLIENT-VERIFY "%{SSL_CLIENT_VERIFY}s"
   RequestHeader unset REMOTE-USER
   RequestHeader unset REMOTE_USER
   RequestHeader unset REMOTE-USER-EMAIL
