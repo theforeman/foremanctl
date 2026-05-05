@@ -1,0 +1,32 @@
+---
+- name: Create /var/lib/foremanctl/
+  ansible.builtin.file:
+    path: /var/lib/foremanctl/
+    state: directory
+    owner: root
+    group: root
+    mode: '0750'
+
+- name: Create temporary container for data extraction
+  containers.podman.podman_container:
+    name: crypto-policy-tmp
+    image: "{{ crypto_policy_container }}"
+    state: started
+    command: sleep 600
+
+- name: Set the policy
+  containers.podman.podman_container_exec:
+    name: crypto-policy-tmp
+    command: "update-crypto-policies --set {{ crypto_policy_policy }}"
+
+- name: Extract data from container
+  containers.podman.podman_container_copy:
+    container: crypto-policy-tmp
+    src: "/etc/crypto-policies"
+    dest: "/var/lib/foremanctl/etc_crypto_policies"
+    from_container: true
+
+- name: Remove temporary container
+  containers.podman.podman_container:
+    name: crypto-policy-tmp
+    state: absent

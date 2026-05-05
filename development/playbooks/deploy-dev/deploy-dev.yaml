@@ -55,6 +55,7 @@
             foreman_development_enabled_plugins: "{{ foreman_development_enabled_plugins + ['foreman_ansible'] }}"
   roles:
     - role: pre_install
+    - role: crypto_policy
     - role: certificates
     - role: postgresql
     - role: redis

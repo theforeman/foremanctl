@@ -31,6 +31,7 @@
     network: host
     volumes:
       - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
+      - /var/lib/foremanctl/etc_crypto_policies:/etc/crypto-policies:ro,z
     secrets:
       - 'postgresql-admin-password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
     env:

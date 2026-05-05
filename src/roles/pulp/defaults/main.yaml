@@ -12,6 +12,7 @@ pulp_api_service_worker_count: "{{ ([4, ansible_facts['processor_nproc']] | min)
 
 pulp_volumes:
   - /var/lib/pulp:/var/lib/pulp
+  - /var/lib/foremanctl/etc_crypto_policies:/etc/crypto-policies:ro,z
 
 pulp_api_container_name: pulp-api
 pulp_content_container_name: pulp-content
