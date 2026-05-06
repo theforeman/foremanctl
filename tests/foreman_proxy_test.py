@@ -2,8 +2,24 @@ import datetime
 import json
 
 import pytest
+import yaml
+from conftest import enabled_features
 
 FOREMAN_PROXY_PORT = 8443
+BMC_CONFIG = "/etc/foreman-proxy/settings.d/bmc.yml"
+
+def get_proxy_feature_setting(server, feature, default=None):
+    cmd = server.run(f"podman exec foreman-proxy cat /etc/foreman-proxy/settings.d/{feature}.yml")
+    if cmd.succeeded:
+        return yaml.safe_load(cmd.stdout)
+    return default
+
+def is_bmc_enabled():
+    return 'bmc' in enabled_features()
+
+def get_default_bmc_provider(server):
+    bmc_setting = get_proxy_feature_setting(server, 'bmc')
+    return bmc_setting.get(':bmc_default_provider', 'ipmitool')
 
 
 def test_foreman_proxy_features(server, certificates, server_fqdn):
@@ -13,6 +29,8 @@ def test_foreman_proxy_features(server, certificates, server_fqdn):
     assert "logs" in features
     assert "script" in features
     assert "dynflow" in features
+    if is_bmc_enabled():
+        assert "bmc" in features
 
 
 def test_foreman_proxy_service(server):
@@ -38,3 +56,9 @@ def test_foreman_proxy_client_auth_to_foreman(server, certificates, server_fqdn)
     )
     assert cmd.succeeded
     assert cmd.stdout == '201'
+
+@pytest.mark.skipif("not is_bmc_enabled()")
+def test_bmc_default_provider(server):
+    cmd = server.run(f"podman exec foreman-proxy grep ':bmc_default_provider:' {BMC_CONFIG}")
+    assert cmd.succeeded
+    assert get_default_bmc_provider(server) in cmd.stdout
