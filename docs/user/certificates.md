@@ -181,9 +181,8 @@ For `certificate_source: installer`:
 
 #### Variable System
 
-Certificate paths are defined in source-specific variable files:
+Certificate paths are defined in `src/vars/certificates.yml`:
 
-**Default Source (`src/vars/default_certificates.yml`):**
 ```yaml
 ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
 ca_bundle: "{{ certificates_ca_directory }}/certs/ca-bundle.crt"
@@ -192,10 +191,7 @@ server_ca_certificate: "{{ certificates_ca_directory }}/certs/server-ca.crt"
 client_certificate: "{{ certificates_ca_directory }}/certs/{{ ansible_facts['fqdn'] }}-client.crt"
 ```
 
-**Custom Server Source (`src/vars/custom_server_certificates.yml`):**
-- Uses the same paths as default source
-- The `server_ca_certificate` points to the custom CA that signed the server certificate
-- The `ca_bundle` contains both the internal CA and custom server CA
+All certificate sources use the same paths. For custom server certificates, `server_ca_certificate` points to the custom CA that signed the server certificate, and `ca_bundle` contains both the internal CA and custom server CA.
 
 **Installer Source (`src/vars/installer_certificates.yml`):**
 ```yaml
