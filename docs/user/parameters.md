@@ -103,6 +103,13 @@ There are multiple use cases from the users perspective that dictate what parame
 
 ## Smart Proxy
 
+### Mapped
+
+| Parameter | Description | foreman-installer Parameters |
+| --------- | ----------- | ---------------------------- |
+| `--bmc-default-provider` | Default BMC provider | `--foreman-proxy-bmc-default-provider` |
+| `--bmc-redfish-verify-ssl` | Verify SSL certificates for Redfish BMC connections | `--foreman-proxy-bmc-redfish-verify-ssl` |
+
 ### Undetermined
 
 | Installer Parameter | Description | Module | Puppet Parameter |
@@ -152,8 +159,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-proxy-plugin-remote-execution-script-mode` | | foreman_proxy::plugin::remote_execution_script | mode |
 | `--foreman-proxy-plugin-openscap-ansible-module` | | foreman_proxy::plugin::openscap | ansible_module |
 | `--foreman-proxy-plugin-openscap-puppet-module` | | foreman_proxy::plugin::openscap | puppet_module |
-| `--foreman-proxy-bmc` | | | |
-| `--foreman-proxy-bmc-default-provider` | | | |
 | `--foreman-proxy-content-enable-ostree` | | | |
 | `--foreman-proxy-content-pulpcore-additional-import-paths` | | | |
 | `--foreman-proxy-http` | | | |
