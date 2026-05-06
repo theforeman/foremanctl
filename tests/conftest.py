@@ -1,14 +1,16 @@
+import os
 import uuid
+import yaml
 
 import apypie
 import paramiko
 import py.path
 import pytest
+import requests
 import testinfra
-import yaml
-import os
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from requests.adapters import HTTPAdapter
 
 
 SSH_CONFIG='./.tmp/ssh-config'
@@ -220,3 +222,27 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "iop" in item.keywords:
             item.add_marker(skip_iop)
+
+
+class ResolveAdapter(HTTPAdapter):
+    def __init__(self, target_ip, *args, **kwargs):
+        self.target_ip = target_ip
+        super().__init__(*args, **kwargs)
+
+    def get_connection_with_tls_context(self, request, verify, proxies=None, cert=None):
+        conn = super().get_connection_with_tls_context(request, verify, proxies, cert)
+
+        # Override the host to point to your target IP
+        # This forces the socket to open to target_ip instead of the URL's domain
+        conn.host = self.target_ip
+
+        return conn
+
+
+@pytest.fixture(scope="module")
+def local_request(ssh_config, server_fqdn):
+    session = requests.Session()
+    adapter = ResolveAdapter(target_ip=ssh_config["hostname"])
+    session.mount(f"http://{server_fqdn}", adapter)
+    session.mount(f"https://{server_fqdn}", adapter)
+    return session
