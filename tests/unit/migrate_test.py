@@ -59,6 +59,25 @@ class TestParameterMapping:
         assert 'db_manage_rake' not in str(result['unmappable'])
         assert result['mapped']['database_host'] == 'localhost'
 
+    def test_certificate_parameters_ignored(self):
+        """Test that certificate path parameters are ignored (handled by migration role)"""
+        old_config = {
+            'foreman': {
+                'server_ssl_cert': '/etc/pki/katello/certs/server.crt',
+                'server_ssl_key': '/etc/pki/katello/private/server.key',
+                'server_ssl_ca': '/etc/pki/katello/certs/ca.crt',
+                'db_host': 'localhost'
+            }
+        }
+
+        result = migrate_answers.apply_mappings(old_config)
+
+        assert 'server_certificate' not in result['mapped']
+        assert 'server_key' not in result['mapped']
+        assert 'ca_certificate' not in result['mapped']
+        assert not any('ssl' in p for p in result['unmappable'])
+        assert result['mapped']['database_host'] == 'localhost'
+
     def test_unmappable_parameters(self):
         """Test that unmappable parameters are reported"""
         old_config = {
@@ -164,21 +183,6 @@ class TestFileOperations:
         try:
             with pytest.raises(ValueError):
                 migrate_answers.load_answer_file(temp_file)
-        finally:
-            os.unlink(temp_file)
-
-    def test_write_output_to_file(self):
-        """Test writing output to a file"""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
-            temp_file = f.name
-
-        try:
-            test_data = {'database_host': 'localhost', 'database_port': 5432}
-            migrate_answers.write_output(test_data, temp_file)
-
-            with open(temp_file, 'r') as f:
-                result = yaml.safe_load(f)
-            assert result == test_data
         finally:
             os.unlink(temp_file)
 

@@ -122,17 +122,11 @@ Set in the playbook vars or inventory to match your Foreman deployment:
 
 ### Certificates
 
-Gateway certificates are configured per certificate source:
+Gateway certificates use the default certificate paths:
 
-**Default certificates** (`certificate_source: default`):
 - Server: `/var/lib/foremanctl/certs/certs/localhost.crt`
 - Client: `/var/lib/foremanctl/certs/certs/localhost-client.crt`
 - CA: `/var/lib/foremanctl/certs/certs/ca.crt`
-
-**Installer certificates** (`certificate_source: installer`):
-- Server: `/root/ssl-build/localhost/localhost-iop-core-gateway-server.crt`
-- Client: `/root/ssl-build/localhost/localhost-iop-core-gateway-client.crt`
-- CA: `/root/ssl-build/katello-default-ca.crt`
 
 ### Container Images
 

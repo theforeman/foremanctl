@@ -1,0 +1,34 @@
+---
+- name: Enable foreman-installer PR 935 Copr repo
+  community.general.copr:
+    host: copr.fedorainfracloud.org
+    state: enabled
+    name: packit/theforeman-foreman-installer-935
+    chroot: rhel-9-x86_64
+
+- name: Install foreman-installer package
+  ansible.builtin.package:
+    name: foreman-installer-katello
+
+# utilize https://github.com/theforeman/foreman-installer/pull/935
+- name: Generate certs
+  ansible.builtin.command: foreman-certs --apache true --foreman true --candlepin true --iop true
+  changed_when: false
+
+- name: Create installer scenarios directory
+  ansible.builtin.file:
+    path: /etc/foreman-installer/scenarios.d
+    state: directory
+    mode: '0755'
+
+- name: Place answers file fixture
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../../tests/fixtures/installer-answers/katello-answers.yaml"
+    dest: /etc/foreman-installer/scenarios.d/katello-answers.yaml
+    mode: '0600'
+
+- name: Place scenario file fixture
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../../tests/fixtures/installer-answers/last_scenario.yaml"
+    dest: /etc/foreman-installer/scenarios.d/last_scenario.yaml
+    mode: '0644'

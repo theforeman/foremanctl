@@ -1,0 +1,4 @@
+---
+# Fixture representing /etc/foreman-installer/scenarios.d/last_scenario.yaml.
+# The :answer_file key uses Ruby YAML symbol notation as written by foreman-installer.
+":answer_file": "/etc/foreman-installer/scenarios.d/katello-answers.yaml"
