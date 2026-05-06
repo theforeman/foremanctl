@@ -4,7 +4,7 @@
 
 When upgrading from foreman-installer to foremanctl, the `foremanctl migrate` command helps convert your existing configuration to the new format.
 
-This guide explains how to migrate your foreman-installer answer files to foremanctl configuration files.
+By default, `foremanctl migrate` previews the migration without making any changes. Use `--apply` to perform the actual migration.
 
 ## Prerequisites
 
@@ -25,46 +25,69 @@ Before migrating, ensure the following:
 
 ## Migration Workflow
 
-1. **Generate the migrated configuration**:
+1. **Preview the migration** (no changes are made):
    ```bash
-   foremanctl migrate --output /var/lib/foremanctl/parameters.yaml
+   foremanctl migrate
    ```
 
 2. **Review the output** for any warnings about unmapped parameters
 
-3. **Use the migrated configuration** with foremanctl:
+3. **Apply the migration** when satisfied:
+   ```bash
+   foremanctl migrate --apply
+   ```
+
+4. **Deploy using foremanctl**:
    ```bash
    foremanctl deploy
    ```
-   (foremanctl automatically loads configuration from `/var/lib/foremanctl/parameters.yaml`)
 
 ## Command Usage
 
-### Basic Migration
+### Preview Migration
 
-Migrate from the default location (reads the currently active scenario):
+Preview the migrated configuration without making any changes:
 ```bash
-foremanctl migrate --output /var/lib/foremanctl/parameters.yaml
+foremanctl migrate
 ```
+
+This shows:
+- Mapped answer file parameters and their new values
+- Unmappable parameters that need manual review
+- Certificate state detected on the system
+
+### Apply Migration
+
+Perform the actual migration:
+```bash
+foremanctl migrate --apply
+```
+
+This:
+- Writes migrated parameters to the foremanctl configuration
+- Normalizes installer certificates into `/var/lib/foremanctl/certs/`
+- Backs up the original `/root/ssl-build/` directory to `/root/ssl-build.bak/`
 
 ### Custom Answer File
 
 Migrate from a specific answer file:
 ```bash
-foremanctl migrate --answer-file /path/to/custom-answers.yaml --output /var/lib/foremanctl/parameters.yaml
+foremanctl migrate --answer-file /path/to/custom-answers.yaml
+foremanctl migrate --apply --answer-file /path/to/custom-answers.yaml
 ```
 
-### Output to stdout
+### Write to a Custom Path
 
-Preview the migrated configuration without writing a file:
+Write the migrated parameters to a specific file for inspection:
 ```bash
-foremanctl migrate
+foremanctl migrate --output /tmp/migrated.yaml
 ```
 
 ## Command Options
 
+- `--apply` - Perform the migration. Without this flag, only previews what would happen.
 - `--answer-file PATH` - Path to the foreman-installer answer file. If not specified, reads the currently active scenario and extracts the answer file path from it.
-- `--output PATH` - Path for the migrated configuration (default: stdout)
+- `--output PATH` - Path for the migrated configuration. If not specified and `--apply` is used, writes to the foremanctl configuration.
 
 > [!NOTE]
 > Unlike other `foremanctl` commands, migrate does not persist parameters between runs. Each migration is independent.
@@ -117,20 +140,9 @@ These parameters need to be manually reviewed and added to the new configuration
 
 ## Using the Migrated Configuration
 
-Once you've generated and reviewed the migrated configuration:
+Once you've applied the migration:
 
-1. **Save it to the foremanctl parameters file**:
-   ```bash
-   # Either generate directly to the parameters file
-   foremanctl migrate --output /var/lib/foremanctl/parameters.yaml
-
-   # Or copy after review
-   foremanctl migrate --output /tmp/migrated.yaml
-   # Review /tmp/migrated.yaml
-   cp /tmp/migrated.yaml /var/lib/foremanctl/parameters.yaml
-   ```
-
-2. **Deploy using foremanctl**:
+1. **Deploy using foremanctl**:
    ```bash
    foremanctl deploy
    ```

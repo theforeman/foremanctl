@@ -42,7 +42,7 @@ class UserParameters:
 
 
 def pytest_addoption(parser):
-    parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'installer', 'custom_server'), help="Certificate source used during deployment")
+    parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'custom_server'), help="Certificate source used during deployment")
     parser.addoption("--database-mode", action="store", default="internal", choices=('internal', 'external'), help="Whether the database is internal or external")
 
 
