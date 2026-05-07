@@ -26,7 +26,7 @@ Vagrant.configure("2") do |config|
     override.vm.provider "libvirt" do |libvirt, provider|
       libvirt.memory = 10240
       libvirt.cpus = 4
-      libvirt.machine_virtual_size = 30
+      libvirt.machine_virtual_size = 50
     end
   end
 
@@ -45,6 +45,23 @@ Vagrant.configure("2") do |config|
 
     override.vm.provider "libvirt" do |libvirt, provider|
       libvirt.memory = 2048
+    end
+  end
+
+  # Load user-local box definitions from boxes.yaml (gitignored)
+  boxes_yaml = File.join(__dir__, 'boxes.yaml')
+  if File.exist?(boxes_yaml)
+    user_boxes = YAML.safe_load(File.read(boxes_yaml)) || {}
+    user_boxes.compact.each do |name, settings|
+      config.vm.define name do |override|
+        override.vm.box = settings.fetch('box') { ENV.fetch('FOREMANCTL_BASE_BOX', 'centos/stream9') }
+
+        override.vm.provider "libvirt" do |libvirt, _provider|
+          libvirt.memory = settings.fetch('memory', 3072)
+          libvirt.cpus = settings.fetch('cpus', 1)
+          libvirt.machine_virtual_size = settings.fetch('disk_size', 50)
+        end
+      end
     end
   end
 end
