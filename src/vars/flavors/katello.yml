@@ -2,6 +2,7 @@
 flavor_features:
   - foreman
   - katello
+  - ansible
   - content/ansible
   - content/container
   - content/deb

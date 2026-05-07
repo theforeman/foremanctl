@@ -20,6 +20,15 @@ azure-rm:
   hammer: foreman_azure_rm
   foreman:
     plugin_name: foreman_azure_rm
+ansible:
+  description: Ansible integration plugin for Foreman
+  foreman:
+    plugin_name: foreman_ansible
+  foreman_proxy:
+    plugin_name: ansible
+  hammer: foreman_ansible
+  dependencies:
+    - remote-execution
 remote-execution:
   description: Remote Execution plugin for Foreman
   foreman:

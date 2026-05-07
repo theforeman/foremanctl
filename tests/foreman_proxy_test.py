@@ -11,6 +11,7 @@ def test_foreman_proxy_features(server, certificates, server_fqdn):
     assert "logs" in features
     assert "script" in features
     assert "dynflow" in features
+    assert "ansible" in features
 
 def test_foreman_proxy_service(server):
     foreman_proxy = server.service("foreman-proxy")
