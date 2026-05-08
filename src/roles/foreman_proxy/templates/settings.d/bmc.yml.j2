@@ -1,7 +1,4 @@
 ---
 :enabled: {{ feature_enabled }}
 :bmc_default_provider: {{ foreman_proxy_bmc_default_provider }}
-
-{% if foreman_proxy_bmc_default_provider == 'redfish' %}
 :redfish_verify_ssl: {{ foreman_proxy_bmc_redfish_verify_ssl }}
-{% endif %}

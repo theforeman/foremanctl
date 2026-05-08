@@ -19,7 +19,7 @@ def is_bmc_enabled():
 
 def get_default_bmc_provider(server):
     bmc_setting = get_proxy_feature_setting(server, 'bmc')
-    return bmc_setting.get(':bmc_default_provider', 'ipmitool')
+    return bmc_setting.get(':bmc_default_provider')
 
 
 def test_foreman_proxy_features(server, certificates, server_fqdn):
@@ -59,6 +59,4 @@ def test_foreman_proxy_client_auth_to_foreman(server, certificates, server_fqdn)
 
 @pytest.mark.skipif("not is_bmc_enabled()")
 def test_bmc_default_provider(server):
-    cmd = server.run(f"podman exec foreman-proxy grep ':bmc_default_provider:' {BMC_CONFIG}")
-    assert cmd.succeeded
-    assert get_default_bmc_provider(server) in cmd.stdout
+    assert get_default_bmc_provider(server) == 'ipmitool'
