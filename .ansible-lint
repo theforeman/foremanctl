@@ -1,4 +1,6 @@
 ---
+enable_list:
+  - var-naming[no-role-prefix]
 exclude_paths:
   - .ansible/
   - .github/
