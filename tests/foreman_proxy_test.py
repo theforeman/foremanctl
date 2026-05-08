@@ -6,13 +6,12 @@ import yaml
 from conftest import enabled_features
 
 FOREMAN_PROXY_PORT = 8443
-BMC_CONFIG = "/etc/foreman-proxy/settings.d/bmc.yml"
 
-def get_proxy_feature_setting(server, feature, default=None):
+def get_proxy_feature_setting(server, feature):
     cmd = server.run(f"podman exec foreman-proxy cat /etc/foreman-proxy/settings.d/{feature}.yml")
     if cmd.succeeded:
         return yaml.safe_load(cmd.stdout)
-    return default
+    return {}
 
 def is_bmc_enabled():
     return 'bmc' in enabled_features()
