@@ -45,6 +45,6 @@ iop:
   dependencies:
     - rh-cloud
 bmc:
-  description: Power management for bare metal hosts (IPMI, Redfish, SSH)
+  description: Power management for bare metal hosts (IPMI, Redfish)
   foreman_proxy:
     plugin_name: bmc
