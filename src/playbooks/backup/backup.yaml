@@ -1,0 +1,23 @@
+---
+- name: Backup databases and configuration
+  hosts: quadlet
+  become: true
+  gather_facts: true
+  vars_files:
+    - "../../vars/defaults.yml"
+    - "../../vars/flavors/{{ flavor }}.yml"
+    - "../../vars/certificates.yml"
+    - "../../vars/foreman.yml"
+    - "../../vars/database.yml"
+    - "../../vars/base.yaml"
+  pre_tasks:
+    - name: Ensure PostgreSQL client package is installed
+      ansible.builtin.package:
+        name: postgresql
+        state: present
+  roles:
+    - role: backup
+      vars:
+        backup_database_mode: "{{ database_mode }}"
+        backup_databases: "{{ all_databases }}"
+        backup_pulp_storage_path: "{{ pulp_storage_path }}"
