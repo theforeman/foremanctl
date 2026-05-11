@@ -1,0 +1,31 @@
+---
+- name: Dump databases
+  ansible.builtin.command:
+    cmd: >
+      pg_dump
+      --host={{ item.host }}
+      --port={{ item.port }}
+      --username={{ item.user }}
+      --format=custom
+      --file={{ backup_dir_full }}/{{ item.name }}.dump
+      {{ item.database }}
+  environment:
+    PGPASSWORD: "{{ item.password }}"
+  loop: "{{ backup_databases_config }}"
+  loop_control:
+    label: "{{ item.name }}"
+  changed_when: true
+
+- name: Gather database dump files
+  ansible.builtin.find:
+    paths: "{{ backup_dir_full }}"
+    patterns: "*.dump"
+  register: backup_files
+
+- name: Display backup summary
+  ansible.builtin.debug:
+    msg: |
+      Database dumps completed:
+      - Total files: {{ backup_files.matched }}
+      - Total size: {{ (backup_files.files | map(attribute='size') | sum) | int | human_readable }}
+      - Location: {{ backup_dir_full }}
