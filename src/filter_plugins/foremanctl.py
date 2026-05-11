@@ -10,9 +10,18 @@ import yaml
 
 BASE_FEATURES = ['hammer', 'foreman-proxy', 'foreman']
 
-features_yaml = pathlib.Path(__file__).parent.parent / 'features.yaml'
+_SRC_ROOT = pathlib.Path(__file__).parent.parent
+features_yaml = _SRC_ROOT / 'features.yaml'
 with features_yaml.open() as features_file:
     FEATURE_MAP = yaml.safe_load(features_file)
+
+# load additional feature files under features.d  
+_features_d = _SRC_ROOT / 'features.d'
+if _features_d.is_dir():
+    for _overlay in sorted(_features_d.glob('*.yaml')):
+        with _overlay.open() as _overlay_file:
+            _extra = yaml.safe_load(_overlay_file) or {}
+        FEATURE_MAP.update(_extra)
 
 
 def compact_list(items):
