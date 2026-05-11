@@ -4,6 +4,8 @@
   gather_facts: true
   vars_files:
     - "../../vars/defaults.yml"
+    - "../../vars/flavors/{{ flavor }}.yml"
     - "../../vars/database.yml"
+    - "../../vars/database_iop.yml"
   roles:
     - checks

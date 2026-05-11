@@ -1,0 +1,53 @@
+---
+# Check database indexes using PostgreSQL amcheck extension
+# This check verifies the logical consistency of B-tree indexes to detect corruption
+# Required parameters:
+#   check_db_index_database: database name to check
+
+- name: Check if amcheck extension is installed
+  community.postgresql.postgresql_query:
+    db: "{{ check_db_index_database }}"
+    login_host: "{{ database_host }}"
+    login_port: "{{ database_port }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+    query: SELECT COUNT(*) as count FROM pg_extension WHERE extname = 'amcheck'
+  register: check_db_index_amcheck_installed
+  failed_when: false
+  changed_when: false
+
+- name: "Run amcheck on database: {{ check_db_index_database }}"
+  when:
+    - check_db_index_amcheck_installed is succeeded
+    - check_db_index_amcheck_installed.query_result[0].count | default(0) > 0
+  block:
+    - name: Execute amcheck integrity check
+      community.postgresql.postgresql_query:
+        db: "{{ check_db_index_database }}"
+        login_host: "{{ database_host }}"
+        login_port: "{{ database_port }}"
+        login_user: postgres
+        login_password: "{{ postgresql_admin_password }}"
+        query: |
+          SELECT bt_index_check(index => c.oid, heapallindexed => i.indisunique),
+                 c.relname,
+                 c.relpages
+          FROM pg_index i
+          JOIN pg_opclass op ON i.indclass[0] = op.oid
+          JOIN pg_am am ON op.opcmethod = am.oid
+          JOIN pg_class c ON i.indexrelid = c.oid
+          JOIN pg_namespace n ON c.relnamespace = n.oid
+          WHERE am.amname = 'btree' AND n.nspname = 'public'
+          AND c.relpersistence != 't'
+          AND c.relkind = 'i' AND i.indisready AND i.indisvalid
+          ORDER BY c.relpages DESC;
+      changed_when: false
+
+    - name: "Report database index check PASSED: {{ check_db_index_database }}"
+      ansible.builtin.debug:
+        msg: "{{ check_db_index_database }} database index check: PASSED"
+
+  rescue:
+    - name: "Report database index check FAILED: {{ check_db_index_database }}"
+      ansible.builtin.debug:
+        msg: "{{ check_db_index_database }} database index check: FAILED - indexes may be corrupted"

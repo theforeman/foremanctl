@@ -1,0 +1,117 @@
+---
+# Preflight checks for backup operation
+# - Check for running Foreman tasks
+# - Check for running Pulp tasks
+# - Run amcheck on databases (if available and local)
+
+- name: Check for running Foreman tasks
+  theforeman.foreman.resource_info:
+    server_url: "https://{{ ansible_fqdn }}"
+    oauth1_consumer_key: "{{ backup_foreman_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ backup_foreman_oauth_consumer_secret }}"
+    ca_path: "{{ backup_foreman_ca_certificate }}"
+    resource: foreman_tasks
+    search: "state=running"
+  register: backup_foreman_tasks_check
+  failed_when: false
+  changed_when: false
+  no_log: true
+
+- name: Set Foreman running tasks count
+  ansible.builtin.set_fact:
+    backup_foreman_running_tasks: "{{ backup_foreman_tasks_check.resources | default([]) | length }}"
+
+- name: Wait for Foreman tasks to complete (if --wait-for-tasks)
+  theforeman.foreman.wait_for_task:
+    server_url: "https://{{ ansible_fqdn }}"
+    oauth1_consumer_key: "{{ backup_foreman_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ backup_foreman_oauth_consumer_secret }}"
+    ca_path: "{{ backup_foreman_ca_certificate }}"
+    task: "{{ item }}"
+    timeout: "{{ task_wait_timeout | default(3600) }}"
+  loop: "{{ backup_foreman_tasks_check.resources | map(attribute='id') | list }}"
+  when:
+    - wait_for_tasks | default(false)
+    - backup_foreman_running_tasks | int > 0
+  changed_when: false
+  no_log: true
+
+- name: Fail if Foreman tasks are running (without --wait-for-tasks)
+  ansible.builtin.fail:
+    msg: |
+      There are {{ backup_foreman_running_tasks }} running Foreman task(s).
+      Please wait for these to complete or use --wait-for-tasks flag.
+  when:
+    - not (wait_for_tasks | default(false))
+    - backup_foreman_running_tasks | int > 0
+
+- name: Check for running Pulp tasks
+  community.postgresql.postgresql_query:
+    db: "{{ pulp_database_name }}"
+    login_host: "{{ pulp_database_host }}"
+    login_port: "{{ pulp_database_port }}"
+    login_user: "{{ pulp_database_user }}"
+    login_password: "{{ pulp_database_password }}"
+    query: "SELECT COUNT(*) as count FROM core_task WHERE state IN ('running', 'waiting')"
+  register: backup_pulp_tasks_check
+  failed_when: false
+  changed_when: false
+  no_log: true
+
+- name: Set Pulp running tasks count
+  ansible.builtin.set_fact:
+    backup_pulp_running_tasks: "{{ backup_pulp_tasks_check.query_result[0].count | default(0) | int }}"
+  when: backup_pulp_tasks_check is succeeded
+
+- name: Wait for Pulp tasks to complete (if --wait-for-tasks)
+  community.postgresql.postgresql_query:
+    db: "{{ pulp_database_name }}"
+    login_host: "{{ pulp_database_host }}"
+    login_port: "{{ pulp_database_port }}"
+    login_user: "{{ pulp_database_user }}"
+    login_password: "{{ pulp_database_password }}"
+    query: "SELECT COUNT(*) as count FROM core_task WHERE state IN ('running', 'waiting')"
+  register: backup_pulp_tasks_wait
+  until: backup_pulp_tasks_wait.query_result[0].count | default(0) == 0
+  retries: "{{ backup_task_wait_retries }}"
+  delay: "{{ backup_task_wait_delay }}"
+  when:
+    - wait_for_tasks | default(false)
+    - backup_pulp_running_tasks | default(0) | int > 0
+  changed_when: false
+  no_log: true
+
+- name: Fail if Pulp tasks are running (without --wait-for-tasks)
+  ansible.builtin.fail:
+    msg: |
+      There are {{ backup_pulp_running_tasks }} running Pulp task(s).
+      Please wait for these to complete or use --wait-for-tasks flag.
+  when:
+    - not wait_for_tasks | default(false)
+    - backup_pulp_running_tasks | default(0) | int > 0
+
+- name: Run database index integrity checks
+  ansible.builtin.include_role:
+    name: check_db_index
+  vars:
+    check_db_index_database: "{{ item }}"
+  loop:
+    - "{{ foreman_database_name }}"
+    - "{{ candlepin_database_name }}"
+    - "{{ pulp_database_name }}"
+  when: database_mode == 'internal'
+
+- name: Run IOP database index integrity checks
+  ansible.builtin.include_role:
+    name: check_db_index
+  vars:
+    check_db_index_database: "{{ item }}"
+  loop:
+    - "{{ iop_advisor_database_name }}"
+    - "{{ iop_inventory_database_name }}"
+    - "{{ iop_remediation_database_name }}"
+    - "{{ iop_vmaas_database_name }}"
+    - "{{ iop_vulnerability_database_name }}"
+  when:
+    - database_mode == 'internal'
+    - "'iop' in enabled_features"

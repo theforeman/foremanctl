@@ -1,0 +1,34 @@
+---
+- name: Dump databases
+  ansible.builtin.command:
+    cmd: >
+      pg_dump
+      -h {{ item.host }}
+      -p {{ item.port }}
+      -U {{ item.user }}
+      -Fc
+      -f {{ backup_dir_full }}/{{ item.name }}.dump
+      {{ item.database }}
+  environment:
+    PGPASSWORD: "{{ item.password }}"
+  loop: "{{ backup_databases_config }}"
+  changed_when: true
+  no_log: true
+
+- name: Calculate total backup size
+  ansible.builtin.find:
+    paths: "{{ backup_dir_full }}"
+    patterns: "*.dump"
+  register: backup_files
+
+- name: Calculate total size
+  ansible.builtin.set_fact:
+    backup_total_size_bytes: "{{ backup_files.files | map(attribute='size') | sum }}"
+
+- name: Display backup summary
+  ansible.builtin.debug:
+    msg: |
+      Database dumps completed:
+      - Total files: {{ backup_files.matched }}
+      - Total size: {{ backup_total_size_bytes | int | human_readable }}
+      - Location: {{ backup_dir_full }}

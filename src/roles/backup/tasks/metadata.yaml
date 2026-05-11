@@ -1,0 +1,64 @@
+---
+# Generate backup metadata before stopping services
+# This metadata helps with restore operations and compatibility checking
+
+- name: Gather package facts
+  ansible.builtin.package_facts:
+
+- name: Query container images
+  containers.podman.podman_image_info:
+  register: backup_container_images_result
+  failed_when: false
+
+- name: Build detailed container image list
+  ansible.builtin.set_fact:
+    backup_container_images_detailed: >-
+      {{
+        backup_container_images_detailed | default([]) +
+        [{
+          'name': (item.RepoTags | first) if item.RepoTags | default([]) | length > 0 else '<none>',
+          'digest': (item.RepoDigests | first) if item.RepoDigests | default([]) | length > 0 else '',
+          'id': item.Id,
+          'created': item.Created
+        }]
+      }}
+  loop: "{{ backup_container_images_result.images | default([]) }}"
+  when: backup_container_images_result is succeeded
+  no_log: true
+
+- name: Check if pulp content was backed up
+  ansible.builtin.stat:
+    path: "{{ backup_dir_full }}/pulp-content.tar.gz"
+  register: backup_pulp_content_backup_check
+  failed_when: false
+
+- name: Write metadata file
+  ansible.builtin.copy:
+    content: "{{ backup_metadata | to_nice_yaml }}"
+    dest: "{{ backup_dir_full }}/metadata.yml"
+    mode: '0644'
+  vars:
+    backup_metadata:
+      hostname: "{{ ansible_fqdn }}"
+      os_version: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+      foremanctl_version: "{{ ansible_facts.packages['foremanctl'][0].version | default('unknown') if 'foremanctl' in ansible_facts.packages else 'unknown' }}"
+      online: false
+      incremental: false
+      timestamp: "{{ backup_timestamp }}"
+      databases: "{{ backup_databases_to_backup }}"
+      iop_enabled: "{{ 'iop' in enabled_features }}"
+      enabled_features: "{{ enabled_features | default([]) }}"
+      database_mode: "{{ database_mode }}"
+      container_images: "{{ backup_container_images_detailed | default([]) }}"
+      backed_up_components: >-
+        {{
+          [
+            'databases',
+            'container_images',
+            'foremanctl_state'
+          ] + (['pulp_content'] if backup_pulp_content_backup_check.stat.exists | default(false) else [])
+        }}
+
+- name: Display metadata location
+  ansible.builtin.debug:
+    msg: "Backup metadata written to {{ backup_dir_full }}/metadata.yml"
