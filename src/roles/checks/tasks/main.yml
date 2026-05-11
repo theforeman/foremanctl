@@ -7,6 +7,14 @@
     - check_database_connection
     - check_system_requirements
 
+- name: Run database index integrity checks
+  ansible.builtin.include_role:
+    name: check_database_index
+  vars:
+    check_database_index_database: "{{ item.database }}"
+  loop: "{{ checks_databases }}"
+  when: database_mode == 'internal'
+
 - name: Report status of checks
   ansible.builtin.fail:
     msg: "{{ checks_results }}"
