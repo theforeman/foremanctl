@@ -6,7 +6,9 @@ OBSAH_DATA=${OBSAH_BASE}/src
 OBSAH_INVENTORY=${OBSAH_BASE}/inventories
 OBSAH_STATE=${OBSAH_BASE}/.var/lib/foremanctl
 OBSAH_PERSIST_PARAMS=true
-OBSAH_ALLOW_EXTRA_VARS=false
+# Let downstream wrappers pass extra obsah vars when needed
+# (default stays strict; opt-in via OBSAH_ALLOW_EXTRA_VARS=true in env).
+OBSAH_ALLOW_EXTRA_VARS=${OBSAH_ALLOW_EXTRA_VARS:-false}
 export OBSAH_NAME OBSAH_DATA OBSAH_INVENTORY OBSAH_STATE OBSAH_PERSIST_PARAMS OBSAH_ALLOW_EXTRA_VARS
 
 ANSIBLE_LOG_PATH=${OBSAH_BASE}/.var/lib/foremanctl/foremanctl.log
