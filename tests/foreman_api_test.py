@@ -50,8 +50,10 @@ def test_foreman_manifest(organization, foremanapi, fixture_dir):
         params = {'organization_id': organization['id']}
         foremanapi.resource_action('subscriptions', 'upload', params, files=files)
 
+
 def test_foreman_initial_organization(foremanapi):
     assert foremanapi.list('organizations', search='name="Foreman CI"')
+
 
 def test_foreman_initial_location(foremanapi):
     assert foremanapi.list('locations', search='name="Internet"')

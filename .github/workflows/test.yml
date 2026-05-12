@@ -35,6 +35,22 @@ jobs:
           working_directory: development
           setup_python: false
 
+  python-lint:
+    name: Python Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install ruff
+      - name: Run ruff
+        run: ruff check --output-format=github tests/
+
   tests:
     strategy:
       fail-fast: false
@@ -292,6 +308,7 @@ jobs:
       - devel-tests
       - upgrade
       - ansible-lint
+      - python-lint
     runs-on: ubuntu-latest
     name: Test suite
     steps:

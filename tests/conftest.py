@@ -1,6 +1,5 @@
 import os
 import uuid
-import yaml
 
 import apypie
 import paramiko
@@ -8,10 +7,11 @@ import py.path
 import pytest
 import requests
 import testinfra
-
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+import yaml
+from jinja2 import Environment
+from jinja2 import FileSystemLoader
+from jinja2 import select_autoescape
 from requests.adapters import HTTPAdapter
-
 
 SSH_CONFIG='./.tmp/ssh-config'
 
@@ -114,17 +114,20 @@ def foremanapi(ssh_config, server_fqdn):
     api._session.headers['Host'] = server_fqdn
     return api
 
+
 @pytest.fixture
 def organization(foremanapi):
     org = foremanapi.create('organizations', {'name': str(uuid.uuid4())})
     yield org
     foremanapi.delete('organizations', org)
 
+
 @pytest.fixture
 def product(organization, foremanapi):
     prod = foremanapi.create('products', {'name': str(uuid.uuid4()), 'organization_id': organization['id']})
     yield prod
     foremanapi.delete('products', prod)
+
 
 @pytest.fixture
 def yum_repository(product, organization, foremanapi):
@@ -133,12 +136,14 @@ def yum_repository(product, organization, foremanapi):
     yield repo
     foremanapi.delete('repositories', repo)
 
+
 @pytest.fixture
 def file_repository(product, organization, foremanapi):
     repo = foremanapi.create('repositories', {'name': str(uuid.uuid4()), 'product_id': product['id'], 'content_type': 'file', 'url': 'https://fixtures.pulpproject.org/file/'})
     wait_for_metadata_generate(foremanapi)
     yield repo
     foremanapi.delete('repositories', repo)
+
 
 @pytest.fixture
 def container_repository(product, organization, foremanapi):
@@ -147,6 +152,7 @@ def container_repository(product, organization, foremanapi):
     yield repo
     foremanapi.delete('repositories', repo)
 
+
 @pytest.fixture
 def lifecycle_environment(organization, foremanapi):
     library = foremanapi.list('lifecycle_environments', 'name=Library', {'organization_id': organization['id']})[0]
@@ -154,17 +160,20 @@ def lifecycle_environment(organization, foremanapi):
     yield lce
     foremanapi.delete('lifecycle_environments', lce)
 
+
 @pytest.fixture
 def content_view(organization, foremanapi):
     cv = foremanapi.create('content_views', {'name': str(uuid.uuid4()), 'organization_id': organization['id']})
     yield cv
     foremanapi.delete('content_views', cv)
 
+
 @pytest.fixture
 def activation_key(organization, foremanapi):
     ak = foremanapi.create('activation_keys', {'name': str(uuid.uuid4()), 'organization_id': organization['id']})
     yield ak
     foremanapi.delete('activation_keys', ak)
+
 
 @pytest.fixture
 def client_environment(activation_key, content_view, lifecycle_environment, yum_repository, organization, foremanapi):
@@ -186,10 +195,12 @@ def client_environment(activation_key, content_view, lifecycle_environment, yum_
             foremanapi.resource_action('content_views', 'remove_from_environment', params={'id': content_view['id'], 'environment_id': environment_id})
         foremanapi.delete('content_view_versions', version)
 
+
 def wait_for_tasks(foremanapi, search=None):
     tasks = foremanapi.list('foreman_tasks', search=search)
     for task in tasks:
         foremanapi.wait_for_task(task)
+
 
 def wait_for_metadata_generate(foremanapi):
     wait_for_tasks(foremanapi, 'label = Actions::Katello::Repository::MetadataGenerate')
