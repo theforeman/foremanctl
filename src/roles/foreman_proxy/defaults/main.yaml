@@ -21,5 +21,5 @@ foreman_proxy_disabled_features: "{{ foreman_proxy_available_features | differen
 foreman_proxy_foreman_server_url: "https://{{ ansible_facts['fqdn'] }}"
 
 # BMC settings
-foreman_proxy_bmc_default_provider: ipmitool
+foreman_proxy_bmc_ipmi_implementation: ipmitool
 foreman_proxy_bmc_redfish_verify_ssl: true

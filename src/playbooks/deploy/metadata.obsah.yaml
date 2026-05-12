@@ -46,13 +46,12 @@ variables:
     type: AbsolutePath
     parameter: --certificate-server-ca-certificate
     persist: false
-  foreman_proxy_bmc_default_provider:
-    parameter: --bmc-default-provider
-    help: Default BMC provider.
+  foreman_proxy_bmc_ipmi_implementation:
+    parameter: --bmc-ipmi-implementation
+    help: IPMI implementation to use for BMC.
     choices:
       - freeipmi
       - ipmitool
-      - redfish
   foreman_proxy_bmc_redfish_verify_ssl:
     parameter: --bmc-redfish-verify-ssl
     help: Verify SSL certificates for Redfish BMC connections.

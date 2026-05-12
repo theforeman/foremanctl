@@ -107,7 +107,7 @@ There are multiple use cases from the users perspective that dictate what parame
 
 | Parameter | Description | foreman-installer Parameters |
 | --------- | ----------- | ---------------------------- |
-| `--bmc-default-provider` | Default BMC provider | `--foreman-proxy-bmc-default-provider` |
+| `--bmc-ipmi-implementation` | IPMI implementation to use for BMC | `--foreman-proxy-bmc-default-provider` |
 | `--bmc-redfish-verify-ssl` | Verify SSL certificates for Redfish BMC connections | `--foreman-proxy-bmc-redfish-verify-ssl` |
 
 ### Undetermined
