@@ -4,53 +4,64 @@ HTTPS_PORT = 443
 HTTPD_PUB_DIR = '/var/www/html/pub'
 CURL_CMD = "curl --silent --output /dev/null"
 
+
 def test_httpd_service(server):
     httpd = server.service("httpd")
     assert httpd.is_running
     assert httpd.is_enabled
 
+
 def test_http_port(server):
     httpd = server.addr(HTTP_HOST)
     assert httpd.port(HTTP_PORT).is_reachable
 
+
 def test_https_port(server):
     httpd = server.addr(HTTP_HOST)
     assert httpd.port(HTTPS_PORT).is_reachable
+
 
 def test_http_foreman_ping(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{redirect_url}}' http://{server_fqdn}/api/v2/ping")
     assert cmd.succeeded
     assert cmd.stdout == f'https://{server_fqdn}/api/v2/ping'
 
+
 def test_https_foreman_ping(server, certificates, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/api/v2/ping")
     assert cmd.succeeded
     assert cmd.stdout == '200'
+
 
 def test_http_pulp_api_status(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/pulp/api/v3/status/")
     assert cmd.succeeded
     assert cmd.stdout == '404'
 
+
 def test_https_pulp_api_status(server, certificates, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/pulp/api/v3/status/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
+
 
 def test_http_pulp_content(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{stderr}}%{{http_code}}' http://{server_fqdn}/pulp/content/")
     assert cmd.succeeded
     assert cmd.stderr == '200'
 
+
 def test_https_pulp_content(server, certificates, server_fqdn):
     cmd = server.run(f"curl --silent --cacert {certificates['server_ca_certificate']} https://{server_fqdn}/pulp/content/")
     assert cmd.succeeded
     assert "Index of /pulp/content/" in cmd.stdout
 
+
 def test_https_pulp_auth(server, certificates, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' --cert {certificates['client_certificate']} --key {certificates['client_key']} https://{server_fqdn}/pulp/api/v3/users/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
+
 
 def test_pub_directory_exists(server):
     pub_dir = server.file(HTTPD_PUB_DIR)
@@ -58,52 +69,63 @@ def test_pub_directory_exists(server):
     assert pub_dir.is_directory
     assert pub_dir.mode == 0o755
 
+
 def test_http_pub_directory_accessible(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/pub/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
+
 
 def test_https_pub_directory_accessible(server, certificates, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/pub/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
+
 def test_http_pub_server_ca_certificate_downloadable(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/pub/katello-server-ca.crt")
     assert cmd.succeeded
     assert cmd.stdout == '200'
+
 
 def test_https_pub_server_ca_certificate_downloadable(server, certificates, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/pub/katello-server-ca.crt")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
+
 def test_http_foreman_login(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/users/login")
     assert cmd.succeeded
     assert cmd.stdout == '301'
+
 
 def test_https_foreman_login(server, certificates, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/users/login")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
+
 def test_httpd_event_conf_exists(server):
     event_conf = server.file("/etc/httpd/conf.modules.d/event.conf")
     assert event_conf.exists
     assert event_conf.is_file
 
+
 def test_httpd_event_conf_contains_server_limit(server):
     event_conf = server.file("/etc/httpd/conf.modules.d/event.conf")
     assert event_conf.contains("ServerLimit")
+
 
 def test_httpd_event_conf_contains_threads_per_child(server):
     event_conf = server.file("/etc/httpd/conf.modules.d/event.conf")
     assert event_conf.contains("ThreadsPerChild")
 
+
 def test_httpd_config_syntax(server):
     cmd = server.run("httpd -t")
     assert cmd.succeeded
+
 
 def test_httpd_headers_use_dashes(server):
     cmd = server.run("grep -rPn 'RequestHeader\\s+set\\s+\\S*_\\S*\\s' /etc/httpd/conf.d/foreman.conf /etc/httpd/conf.d/foreman-ssl.conf /etc/httpd/conf.d/05-foreman.d/ /etc/httpd/conf.d/05-foreman-ssl.d/ 2>/dev/null")

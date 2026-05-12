@@ -1,6 +1,3 @@
-import re
-
-
 def assert_secret_content(server, secret_name, secret_value):
     secret = server.run(f'podman secret inspect --format {"{{.SecretData}}"} --showsecret {secret_name}')
     assert secret.succeeded
