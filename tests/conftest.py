@@ -13,7 +13,8 @@ from jinja2 import FileSystemLoader
 from jinja2 import select_autoescape
 from requests.adapters import HTTPAdapter
 
-SSH_CONFIG='./.tmp/ssh-config'
+
+SSH_CONFIG = './.tmp/ssh-config'
 
 
 def pytest_addoption(parser):
@@ -205,6 +206,7 @@ def wait_for_tasks(foremanapi, search=None):
 def wait_for_metadata_generate(foremanapi):
     wait_for_tasks(foremanapi, 'label = Actions::Katello::Repository::MetadataGenerate')
 
+
 def enabled_features():
     test_dir = os.path.dirname(os.path.abspath(__file__))
     foremanctl_dir = os.path.dirname(test_dir)
@@ -217,8 +219,10 @@ def enabled_features():
             return features
     return []
 
+
 def is_iop_enabled():
     return 'iop' in enabled_features()
+
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "iop: tests requiring IOP to be enabled")

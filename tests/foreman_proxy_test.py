@@ -57,5 +57,5 @@ def test_foreman_proxy_client_auth_to_foreman(server, certificates, server_fqdn)
     assert cmd.stdout == '201'
 
 @pytest.mark.skipif("not is_bmc_enabled()")
-def test_bmc_default_provider(server):
+def test_bmc_default_ipmi_implementation(server):
     assert get_default_bmc_provider(server) == 'ipmitool'
