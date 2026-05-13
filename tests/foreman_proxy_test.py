@@ -2,26 +2,24 @@ import datetime
 import json
 
 import pytest
-import yaml
 from conftest import enabled_features
 
 FOREMAN_PROXY_PORT = 8443
-
-
-def get_proxy_feature_setting(server, feature):
-    cmd = server.run(f"podman exec foreman-proxy cat /etc/foreman-proxy/settings.d/{feature}.yml")
-    if cmd.succeeded:
-        return yaml.safe_load(cmd.stdout)
-    return {}
 
 
 def is_bmc_enabled():
     return 'bmc' in enabled_features()
 
 
-def get_default_bmc_provider(server):
-    bmc_setting = get_proxy_feature_setting(server, 'bmc')
-    return bmc_setting.get(':bmc_default_provider')
+def get_proxy_v2_features(server, certificates, server_fqdn):
+    cmd = server.run(
+        f"curl --cacert {certificates['server_ca_certificate']} "
+        f"--cert {certificates['client_certificate']} "
+        f"--key {certificates['client_key']} "
+        f"--silent https://{server_fqdn}:{FOREMAN_PROXY_PORT}/v2/features"
+    )
+    assert cmd.succeeded, f"Failed to query /v2/features: {cmd.stderr}"
+    return json.loads(cmd.stdout)
 
 
 def test_foreman_proxy_features(server, certificates, server_fqdn):
@@ -33,6 +31,8 @@ def test_foreman_proxy_features(server, certificates, server_fqdn):
     assert "dynflow" in features
     if is_bmc_enabled():
         assert "bmc" in features
+    else:
+        assert "bmc" not in features
 
 
 def test_foreman_proxy_service(server):
@@ -61,5 +61,10 @@ def test_foreman_proxy_client_auth_to_foreman(server, certificates, server_fqdn)
 
 
 @pytest.mark.skipif("not is_bmc_enabled()")
-def test_bmc_default_ipmi_implementation(server):
-    assert get_default_bmc_provider(server) == 'ipmitool'
+def test_bmc_capabilities(server, certificates, server_fqdn):
+    features = get_proxy_v2_features(server, certificates, server_fqdn)
+    assert 'bmc' in features
+    capabilities = features['bmc'].get('capabilities', [])
+    assert 'ipmitool' in capabilities
+    assert 'freeipmi' in capabilities
+    assert 'redfish' in capabilities
