@@ -41,13 +41,13 @@ source .venv/bin/activate
 
 ### Deploy hammer (optional)
 
-> [!NOTE]
-> You MUST run `setup-repositories` before enabling hammer.
-
 ```
 ./forge setup-repositories
 ./foremanctl deploy --add-feature hammer
 ```
+
+> [!NOTE]
+> You MUST run `setup-repositories` before enabling hammer.
 
 To teardown the environment:
 
