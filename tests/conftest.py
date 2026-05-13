@@ -13,7 +13,6 @@ from jinja2 import FileSystemLoader
 from jinja2 import select_autoescape
 from requests.adapters import HTTPAdapter
 
-
 SSH_CONFIG = './.tmp/ssh-config'
 
 

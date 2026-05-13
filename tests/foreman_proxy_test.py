@@ -7,14 +7,17 @@ from conftest import enabled_features
 
 FOREMAN_PROXY_PORT = 8443
 
+
 def get_proxy_feature_setting(server, feature):
     cmd = server.run(f"podman exec foreman-proxy cat /etc/foreman-proxy/settings.d/{feature}.yml")
     if cmd.succeeded:
         return yaml.safe_load(cmd.stdout)
     return {}
 
+
 def is_bmc_enabled():
     return 'bmc' in enabled_features()
+
 
 def get_default_bmc_provider(server):
     bmc_setting = get_proxy_feature_setting(server, 'bmc')
@@ -55,6 +58,7 @@ def test_foreman_proxy_client_auth_to_foreman(server, certificates, server_fqdn)
     )
     assert cmd.succeeded
     assert cmd.stdout == '201'
+
 
 @pytest.mark.skipif("not is_bmc_enabled()")
 def test_bmc_default_ipmi_implementation(server):
