@@ -2,13 +2,8 @@ import datetime
 import json
 
 import pytest
-from conftest import enabled_features
 
 FOREMAN_PROXY_PORT = 8443
-
-
-def is_bmc_enabled():
-    return 'bmc' in enabled_features()
 
 
 def get_proxy_v2_features(server, certificates, server_fqdn):
@@ -22,14 +17,14 @@ def get_proxy_v2_features(server, certificates, server_fqdn):
     return json.loads(cmd.stdout)
 
 
-def test_foreman_proxy_features(server, certificates, server_fqdn):
+def test_foreman_proxy_features(server, certificates, server_fqdn, enabled_features):
     cmd = server.run(f"curl --cacert {certificates['server_ca_certificate']} --silent https://{server_fqdn}:{FOREMAN_PROXY_PORT}/features")
     assert cmd.succeeded
     features = json.loads(cmd.stdout)
     assert "logs" in features
     assert "script" in features
     assert "dynflow" in features
-    if is_bmc_enabled():
+    if 'bmc' in enabled_features:
         assert "bmc" in features
     else:
         assert "bmc" not in features
@@ -60,7 +55,7 @@ def test_foreman_proxy_client_auth_to_foreman(server, certificates, server_fqdn)
     assert cmd.stdout == '201'
 
 
-@pytest.mark.skipif("not is_bmc_enabled()")
+@pytest.mark.feature('bmc')
 def test_bmc_capabilities(server, certificates, server_fqdn):
     features = get_proxy_v2_features(server, certificates, server_fqdn)
     assert 'bmc' in features

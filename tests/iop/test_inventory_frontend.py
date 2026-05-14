@@ -1,6 +1,6 @@
 import pytest
 
-pytestmark = pytest.mark.iop
+pytestmark = pytest.mark.feature("iop")
 
 
 def test_inventory_frontend_assets_directory(server):

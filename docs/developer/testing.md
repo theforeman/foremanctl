@@ -146,6 +146,32 @@ def test_service_port(server):
     assert server.addr("localhost").port(6379).is_reachable
 ```
 
+### Feature guarding
+
+Some functionality can only be tested when a feature is enabled.
+
+You can mark an individual test to be skipped if needed:
+
+```python
+@pytest.mark.feature("iop")
+def test_ingress_service(server):
+    service = server.service("iop-core-ingress")
+    assert service.is_running and service.is_enabled
+```
+
+Often it's better to have an entire file dedicated to a feature and mark the entire file as guarded.
+
+```python
+pytestmark = pytest.mark.feature("iop")
+
+def test_ingress_service(server):
+    service = server.service("iop-core-ingress")
+    assert service.is_running and service.is_enabled
+
+def test_ingress_http_endpoint(server):
+    # ...
+```
+
 ### API test
 
 The `foremanapi` fixture is an [apypie](https://github.com/Apipie/apypie) `ForemanApi` client that connects to the deployed Foreman instance(authenticated as `admin`/`changeme`). It maps directly to the Foreman REST API — each method takes a resource name that corresponds to an API endpoint:
