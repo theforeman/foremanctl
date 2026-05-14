@@ -46,6 +46,9 @@ source .venv/bin/activate
 ./foremanctl deploy --add-feature hammer
 ```
 
+> [!NOTE]
+> You MUST run `setup-repositories` before enabling hammer.
+
 To teardown the environment:
 
 ```
