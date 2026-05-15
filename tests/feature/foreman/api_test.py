@@ -1,8 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.feature('foreman')
-
-
 def test_foreman_organization(organization):
     assert organization
 

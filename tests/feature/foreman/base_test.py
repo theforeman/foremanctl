@@ -2,8 +2,6 @@ import json
 
 import pytest
 
-pytestmark = pytest.mark.feature('foreman')
-
 FOREMAN_SOCKET = '/run/httpd.foreman.sock'
 
 RECURRING_INSTANCES = [

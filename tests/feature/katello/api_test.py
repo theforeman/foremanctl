@@ -1,8 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.feature('katello')
-
-
 def test_foreman_product(product):
     assert product
 

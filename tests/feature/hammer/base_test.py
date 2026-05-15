@@ -1,8 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.feature('hammer')
-
-
 def test_hammer_ping(server):
     hammer = server.run("hammer ping")
     assert hammer.succeeded
