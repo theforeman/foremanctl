@@ -64,12 +64,16 @@
     - role: postgresql
       when:
         - database_mode == 'internal'
-    - redis
+    - role: redis
+      when:
+        - "'redis' in enabled_features"
     - role: candlepin
       when:
         - "'foreman' in enabled_features"
         - "'katello' in enabled_features"
-    - httpd
+    - role: httpd
+      when:
+        - "'httpd' in enabled_features"
     - role: pulp
       when:
         - "'katello' in enabled_features"

@@ -1,15 +1,25 @@
 ---
 foreman:
   description: Base Foreman Server
+  dependencies:
+    - httpd
+    - redis
 foreman-proxy:
   description: Base Foreman Proxy
 hammer:
   description: Foreman CLI
+httpd:
+  internal: true
+redis:
+  internal: true
 katello:
   description: Content and Subscription Management plugin for Foreman
   foreman:
     plugin_name: katello
   hammer: katello
+  dependencies:
+    - httpd
+    - redis
 google:
   description: Google Compute Engine plugin for Foreman
   hammer: foreman_google
