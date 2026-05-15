@@ -29,6 +29,7 @@
     - role: postgresql
       when:
         - database_mode == 'internal'
+        - postgresql_databases | length > 0
     - role: valkey
       when:
         - "'valkey' in enabled_features"
