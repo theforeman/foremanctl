@@ -1,6 +1,9 @@
 ---
 foreman:
   description: Base Foreman Server
+  dependencies:
+    - httpd
+    - valkey
   conflicts:
     - container-gateway
 foreman-proxy:
@@ -10,8 +13,17 @@ hammer:
 pulp:
   description: Pulp content management service
   internal: true
+  dependencies:
+    - httpd
+    - valkey
 candlepin:
   description: Candlepin subscription management service
+  internal: true
+httpd:
+  description: Apache webserver
+  internal: true
+valkey:
+  description: Valkey key/value store
   internal: true
 katello:
   description: Content and Subscription Management plugin for Foreman
@@ -22,6 +34,8 @@ katello:
     - tasks
     - pulp
     - candlepin
+    - httpd
+    - valkey
 google:
   description: Google Compute Engine plugin for Foreman
   hammer: foreman_google
