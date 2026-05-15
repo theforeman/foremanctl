@@ -1,6 +1,7 @@
 import subprocess
 import uuid
 from functools import cached_property
+from pathlib import Path
 
 import apypie
 import paramiko
@@ -240,6 +241,19 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "feature(name): mark a test as requiring a feature")
 
     config.user_parameters = UserParameters(config)
+
+
+def pytest_collection_modifyitems(config, items):
+    feature_dir = config.rootdir / 'tests' / 'feature'
+    for item in items:
+        try:
+            rel_path = Path(item.fspath).relative_to(feature_dir)
+        except ValueError:
+            # Not in the features directory
+            pass
+        else:
+            feature = rel_path.parts[0]
+            item.add_marker(pytest.mark.feature(feature))
 
 
 def pytest_runtest_setup(item):

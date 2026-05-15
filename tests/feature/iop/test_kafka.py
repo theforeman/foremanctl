@@ -1,8 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.feature("iop")
-
-
 def test_kafka_service(server):
     service = server.service("iop-core-kafka")
     assert service.is_running
