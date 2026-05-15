@@ -77,7 +77,9 @@
     - role: pulp
       when:
         - "'katello' in enabled_features"
-    - foreman
+    - role: foreman
+      when:
+        - "'foreman' in enabled_features"
     - role: systemd_target
     - role: iop_core
       when:
