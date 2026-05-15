@@ -1,8 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.feature("iop")
-
-
 def test_vmaas_reposcan_service(server):
     service = server.service("iop-service-vmaas-reposcan")
     assert service.is_running
