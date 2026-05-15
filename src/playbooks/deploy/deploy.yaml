@@ -30,10 +30,14 @@
       when:
         - database_mode == 'internal'
     - role: valkey
+      when:
+        - "enabled_features | has_feature('valkey')"
     - role: candlepin
       when:
         - "enabled_features | has_feature('candlepin')"
     - role: httpd
+      when:
+        - "enabled_features | has_feature('httpd')"
     - role: foreman
       when:
         - "enabled_features | has_feature('foreman')"
