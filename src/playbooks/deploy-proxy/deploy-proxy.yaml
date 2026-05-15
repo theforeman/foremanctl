@@ -39,7 +39,9 @@
       when:
         - "'katello' in enabled_features"
     - systemd_target
-    - foreman_proxy
+    - role: foreman_proxy
+      when:
+        - "'foreman-proxy' in enabled_features"
     - role: post_install
       vars:
         post_install_foreman_ca_path: "{{ foreman_proxy_foreman_ca_certificate | default(omit) }}"
