@@ -259,10 +259,12 @@ def test_dynflow_service_instances(server, instance):
 
 ## Where to add new tests
 
+The directory `tests/feature` is special. Any subdirectory automatically applies the feature marker. `tests/feature/foreman/api_test.py` is equivalent to `tests/foreman_api_test.py` with `pytestmark = pytest.mark.feature("foreman")`.
+
 | What you're testing | File |
 | --- | --- |
-| A new service (container or systemd unit) | `tests/<service>_test.py` |
-| Foreman API behavior | `tests/foreman_api_test.py` (or a new file for larger areas) |
+| A new service (container or systemd unit) | `tests/feature/<feature>/<service>_test.py` |
+| Foreman API behavior | `tests/feature/foreman/api_test.py` (or a new file for larger areas) |
 | Client registration or content workflows | `tests/client_test.py` |
 | CLI flags, playbooks, or feature management | `tests/features_test.py` or `tests/playbooks_test.py` |
 | A standalone script (no deployment needed) | `tests/unit/<name>_test.py` |

@@ -287,6 +287,17 @@ def pytest_collection_modifyitems(config, items):
         config.hook.pytest_deselected(items=deselected)
         items[:] = selected
 
+    feature_dir = config.rootdir / 'tests' / 'feature'
+    for item in items:
+        try:
+            rel_path = item.path.relative_to(feature_dir)
+        except ValueError:
+            # Not in the features directory
+            pass
+        else:
+            feature = rel_path.parts[0]
+            item.add_marker(pytest.mark.feature(feature))
+
 
 def pytest_runtest_setup(item):
     feature_markers = set(mark.args[0] for mark in item.iter_markers(name="feature"))
