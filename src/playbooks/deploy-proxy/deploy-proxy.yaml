@@ -31,7 +31,9 @@
         - database_mode == 'internal'
     - valkey
     - httpd
-    - pulp
+    - role: pulp
+      when:
+        - "'katello' in enabled_features"
     - systemd_target
     - foreman_proxy
     - role: post_install
