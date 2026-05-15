@@ -30,7 +30,11 @@
       when:
         - database_mode == 'internal'
     - role: valkey
+      when:
+        - "enabled_features | has_feature('valkey')"
     - role: httpd
+      when:
+        - "enabled_features | has_feature('httpd')"
     - role: pulp
       when:
         - "enabled_features | has_feature('pulp')"
