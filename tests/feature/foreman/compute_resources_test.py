@@ -1,7 +1,5 @@
 import pytest
 
-pytestmark = pytest.mark.feature('foreman')
-
 
 @pytest.mark.parametrize("compute_resource", ['AzureRm', 'EC2', 'GCE', 'Libvirt', 'Openstack', 'Vmware'])
 def test_foreman_compute_resources(foremanapi, compute_resource):

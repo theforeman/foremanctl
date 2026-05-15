@@ -1,8 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.feature('katello')
-
-
 def test_foreman_content_view(client_environment, activation_key, organization, foremanapi, client):
     client.run('dnf install -y subscription-manager')
     rcmd = foremanapi.create('registration_commands', {'organization_id': organization['id'], 'insecure': True, 'activation_keys': [activation_key['name']], 'force': True})
