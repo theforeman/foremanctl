@@ -2,8 +2,24 @@ import datetime
 import json
 
 import pytest
+from conftest import enabled_features
 
 FOREMAN_PROXY_PORT = 8443
+
+
+def is_bmc_enabled():
+    return 'bmc' in enabled_features()
+
+
+def get_proxy_v2_features(server, certificates, server_fqdn):
+    cmd = server.run(
+        f"curl --cacert {certificates['server_ca_certificate']} "
+        f"--cert {certificates['client_certificate']} "
+        f"--key {certificates['client_key']} "
+        f"--silent https://{server_fqdn}:{FOREMAN_PROXY_PORT}/v2/features"
+    )
+    assert cmd.succeeded, f"Failed to query /v2/features: {cmd.stderr}"
+    return json.loads(cmd.stdout)
 
 
 def test_foreman_proxy_features(server, certificates, server_fqdn):
@@ -13,6 +29,10 @@ def test_foreman_proxy_features(server, certificates, server_fqdn):
     assert "logs" in features
     assert "script" in features
     assert "dynflow" in features
+    if is_bmc_enabled():
+        assert "bmc" in features
+    else:
+        assert "bmc" not in features
 
 
 def test_foreman_proxy_service(server):
@@ -38,3 +58,13 @@ def test_foreman_proxy_client_auth_to_foreman(server, certificates, server_fqdn)
     )
     assert cmd.succeeded
     assert cmd.stdout == '201'
+
+
+@pytest.mark.skipif("not is_bmc_enabled()")
+def test_bmc_capabilities(server, certificates, server_fqdn):
+    features = get_proxy_v2_features(server, certificates, server_fqdn)
+    assert 'bmc' in features
+    capabilities = features['bmc'].get('capabilities', [])
+    assert 'ipmitool' in capabilities
+    assert 'freeipmi' in capabilities
+    assert 'redfish' in capabilities

@@ -44,3 +44,7 @@ iop:
   description: iop services
   dependencies:
     - rh-cloud
+bmc:
+  description: Power management for bare metal hosts (IPMI, Redfish)
+  foreman_proxy:
+    plugin_name: bmc
