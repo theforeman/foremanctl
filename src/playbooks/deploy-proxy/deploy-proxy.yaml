@@ -31,7 +31,9 @@
         - database_mode == 'internal'
     - valkey
     - httpd
-    - pulp
+    - role: pulp
+      when:
+        - "enabled_features | has_feature('pulp')"
     - systemd_target
     - foreman_proxy
     - role: post_install
