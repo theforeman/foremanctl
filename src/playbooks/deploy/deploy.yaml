@@ -64,6 +64,7 @@
     - role: postgresql
       when:
         - database_mode == 'internal'
+        - postgresql_databases | length > 0
     - role: redis
       when:
         - "'redis' in enabled_features"
