@@ -29,8 +29,12 @@
     - role: postgresql
       when:
         - database_mode == 'internal'
-    - valkey
-    - httpd
+    - role: valkey
+      when:
+        - "'valkey' in enabled_features"
+    - role: httpd
+      when:
+        - "'httpd' in enabled_features"
     - role: pulp
       when:
         - "'katello' in enabled_features"
