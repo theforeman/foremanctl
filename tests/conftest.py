@@ -145,6 +145,10 @@ def foremanapi(ssh_config, server_fqdn):
     api._session.headers['Host'] = server_fqdn
     return api
 
+@pytest.fixture
+def features(pytestconfig):
+    return pytestconfig.user_parameters.features
+
 
 @pytest.fixture
 def organization(foremanapi):
