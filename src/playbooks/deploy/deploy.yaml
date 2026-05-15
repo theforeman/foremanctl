@@ -40,9 +40,14 @@
       when:
         - database_mode == 'internal'
     - redis
-    - candlepin
+    - role: candlepin
+      when:
+        - "'foreman' in enabled_features"
+        - "'katello' in enabled_features"
     - httpd
-    - pulp
+    - role: pulp
+      when:
+        - "'katello' in enabled_features"
     - foreman
     - role: systemd_target
     - role: iop_core

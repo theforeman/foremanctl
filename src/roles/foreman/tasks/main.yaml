@@ -313,3 +313,5 @@
     oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
     ca_path: "{{ foreman_ca_certificate }}"
+  when:
+    - "'katello' in enabled_features"
