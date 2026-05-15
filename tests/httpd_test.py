@@ -37,36 +37,42 @@ def test_https_foreman_ping(server, certificates, server_fqdn):
     assert cmd.stdout == '200'
 
 
+@pytest.mark.feature('katello')
 def test_http_pulp_api_status(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/pulp/api/v3/status/")
     assert cmd.succeeded
     assert cmd.stdout == '404'
 
 
+@pytest.mark.feature('katello')
 def test_https_pulp_api_status(server, certificates, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/pulp/api/v3/status/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
 
+@pytest.mark.feature('katello')
 def test_http_pulp_content(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{stderr}}%{{http_code}}' http://{server_fqdn}/pulp/content/")
     assert cmd.succeeded
     assert cmd.stderr == '200'
 
 
+@pytest.mark.feature('katello')
 def test_https_pulp_content(server, certificates, server_fqdn):
     cmd = server.run(f"curl --silent --cacert {certificates['server_ca_certificate']} https://{server_fqdn}/pulp/content/")
     assert cmd.succeeded
     assert "Index of /pulp/content/" in cmd.stdout
 
 
+@pytest.mark.feature('katello')
 def test_https_pulp_auth(curl_request):
     cmd = curl_request("pulp/api/v3/users/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
 
+@pytest.mark.feature('katello')
 def test_https_pypi_endpoint(curl_request):
     cmd = curl_request("pypi/test/", return_body=True)
     assert cmd.succeeded
