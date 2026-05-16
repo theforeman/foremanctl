@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import os
-import sys
+
 import yaml
 from ansible.module_utils.basic import AnsibleModule
 
@@ -48,7 +48,7 @@ def resolve_answer_file_from_scenario(scenario_file='/etc/foreman-installer/scen
 
             answer_file = scenario_data.get(':answer_file')
             if not answer_file:
-                raise ValueError(f"Scenario file does not contain :answer_file: key")
+                raise ValueError("Scenario file does not contain :answer_file: key")
 
             return answer_file
         except yaml.YAMLError as e:

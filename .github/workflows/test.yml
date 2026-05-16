@@ -49,7 +49,7 @@ jobs:
           pip install --upgrade pip
           pip install ruff
       - name: Run ruff
-        run: ruff check --output-format=github tests/
+        run: ruff check --output-format=github tests/ src/ development/scripts/ inventories/
 
   tests:
     strategy:
