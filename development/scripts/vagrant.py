@@ -5,9 +5,9 @@ import argparse
 import json
 import subprocess
 import sys
-import yaml
-
 from collections import defaultdict
+
+import yaml
 
 
 def parse_args():

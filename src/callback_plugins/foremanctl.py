@@ -14,6 +14,7 @@ DOCUMENTATION = """
       - set as stdout in configuration
 """
 
+
 class CallbackModule(DefaultCallbackModule):
     """Foremanctl callback."""
 
