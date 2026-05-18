@@ -80,6 +80,7 @@
     volumes:
       - /var/log/candlepin:/var/log/candlepin:Z
       - /var/log/tomcat:/var/log/tomcat:Z
+      - /var/lib/foremanctl/etc_crypto_policies:/etc/crypto-policies:ro,z
     quadlet_options:
       - |
         [Install]

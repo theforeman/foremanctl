@@ -29,6 +29,7 @@
   roles:
     - role: pre_install
     - role: checks
+    - role: crypto_policy
     - role: certificates
       when: "certificates_source in ['default', 'custom_server']"
     - role: certificate_checks

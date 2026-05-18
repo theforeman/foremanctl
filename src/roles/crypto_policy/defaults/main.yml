@@ -1,0 +1,3 @@
+---
+crypto_policy_container: "centos:stream9"
+crypto_policy_policy: FUTURE
