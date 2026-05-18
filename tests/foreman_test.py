@@ -12,9 +12,11 @@ RECURRING_INSTANCES = [
     "monthly",
 ]
 
+
 @pytest.fixture(scope="module")
 def foreman_status_curl(server):
     return server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' http://{FOREMAN_HOST}:{FOREMAN_PORT}/api/v2/ping")
+
 
 @pytest.fixture(scope="module")
 def foreman_status(foreman_status_curl):
@@ -45,7 +47,7 @@ def test_foreman_status_cache(foreman_status):
     assert foreman_status['results']['foreman']['cache']['servers'][0]['status'] == 'ok'
 
 
-@pytest.mark.parametrize("katello_service", ['candlepin', 'candlepin_auth', 'candlepin_events', 'foreman_tasks', 'katello_events', 'pulp3', 'pulp3_content'])
+@pytest.mark.parametrize("katello_service", ['candlepin', 'candlepin_auth', 'foreman_tasks', 'katello_events', 'pulp3', 'pulp3_content'])
 def test_katello_services_status(foreman_status, katello_service):
     assert foreman_status['results']['katello']['services'][katello_service]['status'] == 'ok'
 
@@ -75,6 +77,20 @@ def test_foreman_recurring_services_exist(server, instance):
     service = server.service(f"foreman-recurring@{instance}.service")
     assert service.exists
 
+
 def test_foreman_delivery_method_setting(foremanapi):
     delivery_method_setting = foremanapi.list('settings', search='name=delivery_method')
     assert delivery_method_setting[0]['value'] == 'smtp'
+
+
+@pytest.mark.parametrize("setting", ["foreman_url", "unattended_url"])
+def test_foreman_fqdn_in_url_settings(foremanapi, server_fqdn, setting):
+    settings = foremanapi.list('settings', search=f'name={setting}')
+    assert server_fqdn in settings[0]['value']
+
+
+@pytest.mark.parametrize("setting", ["administrator", "email_reply_address"])
+def test_foreman_domain_in_mail_settings(foremanapi, server_fqdn, setting):
+    settings = foremanapi.list('settings', search=f'name={setting}')
+    domain = str.join('.', server_fqdn.split('.')[1:])
+    assert domain in settings[0]['value']

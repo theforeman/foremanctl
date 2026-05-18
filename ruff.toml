@@ -1,0 +1,12 @@
+preview = true
+line-length = 120
+
+[lint]
+select = [
+    "E3",     # blank line rules (E301, E302, E303, E304, E305)
+    "F",      # pyflakes
+    "I",      # isort (import ordering)
+]
+
+[lint.isort]
+force-single-line = true

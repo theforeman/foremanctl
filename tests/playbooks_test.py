@@ -1,10 +1,8 @@
 import os
 import sys
 
-import pytest
-
 import obsah
-
+import pytest
 
 os.environ['OBSAH_DATA'] = 'src'
 

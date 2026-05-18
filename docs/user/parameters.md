@@ -47,8 +47,8 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--pulp-database-name` | Name of the Pulp database | `--foreman-proxy-content-pulpcore-postgresql-db-name` |
 | `--pulp-database-user` | Owner of the Pulp database | `--foreman-proxy-content-pulpcore-postgresql-user` |
 | `--pulp-database-password` | Password for Pulp database | `--foreman-proxy-content-pulpcore-postgresql-password` |
-| `--foreman-initial-admin-username` | Initial username for the admin user | `--foreman-initial-admin-username` |
-| `--foreman-initial-admin-password` | Initial password for the admin user | `--foreman-initial-admin-password` |
+| `--initial-admin-username` | Initial username for the admin user | `--foreman-initial-admin-username` |
+| `--initial-admin-password` | Initial password for the admin user | `--foreman-initial-admin-password` |
 | `--initial-organization` | Name of an initial organization | `--foreman-initial-organization` |
 | `--initial-location` | Name of an initial location | `--foreman-initial-location` |
 | `--foreman-puma-workers` | Number of workers for Puma | `--foreman-foreman-service-puma-workers` |
@@ -103,6 +103,13 @@ There are multiple use cases from the users perspective that dictate what parame
 
 ## Smart Proxy
 
+### Mapped
+
+| Parameter | Description | foreman-installer Parameters |
+| --------- | ----------- | ---------------------------- |
+| `--bmc-ipmi-implementation` | IPMI implementation to use for BMC | `--foreman-proxy-bmc-default-provider` |
+| `--bmc-redfish-verify-ssl` | Verify SSL certificates for Redfish BMC connections | `--foreman-proxy-bmc-redfish-verify-ssl` |
+
 ### Undetermined
 
 | Installer Parameter | Description | Module | Puppet Parameter |
@@ -152,8 +159,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-proxy-plugin-remote-execution-script-mode` | | foreman_proxy::plugin::remote_execution_script | mode |
 | `--foreman-proxy-plugin-openscap-ansible-module` | | foreman_proxy::plugin::openscap | ansible_module |
 | `--foreman-proxy-plugin-openscap-puppet-module` | | foreman_proxy::plugin::openscap | puppet_module |
-| `--foreman-proxy-bmc` | | | |
-| `--foreman-proxy-bmc-default-provider` | | | |
 | `--foreman-proxy-content-enable-ostree` | | | |
 | `--foreman-proxy-content-pulpcore-additional-import-paths` | | | |
 | `--foreman-proxy-http` | | | |

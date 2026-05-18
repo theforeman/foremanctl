@@ -5,8 +5,10 @@ help: |
 variables:
   foreman_initial_admin_username:
     help: Initial username for the admin user.
+    parameter: --initial-admin-username
   foreman_initial_admin_password:
     help: Initial password for the admin user.
+    parameter: --initial-admin-password
   foreman_initial_organization:
     help: Name of an initial organization.
     parameter: --initial-organization
@@ -44,6 +46,16 @@ variables:
     type: AbsolutePath
     parameter: --certificate-server-ca-certificate
     persist: false
+  foreman_proxy_bmc_ipmi_implementation:
+    parameter: --bmc-ipmi-implementation
+    help: IPMI implementation to use for BMC.
+    choices:
+      - freeipmi
+      - ipmitool
+  foreman_proxy_bmc_redfish_verify_ssl:
+    parameter: --bmc-redfish-verify-ssl
+    help: Verify SSL certificates for Redfish BMC connections.
+    type: Boolean
 
 constraints:
   required_together:

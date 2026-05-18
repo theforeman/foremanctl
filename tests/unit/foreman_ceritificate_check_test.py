@@ -1,9 +1,7 @@
-import pytest
-import subprocess
 import os
-import sys
-import re
+import subprocess
 
+import pytest
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 FIXTURE_DIR = os.path.abspath(os.path.join(TEST_DIR, '..', 'fixtures', 'foreman-certificate-check'))
@@ -18,13 +16,16 @@ if not os.path.exists(SCRIPT_PATH):
 def command():
     return SCRIPT_PATH
 
+
 @pytest.fixture
 def certs_directory():
     return os.path.join(FIXTURE_DIR, 'certs')
 
+
 @pytest.fixture
 def ca_bundle(certs_directory):
     return os.path.join(certs_directory, 'ca-bundle.crt')
+
 
 @pytest.fixture
 def password_protected_key():
@@ -72,6 +73,7 @@ def test_completes_correctly_with_valid_certs(command, certs_directory, ca_bundl
     assert result.stderr == ""
     assert "Validation succeeded" in result.stdout
 
+
 def test_with_password_on_key(command, ca_bundle, password_protected_key, certs_directory):
     cert = os.path.join(certs_directory, 'foreman.example.com.crt')
     args = ['-b', ca_bundle, '-k', password_protected_key, '-c', cert]
@@ -90,6 +92,7 @@ def test_fails_if_purpose_not_sslserver(command, ca_bundle, certs_directory):
 
     assert result.returncode != 0
     assert 'does not verify' in result.stderr
+
 
 def test_fails_with_invalid_san(command, ca_bundle, certs_directory):
     key = os.path.join(certs_directory, 'foreman-bad-san.example.com.key')
@@ -113,6 +116,7 @@ def test_wildcard_certificate(command, certs_directory, ca_bundle):
     assert "Validation succeeded" in result.stdout
     assert "Checking CA bundle size:" in result.stdout
 
+
 def test_fails_on_shortname(command, ca_bundle, certs_directory):
     key = os.path.join(certs_directory, 'shortname.key')
     cert = os.path.join(certs_directory, 'shortname.crt')
@@ -122,6 +126,7 @@ def test_fails_on_shortname(command, ca_bundle, certs_directory):
     assert result.returncode == 1
     assert f"The {os.path.basename(cert)} is using a shortname for Common Name" in result.stderr
     assert f"The {os.path.basename(cert)} is using only shortnames for Subject Alt Name" in result.stderr
+
 
 def test_fails_with_bundle_containing_trust_rules(command, certs_directory):
     key = os.path.join(certs_directory, 'foreman.example.com.key')
@@ -133,6 +138,7 @@ def test_fails_with_bundle_containing_trust_rules(command, certs_directory):
     assert result.returncode == 10
     expected_error_part = 'The CA bundle contains 1 certificate(s) with trust rules.'
     assert expected_error_part in result.stderr
+    
 
 @pytest.mark.parametrize("ca_bundle_file", ["ca-sha1.crt", "ca-sha1-bundle.crt"])
 def test_fails_with_sha1_ca_certificate(command, certs_directory, ca_bundle_file):

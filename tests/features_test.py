@@ -1,5 +1,6 @@
 import subprocess
 
+
 def test_foremanctl_features():
     command = ['./foremanctl', 'features']
     result = subprocess.run(command, capture_output=True, text=True)
@@ -12,6 +13,7 @@ def test_foremanctl_features():
     for feature in ['foreman', 'foreman-proxy', 'azure-rm']:
         assert feature in result.stdout, f"Expected feature '{feature}' in output"
 
+
 def test_foremanctl_features_list_enabled():
     command = ['./foremanctl', 'features', '--list-enabled']
     result = subprocess.run(command, capture_output=True, text=True)
@@ -20,6 +22,7 @@ def test_foremanctl_features_list_enabled():
 
     assert 'enabled' in result.stdout
     assert 'available' not in result.stdout
+
 
 def test_invalid_feature_rejected():
     command = ['./foremanctl', 'deploy', '--add-feature', 'invalid-feature']

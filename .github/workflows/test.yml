@@ -35,6 +35,22 @@ jobs:
           working_directory: development
           setup_python: false
 
+  python-lint:
+    name: Python Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install ruff
+      - name: Run ruff
+        run: ruff check --output-format=github tests/ src/ development/scripts/ inventories/
+
   tests:
     strategy:
       fail-fast: false
@@ -126,7 +142,7 @@ jobs:
             --certificate-source=${{ matrix.certificate_source }} \
             ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com --database-ssl-ca $(pwd)/.var/lib/foremanctl/db-ca.crt --database-ssl-mode verify-full' || '' }} \
             ${{ matrix.certificate_source == 'custom_server' && '--certificate-server-certificate /root/custom-certificates/certs/quadlet.example.com.crt --certificate-server-key /root/custom-certificates/private/quadlet.example.com.key --certificate-server-ca-certificate /root/custom-certificates/certs/server-ca.crt' || '' }} \
-            --foreman-initial-admin-password=changeme \
+            --initial-admin-password=changeme \
             --initial-organization "Foreman CI" \
             --initial-location "Internet" \
             --tuning development
@@ -138,6 +154,7 @@ jobs:
             --add-feature azure-rm \
             --add-feature google \
             --add-feature remote-execution \
+            --add-feature bmc \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
@@ -239,7 +256,7 @@ jobs:
       - name: Run deployment
         run: |
           ./foremanctl deploy \
-            --foreman-initial-admin-password=changeme \
+            --initial-admin-password=changeme \
             --initial-organization "Foreman CI" \
             --initial-location "Internet" \
             --tuning development
@@ -292,6 +309,7 @@ jobs:
       - devel-tests
       - upgrade
       - ansible-lint
+      - python-lint
     runs-on: ubuntu-latest
     name: Test suite
     steps:

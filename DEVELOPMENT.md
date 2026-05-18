@@ -36,7 +36,7 @@ This setup uses Vagrant to create a basic VM for running the deployment on:
 ./setup-environment
 source .venv/bin/activate
 ./forge vms start
-./foremanctl deploy --foreman-initial-admin-password=changeme --tuning development --initial-organization "Foreman CI" --initial-location "Internet"
+./foremanctl deploy --initial-admin-password=changeme --tuning development --initial-organization "Foreman CI" --initial-location "Internet"
 ```
 
 ### Deploy hammer (optional)
@@ -45,6 +45,9 @@ source .venv/bin/activate
 ./forge setup-repositories
 ./foremanctl deploy --add-feature hammer
 ```
+
+> [!NOTE]
+> You MUST run `setup-repositories` before enabling hammer.
 
 To teardown the environment:
 

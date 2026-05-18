@@ -5,4 +5,5 @@ flavor_features:
   - content/ansible
   - content/container
   - content/deb
+  - content/python
   - content/rpm

@@ -2,11 +2,10 @@
 
 import argparse
 import json
-import yaml
-import os
 import subprocess
 import sys
-from io import StringIO
+
+import yaml
 
 
 def parse_args():

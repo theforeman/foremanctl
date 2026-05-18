@@ -1,7 +1,11 @@
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 __metaclass__ = type
 
 import pathlib
+
 import yaml
 
 BASE_FEATURES = ['hammer', 'foreman-proxy', 'foreman']
@@ -55,6 +59,7 @@ def available_foreman_plugins(_value):
     plugins = [FEATURE_MAP.get(feature).get('foreman', {}).get('plugin_name') for feature in FEATURE_MAP.keys()]
     return compact_list(plugins)
 
+
 def list_all_features(enabled_features, only_enabled=False):
     enabled_list = []
     available_list = []
@@ -73,9 +78,11 @@ def list_all_features(enabled_features, only_enabled=False):
 
     return "\n".join(output)
 
+
 def invalid_features(features):
     """Return a list of unknown features not defined in features.yaml."""
     return [feature for feature in features if feature not in FEATURE_MAP]
+
 
 def hammer_plugins(value):
     dependencies = list(get_dependencies(filter_features(value)))
