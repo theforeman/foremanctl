@@ -1,5 +1,6 @@
-import os
+import subprocess
 import uuid
+from functools import cached_property
 
 import apypie
 import paramiko
@@ -16,9 +17,38 @@ from requests.adapters import HTTPAdapter
 SSH_CONFIG = './.tmp/ssh-config'
 
 
+class UserParameters:
+    def __init__(self, config):
+        self._config = config
+
+    @cached_property
+    def features(self):
+        # foremanctl outputs
+        # FEATURE                   STATE               DESCRIPTION
+        # $feature                  enabled/available   $description
+        output = subprocess.check_output(['./foremanctl', 'features'], cwd=self._config.rootdir,
+                                         universal_newlines=True)
+        lines = output.splitlines(keepends=False)
+        # feature, status, description
+        return [line.split(None, 2) for line in lines[1:]]
+
+    @cached_property
+    def available_features(self):
+        return set(feature for feature, _status, _desc in self.features)
+
+    @cached_property
+    def enabled_features(self):
+        return set(feature for feature, status, _desc in self.features if status == 'enabled')
+
+
 def pytest_addoption(parser):
     parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'installer', 'custom_server'), help="Certificate source used during deployment")
     parser.addoption("--database-mode", action="store", default="internal", choices=('internal', 'external'), help="Whether the database is internal or external")
+
+
+@pytest.fixture(scope="module")
+def enabled_features(pytestconfig):
+    return pytestconfig.user_parameters.enabled_features
 
 
 @pytest.fixture(scope="module")
@@ -206,35 +236,21 @@ def wait_for_metadata_generate(foremanapi):
     wait_for_tasks(foremanapi, 'label = Actions::Katello::Repository::MetadataGenerate')
 
 
-def enabled_features():
-    test_dir = os.path.dirname(os.path.abspath(__file__))
-    foremanctl_dir = os.path.dirname(test_dir)
-    params_file = os.path.join(foremanctl_dir, '.var', 'lib', 'foremanctl', 'parameters.yaml')
-    if os.path.exists(params_file):
-        with open(params_file, 'r') as f:
-            features = yaml.safe_load(f).get('features', [])
-            if isinstance(features, str):
-                features = features.split()
-            return features
-    return []
-
-
-def is_iop_enabled():
-    return 'iop' in enabled_features()
-
-
 def pytest_configure(config):
-    config.addinivalue_line("markers", "iop: tests requiring IOP to be enabled")
+    config.addinivalue_line("markers", "feature(name): mark a test as requiring a feature")
+
+    config.user_parameters = UserParameters(config)
 
 
-def pytest_collection_modifyitems(config, items):
-    if is_iop_enabled():
-        return
-
-    skip_iop = pytest.mark.skip(reason="IOP not enabled - skipping IOP tests ('iop' not in enabled_features)")
-    for item in items:
-        if "iop" in item.keywords:
-            item.add_marker(skip_iop)
+def pytest_runtest_setup(item):
+    feature_markers = set(mark.args[0] for mark in item.iter_markers(name="feature"))
+    if feature_markers:
+        invalid_features = feature_markers - item.config.user_parameters.available_features
+        if invalid_features:
+            raise pytest.PytestConfigWarning(f"Invalid feature(s) {invalid_features!r} on {item}")
+        missing = feature_markers - item.config.user_parameters.enabled_features
+        if missing:
+            pytest.skip(f"test requires feature(s) {missing!r}")
 
 
 class ResolveAdapter(HTTPAdapter):
