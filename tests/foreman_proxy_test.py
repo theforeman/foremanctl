@@ -63,3 +63,10 @@ def test_bmc_capabilities(server, certificates, server_fqdn):
     assert 'ipmitool' in capabilities
     assert 'freeipmi' in capabilities
     assert 'redfish' in capabilities
+
+
+@pytest.mark.feature('bmc')
+def test_bmc_default_provider(server, certificates, server_fqdn):
+    features = get_proxy_v2_features(server, certificates, server_fqdn)
+    settings = features['bmc'].get('settings', {})
+    assert settings.get('bmc_default_provider') == 'ipmitool'
