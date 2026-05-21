@@ -231,7 +231,7 @@ jobs:
         upgrade_from:
           - '3.18'
         upgrade_to:
-          - 'nightly'
+          - '3.19'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6

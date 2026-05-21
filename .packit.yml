@@ -13,7 +13,7 @@ srpm_build_deps:
 
 actions:
   post-upstream-clone:
-    - "wget https://raw.githubusercontent.com/theforeman/foreman-packaging/rpm/develop/packages/foreman/foremanctl/foremanctl.spec -O foremanctl.spec"
+    - "wget https://raw.githubusercontent.com/theforeman/foreman-packaging/rpm/3.19/packages/foreman/foremanctl/foremanctl.spec -O foremanctl.spec"
   create-archive:
     - make dist
     - bash -c 'ls -1t foremanctl-*.tar.gz | head -n1'
