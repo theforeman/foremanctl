@@ -19,7 +19,7 @@ iop_ingress_registry_auth_file: "{{ registry_auth_file }}"
 iop_vulnerability_frontend_registry_auth_file: "{{ registry_auth_file }}"
 iop_advisor_frontend_registry_auth_file: "{{ registry_auth_file }}"
 
-container_tag_stream: "nightly"
+container_tag_stream: "3.19"
 candlepin_container_image: quay.io/foreman/candlepin
 candlepin_container_tag: "foreman-{{ container_tag_stream }}"
 foreman_container_image: quay.io/foreman/foreman
