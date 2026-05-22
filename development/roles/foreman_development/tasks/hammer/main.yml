@@ -22,17 +22,17 @@
 - name: Setup plugins
   ansible.builtin.include_tasks: hammer/plugin.yml
   vars:
-    foreman_development_plugin_config: "{{ (foreman_development_plugin_registry[plugin_item] | default({})).hammer | default({}) }}"
-    foreman_development_plugin_name: "{{ foreman_development_plugin_config.name.split('/')[1] }}"
-    foreman_development_plugin_gem: "{{ foreman_development_plugin_config.gem }}"
-    foreman_development_plugin_org: "{{ foreman_development_plugin_config.name.split('/')[0] }}"
-    foreman_development_plugin_repo_url: "https://github.com/{{ foreman_development_plugin_config.name }}.git"
+    foreman_development_plugin_config: "{{ plugin_item.hammer | default({}) }}"
+    foreman_development_plugin_name: "{{ foreman_development_plugin_config.github_repo.split('/')[1] }}"
+    foreman_development_plugin_gem: "{{ foreman_development_plugin_config.gem | default(foreman_development_plugin_config.github_repo.split('/')[1]) }}"
+    foreman_development_plugin_org: "{{ foreman_development_plugin_config.github_repo.split('/')[0] }}"
+    foreman_development_plugin_repo_url: "https://github.com/{{ foreman_development_plugin_config.github_repo }}.git"
     foreman_development_plugin_manage_repo: "{{ foreman_development_plugin_config.manage_repo | default(true) }}"
     foreman_development_plugin_settings_template: "{{ foreman_development_plugin_config.settings_template | default('') }}"
     foreman_development_plugin_module_config: "{{ foreman_development_plugin_config.module_config | default('') }}"
     foreman_development_plugin_extra_gemfiles: []
   when: foreman_development_plugin_config != {}
-  loop: "{{ foreman_development_default_plugins + foreman_development_enabled_plugins }}"
+  loop: "{{ (dev_features + foreman_development_default_features) | features_to_dev_plugins }}"
   loop_control:
     loop_var: plugin_item
 

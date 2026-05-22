@@ -2,5 +2,9 @@
 variables:
   features:
     parameter: --add-feature
-    help: Additional features to enable in this deployment.
+    help: Additional features to enable in production form.
+    action: append_unique
+  dev_features:
+    parameter: --add-dev-feature
+    help: Additional features to enable in development form (git checkout).
     action: append_unique
