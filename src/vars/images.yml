@@ -20,8 +20,8 @@ iop_vulnerability_frontend_registry_auth_file: "{{ registry_auth_file }}"
 iop_advisor_frontend_registry_auth_file: "{{ registry_auth_file }}"
 
 container_tag_stream: "nightly"
-candlepin_container_image: quay.io/foreman/candlepin
-candlepin_container_tag: "foreman-{{ container_tag_stream }}"
+candlepin_container_image: quay.io/foreman/candlepin-stage
+candlepin_container_tag: on-pr-9a8f5cc0dbaffc38bd9f43273333fc0393e76df9
 foreman_container_image: quay.io/foreman/foreman
 foreman_container_tag: "{{ container_tag_stream }}"
 foreman_proxy_container_image: "quay.io/foreman/foreman-proxy"
