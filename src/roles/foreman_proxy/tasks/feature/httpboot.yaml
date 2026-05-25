@@ -1,0 +1,19 @@
+---
+- name: Check if httpboot root directory exists
+  ansible.builtin.stat:
+    path: "{{ foreman_proxy_httpboot_root_dir }}"
+  register: _foreman_proxy_httpboot_root_dir
+
+- name: Mount httpboot root directory
+  ansible.builtin.copy:
+    dest: /etc/containers/systemd/foreman-proxy.container.d/httpboot-volume.conf
+    content: |
+      [Container]
+      Volume={{ foreman_proxy_httpboot_root_dir }}:{{ foreman_proxy_httpboot_root_dir }}:z
+    mode: '0644'
+    owner: root
+    group: root
+  when: _foreman_proxy_httpboot_root_dir.stat.exists
+  notify:
+    - Restart Foreman Proxy
+    - Refresh Foreman Proxy

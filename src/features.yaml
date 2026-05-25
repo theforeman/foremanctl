@@ -48,3 +48,7 @@ bmc:
   description: Power management for bare metal hosts (IPMI, Redfish)
   foreman_proxy:
     plugin_name: bmc
+httpboot:
+  description: UEFI HTTP Boot provisioning support
+  foreman_proxy:
+    plugin_name: httpboot
