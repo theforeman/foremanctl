@@ -58,3 +58,7 @@ bmc:
   description: Power management for bare metal hosts (IPMI, Redfish)
   foreman_proxy:
     plugin_name: bmc
+templates:
+  description: Templates feature for foreman-proxy
+  foreman_proxy:
+    plugin_name: templates
