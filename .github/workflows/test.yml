@@ -152,6 +152,9 @@ jobs:
             --add-feature google \
             --add-feature remote-execution \
             --add-feature bmc \
+            --add-feature templates \
+            --templates-listen-on http \
+            --templates-url http://quadlet.example.com:8000 \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
