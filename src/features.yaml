@@ -71,3 +71,7 @@ webhooks:
   foreman:
     plugin_name: foreman_webhooks
   hammer: foreman_webhooks
+templates:
+  description: Templates feature for foreman-proxy
+  foreman_proxy:
+    plugin_name: templates
