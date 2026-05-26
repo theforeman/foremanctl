@@ -46,6 +46,10 @@ variables:
     type: AbsolutePath
     parameter: --certificate-server-ca-certificate
     persist: false
+  foreman_proxy_http:
+    parameter: --foreman-proxy-http
+    help: Enable plain text HTTP on Foreman Proxy
+    type: Boolean
   foreman_proxy_bmc_ipmi_implementation:
     parameter: --bmc-ipmi-implementation
     help: IPMI implementation to use for BMC.
