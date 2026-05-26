@@ -9,9 +9,9 @@ There will be three flavors of Foreman containers:
   * Foreman + Katello
   * Foreman + all plugins
 
-Stage versions of containers will have stage in the name and be published in the Foreman's quay repository:
+Stage versions of containers will have stage in the namespace and be published in the Foreman's quay repository:
 
-  * `quay.io/foreman/$service-stage:$tag`
+  * `quay.io/foreman/stage/$service:$tag`
 
 The base image will be `quay.io/centos/centos:stream9`.
 
