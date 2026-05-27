@@ -172,6 +172,45 @@ include:
   - _flavor_features
 ```
 
+## Secret Management
+
+Secrets (passwords, tokens, OAuth secrets) must never be hardcoded. Use the `ansible.builtin.password` lookup to auto-generate secrets and persist them to files under `obsah_state_path`.
+
+### Pattern
+
+Every secret needs two variables: a `_file` variable pointing to the state file, and the secret variable itself using a `lookup` against that file.
+
+```yaml
+example_database_password_file: "{{ obsah_state_path }}/example-db-password"
+example_database_password: "{{ lookup('ansible.builtin.password', example_database_password_file, chars=['ascii_letters', 'digits']) }}"
+```
+
+The `lookup` generates a random password on first run and writes it to the file. On subsequent runs, it reads the existing value, ensuring the secret is stable across deploys.
+
+### Parameters
+
+| Parameter | Usage |
+|-----------|-------|
+| `chars` | Character set for generation. Use `['ascii_letters', 'digits']` for passwords safe in URLs and connection strings. |
+| `length` | Password length. Defaults to 20 if omitted. Use `length=32` for high-entropy secrets like OAuth tokens. |
+
+### Where to define secrets
+
+Define secrets in `src/vars/` files, not in role `defaults/`. Vars files have higher Ansible precedence and are the effective source of truth at deploy time.
+
+| Secret type | Define in |
+|-------------|-----------|
+| Database passwords | `src/vars/database.yml` |
+| IOP database passwords | `src/vars/database_iop.yml` |
+| general passwords/secrets | `src/vars/base.yaml` |
+| Foreman-specific passwords/secrets | `src/vars/foreman.yml` |
+
+### Naming conventions
+
+- State file variable: `<service>_<purpose>_password_file` (or `_secret_file` for non-password secrets)
+- State file path: `{{ obsah_state_path }}/<service>-<purpose>-password` (use hyphens, no underscores)
+- Secret variable: `<service>_<purpose>_password`
+
 ## How to Add a New Command
 
 1. Create a directory under `src/playbooks/<command-name>/` (or `development/playbooks/` for dev tools).
