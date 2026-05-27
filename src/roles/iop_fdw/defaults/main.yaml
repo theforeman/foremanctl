@@ -2,7 +2,6 @@
 # Required parameters - must be passed by caller
 iop_fdw_database_name: "{{ undef(hint='You must specify the FDW database name') }}"
 iop_fdw_database_user: "{{ undef(hint='You must specify the FDW database user') }}"
-iop_fdw_database_password: "{{ undef(hint='You must specify the FDW database password') }}"
 iop_fdw_remote_database_name: "{{ undef(hint='You must specify the remote FDW database name') }}"
 iop_fdw_remote_user: "{{ undef(hint='You must specify the remote FDW database user') }}"
 iop_fdw_remote_password: "{{ undef(hint='You must specify the remote FDW database password') }}"
