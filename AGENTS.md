@@ -1,8 +1,4 @@
-# AI Development Guide
-
-This file provides guidance to AI tools and agents when working with code in this repository. It is intentionally tool-agnostic -- it works with Claude Code, Cursor, GitHub Copilot, and any other AI assistant.
-
-## Project Overview
+## Foremanctl
 
 foremanctl is a deployment tool for Foreman and Katello using Podman quadlets and Ansible. It provides a command-line interface built on top of `obsah` (an Ansible wrapper) for managing containerized Foreman deployments.
 
@@ -126,8 +122,8 @@ Roles in `src/roles/` correspond to services and deployment stages:
 - Service roles: `foreman`, `pulp`, `candlepin`, `postgresql`, `redis`, `httpd`
 - Feature roles: `hammer`, `foreman_proxy`
 - Infrastructure: `certificates`, `systemd_target`
-- Checks: `check_hostname`, `check_database_connection`, `check_system_requirements`, `check_subuid_subgid`
 - Lifecycle: `pre_install`, `post_install`
+- Checks: `check_*` roles; see [documentation](docs/developer/checks.md) for more info
 
 ### Configuration System
 
@@ -170,15 +166,23 @@ Tests use pytest with testinfra for infrastructure testing. Key fixtures in `tes
 
 Test files follow the pattern `tests/<component>_test.py` and use testinfra's server fixture to execute commands and check system state.
 
-## Developer Documentation
+## Additional Documentation
 
-- [How to Add a Feature](docs/developer/how-to-add-a-feature.md) - end-to-end feature development
-- [Playbooks and Roles](docs/developer/playbooks-and-roles.md) - playbook structure, naming, metadata
-- [Testing](docs/developer/testing.md) - test infrastructure, fixtures, patterns
-- [Deployment Design](docs/developer/deployment.md) -- deployment architecture
-- [Container Image Builds](docs/developer/container-image-builds.md) - image naming, registries
-- [Development Environment](docs/developer/development-environment.md) - dev setup with git Foreman
+Developer docs:
+- [Check roles](docs/developer/checks.md) - How to integrate check roles; update as checks are created/modified
+- [Container Image Builds](docs/developer/container-image-builds.md) - Info on image naming, registries
+- [Deployment Architecture](docs/developer/deployment.md)
+- [Development Environment](docs/developer/development-environment.md) - Dev environment setup with Foreman from source
+- [How to Add a Feature](docs/developer/how-to-add-a-feature.md) - End-to-end feature development
+- [Playbooks and Roles](docs/developer/playbooks-and-roles.md) - Playbook structure, naming, metadata
+- [Testing](docs/developer/testing.md) - Additional info on test infrastructure, fixtures, patterns
 
-## Git Workflow
+User docs:
+- [Certificates](docs/user/certificates.md) - Overview of certificate sources
+- [Parameters](docs/user/parameters.md) - Map of Foreman installation parameters; update as parameters are created/modified
 
-Main branch: `master`
+- [CONTRIBUTING](CONTRIBUTING.md) - How to contribute
+- [Development](DEVELOPMENT.md) - Foremanctl development overview
+- [IOP](docs/iop.md) - Overview of insights on premise
+- [Migration Guide](docs/migration-guide.md) - Migrating from foreman-installer to foremanctl
+- [Release](RELEASE.md) - Info on Foremanctl releases

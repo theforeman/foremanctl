@@ -7,14 +7,25 @@
     - "../../vars/defaults.yml"
     - "../../vars/flavors/{{ flavor }}.yml"
     - "../../vars/base.yaml"
+    - "../../vars/database.yml"
+    - "../../vars/health.yml"
   tasks:
     - name: Execute health checks
       ansible.builtin.include_role:
         name: checks
         tasks_from: execute_check
       loop:
+        - check_hostname
         - check_services
         - check_foreman_api
+        - check_database_connection
+        - check_foreman_tasks
+        - check_host_facts_count
+        - check_duplicate_permissions
+      when: >-
+        (item != 'check_foreman_tasks' or not (health_skip_check_foreman_tasks_param | default(false) | bool))
+      # Add additional skips here
+
     - name: Report status of health checks
       ansible.builtin.fail:
         msg: "{{ checks_results }}"

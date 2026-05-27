@@ -111,8 +111,10 @@ def available_foreman_proxy_plugins(_value):
 
 
 def has_feature(features, feature):
-    """Check if a feature is enabled - exact match or prefix (feature/)."""
-    return feature in features or any(f.startswith(feature + '/') for f in features)
+    """Check if a feature is enabled - exact match, prefix (feature/), or as a transitive dependency."""
+    return (feature in features
+            or any(f.startswith(feature + '/') for f in features)
+            or feature in get_dependencies(list(features)))
 
 
 class FilterModule(object):

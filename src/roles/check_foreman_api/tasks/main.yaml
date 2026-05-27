@@ -14,5 +14,6 @@
     fail_msg: "Foreman tasks status: {{ check_foreman_api_ping.json.results.katello.services.foreman_tasks.status | default('unknown') }}"
     success_msg: "Foreman tasks status: ok"
   when:
-    - enabled_features | has_feature('content')
+    - enabled_features | has_feature('tasks')
+    - enabled_features | has_feature('katello')
     - check_foreman_api_ping.json.results.katello is defined
