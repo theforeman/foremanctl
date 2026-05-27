@@ -1,0 +1,27 @@
+---
+- name: Query hosts for facts count
+  community.postgresql.postgresql_query:
+    db: "{{ foreman_database_name }}"
+    login_user: "{{ foreman_database_user }}"
+    login_password: "{{ foreman_database_password }}"
+    login_host: "{{ foreman_database_host }}"
+    query: |
+      SELECT fact_values.host_id, count(fact_values.id) as count
+      FROM fact_values
+      GROUP BY fact_values.host_id
+      ORDER BY count DESC
+  register: check_host_facts_count_result
+  changed_when: false
+
+- name: Check facts count is below threshold
+  when: check_host_facts_count_result.rowcount > 0
+  vars:
+    hosts_over_limit: "{{ check_host_facts_count_result.query_result | selectattr('count', 'ge', check_host_facts_count_max_per_host) | list }}"
+  ansible.builtin.assert:
+    that:
+      - hosts_over_limit | length == 0
+    fail_msg: >-
+      {{ hosts_over_limit | length }} host(s) exceed the facts count limit of {{ check_host_facts_count_max_per_host }}:
+      {{ hosts_over_limit | map(attribute='host_id') | join(', ') }}
+
+      This can cause slow fact processing. See: https://access.redhat.com/solutions/4163891

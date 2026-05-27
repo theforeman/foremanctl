@@ -1,5 +1,14 @@
 ---
 help: |
-  Run health checks on Foreman services
+  Check the health of your running Foreman server
+variables:
+  health_skip_check_foreman_tasks_param:
+    help: |
+      Skip checking Foreman tasks for paused/errored tasks.
+      Errored tasks can be manually resumed or cancelled using the Web UI or hammer.
+      Use only for operations where a failed Foreman task is expected or unavoidable.
+    parameter: --skip-check-foreman-tasks
+    action: store_true
+    persist: false
 include:
   - _database_mode

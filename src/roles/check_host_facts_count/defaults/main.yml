@@ -1,0 +1,2 @@
+---
+check_host_facts_count_max_per_host: 10000

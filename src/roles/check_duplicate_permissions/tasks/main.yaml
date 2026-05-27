@@ -1,0 +1,27 @@
+---
+# TODO: Remove this role one release after https://projects.theforeman.org/issues/38465 is addressed.
+- name: Query for duplicate permissions
+  community.postgresql.postgresql_query:
+    db: "{{ foreman_database_name }}"
+    login_user: "{{ foreman_database_user }}"
+    login_password: "{{ foreman_database_password }}"
+    login_host: "{{ foreman_database_host }}"
+    query: |
+      SELECT id, name
+      FROM permissions p
+      WHERE (SELECT count(name) FROM permissions pr WHERE p.name = pr.name) > 1
+      ORDER BY name, id
+  register: check_duplicate_permissions_result
+  changed_when: false
+
+- name: Check for duplicate permissions
+  when: not (health_fix | default(false) | bool)
+  ansible.builtin.assert:
+    that:
+      - check_duplicate_permissions_result.rowcount == 0
+    fail_msg: >-
+      Found {{ check_duplicate_permissions_result.rowcount }} duplicate permission(s) in database:
+      {{ check_duplicate_permissions_result.query_result | map(attribute='name') | unique | join(', ') }}
+
+      Duplicate permissions can cause issues with role-based access control and Foreman upgrades.
+      Please resolve the above duplicate permissions.
