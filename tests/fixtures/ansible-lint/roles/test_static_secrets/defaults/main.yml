@@ -1,0 +1,10 @@
+---
+# Should be flagged (static secrets)
+test_static_secrets_database_password: CHANGEME
+test_static_secrets_oauth_secret: "my-secret"
+# Should NOT be flagged (Jinja expression)
+test_static_secrets_admin_password: "{{ lookup('ansible.builtin.password', '/tmp/passwd') }}"
+test_static_secrets_api_token: "{{ some_other_token }}"
+# Should NOT be flagged (not a secret name)
+test_static_secrets_hostname: "example.com"
+test_static_secrets_port: 8080

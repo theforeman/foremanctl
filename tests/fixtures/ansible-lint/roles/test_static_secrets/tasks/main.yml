@@ -1,0 +1,4 @@
+---
+- name: Placeholder task
+  ansible.builtin.debug:
+    msg: "test"
