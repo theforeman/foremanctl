@@ -19,7 +19,5 @@ candlepin_database_host: localhost
 candlepin_database_port: 5432
 candlepin_database_ssl: false
 candlepin_database_ssl_mode: disable
-candlepin_database_ssl_ca:
+candlepin_database_ssl_ca: # noqa: var-defaults[no-empty]
 candlepin_database_ssl_ca_path: /etc/candlepin/certs/db-ca.crt
-candlepin_database_ssl_cert:
-candlepin_database_ssl_key:
