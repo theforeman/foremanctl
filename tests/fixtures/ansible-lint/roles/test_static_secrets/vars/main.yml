@@ -1,0 +1,4 @@
+---
+# All Jinja - should NOT be flagged
+test_static_secrets_ca_password: "{{ ca_key_password }}"
+test_static_secrets_consumer_secret: "{{ lookup('ansible.builtin.password', '/tmp/secret') }}"
