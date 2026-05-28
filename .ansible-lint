@@ -1,4 +1,7 @@
 ---
+use_default_rules: true
+rulesdir:
+  - .ansible-lint-rules/
 enable_list:
   - var-naming[no-role-prefix]
 exclude_paths:
