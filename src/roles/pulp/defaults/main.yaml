@@ -45,7 +45,7 @@ pulp_database_user: pulp
 pulp_database_host: localhost
 pulp_database_port: 5432
 pulp_database_ssl_mode: disabled
-pulp_database_ssl_ca:
+pulp_database_ssl_ca: # noqa: var-defaults[no-empty]
 pulp_database_ssl_ca_path: /etc/pulp/certs/db-ca.crt
 
 pulp_settings_database_env:
