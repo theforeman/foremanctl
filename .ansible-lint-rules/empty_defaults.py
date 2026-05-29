@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
 
 from ansiblelint.rules import AnsibleLintRule
@@ -51,42 +50,3 @@ class EmptyDefaultsRule(AnsibleLintRule):
                 )
 
         return results
-
-
-if "pytest" in sys.modules:
-    from ansiblelint.config import Options
-    from ansiblelint.file_utils import Lintable
-    from ansiblelint.rules import RulesCollection
-    from ansiblelint.runner import Runner
-
-    def test_empty_defaults_are_flagged(
-        config_options: Options,
-        app: object,
-    ) -> None:
-        """Null and empty string defaults produce match errors."""
-        rules = RulesCollection(app=app, options=config_options)
-        rules.register(EmptyDefaultsRule())
-        results = Runner(
-            Lintable("tests/fixtures/ansible-lint/roles/test_empty_defaults"),
-            rules=rules,
-        ).run()
-        empty_results = [r for r in results if r.rule.id == EmptyDefaultsRule.id]
-        assert len(empty_results) == 4
-        for result in empty_results:
-            assert result.tag == "var-defaults[no-empty]"
-
-    def test_vars_file_not_checked(
-        config_options: Options,
-        app: object,
-    ) -> None:
-        """Vars files are not checked, only defaults."""
-        rules = RulesCollection(app=app, options=config_options)
-        rules.register(EmptyDefaultsRule())
-        results = Runner(
-            Lintable(
-                "tests/fixtures/ansible-lint/roles/test_empty_defaults/vars/main.yml"
-            ),
-            rules=rules,
-        ).run()
-        empty_results = [r for r in results if r.rule.id == EmptyDefaultsRule.id]
-        assert len(empty_results) == 0

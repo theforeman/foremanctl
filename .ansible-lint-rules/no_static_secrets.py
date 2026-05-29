@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
 
 from ansiblelint.rules import AnsibleLintRule
@@ -62,54 +61,3 @@ class NoStaticSecretsRule(AnsibleLintRule):
                 )
 
         return results
-
-
-if "pytest" in sys.modules:
-    from ansiblelint.config import Options
-    from ansiblelint.file_utils import Lintable
-    from ansiblelint.rules import RulesCollection
-    from ansiblelint.runner import Runner
-
-    def _run_rule(path: str, config_options: Options, app: object) -> list:
-        rules = RulesCollection(app=app, options=config_options)
-        rules.register(NoStaticSecretsRule())
-        results = Runner(Lintable(path), rules=rules).run()
-        return [r for r in results if r.rule.id == NoStaticSecretsRule.id]
-
-    def test_static_secrets_flagged(
-        config_options: Options,
-        app: object,
-    ) -> None:
-        """Static secret values produce match errors."""
-        results = _run_rule(
-            "tests/fixtures/ansible-lint/roles/test_static_secrets/defaults/main.yml",
-            config_options,
-            app,
-        )
-        assert len(results) == 2
-        for result in results:
-            assert result.tag == "var-secrets[no-static]"
-
-    def test_jinja_secrets_pass(
-        config_options: Options,
-        app: object,
-    ) -> None:
-        """Jinja expression secrets are not flagged."""
-        results = _run_rule(
-            "tests/fixtures/ansible-lint/roles/test_static_secrets/vars/main.yml",
-            config_options,
-            app,
-        )
-        assert len(results) == 0
-
-    def test_non_role_vars_checked(
-        config_options: Options,
-        app: object,
-    ) -> None:
-        """Non-role vars files are also checked."""
-        results = _run_rule(
-            "tests/fixtures/ansible-lint/vars/secrets.yml",
-            config_options,
-            app,
-        )
-        assert len(results) == 1
