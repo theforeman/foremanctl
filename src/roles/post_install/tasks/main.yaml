@@ -7,6 +7,8 @@
   vars:
     _post_install_url_msg: "Foreman is running at {{ foreman_url }}"
     _post_install_cred_msg: "Admin credentials: {{ foreman_initial_admin_username }}:{{ foreman_initial_admin_password }}"
+  when:
+    - "'foreman' in enabled_features"
 - name: Mark installation as complete
   ansible.builtin.copy:
     dest: "{{ post_install_done_flag }}"

@@ -1,3 +1,5 @@
+import pytest
+
 HTTP_HOST = 'localhost'
 HTTP_PORT = 80
 HTTPS_PORT = 443
@@ -21,48 +23,56 @@ def test_https_port(server):
     assert httpd.port(HTTPS_PORT).is_reachable
 
 
+@pytest.mark.feature("foreman")
 def test_http_foreman_ping(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{redirect_url}}' http://{server_fqdn}/api/v2/ping")
     assert cmd.succeeded
     assert cmd.stdout == f'https://{server_fqdn}/api/v2/ping'
 
 
+@pytest.mark.feature("foreman")
 def test_https_foreman_ping(server, certificates, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/api/v2/ping")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
 
+@pytest.mark.feature("katello")
 def test_http_pulp_api_status(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/pulp/api/v3/status/")
     assert cmd.succeeded
     assert cmd.stdout == '404'
 
 
+@pytest.mark.feature("katello")
 def test_https_pulp_api_status(server, certificates, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/pulp/api/v3/status/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
 
+@pytest.mark.feature("katello")
 def test_http_pulp_content(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{stderr}}%{{http_code}}' http://{server_fqdn}/pulp/content/")
     assert cmd.succeeded
     assert cmd.stderr == '200'
 
 
+@pytest.mark.feature("katello")
 def test_https_pulp_content(server, certificates, server_fqdn):
     cmd = server.run(f"curl --silent --cacert {certificates['server_ca_certificate']} https://{server_fqdn}/pulp/content/")
     assert cmd.succeeded
     assert "Index of /pulp/content/" in cmd.stdout
 
 
+@pytest.mark.feature("katello")
 def test_https_pulp_auth(server, certificates, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' --cert {certificates['client_certificate']} --key {certificates['client_key']} https://{server_fqdn}/pulp/api/v3/users/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
 
+@pytest.mark.feature("katello")
 def test_https_pypi_endpoint(server, certificates, server_fqdn):
     cmd = server.run(f"curl --cacert {certificates['server_ca_certificate']} https://{server_fqdn}/pypi/test/")
     assert cmd.succeeded
@@ -102,12 +112,14 @@ def test_https_pub_server_ca_certificate_downloadable(server, certificates, serv
     assert cmd.stdout == '200'
 
 
+@pytest.mark.feature("foreman")
 def test_http_foreman_login(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/users/login")
     assert cmd.succeeded
     assert cmd.stdout == '301'
 
 
+@pytest.mark.feature("foreman")
 def test_https_foreman_login(server, certificates, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/users/login")
     assert cmd.succeeded

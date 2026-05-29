@@ -13,18 +13,38 @@ def test_postgresql_port(database):
     assert postgresql.port("5432").is_reachable
 
 
-def test_postgresql_databases(database):
+def test_postgresql_databases(features, database):
     result = database.run("podman exec postgresql psql -U postgres -c '\\l'")
-    assert "foreman" in result.stdout
-    assert "candlepin" in result.stdout
-    assert "pulp" in result.stdout
+
+    if "foreman" in features:
+        assert "foreman" in result.stdout
+    else:
+        assert "foreman" not in result.stdout
+
+    if "katello" in features:
+        if "foreman" in features:
+            assert "candlepin" in result.stdout
+        assert "pulp" in result.stdout
+    else:
+        assert "candlepin" not in result.stdout
+        assert "pulp" not in result.stdout
 
 
-def test_postgresql_users(database):
+def test_postgresql_users(features, database):
     result = database.run("podman exec postgresql psql -U postgres -c '\\du'")
-    assert "foreman" in result.stdout
-    assert "candlepin" in result.stdout
-    assert "pulp" in result.stdout
+
+    if "foreman" in features:
+        assert "foreman" in result.stdout
+    else:
+        assert "foreman" not in result.stdout
+
+    if "katello" in features:
+        if "foreman" in features:
+            assert "candlepin" in result.stdout
+        assert "pulp" in result.stdout
+    else:
+        assert "candlepin" not in result.stdout
+        assert "pulp" not in result.stdout
 
 
 def test_postgresql_password_encryption(database):

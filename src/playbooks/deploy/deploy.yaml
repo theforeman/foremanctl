@@ -13,19 +13,44 @@
     - "../../vars/foreman.yml"
     - "../../vars/base.yaml"
   pre_tasks:
-    - name: Add iop databases
+    - name: Determine databases
       when:
-        - "'iop' in enabled_features"
         - database_mode == 'internal'
       block:
-        - name: Include iop databases
-          ansible.builtin.include_vars:
-            file: "../../vars/database_iop.yml"
-
-        - name: Combine lists
+        - name: Configure Candlepin database
           ansible.builtin.set_fact:
-            postgresql_databases: "{{ postgresql_databases + iop_postgresql_databases }}"
-            postgresql_users: "{{ postgresql_users + iop_postgresql_users }}"
+            postgresql_databases: "{{ postgresql_databases + postgresql_databases_candlepin }}"
+            postgresql_users: "{{ postgresql_users + postgresql_users_candlepin }}"
+          when:
+            - "'foreman' in enabled_features"
+            - "'katello' in enabled_features"
+
+        - name: Configure Foreman database
+          ansible.builtin.set_fact:
+            postgresql_databases: "{{ postgresql_databases + postgresql_databases_foreman }}"
+            postgresql_users: "{{ postgresql_users + postgresql_users_foreman }}"
+          when:
+            - "'foreman' in enabled_features"
+
+        - name: Configure Pulp database
+          ansible.builtin.set_fact:
+            postgresql_databases: "{{ postgresql_databases + postgresql_databases_pulp }}"
+            postgresql_users: "{{ postgresql_users + postgresql_users_pulp }}"
+          when:
+            - "'katello' in enabled_features"
+
+        - name: Add iop databases
+          when:
+            - "'iop' in enabled_features"
+          block:
+            - name: Include iop databases
+              ansible.builtin.include_vars:
+                file: "../../vars/database_iop.yml"
+
+            - name: Combine lists
+              ansible.builtin.set_fact:
+                postgresql_databases: "{{ postgresql_databases + iop_postgresql_databases }}"
+                postgresql_users: "{{ postgresql_users + iop_postgresql_users }}"
   roles:
     - role: pre_install
     - role: checks
@@ -39,11 +64,23 @@
     - role: postgresql
       when:
         - database_mode == 'internal'
-    - redis
-    - candlepin
-    - httpd
-    - pulp
-    - foreman
+        - postgresql_databases | length > 0
+    - role: redis
+      when:
+        - "'redis' in enabled_features"
+    - role: candlepin
+      when:
+        - "'foreman' in enabled_features"
+        - "'katello' in enabled_features"
+    - role: httpd
+      when:
+        - "'httpd' in enabled_features"
+    - role: pulp
+      when:
+        - "'katello' in enabled_features"
+    - role: foreman
+      when:
+        - "'foreman' in enabled_features"
     - role: systemd_target
     - role: iop_core
       when:
