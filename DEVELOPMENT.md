@@ -39,6 +39,19 @@ source .venv/bin/activate
 ./foremanctl deploy --initial-admin-password=changeme --tuning development --initial-organization "Foreman CI" --initial-location "Internet"
 ```
 
+### Running Multiple Checkouts Simultaneously
+
+If you have multiple clones or git worktrees of this repo and want to run Vagrant VMs for each at the same time, set the `FOREMANCTL_VAGRANT_PREFIX` environment variable before starting VMs:
+
+```
+export FOREMANCTL_VAGRANT_PREFIX=1
+./forge vms start
+```
+
+When set, the Vagrantfile generates a unique 8-character prefix from an MD5 hash of the working directory path. This prefix is applied to both the libvirt domain names and VM hostnames, preventing collisions between deployments.
+
+Without the variable set, behavior is unchanged and VMs use the default hostnames.
+
 ### Deploy hammer (optional)
 
 ```

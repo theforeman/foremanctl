@@ -1,4 +1,7 @@
+require 'digest'
+
 DOMAIN = ENV.fetch('VAGRANT_DOMAIN', 'example.com'.freeze)
+prefix = ENV.key?('FOREMANCTL_VAGRANT_PREFIX') ? Digest::MD5.hexdigest(Dir.pwd)[0..7] : nil
 
 Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant"
@@ -18,9 +21,10 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "quadlet" do |override|
     override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream9")
-    override.vm.hostname = "quadlet.#{DOMAIN}"
+    override.vm.hostname = prefix ? "quadlet.#{prefix}.#{DOMAIN}" : "quadlet.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
+      libvirt.default_prefix = prefix if prefix
       libvirt.memory = 10240
       libvirt.cpus = 4
       libvirt.machine_virtual_size = 30
@@ -29,18 +33,20 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "client" do |override|
     override.vm.box = "centos/stream9"
-    override.vm.hostname = "client.#{DOMAIN}"
+    override.vm.hostname = prefix ? "client.#{prefix}.#{DOMAIN}" : "client.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
+      libvirt.default_prefix = prefix if prefix
       libvirt.memory = 1024
     end
   end
 
   config.vm.define "database" do |override|
     override.vm.box = "centos/stream9"
-    override.vm.hostname = "database.#{DOMAIN}"
+    override.vm.hostname = prefix ? "database.#{prefix}.#{DOMAIN}" : "database.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
+      libvirt.default_prefix = prefix if prefix
       libvirt.memory = 2048
     end
   end

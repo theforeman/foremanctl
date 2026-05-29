@@ -63,7 +63,7 @@ def server_hostname():
 
 @pytest.fixture(scope="module")
 def server_fqdn(server):
-    return server.check_output('hostname -f')
+    return server.backend.hostname
 
 
 @pytest.fixture(scope="module")
@@ -73,7 +73,7 @@ def client_hostname():
 
 @pytest.fixture(scope="module")
 def client_fqdn(client):
-    return client.check_output('hostname -f')
+    return client.backend.hostname
 
 
 @pytest.fixture(scope="module")
