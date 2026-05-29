@@ -10,6 +10,8 @@ katello:
   foreman:
     plugin_name: katello
   hammer: katello
+  dependencies:
+    - tasks
 google:
   description: Google Compute Engine plugin for Foreman
   hammer: foreman_google
@@ -20,6 +22,14 @@ azure-rm:
   hammer: foreman_azure_rm
   foreman:
     plugin_name: foreman_azure_rm
+tasks:
+  description: Tasks management engine for Foreman
+  foreman:
+    plugin_name: foreman-tasks
+  hammer: foreman_tasks
+  internal: true
+  dependencies:
+    - dynflow
 remote-execution:
   description: Remote Execution plugin for Foreman
   foreman:
@@ -28,7 +38,7 @@ remote-execution:
     plugin_name: remote_execution_ssh
   hammer: foreman_remote_execution
   dependencies:
-    - dynflow
+    - tasks
 dynflow:
   internal: true
   foreman_proxy:
