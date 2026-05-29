@@ -12,13 +12,13 @@ foreman_development_client_certificate: "{{ foreman_client_certificate }}"
 foreman_development_client_key: "{{ foreman_client_key }}"
 
 foreman_development_admin_user: "admin"
-foreman_development_admin_password: "changeme"
+foreman_development_admin_password: "changeme" # noqa: var-secrets[no-static]
 
 foreman_development_candlepin_url: "https://localhost:23443/candlepin"
 
 foreman_development_git_repo: "https://github.com/theforeman/foreman.git"
 foreman_development_git_revision: "develop"
-foreman_development_github_username: ""
+foreman_development_github_username: "" # noqa: var-defaults[no-empty]
 
 foreman_development_hammer_git_repo: "https://github.com/theforeman/hammer-cli.git"
 
@@ -33,7 +33,7 @@ foreman_development_database_host: "localhost"
 foreman_development_database_port: 5432
 foreman_development_database_name: "foreman_development"
 foreman_development_database_user: "foreman"
-foreman_development_database_password: "foreman"
+foreman_development_database_password: "foreman" # noqa: var-secrets[no-static]
 
 foreman_development_nodejs_stream: "22"
 
