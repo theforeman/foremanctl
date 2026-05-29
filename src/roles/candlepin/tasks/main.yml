@@ -14,36 +14,27 @@
   ansible.builtin.include_tasks:
     file: certs.yml
 
-- name: Create Candlepin configuration
+- name: Create DB URL secret
   containers.podman.podman_secret:
     state: present
-    name: candlepin-candlepin-conf
-    data: "{{ lookup('ansible.builtin.template', 'candlepin.conf.j2') }}"
-    labels:
-      filename: candlepin.conf
-      app: candlepin
+    name: candlepin-db-url
+    data: "jdbc:postgresql://{{ candlepin_database_host }}:{{ candlepin_database_port }}/{{ candlepin_database_name }}?sslmode={{ candlepin_database_ssl_mode }}{% if candlepin_database_ssl_ca is defined %}&sslrootcert={{ candlepin_database_ssl_ca_path }}{% endif %}"
   notify:
     - Restart candlepin
 
-- name: Create Tomcat server.xml
+- name: Create DB URL secret
   containers.podman.podman_secret:
     state: present
-    name: candlepin-tomcat-server-xml
-    data: "{{ lookup('ansible.builtin.template', 'server.xml.j2') }}"
-    labels:
-      filename: server.xml
-      app: tomcat
+    name: candlepin-db-username
+    data: "{{ candlepin_database_user }}"
   notify:
     - Restart candlepin
 
-- name: Create Tomcat server configuration
+- name: Create DB URL secret
   containers.podman.podman_secret:
     state: present
-    name: candlepin-tomcat-conf
-    data: "{{ lookup('ansible.builtin.template', 'tomcat.conf') }}"
-    labels:
-      filename: tomcat.conf
-      app: tomcat
+    name: candlepin-db-password
+    data: "{{ candlepin_database_password }}"
   notify:
     - Restart candlepin
 
@@ -52,6 +43,14 @@
     state: present
     name: candlepin-db-ca
     data: "{{ lookup('ansible.builtin.file', candlepin_database_ssl_ca) if candlepin_database_ssl_ca else 'empty' }}"
+  notify:
+    - Restart candlepin
+
+- name: Create oauth secret
+  containers.podman.podman_secret:
+    state: present
+    name: candlepin-oauth-secret
+    data: "{{ candlepin_oauth_secret }}"
   notify:
     - Restart candlepin
 
@@ -73,10 +72,14 @@
       - 'candlepin-ca-cert,target=/etc/candlepin/certs/candlepin-ca.crt,mode=0440,type=mount'
       - 'candlepin-ca-key,target=/etc/candlepin/certs/candlepin-ca.key,mode=0440,type=mount'
       - 'candlepin-tomcat-keystore,target=/etc/candlepin/certs/keystore,mode=0440,type=mount'
-      - 'candlepin-candlepin-conf,target=/etc/candlepin/candlepin.conf,mode=0440,type=mount'
-      - 'candlepin-tomcat-server-xml,target=/etc/tomcat/server.xml,mode=440,type=mount'
-      - 'candlepin-tomcat-conf,target=/etc/tomcat/tomcat.conf,mode=440,type=mount'
+      - 'candlepin-tomcat-keystore-password,target=CANDLEPIN_KEYSTORE_PASSWORD,type=env'
       - 'candlepin-db-ca,target={{ candlepin_database_ssl_ca_path }},mode=0440,type=mount'
+      - 'candlepin-db-url,target=CANDLEPIN_DB_URL,type=env'
+      - 'candlepin-db-username,target=CANDLEPIN_DB_USERNAME,type=env'
+      - 'candlepin-db-password,target=CANDLEPIN_DB_PASSWORD,type=env'
+      - 'candlepin-oauth-secret,target=CANDLEPIN_OAUTH_SECRET,type=env'
+    env:
+      CANDLEPIN_PORT: "{{ candlepin_ssl_port }}"
     volumes:
       - /var/log/candlepin:/var/log/candlepin:Z
       - /var/log/tomcat:/var/log/tomcat:Z
@@ -90,7 +93,7 @@
         After=redis.service postgresql.service
         [Service]
         TimeoutStartSec=300
-    healthcheck: curl --fail --insecure https://localhost:23443/candlepin/status
+    healthcheck: "curl --fail --insecure https://localhost:{{ candlepin_ssl_port }}/candlepin/status"
     sdnotify: healthy
 
 - name: Run daemon reload to make Quadlet create the service files
