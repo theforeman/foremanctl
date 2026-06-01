@@ -1,5 +1,5 @@
 ---
-ca_key_password: "/root/ssl-build/katello-default-ca.pwd" # noqa: var-secrets[no-static]
+ca_key_password: "/root/ssl-build/katello-default-ca.pwd" # noqa: no-static-secrets
 ca_certificate: "/root/ssl-build/katello-default-ca.crt"
 ca_key: "/root/ssl-build/katello-default-ca.key"
 server_certificate: "/root/ssl-build/{{ ansible_facts['fqdn'] }}/{{ ansible_facts['fqdn'] }}-apache.crt"

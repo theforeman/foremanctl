@@ -1,4 +1,4 @@
-"""Implementation of var-defaults rule."""
+"""Implementation of no-empty-defaults rule."""
 
 from __future__ import annotations
 
@@ -15,14 +15,11 @@ if TYPE_CHECKING:
 class EmptyDefaultsRule(AnsibleLintRule):
     """Role default variables should not have empty values."""
 
-    id = "var-defaults"
+    id = "no-empty-defaults"
+    description = "Role default variables must not be null or empty strings."
     severity = "HIGH"
     tags = ["idiom"]
     version_added = "custom"
-
-    _ids = {
-        "var-defaults[no-empty]": "Role default variables must not be null or empty strings.",
-    }
 
     def matchyaml(self, file: Lintable) -> list[MatchError]:
         """Return matches for empty defaults in role defaults files."""
@@ -44,7 +41,7 @@ class EmptyDefaultsRule(AnsibleLintRule):
                     self.create_matcherror(
                         message=f"Role default variable '{key}' has an empty value. Use `undef(hint='…')` to indicate defaults that need to be overriden.",
                         filename=file,
-                        tag="var-defaults[no-empty]",
+                        tag="no-empty-defaults",
                         data=key,
                     ),
                 )

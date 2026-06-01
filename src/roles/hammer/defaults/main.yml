@@ -1,6 +1,6 @@
 ---
 hammer_foreman_server_url: "https://{{ ansible_facts['fqdn'] }}"
-hammer_ca_certificate: "" # noqa: var-defaults[no-empty]
+hammer_ca_certificate: "" # noqa: no-empty-defaults
 hammer_default_plugins:
   - foreman
 hammer_plugins: []
