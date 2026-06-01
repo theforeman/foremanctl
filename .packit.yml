@@ -29,4 +29,4 @@ jobs:
     trigger: commit
     branch: master
     owner: '@theforeman'
-    project: foremanctl
+    project: develop
