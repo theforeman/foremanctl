@@ -1,0 +1,13 @@
+---
+- name: Setup remote named
+  hosts:
+    - named
+  become: true
+  roles:
+    - role: bind
+  tasks:
+    - name: Fetch rndc key
+      ansible.builtin.fetch:
+        src: "/etc/named/rndc.key"
+        dest: "{{ obsah_state_path }}/rndc.key"
+        flat: true
