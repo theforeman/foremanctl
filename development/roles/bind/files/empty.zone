@@ -1,0 +1,9 @@
+$TTL 2d    ; default TTL for zone
+@         IN      SOA  @ hostmaster.invalid. (
+                                0          ; serial number
+                                12h        ; refresh
+                                15m        ; update retry
+                                3w         ; expiry
+                                2h         ; minimum
+                                )
+           IN      NS      localhost.
