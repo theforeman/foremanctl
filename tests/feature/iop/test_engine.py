@@ -1,8 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.feature("iop")
-
-
 def test_engine_service(server):
     service = server.service("iop-core-engine")
     assert service.is_running

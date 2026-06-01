@@ -29,17 +29,29 @@ foreman_database_port: "{{ database_port }}"
 foreman_database_ssl_mode: "{{ database_ssl_mode }}"
 foreman_database_ssl_ca: "{{ database_ssl_ca }}"
 
-postgresql_databases:
+postgresql_databases_candlepin:
   - name: "{{ candlepin_database_name }}"
     owner: "{{ candlepin_database_user }}"
+
+postgresql_databases_foreman:
   - name: "{{ foreman_database_name }}"
     owner: "{{ foreman_database_user }}"
+
+postgresql_databases_pulp:
   - name: "{{ pulp_database_name }}"
     owner: "{{ pulp_database_user }}"
-postgresql_users:
+
+postgresql_users_candlepin:
   - name: "{{ candlepin_database_user }}"
     password: "{{ candlepin_database_password }}"
+
+postgresql_users_foreman:
   - name: "{{ foreman_database_user }}"
     password: "{{ foreman_database_password }}"
+
+postgresql_users_pulp:
   - name: "{{ pulp_database_user }}"
     password: "{{ pulp_database_password }}"
+
+postgresql_databases: []
+postgresql_users: []

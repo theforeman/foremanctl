@@ -1,5 +1,7 @@
 import subprocess
 
+import pytest
+
 
 def test_foremanctl_features():
     command = ['./foremanctl', 'features']
@@ -24,6 +26,7 @@ def test_foremanctl_features_list_enabled():
     assert 'available' not in result.stdout
 
 
+@pytest.mark.disruptive
 def test_invalid_feature_rejected():
     command = ['./foremanctl', 'deploy', '--add-feature', 'invalid-feature']
     result = subprocess.run(command, capture_output=True, text=True)

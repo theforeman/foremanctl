@@ -1,5 +1,7 @@
 import time
 
+import pytest
+
 FOREMAN_PING_RETRIES = 60
 FOREMAN_PING_DELAY = 10
 CURL_CMD = "curl --silent --output /dev/null"
@@ -18,6 +20,7 @@ def _wait_for_foreman(server, server_fqdn, certificates):
     raise AssertionError("Foreman did not become available after target lifecycle operation")
 
 
+@pytest.mark.disruptive
 def test_foreman_target_stop_start(server, server_fqdn, certificates):
     result = server.run("systemctl stop foreman.target")
     assert result.rc == 0, f"Failed to stop foreman.target: {result.stderr}"
@@ -29,6 +32,7 @@ def test_foreman_target_stop_start(server, server_fqdn, certificates):
     assert server.service("foreman.target").is_running
 
 
+@pytest.mark.disruptive
 def test_foreman_target_restart(server, server_fqdn, certificates):
     result = server.run("systemctl restart foreman.target")
     assert result.rc == 0, f"Failed to restart foreman.target: {result.stderr}"
