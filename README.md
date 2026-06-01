@@ -24,10 +24,10 @@ This repository provides tooling for a deployment of Foreman and Katello using P
 
 ### RPM
 
-Snapshot RPM packages of `foremanctl` and its dependencies can be found in the [`@theforeman/foremanctl` copr](https://copr.fedorainfracloud.org/coprs/g/theforeman/foremanctl/)
+Snapshot RPM packages of `foremanctl` can be found in the [`@theforeman/develop` copr](https://copr.fedorainfracloud.org/coprs/g/theforeman/develop/)
 
 ```bash
-dnf copr enable @theforeman/foremanctl rhel-9-x86_64
+dnf copr enable @theforeman/develop rhel-9-x86_64
 dnf install foremanctl
 ```
 
