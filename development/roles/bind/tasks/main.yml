@@ -1,0 +1,69 @@
+---
+- name: Install BIND
+  ansible.builtin.package:
+    name:
+      - bind
+      - bind-utils
+    state: present
+
+- name: Generate the rndc key
+  ansible.builtin.command:
+    cmd: rndc-confgen -a -c /etc/named/rndc.key
+    creates: /etc/named/rndc.key
+
+- name: Set permissions on rndc key
+  ansible.builtin.file:
+    path: /etc/named/rndc.key
+    owner: root
+    group: named
+    mode: '0640'
+
+- name: Copy the base zone files
+  ansible.builtin.copy:
+    src: empty.zone
+    dest: "/var/named/{{ item }}.db"
+    owner: root
+    group: named
+    mode: '0640'
+  loop:
+    - example.test
+    - 2.0.192.in-addr.arpa
+    - 8.b.d.0.1.0.0.2.ip6.arpa
+
+- name: Configure example.test zone
+  ansible.builtin.blockinfile:
+    path: /etc/named.conf
+    block: |
+      include "/etc/named/rndc.key";
+      zone "example.test" {
+           type primary;
+           file "example.test.db";
+           allow-update { key "rndc-key"; };
+      };
+      zone "2.0.192.in-addr.arpa" {
+           type primary;
+           file "2.0.192.in-addr.arpa.db";
+           allow-update { key "rndc-key"; };
+      };
+      zone "8.b.d.0.1.0.0.2.ip6.arpa" {
+           type primary;
+           file "8.b.d.0.1.0.0.2.ip6.arpa.db";
+           allow-update { key "rndc-key"; };
+      };
+
+- name: Configure BIND to listen on any IP
+  ansible.builtin.lineinfile:
+    path: /etc/named.conf
+    regexp: '^(\s+{{ item }})'
+    line: '\g<1> { any; };'
+    backrefs: true
+  loop:
+    - listen-on port 53
+    - listen-on-v6 port 53
+    - allow-query
+
+- name: Start BIND
+  ansible.builtin.service:
+    name: named
+    state: started
+    enabled: true
