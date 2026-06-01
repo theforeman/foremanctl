@@ -23,3 +23,8 @@ foreman_proxy_foreman_server_url: "https://{{ ansible_facts['fqdn'] }}"
 # BMC settings
 foreman_proxy_bmc_ipmi_implementation: ipmitool
 foreman_proxy_bmc_redfish_verify_ssl: true
+
+# KEA DHCP settings (external unmanaged server)
+foreman_proxy_dhcp_kea_server: localhost
+foreman_proxy_dhcp_kea_url: "http://{{ foreman_proxy_dhcp_kea_server }}:8000"
+foreman_proxy_dhcp_kea_subnet: 192.168.0.0/24

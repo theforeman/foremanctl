@@ -48,3 +48,7 @@ bmc:
   description: Power management for bare metal hosts (IPMI, Redfish)
   foreman_proxy:
     plugin_name: bmc
+dhcp-kea-external:
+  description: KEA DHCP provider (external unmanaged server)
+  foreman_proxy:
+    plugin_name: dhcp_kea_api
