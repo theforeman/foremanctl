@@ -29,6 +29,10 @@ def test_foreman_proxy_features(server, certificates, server_fqdn, enabled_featu
         assert "bmc" in features
     else:
         assert "bmc" not in features
+    if 'dhcp-kea-external' in enabled_features:
+        assert "dhcp" in features
+    else:
+        assert "dhcp" not in features
 
 
 def test_foreman_proxy_service(server):
@@ -69,3 +73,26 @@ def test_bmc_capabilities(proxy_v2_features):
 def test_bmc_default_provider(proxy_v2_features):
     settings = proxy_v2_features['bmc'].get('settings', {})
     assert settings.get('bmc_default_provider') == 'ipmitool'
+
+
+@pytest.mark.feature('dhcp-kea-external')
+def test_dhcp_kea_feature_present(proxy_v2_features):
+    assert 'dhcp' in proxy_v2_features
+
+
+@pytest.mark.feature('dhcp-kea-external')
+def test_dhcp_kea_provider(proxy_v2_features):
+    assert 'dhcp' in proxy_v2_features
+    settings = proxy_v2_features['dhcp'].get('settings', {})
+    assert settings.get('use_provider') == 'dhcp_kea_api'
+
+
+@pytest.mark.feature('dhcp-kea-external')
+def test_dhcp_kea_server_settings(proxy_v2_features):
+    assert 'dhcp' in proxy_v2_features
+    settings = proxy_v2_features['dhcp'].get('settings', {})
+    assert 'server' in settings
+    assert 'kea_url' in settings
+    assert settings['kea_url'].endswith(':8000')
+    assert 'kea_subnet' in settings
+    assert '/' in settings['kea_subnet']
