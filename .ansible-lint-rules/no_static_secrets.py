@@ -1,4 +1,4 @@
-"""Implementation of var-secrets rule."""
+"""Implementation of no-static-secrets rule."""
 
 from __future__ import annotations
 
@@ -23,14 +23,11 @@ SECRET_SUFFIXES = (
 class NoStaticSecretsRule(AnsibleLintRule):
     """Variables that look like secrets must not have static default values."""
 
-    id = "var-secrets"
+    id = "no-static-secrets"
+    description = "Secret variables must use Jinja expressions, not static strings."
     severity = "HIGH"
     tags = ["security"]
     version_added = "custom"
-
-    _ids = {
-        "var-secrets[no-static]": "Secret variables must use Jinja expressions, not static strings.",
-    }
 
     @staticmethod
     def _looks_like_secret(name: str) -> bool:
@@ -55,7 +52,7 @@ class NoStaticSecretsRule(AnsibleLintRule):
                     self.create_matcherror(
                         message=f"Secret variable '{key}' has a static value. Use a Jinja expression instead.",
                         filename=file,
-                        tag="var-secrets[no-static]",
+                        tag="no-static-secrets",
                         data=key,
                     ),
                 )

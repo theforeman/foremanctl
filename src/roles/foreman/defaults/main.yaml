@@ -8,7 +8,7 @@ foreman_database_host: localhost
 foreman_database_port: 5432
 foreman_database_pool: 9
 foreman_database_ssl_mode: disable
-foreman_database_ssl_ca: # noqa: var-defaults[no-empty]
+foreman_database_ssl_ca: # noqa: no-empty-defaults
 foreman_database_ssl_ca_path: /etc/foreman/db-ca.crt
 
 foreman_name: "{{ ansible_facts['fqdn'] }}"
