@@ -135,3 +135,7 @@ theme-satellite:
   internal: true
   foreman:
     plugin_name: foreman_theme_satellite
+dns:
+  description: DNS management
+  foreman_proxy:
+    plugin_name: dns

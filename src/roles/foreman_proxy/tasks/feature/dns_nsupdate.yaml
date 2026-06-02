@@ -1,0 +1,22 @@
+---
+- name: Create RNDC Key podman secret
+  containers.podman.podman_secret:
+    state: present
+    name: foreman_proxy-dns_nsupdate-rndc_key
+    data: "{{ lookup('ansible.builtin.file', foreman_proxy_dns_nsupdate_keyfile) }}"
+  notify:
+    - Restart Foreman Proxy
+    - Refresh Foreman Proxy
+
+- name: Mount RNDC key
+  ansible.builtin.copy:
+    dest: /etc/containers/systemd/foreman-proxy.container.d/dns_nsupdate-rndc_key.conf
+    content: |
+      [Container]
+      Secret=foreman_proxy-dns_nsupdate-rndc_key,type=mount,target=/etc/foreman-proxy/rndc.key
+    mode: '0644'
+    owner: root
+    group: root
+  notify:
+    - Restart Foreman Proxy
+    - Refresh Foreman Proxy
