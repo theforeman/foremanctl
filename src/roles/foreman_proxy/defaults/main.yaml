@@ -22,3 +22,7 @@ foreman_proxy_foreman_server_url: "https://{{ ansible_facts['fqdn'] }}"
 # BMC settings
 foreman_proxy_bmc_ipmi_implementation: ipmitool
 foreman_proxy_bmc_redfish_verify_ssl: true
+
+# TFTP settings
+foreman_proxy_tftp_root: /var/lib/tftpboot
+foreman_proxy_tftp_servername: "{{ undef(hint='You must specify a TFTP servername') }}"
