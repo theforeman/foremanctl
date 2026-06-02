@@ -137,5 +137,7 @@ theme-satellite:
     plugin_name: foreman_theme_satellite
 dhcp-kea-external:
   description: KEA DHCP provider (external unmanaged server)
+dhcp:
+  description: DHCP management
   foreman_proxy:
-    plugin_name: dhcp_kea_api
+    plugin_name: dhcp
