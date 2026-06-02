@@ -56,10 +56,21 @@ variables:
     parameter: --bmc-redfish-verify-ssl
     help: Verify SSL certificates for Redfish BMC connections.
     type: Boolean
+  foreman_proxy_tftp_root:
+    parameter: --tftp-root
+    help: Directory to serve TFTP files from.
+    type: AbsolutePath
+  foreman_proxy_tftp_servername:
+    parameter: --tftp-servername
+    help: Server name or IP address for TFTP. TFTP clients typically do not have DNS available, so an IP address is recommended.
 
 constraints:
   required_together:
     - [certificates_custom_server_certificate, certificates_custom_server_key, certificates_custom_server_ca_certificate]
+  forbidden_if:
+    - [certificates_source, installer, [certificates_custom_server_certificate, certificates_custom_server_key, certificates_custom_server_ca_certificate]]
+  required_in_list:
+    - [[[features, tftp]], [foreman_proxy_tftp_servername]]
 
 include:
   - _certificate_source
