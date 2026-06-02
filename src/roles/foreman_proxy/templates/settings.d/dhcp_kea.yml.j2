@@ -1,0 +1,18 @@
+---
+# KEA DHCP provider configuration
+# This configures Smart Proxy to use an external KEA DHCP server
+
+:enabled: {{ feature_enabled }}
+:kea_api_url: {{ foreman_proxy_dhcp_kea_api_url }}
+{% if foreman_proxy_dhcp_kea_api_username is defined and foreman_proxy_dhcp_kea_api_username %}
+:kea_api_username: {{ foreman_proxy_dhcp_kea_api_username }}
+{% endif %}
+{% if foreman_proxy_dhcp_kea_api_password is defined and foreman_proxy_dhcp_kea_api_password %}
+:kea_api_password: {{ foreman_proxy_dhcp_kea_api_password }}
+{% endif %}
+{% if foreman_proxy_dhcp_subnets is defined and foreman_proxy_dhcp_subnets %}
+:managed_subnets:
+{% for subnet in foreman_proxy_dhcp_subnets %}
+  - {{ subnet }}
+{% endfor %}
+{% endif %}
