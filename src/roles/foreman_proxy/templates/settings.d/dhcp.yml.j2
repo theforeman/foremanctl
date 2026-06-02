@@ -1,0 +1,9 @@
+---
+# DHCP module configuration
+# This enables the DHCP module and selects the provider
+
+:enabled: {{ feature_enabled }}
+:use_provider: {{ foreman_proxy_dhcp_provider }}
+{% if foreman_proxy_dhcp_subnets is defined and foreman_proxy_dhcp_subnets %}
+:subnets: {{ foreman_proxy_dhcp_subnets | to_json }}
+{% endif %}
