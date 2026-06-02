@@ -12,6 +12,7 @@ DEFAULT_FEATURES = {
     'content/deb',
     'content/python',
     'content/rpm',
+    'dns',
     'dynflow',
     'foreman',
     'foreman-proxy',
@@ -29,7 +30,7 @@ DEFAULT_FEATURES = {
 EXPECTED_FEATURES = {
     'default': DEFAULT_FEATURES,
     'default-iop': DEFAULT_FEATURES | {'iop', 'rh-cloud'},
-    'upgrade': (DEFAULT_FEATURES | {'iop', 'rh-cloud'}) - {'ansible', 'webhooks'},
+    'upgrade': (DEFAULT_FEATURES | {'iop', 'rh-cloud'}) - {'ansible', 'dns', 'webhooks'},
     'migration': DEFAULT_FEATURES,
     'proxy': {
         'bmc',

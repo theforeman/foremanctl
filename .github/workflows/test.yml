@@ -127,11 +127,14 @@ jobs:
         run: ./setup-environment
       - name: Start VMs
         run: |
-          ./forge vms start --vms "quadlet client ${{ matrix.database == 'external' && 'database' || '' }}"
+          ./forge vms start --vms "quadlet client named ${{ matrix.database == 'external' && 'database' || '' }}"
       - name: Configure remote-database
         if: matrix.database == 'external'
         run: |
           ./forge remote-database
+      - name: Configure remote-named
+        run: |
+          ./forge remote-named
       - name: Configure repositories
         run: |
           ./forge setup-repositories
@@ -173,6 +176,8 @@ jobs:
             --add-feature ansible \
             --add-feature bmc \
             --add-feature webhooks \
+            --add-feature dns \
+            --dns-provider nsupdate --dns-server named.example.com --dns-nsupdate-keyfile $(pwd)/.var/lib/foremanctl/rndc.key \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
@@ -349,7 +354,10 @@ jobs:
         run: ./setup-environment
       - name: Start VMs
         run: |
-          ./forge vms start --vms "quadlet client"
+          ./forge vms start --vms "quadlet client named"
+      - name: Configure remote-named
+        run: |
+          ./forge remote-named
       - name: Configure repositories
         run: |
           ./forge setup-repositories
@@ -377,7 +385,9 @@ jobs:
             --add-feature bmc \
             --add-feature google \
             --add-feature remote-execution \
-            --add-feature webhooks
+            --add-feature webhooks \
+            --add-feature dns \
+            --dns-provider nsupdate --dns-server named.example.com --dns-nsupdate-keyfile $(pwd)/.var/lib/foremanctl/rndc.key
       - name: Run tests
         run: |
           ./forge test --pytest-args="--featureset=migration"
@@ -552,7 +562,10 @@ jobs:
         run: cp -a vendor_overrides/satellite src/playbooks/_vendor_overrides
       - name: Start VMs
         run: |
-          ./forge vms start --vms "quadlet client"
+          ./forge vms start --vms "quadlet client named"
+      - name: Configure remote-named
+        run: |
+          ./forge remote-named
       - name: Configure repositories
         run: |
           ./forge setup-repositories
@@ -573,7 +586,9 @@ jobs:
       - name: Deploy features
         run: |
           ./foremanctl deploy \
-            --add-feature bmc
+            --add-feature bmc \
+            --add-feature dns \
+            --dns-provider nsupdate --dns-server named.example.com --dns-nsupdate-keyfile $(pwd)/.var/lib/foremanctl/rndc.key \
       - name: Run tests
         run: |
           ./forge test --pytest-args="--featureset=satellite"

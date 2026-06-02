@@ -8,6 +8,7 @@
       ansible.builtin.package:
         name:
           - nmap
+          - bind-utils
 
 - name: Execute tests
   gather_facts: false
