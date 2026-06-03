@@ -92,6 +92,28 @@
   notify:
     - Restart httpd
 
+- name: Create systemd drop-in directory for httpd
+  ansible.builtin.file:
+    path: /etc/systemd/system/httpd.service.d
+    state: directory
+    mode: "0755"
+
+- name: Add httpd to foreman.target
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/httpd.service.d/foreman-target.conf
+    mode: "0644"
+    content: |
+      [Unit]
+      PartOf=foreman.target
+
+      [Install]
+      WantedBy=foreman.target
+  notify: Restart httpd
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers
 
