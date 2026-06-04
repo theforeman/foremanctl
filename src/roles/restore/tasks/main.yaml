@@ -1,0 +1,20 @@
+---
+# Main restore orchestration
+# Phase 1: Validation only
+
+- name: Run validation checks
+  ansible.builtin.include_tasks:
+    file: validate.yaml
+
+- name: Validation complete
+  ansible.builtin.debug:
+    msg: |
+      ═══════════════════════════════════════════════════════════════
+      Phase 1 Complete: Validation passed successfully!
+
+      Next phases (not yet implemented):
+      - Phase 2: Stop services and restore configuration files
+      - Phase 3: Restore databases
+      - Phase 4: Restore Pulp content
+      - Phase 5: Deploy and verify
+      ═══════════════════════════════════════════════════════════════

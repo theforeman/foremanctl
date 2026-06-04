@@ -1,0 +1,45 @@
+---
+# Phase 1: Basic validation - check required files exist
+# This runs BEFORE any destructive actions
+
+- name: Check if backup directory exists
+  ansible.builtin.stat:
+    path: "{{ backup_dir }}"
+  register: restore_backup_dir_stat
+
+- name: Fail if backup directory does not exist
+  ansible.builtin.fail:
+    msg: "Backup directory does not exist: {{ backup_dir }}"
+  when: not restore_backup_dir_stat.stat.exists
+
+- name: Check for metadata.yml
+  ansible.builtin.stat:
+    path: "{{ backup_dir }}/metadata.yml"
+  register: restore_metadata_stat
+
+- name: Fail if metadata.yml is missing
+  ansible.builtin.fail:
+    msg: "Backup metadata file not found: {{ backup_dir }}/metadata.yml"
+  when: not restore_metadata_stat.stat.exists
+
+- name: Verify required backup files exist
+  ansible.builtin.stat:
+    path: "{{ backup_dir }}/{{ item }}"
+  register: restore_required_files
+  failed_when: not restore_required_files.stat.exists
+  loop:
+    - foreman.dump
+    - candlepin.dump
+    - pulp.dump
+
+- name: Display validation success
+  ansible.builtin.debug:
+    msg: |
+      ✓ Backup validation passed
+      ✓ Backup directory exists: {{ backup_dir }}
+      ✓ Metadata file found
+      ✓ Required files present (foreman.dump, candlepin.dump, pulp.dump)
+
+- name: Stop here if dry-run mode
+  ansible.builtin.meta: end_play
+  when: dry_run | default(false)
