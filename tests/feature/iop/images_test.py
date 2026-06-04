@@ -1,7 +1,5 @@
 import pytest
 
-pytestmark = pytest.mark.feature("iop")
-
 IOP_IMAGES = [
     "iop-kafka",
     "iop-ingress",

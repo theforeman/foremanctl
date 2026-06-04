@@ -1,8 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.feature("iop")
-
-
 def test_cvemap_download_script(server):
     script = server.file("/usr/local/bin/iop-cvemap-download.sh")
     assert script.exists
