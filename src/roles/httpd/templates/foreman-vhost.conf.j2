@@ -58,6 +58,15 @@
   ProxyPass /icons !
   ProxyPass /images !
   ProxyPass /server-status !
+{% if httpd_registration_admission_max | default(0) | int > 0 %}
+  <Proxy balancer://foreman-registration>
+      BalancerMember {{ httpd_foreman_backend }} retry=0 timeout=900 max={{ httpd_registration_admission_max }}
+  </Proxy>
+  ProxyPass /rhsm balancer://foreman-registration/rhsm
+  ProxyPassReverse /rhsm balancer://foreman-registration/rhsm
+  ProxyPass /register balancer://foreman-registration/register
+  ProxyPassReverse /register balancer://foreman-registration/register
+{% endif %}
   ProxyPass / {{ httpd_foreman_backend }}/ retry=0 timeout=900 upgrade=websocket
   ProxyPassReverse / {{ httpd_foreman_backend }}/
 
