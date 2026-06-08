@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 
@@ -16,16 +17,29 @@ def parse_args():
     return parser.parse_args()
 
 
+def parse_broker_inventory(output):
+    # Broker emits ruamel-specific tags (e.g. !NetworkType) that safe_load rejects.
+    output = re.sub(r'!\w+\s+', '', output)
+    inventory = yaml.safe_load(output)
+    if not inventory:
+        return
+    return inventory.values()
+
+
 def get_running_hosts():
     cmd = ["broker", "inventory", "--details"]
 
     try:
-        output = subprocess.check_output(cmd, universal_newlines=True).rstrip()
-    except FileNotFoundError:
+        output = subprocess.check_output(
+            cmd, universal_newlines=True, stderr=subprocess.DEVNULL
+        ).rstrip()
+    except (FileNotFoundError, subprocess.CalledProcessError):
         return
 
-    hosts = yaml.safe_load(output)
-    return hosts.values()
+    try:
+        return parse_broker_inventory(output)
+    except yaml.YAMLError:
+        return
 
 
 def list_running_hosts():
@@ -65,8 +79,8 @@ def main():
     if args.list:
         json.dump(hosts, sys.stdout)
     elif args.host:
-        details = hosts['_meta']['hostvars']
-        json.dump(details[args.host], sys.stdout)
+        details = hosts['_meta']['hostvars'].get(args.host, {})
+        json.dump(details, sys.stdout)
 
 
 if __name__ == '__main__':
