@@ -56,13 +56,6 @@
   loop_control:
     label: "{{ item.dump_file }}"
 
-- name: SAFETY CHECK - Destructive operations disabled
-  ansible.builtin.debug:
-    msg: |
-      ⚠️  SAFETY MODE: Destructive operations are currently DISABLED
-      ⚠️  To enable actual database restore, edit restore_databases.yaml
-      ⚠️  and remove 'when: false' from drop/create/restore tasks
-
 - name: Drop existing databases
   community.postgresql.postgresql_db:
     name: "{{ item.database_name }}"
@@ -74,7 +67,6 @@
   loop: "{{ restore_databases_to_restore }}"
   loop_control:
     label: "{{ item.database_name }}"
-  when: false  # SAFETY: Remove this line to enable
 
 - name: Create empty databases
   community.postgresql.postgresql_db:
@@ -88,7 +80,6 @@
   loop: "{{ restore_databases_to_restore }}"
   loop_control:
     label: "{{ item.database_name }}"
-  when: false  # SAFETY: Remove this line to enable
 
 - name: Restore databases from dump files
   ansible.builtin.command:
@@ -107,7 +98,6 @@
   loop_control:
     label: "{{ item.dump_file }} → {{ item.database_name }}"
   changed_when: true
-  when: false  # SAFETY: Remove this line to enable
 
 - name: Fix database ownership
   community.postgresql.postgresql_owner:
@@ -122,13 +112,15 @@
   loop: "{{ restore_databases_to_restore }}"
   loop_control:
     label: "{{ item.database_name }}"
-  when: false  # SAFETY: Remove this line to enable
 
-- name: Display restore progress
+- name: Display restore completion
   ansible.builtin.debug:
     msg: |
       ✓ Database restore configuration built
       ✓ Dump files verified
-      ⚠️  SAFETY MODE: Actual restore operations skipped
+      ✓ Existing databases dropped
+      ✓ Empty databases created
+      ✓ Data restored from dump files
+      ✓ Database ownership fixed
 
-      Next step: Review the configuration above, then enable destructive operations
+      Databases restored: {{ restore_databases_to_restore | map(attribute='database_name') | join(', ') }}
