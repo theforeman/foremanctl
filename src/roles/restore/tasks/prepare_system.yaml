@@ -1,0 +1,49 @@
+---
+# Phase 2: Prepare system for database restore
+# Stop services and ensure PostgreSQL is ready
+
+- name: Stop Foreman services
+  ansible.builtin.systemd:
+    name: foreman.target
+    state: stopped
+
+- name: Mark services as stopped
+  ansible.builtin.set_fact:
+    restore_service_stopped: true
+
+- name: Wait for PostgreSQL to fully stop
+  ansible.builtin.systemd:
+    name: postgresql.service
+  register: restore_postgres_status
+  until: restore_postgres_status.status.ActiveState == 'inactive'
+  retries: "{{ restore_postgresql_stop_retries }}"
+  delay: "{{ restore_postgresql_stop_delay }}"
+  when: database_mode == 'internal'
+  changed_when: false
+
+- name: Start PostgreSQL for restore
+  ansible.builtin.systemd:
+    name: postgresql.service
+    state: started
+  when: database_mode == 'internal'
+
+- name: Mark PostgreSQL as started
+  ansible.builtin.set_fact:
+    restore_postgresql_started: true
+  when: database_mode == 'internal'
+
+- name: Wait for PostgreSQL readiness
+  ansible.builtin.command:
+    cmd: pg_isready -h {{ database_host }} -p {{ database_port }}
+  register: restore_pg_ready
+  retries: "{{ restore_postgresql_ready_retries }}"
+  delay: "{{ restore_postgresql_ready_delay }}"
+  until: restore_pg_ready.rc == 0
+  changed_when: false
+
+- name: Display preparation complete
+  ansible.builtin.debug:
+    msg: |
+      ✓ Foreman services stopped
+      ✓ PostgreSQL started and ready
+      ✓ System prepared for database restore

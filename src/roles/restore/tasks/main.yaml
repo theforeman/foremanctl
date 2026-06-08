@@ -1,20 +1,48 @@
 ---
 # Main restore orchestration
-# Phase 1: Validation only
 
 - name: Run validation checks
   ansible.builtin.include_tasks:
     file: validate.yaml
 
-- name: Validation complete
-  ansible.builtin.debug:
-    msg: |
-      ═══════════════════════════════════════════════════════════════
-      Phase 1 Complete: Validation passed successfully!
+- name: Perform restore operations
+  block:
+    - name: Phase 2 - Prepare system for restore
+      ansible.builtin.include_tasks:
+        file: prepare_system.yaml
 
-      Next phases (not yet implemented):
-      - Phase 2: Stop services and restore configuration files
-      - Phase 3: Restore databases
-      - Phase 4: Restore Pulp content
-      - Phase 5: Deploy and verify
-      ═══════════════════════════════════════════════════════════════
+    - name: Phase 2 complete
+      ansible.builtin.debug:
+        msg: |
+          ═══════════════════════════════════════════════════════════════
+          Phase 2 Complete: System prepared for restore!
+
+          Next phases (not yet implemented):
+          - Phase 3: Restore databases
+          - Phase 4: Restore Pulp content
+          - Phase 5: Deploy and verify
+          ═══════════════════════════════════════════════════════════════
+
+  rescue:
+    - name: Stop PostgreSQL on failure
+      ansible.builtin.systemd:
+        name: postgresql.service
+        state: stopped
+      when:
+        - database_mode == 'internal'
+        - restore_postgresql_started | default(false)
+      failed_when: false
+
+    - name: Restart Foreman services on failure
+      ansible.builtin.systemd:
+        name: foreman.target
+        state: started
+      when: restore_service_stopped | default(false)
+      failed_when: false
+
+    - name: Report failure
+      ansible.builtin.fail:
+        msg: |
+          Restore failed: {{ ansible_failed_result.msg | default('Unknown error') }}
+          Services have been restarted.
+          System is back to running state.
