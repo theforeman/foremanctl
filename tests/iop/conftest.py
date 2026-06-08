@@ -5,6 +5,8 @@ ROLE_MAP = {
     "iop-ingress": "iop_ingress",
     "iop-inventory": "iop_inventory",
     "iop-advisor": "iop_advisor",
+    "iop-gateway": "iop_gateway",
+    "iop-remediation": "iop_remediation",
 }
 
 
