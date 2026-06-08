@@ -138,5 +138,5 @@ def test_advisor_fdw_permissions_on_view(server):
 
 
 def test_advisor_api_endpoint(server, iop_image):
-    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-advisor')} curl -s -o /dev/null -w '%{{http_code}}' http://iop-service-advisor-backend-api:8000/ 2>/dev/null || echo '000'")
-    assert result.stdout.strip() != "000"
+    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-advisor')} curl --fail -s -o /dev/null http://iop-service-advisor-backend-api:8000/api/insights/v1/status/live/")
+    assert result.succeeded

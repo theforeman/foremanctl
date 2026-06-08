@@ -24,6 +24,6 @@ def test_remediation_api_environment_variables(server):
     assert "DB_SSL_ENABLED=false" in result.stdout
 
 
-def test_remediation_api_endpoint(server):
-    result = server.run("curl -s -o /dev/null -w '%{http_code}' http://localhost:9002/ 2>/dev/null || echo '000'")
-    assert result.stdout.strip() != "000"
+def test_remediation_api_endpoint(server, iop_image):
+    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-remediation')} curl --fail -s -o /dev/null http://iop-service-remediations-api:9002/health")
+    assert result.succeeded

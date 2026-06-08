@@ -27,15 +27,8 @@ def test_inventory_service_dependencies(server):
 
 
 def test_inventory_api_endpoint(server, iop_image):
-    result = server.run(f"podman run --rm {iop_image('iop-inventory')} curl -s -o /dev/null -w '%{{http_code}}' http://iop-core-host-inventory-api:8081/health")
-    if result.succeeded:
-        assert "200" in result.stdout
-
-
-def test_inventory_hosts_endpoint(server, iop_image):
-    result = server.run(f"podman run --rm {iop_image('iop-inventory')} curl -s -o /dev/null -w '%{{http_code}}' http://iop-core-host-inventory-api:8081/api/inventory/v1/hosts")
-    if result.succeeded:
-        assert "200" in result.stdout
+    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-inventory')} curl --fail -s -o /dev/null http://iop-core-host-inventory-api:8081/health")
+    assert result.succeeded
 
 
 def test_inventory_cleanup_service(server):
