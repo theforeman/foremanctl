@@ -1,0 +1,111 @@
+---
+- name: Read internal CA certificate subject
+  ansible.builtin.command:
+    cmd: >-
+      openssl x509 -in {{ certificates_ca_directory_certs }}/ca.crt
+      -noout -subject
+  register: certificates_internal_ca_subject
+  changed_when: false
+
+- name: Read custom server CA certificate subject
+  ansible.builtin.command:
+    cmd: >-
+      openssl x509 -in {{ certificates_ca_directory_certs }}/server-ca.crt
+      -noout -subject
+  register: certificates_server_ca_subject
+  changed_when: false
+
+- name: Verify custom server CA differs from internal CA
+  ansible.builtin.assert:
+    that:
+      - certificates_internal_ca_subject.stdout != certificates_server_ca_subject.stdout
+    fail_msg: Custom server CA should have a different subject than the internal CA
+
+- name: Read server certificate issuer
+  ansible.builtin.command:
+    cmd: >-
+      openssl x509 -in {{ certificates_ca_directory_certs }}/{{ certificates_test_hostname }}.crt
+      -noout -issuer
+  register: certificates_server_issuer
+  changed_when: false
+
+- name: Verify server certificate is issued by custom server CA
+  ansible.builtin.assert:
+    that:
+      - certificates_server_issuer.stdout == certificates_server_ca_subject.stdout.replace('subject=', 'issuer=')
+    fail_msg: Server certificate should be issued by the custom server CA
+
+- name: Read client certificate issuer
+  ansible.builtin.command:
+    cmd: >-
+      openssl x509 -in {{ certificates_ca_directory_certs }}/{{ certificates_test_hostname }}-client.crt
+      -noout -issuer
+  register: certificates_client_issuer
+  changed_when: false
+
+- name: Verify client certificate is issued by internal CA
+  ansible.builtin.assert:
+    that:
+      - certificates_client_issuer.stdout == certificates_internal_ca_subject.stdout.replace('subject=', 'issuer=')
+    fail_msg: Client certificate should be issued by the internal CA
+
+- name: Read localhost certificate issuer
+  ansible.builtin.command:
+    cmd: >-
+      openssl x509 -in {{ certificates_ca_directory_certs }}/localhost.crt
+      -noout -issuer
+  register: certificates_localhost_issuer
+  changed_when: false
+
+- name: Verify localhost certificate is issued by internal CA
+  ansible.builtin.assert:
+    that:
+      - certificates_localhost_issuer.stdout == certificates_internal_ca_subject.stdout.replace('subject=', 'issuer=')
+    fail_msg: Localhost certificate should be issued by the internal CA
+
+- name: Verify server certificate chains to CA bundle
+  ansible.builtin.command:
+    cmd: >-
+      openssl verify -CAfile {{ certificates_ca_directory_certs }}/ca-bundle.crt
+      {{ certificates_ca_directory_certs }}/{{ certificates_test_hostname }}.crt
+  register: certificates_server_verify
+  changed_when: false
+  failed_when: "'OK' not in certificates_server_verify.stdout"
+
+- name: Verify client certificate chains to internal CA
+  ansible.builtin.command:
+    cmd: >-
+      openssl verify -CAfile {{ certificates_ca_directory_certs }}/ca.crt
+      {{ certificates_ca_directory_certs }}/{{ certificates_test_hostname }}-client.crt
+  register: certificates_client_verify
+  changed_when: false
+  failed_when: "'OK' not in certificates_client_verify.stdout"
+
+- name: Verify localhost server certificate chains to internal CA
+  ansible.builtin.command:
+    cmd: >-
+      openssl verify -CAfile {{ certificates_ca_directory_certs }}/ca.crt
+      {{ certificates_ca_directory_certs }}/localhost.crt
+  register: certificates_localhost_verify
+  changed_when: false
+  failed_when: "'OK' not in certificates_localhost_verify.stdout"
+
+- name: List CA bundle certificate subjects
+  ansible.builtin.shell: |
+    set -o pipefail
+    awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/' {{ certificates_ca_directory_certs }}/ca-bundle.crt \
+      | openssl crl2pkcs7 -nocrl -certfile /dev/stdin \
+      | openssl pkcs7 -print_certs -noout -text \
+      | grep 'Subject:'
+  args:
+    executable: /bin/bash
+  register: certificates_bundle_subjects
+  changed_when: false
+
+- name: Verify CA bundle contains internal and custom server CAs
+  ansible.builtin.assert:
+    that:
+      - certificates_internal_ca_subject.stdout.split('=', 1)[1] in certificates_bundle_subjects.stdout
+      - certificates_server_ca_subject.stdout.split('=', 1)[1] in certificates_bundle_subjects.stdout
+      - certificates_bundle_subjects.stdout | regex_findall('Subject:') | length == 2
+    fail_msg: CA bundle should contain exactly the internal CA and custom server CA

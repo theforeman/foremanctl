@@ -44,6 +44,12 @@ class UserParameters:
 def pytest_addoption(parser):
     parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'installer', 'custom_server'), help="Certificate source used during deployment")
     parser.addoption("--database-mode", action="store", default="internal", choices=('internal', 'external'), help="Whether the database is internal or external")
+    parser.addoption(
+        "--molecule",
+        action="store_true",
+        default=False,
+        help="Run Molecule role tests under src/roles/ (requires ./setup-environment and ./forge vms start)",
+    )
 
 
 @pytest.fixture(scope="module")
@@ -238,6 +244,10 @@ def wait_for_metadata_generate(foremanapi):
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "feature(name): mark a test as requiring a feature")
+    config.addinivalue_line(
+        "markers",
+        "molecule: Molecule role tests (selected with --molecule)",
+    )
 
     config.user_parameters = UserParameters(config)
 
@@ -251,6 +261,19 @@ def pytest_runtest_setup(item):
         missing = feature_markers - item.config.user_parameters.enabled_features
         if missing:
             pytest.skip(f"test requires feature(s) {missing!r}")
+
+
+def pytest_collection_modifyitems(config, items):
+    molecule_enabled = config.getoption("--molecule")
+
+    if not molecule_enabled:
+        skip_molecule = pytest.mark.skip(
+            reason="molecule role tests require --molecule",
+        )
+        for item in items:
+            if item.get_closest_marker("molecule"):
+                item.add_marker(skip_molecule)
+
 
 
 class ResolveAdapter(HTTPAdapter):

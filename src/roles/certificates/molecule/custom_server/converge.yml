@@ -1,0 +1,17 @@
+---
+- name: Converge
+  hosts: quadlet
+  become: true
+  vars:
+    molecule_custom_source_directory: /vagrant/tests/fixtures/foreman-certificate-check/certs/
+  pre_tasks:
+    - ansible.builtin.import_tasks: ../common/tasks/set_hostnames.yml
+
+    - name: Set custom server certificate paths
+      ansible.builtin.set_fact:
+        certificates_custom_server_certificate: "{{ molecule_custom_source_directory }}foreman.example.com.crt"
+        certificates_custom_server_key: "{{ molecule_custom_source_directory }}foreman.example.com.key"
+        certificates_custom_server_ca_certificate: "{{ molecule_custom_source_directory }}ca.crt"
+
+  roles:
+    - role: certificates

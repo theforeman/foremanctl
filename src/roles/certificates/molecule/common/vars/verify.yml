@@ -1,0 +1,17 @@
+---
+certificates_test_hostname: "{{ ansible_facts['fqdn'] }}"
+certificates_ca_directory_certs: "{{ certificates_ca_directory }}/certs"
+certificates_ca_directory_keys: "{{ certificates_ca_directory }}/private"
+certificates_expected_files:
+  - "{{ certificates_ca_directory_certs }}/ca.crt"
+  - "{{ certificates_ca_directory_certs }}/server-ca.crt"
+  - "{{ certificates_ca_directory_certs }}/ca-bundle.crt"
+  - "{{ certificates_ca_directory_keys }}/ca.key"
+  - "{{ certificates_ca_directory_certs }}/{{ certificates_test_hostname }}.crt"
+  - "{{ certificates_ca_directory_keys }}/{{ certificates_test_hostname }}.key"
+  - "{{ certificates_ca_directory_certs }}/{{ certificates_test_hostname }}-client.crt"
+  - "{{ certificates_ca_directory_keys }}/{{ certificates_test_hostname }}-client.key"
+  - "{{ certificates_ca_directory_certs }}/localhost.crt"
+  - "{{ certificates_ca_directory_keys }}/localhost.key"
+  - "{{ certificates_ca_directory_certs }}/localhost-client.crt"
+  - "{{ certificates_ca_directory_keys }}/localhost-client.key"

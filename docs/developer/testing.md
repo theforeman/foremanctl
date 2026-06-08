@@ -28,6 +28,19 @@ Integration tests run against Vagrant VMs defined in the [`Vagrantfile`](../../V
 
 Testinfra fixtures in `tests/conftest.py` open Paramiko sessions through that SSH config, so `server`, `client`, and `database` are live hosts, not local stubs.
 
+### Molecule role tests
+
+Roles with scenarios under `src/roles/<role>/molecule/` can be tested from the repository root:
+
+```bash
+source .venv/bin/activate
+pytest --molecule
+```
+
+This discovers every `molecule/<scenario>/molecule.yml` and runs `molecule test -s <scenario>` for that role. Without `--molecule`, those tests are skipped and the usual integration tests run instead.
+
+Shared Molecule settings (Podman driver, collections path, test sequence) live in [`.config/molecule/config.yml`](../../.config/molecule/config.yml). Role-specific converge and verify steps are shared under `src/roles/<role>/molecule/common/`; each scenario only overrides variables in its `molecule.yml` and wires playbooks to the common task files.
+
 ### CI
 
 GitHub Actions mirrors the same workflow: start VMs, deploy, run tests. The [`.github/workflows/test.yml`](../../.github/workflows/test.yml) matrix covers combinations of certificate source, database mode, security profile, and base box.

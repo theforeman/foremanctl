@@ -1,0 +1,8 @@
+---
+- name: Converge
+  hosts: quadlet
+  become: true
+  pre_tasks:
+    - ansible.builtin.import_tasks: ../common/tasks/set_hostnames.yml
+  roles:
+    - role: certificates
