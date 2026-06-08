@@ -4,6 +4,9 @@
 :trusted_hosts: {{ foreman_proxy_trusted_hosts }}
 
 :https_port: {{ foreman_proxy_https_port }}
+{% if foreman_proxy_http | bool %}
+:http_port: {{ foreman_proxy_http_port }}
+{% endif %}
 :ssl_ca_file: /etc/foreman-proxy/ssl_ca.pem
 :ssl_certificate: /etc/foreman-proxy/ssl_cert.pem
 :ssl_private_key: /etc/foreman-proxy/ssl_key.pem

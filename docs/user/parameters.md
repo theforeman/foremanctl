@@ -109,6 +109,7 @@ There are multiple use cases from the users perspective that dictate what parame
 
 | Parameter | Description | foreman-installer Parameters |
 | --------- | ----------- | ---------------------------- |
+| `--foreman-proxy-http` | Enable plain text HTTP on Foreman Proxy | `--foreman-proxy-http` |
 | `--bmc-ipmi-implementation` | IPMI implementation to use for BMC | `--foreman-proxy-bmc-default-provider` |
 | `--bmc-redfish-verify-ssl` | Verify SSL certificates for Redfish BMC connections | `--foreman-proxy-bmc-redfish-verify-ssl` |
 
@@ -162,7 +163,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-proxy-plugin-openscap-ansible-module` | | foreman_proxy::plugin::openscap | ansible_module |
 | `--foreman-proxy-plugin-openscap-puppet-module` | | foreman_proxy::plugin::openscap | puppet_module |
 | `--foreman-proxy-content-enable-ostree` | | | |
-| `--foreman-proxy-http` | | | |
 | `--foreman-proxy-log` | | | |
 | `--foreman-proxy-log-level` | | | |
 | `--foreman-proxy-plugin-ansible-working-dir` | | | |

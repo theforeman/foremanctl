@@ -3,6 +3,8 @@ foreman_proxy_container_image: "quay.io/foreman/foreman-proxy"
 foreman_proxy_container_tag: "nightly"
 
 foreman_proxy_name: "{{ ansible_facts['fqdn'] }}"
+foreman_proxy_http: false
+foreman_proxy_http_port: 8000
 foreman_proxy_https_port: 8443
 foreman_proxy_url: "https://{{ foreman_proxy_name }}:{{ foreman_proxy_https_port }}"
 
