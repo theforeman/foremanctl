@@ -1,23 +1,5 @@
-registry_auth_file: /etc/foreman/registry-auth.json
-candlepin_registry_auth_file: "{{ registry_auth_file }}"
-foreman_registry_auth_file: "{{ registry_auth_file }}"
-foreman_proxy_registry_auth_file: "{{ registry_auth_file }}"
-postgresql_registry_auth_file: "{{ registry_auth_file }}"
-pulp_registry_auth_file: "{{ registry_auth_file }}"
-redis_registry_auth_file: "{{ registry_auth_file }}"
-iop_kafka_registry_auth_file: "{{ registry_auth_file }}"
-iop_vmaas_registry_auth_file: "{{ registry_auth_file }}"
-iop_vulnerability_registry_auth_file: "{{ registry_auth_file }}"
-iop_inventory_registry_auth_file: "{{ registry_auth_file }}"
-iop_remediation_registry_auth_file: "{{ registry_auth_file }}"
-iop_advisor_registry_auth_file: "{{ registry_auth_file }}"
-iop_gateway_registry_auth_file: "{{ registry_auth_file }}"
-iop_engine_registry_auth_file: "{{ registry_auth_file }}"
-iop_yuptoo_registry_auth_file: "{{ registry_auth_file }}"
-iop_puptoo_registry_auth_file: "{{ registry_auth_file }}"
-iop_ingress_registry_auth_file: "{{ registry_auth_file }}"
-iop_vulnerability_frontend_registry_auth_file: "{{ registry_auth_file }}"
-iop_advisor_frontend_registry_auth_file: "{{ registry_auth_file }}"
+images_quadlet_dir: /etc/containers/systemd
+images_registry_auth_file: /etc/foreman/registry-auth.json
 
 container_tag_stream: "3.19"
 candlepin_container_image: quay.io/foreman/candlepin
@@ -33,15 +15,3 @@ pulp_container_image: quay.io/foreman/pulp
 pulp_container_tag: "foreman-{{ container_tag_stream }}"
 redis_container_image: quay.io/sclorg/redis-6-c9s
 redis_container_tag: "latest"
-
-images:
- - "{{ candlepin_container_image }}:{{ candlepin_container_tag }}"
- - "{{ foreman_container_image }}:{{ foreman_container_tag }}"
- - "{{ pulp_container_image }}:{{ pulp_container_tag }}"
- - "{{ redis_container_image }}:{{ redis_container_tag }}"
-
-database_images:
- - "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
-
-foreman_proxy_images:
- - "{{ foreman_proxy_container_image }}:{{ foreman_proxy_container_tag }}"

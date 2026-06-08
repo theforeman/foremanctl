@@ -6,7 +6,8 @@ import pytest
 FOREMAN_PROXY_PORT = 8443
 
 
-def get_proxy_v2_features(server, certificates, server_fqdn):
+@pytest.fixture(scope="module")
+def proxy_v2_features(server, certificates, server_fqdn):
     cmd = server.run(
         f"curl --cacert {certificates['server_ca_certificate']} "
         f"--cert {certificates['client_certificate']} "
@@ -56,10 +57,15 @@ def test_foreman_proxy_client_auth_to_foreman(server, certificates, server_fqdn)
 
 
 @pytest.mark.feature('bmc')
-def test_bmc_capabilities(server, certificates, server_fqdn):
-    features = get_proxy_v2_features(server, certificates, server_fqdn)
-    assert 'bmc' in features
-    capabilities = features['bmc'].get('capabilities', [])
+def test_bmc_capabilities(proxy_v2_features):
+    assert 'bmc' in proxy_v2_features
+    capabilities = proxy_v2_features['bmc'].get('capabilities', [])
     assert 'ipmitool' in capabilities
     assert 'freeipmi' in capabilities
     assert 'redfish' in capabilities
+
+
+@pytest.mark.feature('bmc')
+def test_bmc_default_provider(proxy_v2_features):
+    settings = proxy_v2_features['bmc'].get('settings', {})
+    assert settings.get('bmc_default_provider') == 'ipmitool'

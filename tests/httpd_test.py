@@ -138,3 +138,11 @@ def test_httpd_config_syntax(server):
 def test_httpd_headers_use_dashes(server):
     cmd = server.run("grep -rPn 'RequestHeader\\s+set\\s+\\S*_\\S*\\s' /etc/httpd/conf.d/foreman.conf /etc/httpd/conf.d/foreman-ssl.conf /etc/httpd/conf.d/05-foreman.d/ /etc/httpd/conf.d/05-foreman-ssl.d/ 2>/dev/null")
     assert cmd.stdout.strip() == '', f"HTTP header names should use dashes, not underscores:\n{cmd.stdout}"
+
+
+def test_httpd_foreman_target_drop_in(server):
+    drop_in = server.file("/etc/systemd/system/httpd.service.d/foreman-target.conf")
+    assert drop_in.exists
+    assert drop_in.is_file
+    assert drop_in.contains("PartOf=foreman.target")
+    assert drop_in.contains("WantedBy=foreman.target")

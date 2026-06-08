@@ -1,15 +1,11 @@
 ---
-- name: Pull Puptoo container image
-  containers.podman.podman_image:
-    name: "{{ iop_puptoo_container_image }}:{{ iop_puptoo_container_tag }}"
-    state: present
-  environment:
-    REGISTRY_AUTH_FILE: "{{ iop_puptoo_registry_auth_file }}"
+- name: Deploy iop-puptoo image
+  ansible.builtin.include_tasks: image.yaml
 
 - name: Deploy Puptoo container
   containers.podman.podman_container:
     name: iop-core-puptoo
-    image: "{{ iop_puptoo_container_image }}:{{ iop_puptoo_container_tag }}"
+    image: iop-puptoo.image
     state: quadlet
     env:
       BOOTSTRAP_SERVERS: "iop-core-kafka:9092"

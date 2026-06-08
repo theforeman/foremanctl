@@ -1,7 +1,6 @@
 ---
 foreman_container_image: "quay.io/foreman/foreman"
 foreman_container_tag: "nightly"
-foreman_registry_auth_file: /etc/foreman/registry-auth.json
 
 foreman_database_name: foreman
 foreman_database_user: foreman
@@ -9,7 +8,7 @@ foreman_database_host: localhost
 foreman_database_port: 5432
 foreman_database_pool: 9
 foreman_database_ssl_mode: disable
-foreman_database_ssl_ca:
+foreman_database_ssl_ca: # noqa: no-empty-defaults
 foreman_database_ssl_ca_path: /etc/foreman/db-ca.crt
 
 foreman_name: "{{ ansible_facts['fqdn'] }}"

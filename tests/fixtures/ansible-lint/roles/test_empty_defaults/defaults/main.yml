@@ -1,0 +1,12 @@
+---
+test_empty_defaults_null_var:
+test_empty_defaults_another_null:
+test_empty_defaults_empty_string: ""
+test_empty_defaults_another_empty_string: ''
+test_empty_defaults_name: "some_value"
+test_empty_defaults_port: 8080
+test_empty_defaults_enabled: false
+test_empty_defaults_items:
+  - one
+  - two
+test_empty_defaults_plugins: []

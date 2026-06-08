@@ -1,0 +1,5 @@
+---
+help: |
+  Run health checks on Foreman services
+include:
+  - _database_mode

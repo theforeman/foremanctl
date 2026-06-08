@@ -1,0 +1,44 @@
+---
+- name: Pull images
+  block:
+    - name: Set Policy=always to force image pull
+      ansible.builtin.copy:
+        dest: "{{ images_quadlet_dir }}/{{ item }}.image.d/00-pull-always.conf"
+        content: |
+          [Image]
+          Policy=always
+        mode: "0644"
+      loop: "{{ images_deployed_names | default([]) }}"
+
+    - name: Run daemon reload
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Pull images via image services
+      ansible.builtin.systemd:
+        name: "{{ item }}-image.service"
+        state: restarted
+      loop: "{{ images_deployed_names | default([]) }}"
+      async: 600
+      poll: 0
+      register: images_pull_jobs
+
+    - name: Wait for image pulls to complete
+      ansible.builtin.async_status:
+        jid: "{{ item.ansible_job_id }}"
+      register: images_pull_result
+      until: images_pull_result is finished
+      retries: 120
+      delay: 5
+      loop: "{{ images_pull_jobs.results }}"
+
+  always:
+    - name: Remove Policy=always drop-ins
+      ansible.builtin.file:
+        path: "{{ images_quadlet_dir }}/{{ item }}.image.d/00-pull-always.conf"
+        state: absent
+      loop: "{{ images_deployed_names | default([]) }}"
+
+    - name: Run daemon reload
+      ansible.builtin.systemd:
+        daemon_reload: true

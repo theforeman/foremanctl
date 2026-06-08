@@ -6,13 +6,19 @@ database_ssl_ca:
 
 foreman_database_name: foreman
 foreman_database_user: foreman
-foreman_database_password: CHANGEME
+foreman_database_password_file: "{{ obsah_state_path }}/foreman-db-password"
+foreman_database_password: "{{ lookup('ansible.builtin.password', foreman_database_password_file, chars=['ascii_letters', 'digits']) }}"
 candlepin_database_name: candlepin
 candlepin_database_user: candlepin
-candlepin_database_password: CHANGEME
+candlepin_database_password_file: "{{ obsah_state_path }}/candlepin-db-password"
+candlepin_database_password: "{{ lookup('ansible.builtin.password', candlepin_database_password_file, chars=['ascii_letters', 'digits']) }}"
 pulp_database_name: pulp
 pulp_database_user: pulp
-pulp_database_password: CHANGEME
+pulp_database_password_file: "{{ obsah_state_path }}/pulp-db-password"
+pulp_database_password: "{{ lookup('ansible.builtin.password', pulp_database_password_file, chars=['ascii_letters', 'digits']) }}"
+
+postgresql_admin_password_file: "{{ obsah_state_path }}/postgresql-admin-password"
+postgresql_admin_password: "{{ lookup('ansible.builtin.password', postgresql_admin_password_file, chars=['ascii_letters', 'digits']) }}"
 
 candlepin_database_host: "{{ database_host }}"
 candlepin_database_port: "{{ database_port }}"

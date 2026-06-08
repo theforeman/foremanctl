@@ -1,7 +1,6 @@
 ---
 pulp_container_image: quay.io/foreman/pulp
 pulp_container_tag: "3.73"
-pulp_registry_auth_file: /etc/foreman/registry-auth.json
 pulp_api_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
 pulp_content_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
 pulp_worker_image: "{{ pulp_container_image }}:{{ pulp_container_tag }}"
@@ -45,7 +44,7 @@ pulp_database_user: pulp
 pulp_database_host: localhost
 pulp_database_port: 5432
 pulp_database_ssl_mode: disabled
-pulp_database_ssl_ca:
+pulp_database_ssl_ca: # noqa: no-empty-defaults
 pulp_database_ssl_ca_path: /etc/pulp/certs/db-ca.crt
 
 pulp_settings_database_env:

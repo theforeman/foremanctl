@@ -14,13 +14,10 @@ candlepin_ciphers:
   - TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256
 candlepin_container_image: quay.io/foreman/candlepin
 candlepin_container_tag: "4.4.14"
-candlepin_registry_auth_file: /etc/foreman/registry-auth.json
 
 candlepin_database_host: localhost
 candlepin_database_port: 5432
 candlepin_database_ssl: false
 candlepin_database_ssl_mode: disable
-candlepin_database_ssl_ca:
+candlepin_database_ssl_ca: # noqa: no-empty-defaults
 candlepin_database_ssl_ca_path: /etc/candlepin/certs/db-ca.crt
-candlepin_database_ssl_cert:
-candlepin_database_ssl_key:
