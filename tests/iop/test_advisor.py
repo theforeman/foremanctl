@@ -137,6 +137,6 @@ def test_advisor_fdw_permissions_on_view(server):
     assert "SELECT" in result.stdout
 
 
-def test_advisor_api_endpoint(server):
-    result = server.run("podman run --network=iop-core-network --rm quay.io/iop/advisor-backend:latest curl -s -o /dev/null -w '%{http_code}' http://iop-service-advisor-backend-api:8000/ 2>/dev/null || echo '000'")
+def test_advisor_api_endpoint(server, iop_image):
+    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-advisor')} curl -s -o /dev/null -w '%{{http_code}}' http://iop-service-advisor-backend-api:8000/ 2>/dev/null || echo '000'")
     assert result.stdout.strip() != "000"

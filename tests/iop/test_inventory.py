@@ -26,14 +26,14 @@ def test_inventory_service_dependencies(server):
     assert "iop-core-host-inventory-migrate.service" in result.stdout
 
 
-def test_inventory_api_endpoint(server):
-    result = server.run("podman run --rm quay.io/iop/host-inventory:latest curl -s -o /dev/null -w '%{http_code}' http://iop-core-host-inventory-api:8081/health")
+def test_inventory_api_endpoint(server, iop_image):
+    result = server.run(f"podman run --rm {iop_image('iop-inventory')} curl -s -o /dev/null -w '%{{http_code}}' http://iop-core-host-inventory-api:8081/health")
     if result.succeeded:
         assert "200" in result.stdout
 
 
-def test_inventory_hosts_endpoint(server):
-    result = server.run("podman run --rm quay.io/iop/host-inventory:latest curl -s -o /dev/null -w '%{http_code}' http://iop-core-host-inventory-api:8081/api/inventory/v1/hosts")
+def test_inventory_hosts_endpoint(server, iop_image):
+    result = server.run(f"podman run --rm {iop_image('iop-inventory')} curl -s -o /dev/null -w '%{{http_code}}' http://iop-core-host-inventory-api:8081/api/inventory/v1/hosts")
     if result.succeeded:
         assert "200" in result.stdout
 
