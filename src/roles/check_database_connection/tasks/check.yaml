@@ -1,7 +1,7 @@
 - name: Store CA cert to a temporary file
   when:
-    - db_item.ca_cert is defined
-    - db_item.ca_cert is truthy
+    - db_item.ssl_ca is defined
+    - db_item.ssl_ca is truthy
   block:
     - name: Create temporary file
       ansible.builtin.tempfile:
@@ -12,7 +12,7 @@
     - name: Write CA cert to temporary file
       ansible.builtin.copy:
         dest: "{{ _check_database_connection_ca_cert.path }}"
-        src: "{{ db_item.ca_cert }}"
+        src: "{{ db_item.ssl_ca }}"
         mode: '0640'
 
 - name: Check database connectivity to {{ db_item.name }}
@@ -20,27 +20,27 @@
     login_host: "{{ db_item.host }}"
     login_user: "{{ db_item.user }}"
     login_password: "{{ db_item.password }}"
-    login_db: "{{ db_item.dbname }}"
+    login_db: "{{ db_item.database }}"
     ca_cert: "{{ _check_database_connection_ca_cert.path | default(omit) }}"
-    ssl_mode: "{{ db_item.sslmode | default(omit) }}"
+    ssl_mode: "{{ db_item.ssl_mode | default(omit) }}"
   register: check_database_connection_ping_result
   ignore_errors: true
 
 - name: Delete temporary CA cert file
   when:
-    - db_item.ca_cert is defined
-    - db_item.ca_cert is truthy
+    - db_item.ssl_ca is defined
+    - db_item.ssl_ca is truthy
   block:
     - name: Delete temporary file
       ansible.builtin.file:
         state: absent
         path: "{{ _check_database_connection_ca_cert.path }}"
 
-- name: Assert database is reachable for  {{ db_item.name }}
+- name: Assert database is reachable for {{ db_item.name }}
   ansible.builtin.assert:
     that:
       - check_database_connection_ping_result.is_available
     fail_msg: >
-      Cannot connect to {{ db_item.name }} database '{{ db_item.dbname }}' at {{ db_item.host }}.
+      Cannot connect to {{ db_item.name }} database '{{ db_item.database }}' at {{ db_item.host }}.
       Please verify the database host, port, name, user, and password.
       Error: {{ check_database_connection_ping_result.conn_err_msg | default('No error message available.') }}

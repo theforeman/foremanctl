@@ -2,30 +2,8 @@
 - name: Check DB
   ansible.builtin.include_tasks: check.yaml
   no_log: true
-  loop:
-    - name: Foreman
-      host: "{{ foreman_database_host }}"
-      user: "{{ foreman_database_user }}"
-      password: "{{ foreman_database_password }}"
-      dbname: "{{ foreman_database_name }}"
-      ca_cert: "{{ foreman_database_ssl_ca | default('') }}"
-      sslmode: "{{ foreman_database_ssl_mode | default(omit) }}"
-
-    - name: Candlepin
-      host: "{{ candlepin_database_host }}"
-      user: "{{ candlepin_database_user }}"
-      password: "{{ candlepin_database_password }}"
-      dbname: "{{ candlepin_database_name }}"
-      ca_cert: "{{ candlepin_database_ssl_ca | default('') }}"
-      sslmode: "{{ candlepin_database_ssl_mode | default(omit) }}"
-
-    - name: Pulp
-      host: "{{ pulp_database_host }}"
-      user: "{{ pulp_database_user }}"
-      password: "{{ pulp_database_password }}"
-      dbname: "{{ pulp_database_name }}"
-      ca_cert: "{{ pulp_database_ssl_ca | default('') }}"
-      sslmode: "{{ pulp_database_ssl_mode | default(omit) }}"
+  loop: "{{ checks_databases }}"
   loop_control:
     loop_var: db_item
+    label: "{{ db_item.name }}"
   when: database_mode == 'external'

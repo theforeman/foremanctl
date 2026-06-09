@@ -35,17 +35,112 @@ foreman_database_port: "{{ database_port }}"
 foreman_database_ssl_mode: "{{ database_ssl_mode }}"
 foreman_database_ssl_ca: "{{ database_ssl_ca }}"
 
-postgresql_databases:
-  - name: "{{ candlepin_database_name }}"
-    owner: "{{ candlepin_database_user }}"
-  - name: "{{ foreman_database_name }}"
-    owner: "{{ foreman_database_user }}"
-  - name: "{{ pulp_database_name }}"
-    owner: "{{ pulp_database_user }}"
-postgresql_users:
-  - name: "{{ candlepin_database_user }}"
-    password: "{{ candlepin_database_password }}"
-  - name: "{{ foreman_database_user }}"
+iop_database_host: host.containers.internal
+iop_database_port: 5432
+
+iop_inventory_database_host: "{{ iop_database_host }}"
+iop_inventory_database_port: "{{ iop_database_port }}"
+iop_inventory_database_name: inventory_db
+iop_inventory_database_user: inventory_admin
+iop_inventory_database_password_file: "{{ obsah_state_path }}/iop-inventory-db-password"
+iop_inventory_database_password: "{{ lookup('ansible.builtin.password', iop_inventory_database_password_file, chars=['ascii_letters', 'digits']) }}"
+
+iop_advisor_database_host: "{{ iop_database_host }}"
+iop_advisor_database_port: "{{ iop_database_port }}"
+iop_advisor_database_name: advisor_db
+iop_advisor_database_user: advisor_user
+iop_advisor_database_password_file: "{{ obsah_state_path }}/iop-advisor-db-password"
+iop_advisor_database_password: "{{ lookup('ansible.builtin.password', iop_advisor_database_password_file, chars=['ascii_letters', 'digits']) }}"
+
+iop_remediation_database_host: "{{ iop_database_host }}"
+iop_remediation_database_port: "{{ iop_database_port }}"
+iop_remediation_database_name: remediations_db
+iop_remediation_database_user: remediations_user
+iop_remediation_database_password_file: "{{ obsah_state_path }}/iop-remediation-db-password"
+iop_remediation_database_password: "{{ lookup('ansible.builtin.password', iop_remediation_database_password_file, chars=['ascii_letters', 'digits']) }}"
+
+iop_vmaas_database_host: "{{ iop_database_host }}"
+iop_vmaas_database_port: "{{ iop_database_port }}"
+iop_vmaas_database_name: vmaas_db
+iop_vmaas_database_user: vmaas_admin
+iop_vmaas_database_password_file: "{{ obsah_state_path }}/iop-vmaas-db-password"
+iop_vmaas_database_password: "{{ lookup('ansible.builtin.password', iop_vmaas_database_password_file, chars=['ascii_letters', 'digits']) }}"
+
+iop_vulnerability_database_host: "{{ iop_database_host }}"
+iop_vulnerability_database_port: "{{ iop_database_port }}"
+iop_vulnerability_database_name: vulnerability_db
+iop_vulnerability_database_user: vulnerability_admin
+iop_vulnerability_database_password_file: "{{ obsah_state_path }}/iop-vulnerability-db-password"
+iop_vulnerability_database_password: "{{ lookup('ansible.builtin.password', iop_vulnerability_database_password_file, chars=['ascii_letters', 'digits']) }}"
+
+databases:
+  - name: foreman
+    database: "{{ foreman_database_name }}"
+    host: "{{ foreman_database_host }}"
+    port: "{{ foreman_database_port }}"
+    user: "{{ foreman_database_user }}"
     password: "{{ foreman_database_password }}"
-  - name: "{{ pulp_database_user }}"
+    ssl_mode: "{{ foreman_database_ssl_mode }}"
+    ssl_ca: "{{ foreman_database_ssl_ca }}"
+    feature: foreman
+  - name: candlepin
+    database: "{{ candlepin_database_name }}"
+    host: "{{ candlepin_database_host }}"
+    port: "{{ candlepin_database_port }}"
+    user: "{{ candlepin_database_user }}"
+    password: "{{ candlepin_database_password }}"
+    ssl_mode: "{{ candlepin_database_ssl_mode }}"
+    ssl_ca: "{{ candlepin_database_ssl_ca }}"
+    feature: katello
+  - name: pulp
+    database: "{{ pulp_database_name }}"
+    host: "{{ pulp_database_host }}"
+    port: "{{ pulp_database_port }}"
+    user: "{{ pulp_database_user }}"
     password: "{{ pulp_database_password }}"
+    ssl_mode: "{{ pulp_database_ssl_mode }}"
+    ssl_ca: "{{ pulp_database_ssl_ca }}"
+    feature: katello
+  - name: iop_advisor
+    database: "{{ iop_advisor_database_name }}"
+    host: "{{ iop_advisor_database_host }}"
+    port: "{{ iop_advisor_database_port }}"
+    user: "{{ iop_advisor_database_user }}"
+    password: "{{ iop_advisor_database_password }}"
+    feature: iop
+  - name: iop_inventory
+    database: "{{ iop_inventory_database_name }}"
+    host: "{{ iop_inventory_database_host }}"
+    port: "{{ iop_inventory_database_port }}"
+    user: "{{ iop_inventory_database_user }}"
+    password: "{{ iop_inventory_database_password }}"
+    feature: iop
+  - name: iop_remediation
+    database: "{{ iop_remediation_database_name }}"
+    host: "{{ iop_remediation_database_host }}"
+    port: "{{ iop_remediation_database_port }}"
+    user: "{{ iop_remediation_database_user }}"
+    password: "{{ iop_remediation_database_password }}"
+    feature: iop
+  - name: iop_vmaas
+    database: "{{ iop_vmaas_database_name }}"
+    host: "{{ iop_vmaas_database_host }}"
+    port: "{{ iop_vmaas_database_port }}"
+    user: "{{ iop_vmaas_database_user }}"
+    password: "{{ iop_vmaas_database_password }}"
+    feature: iop
+  - name: iop_vulnerability
+    database: "{{ iop_vulnerability_database_name }}"
+    host: "{{ iop_vulnerability_database_host }}"
+    port: "{{ iop_vulnerability_database_port }}"
+    user: "{{ iop_vulnerability_database_user }}"
+    password: "{{ iop_vulnerability_database_password }}"
+    feature: iop
+
+all_databases: >-
+  {{ databases | selectattr('feature', 'in', enabled_features) | list }}
+
+postgresql_databases: >-
+  {{ all_databases | to_postgresql_databases }}
+postgresql_users: >-
+  {{ all_databases | to_postgresql_users }}
