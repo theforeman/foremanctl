@@ -115,6 +115,19 @@ def has_feature(features, feature):
     return feature in features or any(f.startswith(feature + '/') for f in features)
 
 
+def to_postgresql_databases(databases):
+    return [{'name': db['database'], 'owner': db['user']} for db in databases]
+
+
+def to_postgresql_users(databases):
+    seen = {}
+    for db in databases:
+        name = db['user']
+        if name not in seen:
+            seen[name] = {'name': name, 'password': db['password']}
+    return list(seen.values())
+
+
 class FilterModule(object):
     '''foremanctl filters'''
 
@@ -128,4 +141,6 @@ class FilterModule(object):
             'list_all_features': list_all_features,
             'invalid_features': invalid_features,
             'has_feature': has_feature,
+            'to_postgresql_databases': to_postgresql_databases,
+            'to_postgresql_users': to_postgresql_users,
         }
