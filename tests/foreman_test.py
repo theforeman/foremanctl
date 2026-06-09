@@ -14,8 +14,8 @@ RECURRING_INSTANCES = [
 
 
 @pytest.fixture(scope="module")
-def foreman_status_curl(server):
-    return server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' http://{FOREMAN_HOST}:{FOREMAN_PORT}/api/v2/ping")
+def foreman_status_curl(server, server_fqdn):
+    return server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' http://{server_fqdn}:{FOREMAN_PORT}/api/v2/ping")
 
 
 @pytest.fixture(scope="module")
@@ -94,3 +94,9 @@ def test_foreman_domain_in_mail_settings(foremanapi, server_fqdn, setting):
     settings = foremanapi.list('settings', search=f'name={setting}')
     domain = str.join('.', server_fqdn.split('.')[1:])
     assert domain in settings[0]['value']
+
+
+def test_foreman_host_injection(server):
+    cmd = server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' --resolve evil.hackers.test:{FOREMAN_PORT}:127.0.0.1 http://evil.hackers.test:{FOREMAN_PORT}/api/v2/ping")
+    assert cmd.succeeded
+    assert cmd.stderr == '403'
