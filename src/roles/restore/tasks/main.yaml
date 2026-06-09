@@ -37,11 +37,23 @@
       ansible.builtin.debug:
         msg: |
           ═══════════════════════════════════════════════════════════════
-          Phase 4 Complete: Pulp content restored!
-
-          Next phases (not yet implemented):
-          - Phase 5: Deploy and verify
+          Phase 4 Complete: Pulp content and encryption keys restored!
           ═══════════════════════════════════════════════════════════════
+
+    - name: Phase 4b - Restore foremanctl state
+      ansible.builtin.include_tasks:
+        file: restore_foremanctl_state.yaml
+
+    - name: Phase 4b complete
+      ansible.builtin.debug:
+        msg: |
+          ═══════════════════════════════════════════════════════════════
+          Phase 4b Complete: OAuth keys and passwords restored!
+          ═══════════════════════════════════════════════════════════════
+
+    - name: Phase 5 - Deploy and verify
+      ansible.builtin.include_tasks:
+        file: deploy_and_verify.yaml
 
   rescue:
     - name: Stop PostgreSQL on failure

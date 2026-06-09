@@ -1,0 +1,72 @@
+---
+# Restore foremanctl state (OAuth keys, passwords, parameters)
+# CRITICAL: Must be restored before starting services
+
+- name: Set foremanctl state path
+  ansible.builtin.set_fact:
+    foremanctl_state_path: /root/foremanctl/.var/lib/foremanctl
+
+- name: Check if foremanctl-state archive exists
+  ansible.builtin.stat:
+    path: "{{ backup_dir }}/foremanctl-state.tar.gz"
+  register: restore_state_check
+
+- name: Fail if foremanctl-state is missing
+  ansible.builtin.fail:
+    msg: "CRITICAL: foremanctl-state.tar.gz not found in backup! Cannot restore OAuth keys and passwords."
+  when: not restore_state_check.stat.exists
+
+- name: Check if current state directory exists
+  ansible.builtin.stat:
+    path: "{{ foremanctl_state_path }}"
+  register: restore_current_state
+
+- name: Backup current foremanctl state
+  ansible.builtin.command:
+    cmd: mv {{ foremanctl_state_path }} {{ foremanctl_state_path }}.backup-{{ ansible_date_time.epoch }}
+  when: restore_current_state.stat.exists
+  changed_when: true
+  failed_when: false
+
+- name: Ensure state directory parent exists
+  ansible.builtin.file:
+    path: "{{ foremanctl_state_path | dirname }}"
+    state: directory
+    mode: '0755'
+
+- name: Extract foremanctl state archive
+  ansible.builtin.unarchive:
+    src: "{{ backup_dir }}/foremanctl-state.tar.gz"
+    dest: "{{ foremanctl_state_path | dirname }}"
+    remote_src: true
+
+- name: Verify critical files were restored
+  ansible.builtin.stat:
+    path: "{{ foremanctl_state_path }}/{{ item }}"
+  register: restore_state_files
+  failed_when: not restore_state_files.stat.exists
+  loop:
+    - parameters.yaml
+    - foreman-oauth-consumer-key
+    - foreman-oauth-consumer-secret
+    - postgresql-admin-password
+    - foreman-db-password
+    - candlepin-db-password
+    - pulp-db-password
+
+- name: Display foremanctl state restore completion
+  ansible.builtin.debug:
+    msg: |
+      ✓ Foremanctl state restored to {{ foremanctl_state_path }}
+      ✓ OAuth keys restored
+      ✓ Database passwords restored
+      ✓ Parameters.yaml restored
+
+      Critical files verified:
+      - foreman-oauth-consumer-key
+      - foreman-oauth-consumer-secret
+      - postgresql-admin-password
+      - foreman-db-password
+      - candlepin-db-password
+      - pulp-db-password
+      - parameters.yaml
