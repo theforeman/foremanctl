@@ -1,0 +1,45 @@
+---
+# Phase 4: Restore Pulp content (optional)
+# Pulp content includes media files and encryption keys
+
+- name: Check if pulp content archive exists
+  ansible.builtin.stat:
+    path: "{{ backup_dir }}/pulp-content.tar.gz"
+  register: restore_pulp_content_check
+
+- name: Display pulp content availability
+  ansible.builtin.debug:
+    msg: "{{ 'Pulp content found in backup, will restore' if restore_pulp_content_check.stat.exists else 'Pulp content not in backup, skipping (backup used --skip-pulp-content)' }}"
+
+- name: Restore pulp content
+  when: restore_pulp_content_check.stat.exists
+  block:
+    - name: Ensure pulp storage directory exists
+      ansible.builtin.file:
+        path: "{{ pulp_storage_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Extract pulp content archive
+      ansible.builtin.command:
+        cmd: >
+          tar -xzf {{ backup_dir }}/pulp-content.tar.gz
+          -C {{ pulp_storage_path }}
+      changed_when: true
+
+    - name: Get archive size
+      ansible.builtin.stat:
+        path: "{{ backup_dir }}/pulp-content.tar.gz"
+      register: restore_pulp_content_size
+
+    - name: Display pulp content restore completion
+      ansible.builtin.debug:
+        msg: |
+          ✓ Pulp content extracted to {{ pulp_storage_path }}
+          Archive size: {{ (restore_pulp_content_size.stat.size / 1024 / 1024) | round(2) }} MB
+          Restored: media/, encryption keys
+
+- name: Display skip message
+  ansible.builtin.debug:
+    msg: "⚠️  Pulp content restore skipped (not present in backup)"
+  when: not restore_pulp_content_check.stat.exists

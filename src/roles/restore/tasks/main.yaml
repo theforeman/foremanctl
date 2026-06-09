@@ -27,9 +27,19 @@
         msg: |
           ═══════════════════════════════════════════════════════════════
           Phase 3 Complete: Databases restored!
+          ═══════════════════════════════════════════════════════════════
+
+    - name: Phase 4 - Restore Pulp content
+      ansible.builtin.include_tasks:
+        file: restore_pulp_content.yaml
+
+    - name: Phase 4 complete
+      ansible.builtin.debug:
+        msg: |
+          ═══════════════════════════════════════════════════════════════
+          Phase 4 Complete: Pulp content restored!
 
           Next phases (not yet implemented):
-          - Phase 4: Restore Pulp content
           - Phase 5: Deploy and verify
           ═══════════════════════════════════════════════════════════════
 
