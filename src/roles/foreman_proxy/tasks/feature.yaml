@@ -3,7 +3,7 @@
   containers.podman.podman_secret:
     state: present
     name: foreman-proxy-{{ feature_name }}-yml
-    data: "{{ lookup('ansible.builtin.template', 'settings.d/' + feature_name + '.yml.j2') }}"
+    data: "{{ lookup('ansible.builtin.template', 'settings.d/' + feature_name + '.yml.j2') if feature_enabled != 'false' else ':enabled: false' }}"
   notify:
     - Restart Foreman Proxy
     - Refresh Foreman Proxy
