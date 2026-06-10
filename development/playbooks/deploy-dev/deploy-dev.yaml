@@ -57,6 +57,12 @@
       vars:
         iop_core_foreman_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
         iop_core_foreman_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+    - role: cloud_connector
+      when:
+        - "'cloud-connector' in enabled_features"
+      vars:
+        cloud_connector_user: "{{ foreman_development_admin_user }}"
+        cloud_connector_password: "{{ foreman_development_admin_password }}"
   post_tasks:
     - name: Stop Foreman development service
       ansible.builtin.include_role:
