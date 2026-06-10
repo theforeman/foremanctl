@@ -13,6 +13,11 @@
   vars:
     httpd_foreman_backend: "http://localhost:3000"
   pre_tasks:
+    - name: Check cloud-connector prerequisites
+      ansible.builtin.include_role:
+        name: check_cloud_connector
+      when: "'cloud-connector' in enabled_features"
+
     - name: Set development postgresql databases
       ansible.builtin.set_fact:
         postgresql_databases: >-
