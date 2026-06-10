@@ -1,12 +1,4 @@
 ---
-- name: Verify cloud-connector is not used with iop
-  ansible.builtin.assert:
-    that:
-      - "'iop' not in enabled_features"
-    fail_msg: >-
-      The cloud-connector feature cannot be used together with the iop feature.
-      Remove one of them with --remove-feature before deploying.
-
 - name: Install rhc and yggdrasil-worker-forwarder
   ansible.builtin.package:
     name:
