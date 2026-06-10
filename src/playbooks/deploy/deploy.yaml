@@ -55,4 +55,7 @@
     - role: hammer
       when:
         - "'hammer' in enabled_features"
+    - role: cloud_connector
+      when:
+        - "'cloud-connector' in enabled_features"
     - post_install

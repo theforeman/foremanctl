@@ -1,0 +1,6 @@
+---
+- name: Restart rhcd
+  ansible.builtin.service:
+    name: rhcd
+    state: restarted
+    daemon_reload: true

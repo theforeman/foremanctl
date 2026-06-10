@@ -1,0 +1,73 @@
+---
+- name: Verify cloud-connector is not used with iop
+  ansible.builtin.assert:
+    that:
+      - "'iop' not in enabled_features"
+    fail_msg: >-
+      The cloud-connector feature cannot be used together with the iop feature.
+      Remove one of them with --remove-feature before deploying.
+
+- name: Install rhc and yggdrasil-worker-forwarder
+  ansible.builtin.package:
+    name:
+      - rhc
+      - yggdrasil-worker-forwarder
+    disable_plugin: foreman-protector
+
+- name: Create workers directory
+  ansible.builtin.file:
+    state: directory
+    path: /etc/rhc/workers
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Configure rhc-cloud-connector-worker
+  ansible.builtin.template:
+    src: foreman_rh_cloud.toml.j2
+    dest: "{{ cloud_connector_config_file }}"
+    owner: root
+    group: root
+    mode: '0640'
+  notify: Restart rhcd
+
+- name: Create rhcd worker script
+  ansible.builtin.copy:
+    dest: /usr/libexec/rhc/foreman-rh-cloud-worker
+    content: |
+      #!/bin/bash
+
+      CONFIG_FILE="{{ cloud_connector_config_file }}" exec /usr/libexec/yggdrasil-worker-forwarder
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Ensure rhcd started and enabled
+  ansible.builtin.service:
+    name: rhcd
+    state: started
+    enabled: true
+
+- name: Read client ID from CN of consumer certificate
+  ansible.builtin.command: openssl x509 -in /etc/pki/consumer/cert.pem -subject -noout
+  register: __cloud_connector_cert_output
+  changed_when: false
+
+- name: Set rhc_instance_id in Foreman
+  ansible.builtin.uri:
+    url: "{{ cloud_connector_url }}/api/settings/rhc_instance_id"
+    user: "{{ cloud_connector_user }}"
+    password: "{{ cloud_connector_password }}"
+    body:
+      setting:
+        value: "{{ __cloud_connector_client_id }}"
+    method: PUT
+    validate_certs: "{{ cloud_connector_validate_certs }}"
+    force_basic_auth: true
+    body_format: json
+  vars:
+    __cloud_connector_client_id: "{{ __cloud_connector_cert_output.stdout | regex_search('CN\\s?=\\s?([a-z0-9-]+)', '\\1') | first }}"
+
+- name: Configure HTTP proxy for rhcd
+  ansible.builtin.include_tasks: http_proxy.yaml
+  when: cloud_connector_http_proxy is defined
