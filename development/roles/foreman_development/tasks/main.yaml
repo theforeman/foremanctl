@@ -238,6 +238,16 @@
     oauth1_consumer_key: "{{ foreman_development_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ foreman_development_oauth_consumer_secret }}"
     ca_path: "{{ foreman_development_ca_certificate }}"
+  register: _foreman_development_pulp_proxy_registration
+
+- name: Warn about unrecognized Pulp Smart Proxy features
+  ansible.builtin.debug:
+    msg: >-
+      Proxy {{ ansible_facts['fqdn'] }}-pulp has features not recognized by Foreman:
+      {{ _foreman_development_pulp_proxy_registration.entity.smart_proxies[0].unrecognized_features | join(', ') }}.
+      If these features come from a Smart Proxy plugin, make sure Foreman has the plugin installed too.
+  when:
+    - _foreman_development_pulp_proxy_registration.entity.smart_proxies[0].unrecognized_features | default([]) | length > 0
 
 - name: Configure smart-proxy for development
   ansible.builtin.include_tasks: smart-proxy/main.yml
