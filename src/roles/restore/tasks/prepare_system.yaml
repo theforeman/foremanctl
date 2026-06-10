@@ -44,6 +44,6 @@
 - name: Display preparation complete
   ansible.builtin.debug:
     msg: |
-      ✓ Foreman services stopped
-      ✓ PostgreSQL started and ready
-      ✓ System prepared for database restore
+      Foreman services stopped
+      PostgreSQL started and ready
+      System prepared for database restore

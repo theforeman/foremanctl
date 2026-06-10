@@ -35,10 +35,10 @@
 - name: Display validation success
   ansible.builtin.debug:
     msg: |
-      ✓ Backup validation passed
-      ✓ Backup directory exists: {{ backup_dir }}
-      ✓ Metadata file found
-      ✓ Required files present (foreman.dump, candlepin.dump, pulp.dump)
+      Backup validation passed
+      Backup directory exists: {{ backup_dir }}
+      Metadata file found
+      Required files present (foreman.dump, candlepin.dump, pulp.dump)
 
 - name: Stop here if dry-run mode
   ansible.builtin.meta: end_play

@@ -116,11 +116,11 @@
 - name: Display restore completion
   ansible.builtin.debug:
     msg: |
-      ✓ Database restore configuration built
-      ✓ Dump files verified
-      ✓ Existing databases dropped
-      ✓ Empty databases created
-      ✓ Data restored from dump files
-      ✓ Database ownership fixed
+      Database restore configuration built
+      Dump files verified
+      Existing databases dropped
+      Empty databases created
+      Data restored from dump files
+      Database ownership fixed
 
       Databases restored: {{ restore_databases_to_restore | map(attribute='database_name') | join(', ') }}

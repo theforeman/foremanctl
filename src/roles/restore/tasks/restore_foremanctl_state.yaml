@@ -53,10 +53,10 @@
 - name: Display foremanctl state restore completion
   ansible.builtin.debug:
     msg: |
-      ✓ Foremanctl state restored to {{ obsah_state_path }}
-      ✓ OAuth keys restored
-      ✓ Database passwords restored
-      ✓ Parameters.yaml restored
+      Foremanctl state restored to {{ obsah_state_path }}
+      OAuth keys restored
+      Database passwords restored
+      Parameters.yaml restored
 
       Critical files verified:
       - foreman-oauth-consumer-key

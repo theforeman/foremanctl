@@ -65,13 +65,13 @@
     - name: Display pulp content restore completion
       ansible.builtin.debug:
         msg: |
-          ✓ Pulp content extracted to {{ pulp_storage_path }}
-          ✓ Pulp encryption key restored: {{ pulp_storage_path }}/database_fields.symmetric.key
-          ✓ Django secret key restored: {{ pulp_storage_path }}/django_secret_key
-          ✓ Media files restored: {{ restore_pulp_media_files.matched }} files
+          Pulp content extracted to {{ pulp_storage_path }}
+          Pulp encryption key restored: {{ pulp_storage_path }}/database_fields.symmetric.key
+          Django secret key restored: {{ pulp_storage_path }}/django_secret_key
+          Media files restored: {{ restore_pulp_media_files.matched }} files
           Archive size: {{ (restore_pulp_content_size.stat.size / 1024 / 1024) | round(2) }} MB
 
 - name: Display skip message
   ansible.builtin.debug:
-    msg: "⚠️  Pulp content restore skipped (not present in backup)"
+    msg: "Pulp content restore skipped (not present in backup)"
   when: not restore_pulp_content_check.stat.exists

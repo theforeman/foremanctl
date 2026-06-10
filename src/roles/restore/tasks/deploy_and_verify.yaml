@@ -20,10 +20,10 @@
     msg: |
       Starting Foreman services...
       All data has been restored:
-      ✓ Databases restored
-      ✓ Pulp content and encryption keys restored
-      ✓ OAuth keys and passwords restored
-      ✓ Foremanctl state restored
+      - Databases restored
+      - Pulp content and encryption keys restored
+      - OAuth keys and passwords restored
+      - Foremanctl state restored
 
 - name: Start Foreman services
   ansible.builtin.systemd:
@@ -70,25 +70,25 @@
   ansible.builtin.debug:
     msg: |
       ═══════════════════════════════════════════════════════════════
-      ✅ RESTORE COMPLETE!
+      Restore complete
       ═══════════════════════════════════════════════════════════════
 
       Restored from: {{ backup_dir }}
       System: {{ ansible_fqdn }}
 
-      ✓ Backup validated
-      ✓ System prepared
-      ✓ Databases restored ({{ restore_databases_to_restore | length }} databases)
-      ✓ Pulp content and encryption keys restored
-      ✓ OAuth keys and passwords restored
-      ✓ Services started and verified
+      - Backup validated
+      - System prepared
+      - Databases restored ({{ restore_databases_to_restore | length }} databases)
+      - Pulp content and encryption keys restored
+      - OAuth keys and passwords restored
+      - Services started and verified
 
       All services are running:
-      ✓ foreman.target - active
-      ✓ foreman.service - active
-      ✓ postgresql.service - active
+      - foreman.target - active
+      - foreman.service - active
+      - postgresql.service - active
 
-      Foreman API: https://{{ ansible_fqdn }}/api/status - {{ restore_api_status }} ✓
+      Foreman API: https://{{ ansible_fqdn }}/api/status - {{ restore_api_status }}
 
-      Your Foreman instance has been successfully restored!
+      Your Foreman instance has been successfully restored.
       ═══════════════════════════════════════════════════════════════
