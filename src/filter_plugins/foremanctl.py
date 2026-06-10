@@ -122,12 +122,7 @@ def to_postgresql_databases(databases):
 
 
 def to_postgresql_users(databases):
-    seen = {}
-    for db in databases:
-        name = db['user']
-        if name not in seen:
-            seen[name] = {'name': name, 'password': db['password']}
-    return list(seen.values())
+    return [{'name': db['user'], 'password': db['password']} for db in databases]
 
 
 class FilterModule(object):
