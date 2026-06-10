@@ -76,12 +76,12 @@
       Restored from: {{ backup_dir }}
       System: {{ ansible_fqdn }}
 
-      ✓ Phase 1: Backup validated
-      ✓ Phase 2: System prepared
-      ✓ Phase 3: Databases restored ({{ restore_databases_to_restore | length }} databases)
-      ✓ Phase 4: Pulp content and encryption keys restored
-      ✓ Phase 4b: OAuth keys and passwords restored
-      ✓ Phase 5: Services started and verified
+      ✓ Backup validated
+      ✓ System prepared
+      ✓ Databases restored ({{ restore_databases_to_restore | length }} databases)
+      ✓ Pulp content and encryption keys restored
+      ✓ OAuth keys and passwords restored
+      ✓ Services started and verified
 
       All services are running:
       ✓ foreman.target - active

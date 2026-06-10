@@ -7,51 +7,51 @@
 
 - name: Perform restore operations
   block:
-    - name: Phase 2 - Prepare system for restore
+    - name: Prepare system for restore
       ansible.builtin.include_tasks:
         file: prepare_system.yaml
 
-    - name: Phase 2 complete
+    - name: System prepared
       ansible.builtin.debug:
         msg: |
           ═══════════════════════════════════════════════════════════════
-          Phase 2 Complete: System prepared for restore!
+          System prepared for restore
           ═══════════════════════════════════════════════════════════════
 
-    - name: Phase 3 - Restore databases
+    - name: Restore databases
       ansible.builtin.include_tasks:
         file: restore_databases.yaml
 
-    - name: Phase 3 complete
+    - name: Databases restored
       ansible.builtin.debug:
         msg: |
           ═══════════════════════════════════════════════════════════════
-          Phase 3 Complete: Databases restored!
+          Databases restored
           ═══════════════════════════════════════════════════════════════
 
-    - name: Phase 4 - Restore Pulp content
+    - name: Restore Pulp content
       ansible.builtin.include_tasks:
         file: restore_pulp_content.yaml
 
-    - name: Phase 4 complete
+    - name: Pulp content restored
       ansible.builtin.debug:
         msg: |
           ═══════════════════════════════════════════════════════════════
-          Phase 4 Complete: Pulp content and encryption keys restored!
+          Pulp content and encryption keys restored
           ═══════════════════════════════════════════════════════════════
 
-    - name: Phase 4b - Restore foremanctl state
+    - name: Restore foremanctl state
       ansible.builtin.include_tasks:
         file: restore_foremanctl_state.yaml
 
-    - name: Phase 4b complete
+    - name: Foremanctl state restored
       ansible.builtin.debug:
         msg: |
           ═══════════════════════════════════════════════════════════════
-          Phase 4b Complete: OAuth keys and passwords restored!
+          OAuth keys and passwords restored
           ═══════════════════════════════════════════════════════════════
 
-    - name: Phase 5 - Deploy and verify
+    - name: Start services and verify
       ansible.builtin.include_tasks:
         file: deploy_and_verify.yaml
 
