@@ -54,7 +54,7 @@
       setting:
         value: "{{ __cloud_connector_client_id }}"
     method: PUT
-    validate_certs: "{{ cloud_connector_validate_certs }}"
+    ca_path: "{{ foreman_ca_certificate }}"
     force_basic_auth: true
     body_format: json
   vars:
