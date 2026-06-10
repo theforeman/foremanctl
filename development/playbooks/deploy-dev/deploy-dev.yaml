@@ -15,33 +15,22 @@
   pre_tasks:
     - name: Set development postgresql databases
       ansible.builtin.set_fact:
-        postgresql_databases:
-          - name: "{{ candlepin_database_name }}"
-            owner: "{{ candlepin_database_user }}"
-          - name: "{{ foreman_development_database_name }}"
-            owner: "{{ foreman_database_user }}"
-          - name: "{{ foreman_development_database_name }}_test"
-            owner: "{{ foreman_database_user }}"
-          - name: "{{ pulp_database_name }}"
-            owner: "{{ pulp_database_user }}"
-        postgresql_users:
-          - name: "{{ candlepin_database_user }}"
-            password: "{{ candlepin_database_password }}"
-          - name: "{{ foreman_database_user }}"
-            password: "{{ foreman_database_password }}"
-            role_attr_flags: SUPERUSER
-          - name: "{{ pulp_database_user }}"
-            password: "{{ pulp_database_password }}"
+        postgresql_databases: >-
+          {{ all_databases
+             | rejectattr('name', 'equalto', 'foreman')
+             | to_postgresql_databases
+             + [{'name': foreman_development_database_name, 'owner': foreman_database_user},
+                {'name': foreman_development_database_name + '_test', 'owner': foreman_database_user}] }}
+        postgresql_users: >-
+          {{ all_databases
+             | rejectattr('name', 'equalto', 'foreman')
+             | to_postgresql_users
+             + [{'name': foreman_database_user, 'password': foreman_database_password, 'role_attr_flags': 'SUPERUSER'}] }}
 
     - name: Setup iop requirements
       when:
         - "'iop' in enabled_features"
       block:
-        - name: Combine lists
-          ansible.builtin.set_fact:
-            postgresql_databases: "{{ postgresql_databases + iop_postgresql_databases }}"
-            postgresql_users: "{{ postgresql_users + iop_postgresql_users }}"
-
         - name: Enable foreman_rh_cloud plugin for iop
           ansible.builtin.set_fact:
             foreman_development_enabled_plugins: "{{ foreman_development_enabled_plugins + ['foreman_rh_cloud'] }}"
