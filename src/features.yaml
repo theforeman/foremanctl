@@ -54,6 +54,8 @@ cloud-connector:
   description: Cloud Connector for Red Hat Hybrid Cloud Console
   dependencies:
     - rh-cloud
+  conflicts:
+    - iop
 iop:
   description: iop services
   dependencies:

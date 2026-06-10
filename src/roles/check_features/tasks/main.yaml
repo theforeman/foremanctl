@@ -13,3 +13,14 @@
   vars:
     found_invalid_features: "{{ features | invalid_features }}"
   when: features | length > 0
+
+- name: Validate no conflicting features
+  ansible.builtin.assert:
+    that:
+      - found_conflicting_features | length == 0
+    fail_msg: |
+      ERROR: Conflicting features enabled: {{ found_conflicting_features | join(', ') }}
+
+      Remove one of the conflicting features with --remove-feature before deploying.
+  vars:
+    found_conflicting_features: "{{ enabled_features | conflicting_features }}"
