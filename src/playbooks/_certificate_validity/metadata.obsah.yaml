@@ -11,3 +11,8 @@ variables:
     parameter: --certificate-renew
     action: store_true
     persist: false
+  certificates_renew_ca:
+    help: Regenerate the CA certificate. Does not apply to custom certificates.
+    parameter: --certificate-renew-ca
+    action: store_true
+    persist: false

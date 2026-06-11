@@ -125,7 +125,16 @@ To re-issue server and client certificates that foremanctl generated earlier, wh
 foremanctl deploy --certificate-renew
 ```
 
-The `--certificate-renew` flag is **not persisted** in foremanctl’s answers file (one-shot).
+To regenerate the CA certificate itself, use:
+
+```bash
+foremanctl deploy --certificate-renew-ca
+```
+
+> [!WARNING]
+> Regenerating the CA invalidates all previously issued certificates. Does not apply to custom certificates.
+
+Both flags are **not persisted** in foremanctl’s answers file (one-shot).
 
 ### Current Limitations
 
