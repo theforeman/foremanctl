@@ -84,7 +84,7 @@
           Foreman development environment deployed successfully!
 
           Access URLs:
-            - Foreman UI: https://{{ foreman_development_url }}
+            - Foreman UI: {{ foreman_development_url }}
             - Direct Rails: http://localhost:3000 (when running)
 
           Credentials:
