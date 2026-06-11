@@ -23,63 +23,71 @@
     state: directory
     mode: '0755'
 
-- name: 'Create CA key password file'
-  ansible.builtin.copy:
-    content: "{{ certificates_ca_password }}"
-    dest: "{{ certificates_ca_directory_keys }}/ca.pwd"
-    owner: root
-    group: root
-    mode: '0600'
-  no_log: true
-
-- name: 'Create CA private key'
-  community.crypto.openssl_privatekey:
-    path: "{{ certificates_ca_directory_keys }}/ca.key"
-    type: "{{ certificates_algorithm_type }}"
-    size: "{{ certificates_algorithm_size }}"
-    passphrase: "{{ certificates_ca_password }}"
-    owner: root
-    group: root
-    mode: '0600'
-
-- name: 'Create CA certificate signing request'
-  community.crypto.openssl_csr:
-    path: "{{ certificates_ca_directory_requests }}/ca.csr"
-    privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
-    privatekey_passphrase: "{{ certificates_ca_password }}"
-    common_name: "{{ certificates_ca_subject }}"
-    use_common_name_for_san: false
-    basic_constraints:
-      - 'CA:TRUE'
-    basic_constraints_critical: true
-    key_usage:
-      - keyCertSign
-      - cRLSign
-      - digitalSignature
-    key_usage_critical: true
-    create_subject_key_identifier: true
-
-- name: 'Create self-signed CA certificate'
-  community.crypto.x509_certificate:
+- name: 'Check if CA certificate exists'
+  ansible.builtin.stat:
     path: "{{ certificates_ca_directory_certs }}/ca.crt"
-    csr_path: "{{ certificates_ca_directory_requests }}/ca.csr"
-    privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
-    privatekey_passphrase: "{{ certificates_ca_password }}"
-    provider: selfsigned
-    selfsigned_not_after: "+{{ certificates_ca_validity_days }}d"
+  register: _certificates_ca_cert
 
-- name: 'Copy CA as server CA certificate'
-  ansible.builtin.copy:
-    src: "{{ certificates_ca_directory_certs }}/ca.crt"
-    dest: "{{ certificates_ca_directory_certs }}/server-ca.crt"
-    remote_src: true
-    force: false
-    mode: '0444'
+- name: 'Generate CA'
+  when: not _certificates_ca_cert.stat.exists or certificates_renew_ca
+  block:
+    - name: 'Create CA key password file'
+      ansible.builtin.copy:
+        content: "{{ certificates_ca_password }}"
+        dest: "{{ certificates_ca_directory_keys }}/ca.pwd"
+        owner: root
+        group: root
+        mode: '0600'
+      no_log: true
 
-- name: 'Create CA bundle'
-  ansible.builtin.copy:
-    src: "{{ certificates_ca_directory_certs }}/ca.crt"
-    dest: "{{ certificates_ca_directory_certs }}/ca-bundle.crt"
-    remote_src: true
-    force: false
-    mode: '0444'
+    - name: 'Create CA private key'
+      community.crypto.openssl_privatekey:
+        path: "{{ certificates_ca_directory_keys }}/ca.key"
+        type: "{{ certificates_algorithm_type }}"
+        size: "{{ certificates_algorithm_size }}"
+        passphrase: "{{ certificates_ca_password }}"
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: 'Create CA certificate signing request'
+      community.crypto.openssl_csr:
+        path: "{{ certificates_ca_directory_requests }}/ca.csr"
+        privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
+        privatekey_passphrase: "{{ certificates_ca_password }}"
+        common_name: "{{ certificates_ca_subject }}"
+        use_common_name_for_san: false
+        basic_constraints:
+          - 'CA:TRUE'
+        basic_constraints_critical: true
+        key_usage:
+          - keyCertSign
+          - cRLSign
+          - digitalSignature
+        key_usage_critical: true
+        create_subject_key_identifier: true
+
+    - name: 'Create self-signed CA certificate'
+      community.crypto.x509_certificate:
+        path: "{{ certificates_ca_directory_certs }}/ca.crt"
+        csr_path: "{{ certificates_ca_directory_requests }}/ca.csr"
+        privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
+        privatekey_passphrase: "{{ certificates_ca_password }}"
+        provider: selfsigned
+        selfsigned_not_after: "+{{ certificates_ca_validity_days }}d"
+
+    - name: 'Copy CA as server CA certificate'
+      ansible.builtin.copy:
+        src: "{{ certificates_ca_directory_certs }}/ca.crt"
+        dest: "{{ certificates_ca_directory_certs }}/server-ca.crt"
+        remote_src: true
+        force: false
+        mode: '0444'
+
+    - name: 'Create CA bundle'
+      ansible.builtin.copy:
+        src: "{{ certificates_ca_directory_certs }}/ca.crt"
+        dest: "{{ certificates_ca_directory_certs }}/ca-bundle.crt"
+        remote_src: true
+        force: false
+        mode: '0444'
