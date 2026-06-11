@@ -8,7 +8,6 @@
     - "../../vars/flavors/{{ flavor }}.yml"
     - "../../vars/base.yaml"
     - "../../vars/database.yml"
-    - "../../vars/health.yml"
   tasks:
     - name: Execute health checks
       ansible.builtin.include_role:

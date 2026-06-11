@@ -15,7 +15,6 @@
   changed_when: false
 
 - name: Check for duplicate permissions
-  when: not (health_fix | default(false) | bool)
   ansible.builtin.assert:
     that:
       - check_duplicate_permissions_result.rowcount == 0
