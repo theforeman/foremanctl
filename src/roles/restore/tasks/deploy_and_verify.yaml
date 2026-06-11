@@ -1,6 +1,6 @@
 ---
-# Phase 5: Start services and verify
-# All data restored, just need to start services
+# Deploy and verify
+# Run foremanctl deploy to regenerate podman secrets from restored credentials
 
 - name: Stop PostgreSQL
   ansible.builtin.systemd:
@@ -15,20 +15,27 @@
     restore_postgresql_started: false
   when: database_mode == 'internal'
 
-- name: Display starting services
+- name: Display deployment status
   ansible.builtin.debug:
     msg: |
-      Starting Foreman services...
+      Running foremanctl deploy to regenerate configuration...
       All data has been restored:
       - Databases restored
       - Pulp content and encryption keys restored
       - OAuth keys and passwords restored
       - Foremanctl state restored
 
-- name: Start Foreman services
-  ansible.builtin.systemd:
-    name: foreman.target
-    state: started
+      Deploy will regenerate podman secrets from restored credentials.
+
+- name: Run foremanctl deploy
+  ansible.builtin.command:
+    cmd: foremanctl deploy
+  register: restore_deploy_result
+  changed_when: true
+
+- name: Display deploy completion
+  ansible.builtin.debug:
+    msg: "Deploy completed - podman secrets regenerated from restored state"
 
 - name: Mark services as started
   ansible.builtin.set_fact:
@@ -37,7 +44,7 @@
 - name: Wait for services to stabilize
   ansible.builtin.pause:
     seconds: 30
-    prompt: "Waiting for services to start..."
+    prompt: "Waiting for deployed services to stabilize..."
 
 - name: Wait for Foreman API to respond
   ansible.builtin.uri:
@@ -81,7 +88,7 @@
       - Databases restored ({{ restore_databases_to_restore | length }} databases)
       - Pulp content and encryption keys restored
       - OAuth keys and passwords restored
-      - Services started and verified
+      - System deployed and verified
 
       All services are running:
       - foreman.target - active
