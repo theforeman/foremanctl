@@ -140,9 +140,13 @@ def test_httpd_headers_use_dashes(server):
     assert cmd.stdout.strip() == '', f"HTTP header names should use dashes, not underscores:\n{cmd.stdout}"
 
 
-def test_httpd_foreman_target_drop_in(server):
+def test_httpd_foreman_target_config(server):
     drop_in = server.file("/etc/systemd/system/httpd.service.d/foreman-target.conf")
     assert drop_in.exists
     assert drop_in.is_file
     assert drop_in.contains("PartOf=foreman.target")
-    assert drop_in.contains("WantedBy=foreman.target")
+    assert drop_in.contains(r"WantedBy=default\.target foreman\.target")
+
+    wants_link = server.file("/etc/systemd/system/foreman.target.wants/httpd.service")
+    assert wants_link.exists
+    assert wants_link.is_symlink
