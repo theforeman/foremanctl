@@ -76,11 +76,6 @@ def test_bmc_default_provider(proxy_v2_features):
 
 
 @pytest.mark.feature('templates')
-def test_templates_feature_enabled(proxy_v2_features):
-    assert 'templates' in proxy_v2_features
-
-
-@pytest.mark.feature('templates')
 def test_templates_template_url(proxy_v2_features):
     settings = proxy_v2_features['templates'].get('settings', {})
     template_url = settings.get('template_url')

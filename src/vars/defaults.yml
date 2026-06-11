@@ -4,4 +4,4 @@ database_mode: internal
 tuning: default
 flavor: katello
 features: []
-enabled_features: "{{ (flavor_features + features) }}"
+enabled_features: "{{ (flavor_features + features) | resolve_enabled_features }}"

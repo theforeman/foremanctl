@@ -58,6 +58,17 @@ def get_dependencies(features):
     return dependencies
 
 
+def resolve_enabled_features(features):
+    """Resolve all features including implicit service dependencies."""
+    resolved = set(features)
+    for feature in list(features):
+        feature_meta = FEATURE_MAP.get(feature, {})
+        for base in BASE_FEATURES:
+            if base.replace('-', '_') in feature_meta and feature != base:
+                resolved.add(base)
+    return list(resolved)
+
+
 def foreman_plugins(value):
     dependencies = list(get_dependencies(filter_features(value)))
     plugins = [FEATURE_MAP.get(feature, {}).get('foreman', {}).get('plugin_name') for feature in filter_features(value + dependencies)]
@@ -100,8 +111,9 @@ def hammer_plugins(value):
 
 
 def foreman_proxy_plugins(value):
-    dependencies = list(get_dependencies(filter_features(value)))
-    plugins = [FEATURE_MAP.get(feature, {}).get('foreman_proxy', {}).get('plugin_name') for feature in filter_features(value + dependencies)]
+    proxy_features = [f for f in filter_features(value) if 'foreman_proxy' in FEATURE_MAP.get(f, {})]
+    dependencies = list(get_dependencies(proxy_features))
+    plugins = [FEATURE_MAP.get(feature, {}).get('foreman_proxy', {}).get('plugin_name') for feature in filter_features(proxy_features + dependencies)]
     return compact_list(plugins)
 
 
@@ -140,4 +152,5 @@ class FilterModule(object):
             'has_feature': has_feature,
             'to_postgresql_databases': to_postgresql_databases,
             'to_postgresql_users': to_postgresql_users,
+            'resolve_enabled_features': resolve_enabled_features,
         }
