@@ -8,4 +8,4 @@ iop_vmaas_database_password: "{{ undef(hint='Set a secure database password') }}
 iop_vmaas_database_host: "host.containers.internal"
 iop_vmaas_database_port: "5432"
 
-iop_vmaas_client_ca_certificate: "/root/certificates/certs/ca.crt"
+iop_vmaas_client_ca_certificate: "/var/lib/foremanctl/certs/certs/ca.crt"

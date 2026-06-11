@@ -125,9 +125,9 @@ Set in the playbook vars or inventory to match your Foreman deployment:
 Gateway certificates are configured per certificate source:
 
 **Default certificates** (`certificate_source: default`):
-- Server: `/root/certificates/certs/localhost.crt`
-- Client: `/root/certificates/certs/localhost-client.crt`
-- CA: `/root/certificates/certs/ca.crt`
+- Server: `/var/lib/foremanctl/certs/certs/localhost.crt`
+- Client: `/var/lib/foremanctl/certs/certs/localhost-client.crt`
+- CA: `/var/lib/foremanctl/certs/certs/ca.crt`
 
 **Installer certificates** (`certificate_source: installer`):
 - Server: `/root/ssl-build/localhost/localhost-iop-core-gateway-server.crt`
