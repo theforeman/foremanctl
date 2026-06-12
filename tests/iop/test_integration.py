@@ -17,9 +17,9 @@ def test_iop_core_ingress_service(server):
         assert service.is_enabled
 
 
-def test_iop_ingress_endpoint(server):
-    result = server.run("curl -f http://localhost:8080/ 2>/dev/null || echo 'Ingress not yet responding'")
-    assert result.rc == 0
+def test_iop_ingress_endpoint(server, iop_image):
+    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-gateway')} curl --fail -s -o /dev/null http://iop-core-ingress:8080/")
+    assert result.succeeded
 
 
 def test_iop_core_puptoo_service(server):
@@ -30,9 +30,9 @@ def test_iop_core_puptoo_service(server):
         assert service.is_enabled
 
 
-def test_iop_puptoo_metrics_endpoint(server):
-    result = server.run("curl -f http://localhost:8000/metrics 2>/dev/null || echo 'Puptoo not yet responding'")
-    assert result.rc == 0
+def test_iop_puptoo_metrics_endpoint(server, iop_image):
+    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-gateway')} curl --fail -s -o /dev/null http://iop-core-puptoo:8000/metrics")
+    assert result.succeeded
 
 
 def test_iop_core_yuptoo_service(server):
@@ -43,9 +43,9 @@ def test_iop_core_yuptoo_service(server):
         assert service.is_enabled
 
 
-def test_iop_yuptoo_endpoint(server):
-    result = server.run("curl -f http://localhost:5005/ 2>/dev/null || echo 'Yuptoo not yet responding'")
-    assert result.rc == 0
+def test_iop_yuptoo_endpoint(server, iop_image):
+    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-gateway')} curl --fail -s -o /dev/null http://iop-core-yuptoo:5005/")
+    assert result.succeeded
 
 
 def test_iop_core_engine_service(server):
@@ -65,18 +65,18 @@ def test_iop_core_gateway_service(server):
 
 
 def test_iop_gateway_endpoint(server):
-    result = server.run("curl -f http://localhost:24443/ 2>/dev/null || echo 'Gateway not yet responding'")
-    assert result.rc == 0
+    result = server.run("curl --fail -s -o /dev/null http://localhost:24443/")
+    assert result.succeeded
 
 
 def test_iop_gateway_api_ingress_endpoint(server):
-    result = server.run("curl -f http://localhost:24443/api/ingress 2>/dev/null || echo 'Gateway API ingress not yet responding'")
-    assert result.rc == 0
+    result = server.run("curl --fail -s -o /dev/null http://localhost:24443/api/ingress")
+    assert result.succeeded
 
 
 def test_iop_gateway_https_cert_auth(server, certificates):
-    result = server.run(f"curl -s -o /dev/null -w '%{{http_code}}' https://localhost:24443/ --cert {certificates['iop_gateway_client_certificate']} --key {certificates['iop_gateway_client_key']} --cacert {certificates['iop_gateway_client_ca_certificate']} 2>/dev/null || echo '000'")
-    assert "200" in result.stdout
+    result = server.run(f"curl --fail -s -o /dev/null https://localhost:24443/ --cert {certificates['iop_gateway_client_certificate']} --key {certificates['iop_gateway_client_key']} --cacert {certificates['iop_gateway_client_ca_certificate']}")
+    assert result.succeeded
 
 
 def test_iop_core_host_inventory_api_service(server):
@@ -88,13 +88,13 @@ def test_iop_core_host_inventory_api_service(server):
 
 
 def test_iop_inventory_mq_endpoint(server, iop_image):
-    result = server.run(f"podman run --network=iop-core-network {iop_image('iop-inventory')} curl http://iop-core-host-inventory:9126/ 2>/dev/null || echo 'Host inventory MQ not yet responding'")
-    assert result.rc == 0
+    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-gateway')} curl --fail -s -o /dev/null http://iop-core-host-inventory:9126/")
+    assert result.succeeded
 
 
 def test_iop_inventory_api_health_endpoint(server, iop_image):
-    result = server.run(f"podman run --network=iop-core-network {iop_image('iop-inventory')} curl -s -o /dev/null -w '%{{http_code}}' http://iop-core-host-inventory-api:8081/health 2>/dev/null || echo '000'")
-    assert "200" in result.stdout
+    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-gateway')} curl --fail -s -o /dev/null http://iop-core-host-inventory-api:8081/health")
+    assert result.succeeded
 
 
 def test_iop_service_advisor_backend_api_service(server):
@@ -114,8 +114,8 @@ def test_iop_service_advisor_backend_service(server):
 
 
 def test_iop_advisor_api_endpoint(server, iop_image):
-    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-advisor')} curl -f http://iop-service-advisor-backend-api:8000/ 2>/dev/null || echo 'Advisor API not yet responding'")
-    assert result.rc == 0
+    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-gateway')} curl --fail -s -o /dev/null http://iop-service-advisor-backend-api:8000/api/insights/v1/status/live/")
+    assert result.succeeded
 
 
 def test_iop_service_remediations_api_service(server):
@@ -126,6 +126,6 @@ def test_iop_service_remediations_api_service(server):
         assert service.is_enabled
 
 
-def test_iop_remediations_api_endpoint(server):
-    result = server.run("curl -f http://localhost:9002/ 2>/dev/null || echo 'Remediations API not yet responding'")
-    assert result.rc == 0
+def test_iop_remediations_api_endpoint(server, iop_image):
+    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-gateway')} curl --fail -s -o /dev/null http://iop-service-remediations-api:9002/health")
+    assert result.succeeded
