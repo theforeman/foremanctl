@@ -1,9 +1,8 @@
 ---
 variables:
   certificates_source:
-    help: Where certificates are coming from. Currently default Ansible role, the foreman-installer, or custom server certificates.
+    help: Where certificates are coming from. Currently default Ansible role or custom server certificates.
     parameter: --certificate-source
     choices:
       - default
-      - installer
       - custom_server

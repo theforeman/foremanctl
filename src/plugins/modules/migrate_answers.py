@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-import os
-
 import yaml
 from ansible.module_utils.basic import AnsibleModule
 
@@ -26,11 +24,13 @@ PARAMETER_MAP = {
     # Foreman configuration
     ('foreman', 'initial_admin_username'): 'foreman_initial_admin_username',
     ('foreman', 'initial_admin_password'): 'foreman_initial_admin_password',
+    ('foreman', 'initial_organization'): 'foreman_initial_organization',
+    ('foreman', 'initial_location'): 'foreman_initial_location',
 
-    # Certificate configuration
-    ('foreman', 'server_ssl_cert'): 'server_certificate',
-    ('foreman', 'server_ssl_key'): 'server_key',
-    ('foreman', 'server_ssl_ca'): 'ca_certificate',
+    # Certificate paths are handled by the migrate_foreman_installer role
+    ('foreman', 'server_ssl_cert'): 'IGNORE',
+    ('foreman', 'server_ssl_key'): 'IGNORE',
+    ('foreman', 'server_ssl_ca'): 'IGNORE',
 
     # TODO: Add more mappings as discovered
 }
@@ -158,27 +158,9 @@ def apply_mappings(old_config):
     }
 
 
-def write_output(data, output_path=None, working_directory=None):
-    """Write migrated configuration to file or return as string."""
-    yaml_content = yaml.dump(data, default_flow_style=False, sort_keys=True)
-
-    if output_path:
-        if working_directory and not os.path.isabs(output_path):
-            absolute_path = os.path.join(working_directory, output_path)
-        else:
-            absolute_path = os.path.abspath(output_path)
-        with open(absolute_path, 'w') as f:
-            f.write(yaml_content)
-        return absolute_path
-    else:
-        return yaml_content
-
-
 def run_module():
     module_args = dict(
         answer_file=dict(type='str', required=False, default=None),
-        output=dict(type='str', required=False, default=None),
-        working_directory=dict(type='str', required=False, default=None),
     )
 
     result = dict(
@@ -186,7 +168,7 @@ def run_module():
         mapped_count=0,
         unmappable_count=0,
         unmappable=[],
-        output_content='',
+        mapped={},
     )
 
     module = AnsibleModule(
@@ -207,24 +189,11 @@ def run_module():
         result['mapped_count'] = len(migration_result['mapped'])
         result['unmappable_count'] = len(migration_result['unmappable'])
         result['unmappable'] = migration_result['unmappable']
+        result['mapped'] = migration_result['mapped']
 
-        # Issue warnings for unmappable parameters
         if migration_result['unmappable']:
             for param in migration_result['unmappable']:
                 module.warn(f"Parameter '{param}' could not be mapped and will need manual review")
-
-        if not module.check_mode:
-            output_path = module.params.get('output')
-            working_directory = module.params.get('working_directory')
-
-            if output_path:
-                absolute_path = write_output(migration_result['mapped'], output_path, working_directory)
-                result['output_file'] = absolute_path
-                result['changed'] = True
-            else:
-                # Output to stdout - store in result so Ansible displays it
-                yaml_content = write_output(migration_result['mapped'], output_path, working_directory)
-                result['output_content'] = yaml_content
 
         module.exit_json(**result)
 

@@ -21,7 +21,7 @@ def test_default_server_ca_matches_internal_ca(server, certificates, default_cer
     ca_info = certificate_info(server, certificates['ca_certificate'])
     server_ca_info = certificate_info(server, certificates['server_ca_certificate'])
     assert ca_info['subject'] == server_ca_info['subject'], \
-        "Default/installer server CA should match the internal CA"
+        "Default server CA should match the internal CA"
 
 
 def test_custom_server_ca_differs_from_internal_ca(server, certificates, custom_certificates):

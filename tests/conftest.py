@@ -42,7 +42,7 @@ class UserParameters:
 
 
 def pytest_addoption(parser):
-    parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'installer', 'custom_server'), help="Certificate source used during deployment")
+    parser.addoption("--certificate-source", action="store", default="default", choices=('default', 'custom_server'), help="Certificate source used during deployment")
     parser.addoption("--database-mode", action="store", default="internal", choices=('internal', 'external'), help="Whether the database is internal or external")
 
 
@@ -77,11 +77,10 @@ def client_fqdn(client):
 
 
 @pytest.fixture(scope="module")
-def certificates(certificate_source, server_fqdn):
+def certificates(server_fqdn):
     env = Environment(loader=FileSystemLoader("."), autoescape=select_autoescape())
-    template = env.get_template(f"./src/vars/{certificate_source}_certificates.yml")
-    context = {'certificates_ca_directory': '/var/lib/foremanctl/certs',
-               'ansible_facts': {'fqdn': server_fqdn}}
+    template = env.get_template("./src/vars/certificates.yml")
+    context = {'ansible_facts': {'fqdn': server_fqdn}}
     # we have vars that refer to other vars, so load them once and then re-render the template
     context.update(yaml.safe_load(template.render(context)))
     return yaml.safe_load(template.render(context))

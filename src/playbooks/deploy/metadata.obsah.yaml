@@ -60,9 +60,6 @@ variables:
 constraints:
   required_together:
     - [certificates_custom_server_certificate, certificates_custom_server_key, certificates_custom_server_ca_certificate]
-  forbidden_if:
-    - [certificates_source, installer, [certificates_custom_server_certificate, certificates_custom_server_key, certificates_custom_server_ca_certificate]]
-
 
 include:
   - _certificate_source

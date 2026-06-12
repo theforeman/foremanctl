@@ -1,0 +1,7 @@
+---
+- name: Mock foreman-installer environment for migration testing
+  hosts:
+    - quadlet
+  become: true
+  roles:
+    - mock_foreman_installer

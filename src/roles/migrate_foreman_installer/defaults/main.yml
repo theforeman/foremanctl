@@ -1,0 +1,2 @@
+---
+migrate_foreman_installer_ca_directory: /var/lib/foremanctl/certs

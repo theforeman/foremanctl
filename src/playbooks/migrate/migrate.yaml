@@ -1,29 +1,49 @@
 ---
-- name: Migrate foreman-installer answer file to foremanctl format
+- name: Migrate from foreman-installer to foremanctl
   hosts:
     - quadlet
-  gather_facts: false
+  gather_facts: true
+  become: true
+  vars_files:
+    - "../../vars/certificates.yml"
+  roles:
+    - role: migrate_foreman_installer
+      when: migrate_apply | default(false)
   tasks:
-    - name: Run migration
+    - name: Run answer file migration
       migrate_answers:
         answer_file: "{{ answer_file | default(omit) }}"
-        output: "{{ output | default(omit) }}"
-        working_directory: "{{ lookup('env', 'PWD') }}"
       register: migration_result
 
     - name: Display migrated configuration to stdout
-      when: migration_result.output_content | default('') != ''
+      when: output is not defined
       ansible.builtin.debug:
-        msg: "{{ migration_result.output_content }}"
+        msg: "{{ migration_result.mapped | to_nice_yaml }}"
+
+    - name: Write migrated configuration to output file
+      when: output is defined
+      ansible.builtin.copy:
+        content: "{{ migration_result.mapped | to_nice_yaml }}"
+        dest: "{{ output }}"
+        mode: '0600'
+      delegate_to: localhost
+      become: false
+
+    - name: Write migrated configuration to parameters file
+      when: migrate_apply | default(false)
+      ansible.builtin.copy:
+        content: "{{ migration_result.mapped | to_nice_yaml }}"
+        dest: "{{ obsah_state_path }}/parameters.yaml"
+        mode: '0600'
+      delegate_to: localhost
+      become: false
 
     - name: Display migration results
       ansible.builtin.debug:
         msg:
-          - "Migration completed successfully!"
+          - "{{ 'Migration completed successfully!' if (migrate_apply | default(false)) else 'Migration preview (use --apply to perform the migration):' }}"
           - "Mapped parameters: {{ migration_result.mapped_count }}"
           - "Unmappable parameters: {{ migration_result.unmappable_count }}"
           - "{{ _unmappable_warning if migration_result.unmappable | length > 0 else '' }}"
-          - "{{ _output_file_msg if migration_result.output_file is defined else '' }}"
       vars:
         _unmappable_warning: "Warning: {{ migration_result.unmappable | length }} parameter(s) could not be mapped - see warnings above"
-        _output_file_msg: "Output written to: {{ migration_result.output_file }}"
