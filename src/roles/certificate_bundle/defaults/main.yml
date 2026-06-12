@@ -1,0 +1,3 @@
+---
+certificate_bundle_output_directory: /root
+certificate_bundle_server_ca_certificate: "{{ certificate_bundle_ca_certificate }}"

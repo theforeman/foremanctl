@@ -4,10 +4,23 @@
     - quadlet
   become: true
   vars:
-    certificates_ca_directory: /root/custom-certificates
+    _custom_certs_root: /root/custom-certificates
     certificates_ca_password: "CUSTOMCA"
     certificates_ca_subject: 'Custom Test CA'
-    certificates_hostnames:
-      - "{{ ansible_facts['fqdn'] }}"
-  roles:
-    - role: certificates
+  pre_tasks:
+    - name: Generate custom CA
+      ansible.builtin.include_role:
+        name: certificates
+      vars:
+        certificates_ca_directory: "{{ _custom_certs_root }}"
+        certificates_hostnames: []
+
+    - name: Generate host certificates
+      ansible.builtin.include_role:
+        name: certificates
+      vars:
+        certificates_ca: false
+        certificates_signing_ca_directory: "{{ _custom_certs_root }}"
+        certificates_ca_directory: "{{ _custom_certs_root }}/{{ hostname | default(ansible_facts['fqdn']) }}"
+        certificates_hostnames:
+          - "{{ hostname | default(ansible_facts['fqdn']) }}"

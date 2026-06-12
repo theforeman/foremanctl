@@ -1,0 +1,43 @@
+---
+- name: Generate a certificate bundle for a hostname
+  hosts:
+    - quadlet
+  become: true
+  vars_files:
+    - "../../vars/defaults.yml"
+  vars:
+    _certificates_root: /root/certificates
+    certificates_ca: false
+    certificates_source: default
+    certificates_signing_ca_directory: "{{ _certificates_root }}"
+    certificates_ca_directory: "{{ _certificates_root }}/hosts/{{ hostname }}"
+    certificates_hostnames:
+      - "{{ hostname }}"
+    _ca_crt: "{{ _certificates_root }}/certs/ca.crt"
+    _host_crt: "{{ certificates_ca_directory }}/certs/{{ hostname }}.crt"
+    _host_key: "{{ certificates_ca_directory }}/private/{{ hostname }}.key"
+  pre_tasks:
+    - name: Read CA password from remote host
+      ansible.builtin.slurp:
+        src: "{{ _certificates_root }}/private/ca.pwd"
+      register: _ca_pwd_file
+      no_log: true
+
+    - name: Set CA password
+      ansible.builtin.set_fact:
+        certificates_ca_password: "{{ _ca_pwd_file.content | b64decode }}"
+      no_log: true
+  roles:
+    - role: certificates
+    - role: certificate_bundle
+      vars:
+        certificate_bundle_hostname: "{{ hostname }}"
+        certificate_bundle_ca_certificate: "{{ _ca_crt }}"
+        certificate_bundle_server_ca_certificate: >-
+          {{ certificates_custom_server_ca_certificate | default(_ca_crt) }}
+        certificate_bundle_server_certificate: >-
+          {{ certificates_custom_server_certificate | default(_host_crt) }}
+        certificate_bundle_server_key: >-
+          {{ certificates_custom_server_key | default(_host_key) }}
+        certificate_bundle_client_certificate: "{{ certificates_ca_directory }}/certs/{{ hostname }}-client.crt"
+        certificate_bundle_client_key: "{{ certificates_ca_directory }}/private/{{ hostname }}-client.key"
