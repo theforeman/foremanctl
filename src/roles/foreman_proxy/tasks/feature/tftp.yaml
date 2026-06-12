@@ -1,0 +1,21 @@
+---
+- name: TFTP root directory
+  notify:
+    - Restart Foreman Proxy
+    - Refresh Foreman Proxy
+  block:
+    - name: Create TFTP root directory
+      ansible.builtin.file:
+        path: "{{ foreman_proxy_tftp_root }}"
+        state: directory
+        mode: "0777"
+
+    - name: Mount the directory into foreman-proxy container
+      ansible.builtin.copy:
+        dest: /etc/containers/systemd/foreman-proxy.container.d/tftp-root.conf
+        content: |
+          [Container]
+          Volume={{ foreman_proxy_tftp_root }}:/var/lib/tftpboot:rw
+        mode: '0644'
+        owner: root
+        group: root

@@ -112,6 +112,15 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--add-feature bmc` | Enable BMC feature | `--foreman-proxy-bmc` |
 | `--bmc-ipmi-implementation` | IPMI implementation to use for BMC | `--foreman-proxy-bmc-default-provider` |
 | `--bmc-redfish-verify-ssl` | Verify SSL certificates for Redfish BMC connections | `--foreman-proxy-bmc-redfish-verify-ssl` |
+| `--add-feature tftp` | Enable TFTP feature | `--foreman-proxy-tftp` |
+| `--tftp-servername` | IP address of the TFTP server (required when enabling TFTP) | `--foreman-proxy-tftp-servername` |
+| `--tftp-root` | Directory to serve TFTP files from | `--foreman-proxy-tftp-root` |
+
+### Unmapped
+
+| foreman-installer Parameter | Description | Reason |
+| --------------------------- | ----------- | ------ |
+| `--foreman-proxy-tftp-managed` | Installer managed TFTP | not supported |
 
 ### Undetermined
 
@@ -144,10 +153,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-proxy-plugin-dns-route53-aws-access-key` | | foreman_proxy::plugin::dns_route53 | aws_access_key |
 | `--foreman-proxy-plugin-dns-route53-aws-secret-key` | | foreman_proxy::plugin::dns_route53 | aws_secret_key |
 | `--foreman-proxy-httpboot` | | foreman_proxy | httpboot |
-| `--foreman-proxy-tftp` | | foreman_proxy | tftp |
-| `--foreman-proxy-tftp-servername` | | foreman_proxy | tftp_servername |
-| `--foreman-proxy-tftp-managed` | | foreman_proxy | tftp_managed |
-| `--foreman-proxy-tftp-root` | | foreman_proxy | tftp_root |
 | `--foreman-proxy-plugin-dhcp-remote-isc-dhcp-config` | | foreman_proxy::plugin::dhcp_remote_isc | config |
 | `--foreman-proxy-plugin-dhcp-remote-isc-dhcp-leases` | | foreman_proxy::plugin::dhcp_remote_isc | dhcp_config |
 | `--foreman-proxy-plugin-dhcp-remote-isc-key-name` | | foreman_proxy::plugin::dhcp_remote_isc | key_name |
