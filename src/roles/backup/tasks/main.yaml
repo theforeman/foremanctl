@@ -1,0 +1,171 @@
+---
+- name: Set backup timestamp
+  ansible.builtin.set_fact:
+    backup_timestamp: "{{ ansible_date_time.iso8601_basic_short }}"
+
+- name: Set full backup directory path
+  ansible.builtin.set_fact:
+    backup_dir_full: "{{ backup_dir }}/foreman-backup-{{ backup_timestamp }}"
+
+- name: Ensure backup directory exists
+  ansible.builtin.file:
+    path: "{{ backup_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Test write permissions
+  ansible.builtin.file:
+    path: "{{ backup_dir }}/.write_test"
+    state: touch
+    mode: '0644'
+  register: backup_write_test
+  changed_when: false
+
+- name: Remove write test file
+  ansible.builtin.file:
+    path: "{{ backup_dir }}/.write_test"
+    state: absent
+  when: backup_write_test is succeeded
+  changed_when: false
+
+- name: Perform backup operations
+  block:
+    - name: Run preflight checks
+      ansible.builtin.include_tasks:
+        file: preflight.yaml
+
+    - name: Create timestamped backup directory
+      ansible.builtin.file:
+        path: "{{ backup_dir_full }}"
+        state: directory
+        mode: '0755'
+
+    - name: Stop Foreman services
+      ansible.builtin.systemd:
+        name: foreman.target
+        state: stopped
+
+    - name: Mark services as stopped
+      ansible.builtin.set_fact:
+        backup_service_stopped: true
+
+    - name: Wait for PostgreSQL to fully stop
+      ansible.builtin.systemd:
+        name: postgresql.service
+      register: backup_postgres_status
+      until: backup_postgres_status.status.ActiveState == 'inactive'
+      retries: "{{ backup_postgresql_stop_retries }}"
+      delay: "{{ backup_postgresql_stop_delay }}"
+      when: backup_database_mode == 'internal'
+      changed_when: false
+
+    - name: Start PostgreSQL for dumps
+      ansible.builtin.systemd:
+        name: postgresql.service
+        state: started
+      when: backup_database_mode == 'internal'
+
+    - name: Mark PostgreSQL as started
+      ansible.builtin.set_fact:
+        backup_postgresql_started: true
+      when: backup_database_mode == 'internal'
+
+    - name: Wait for PostgreSQL readiness
+      ansible.builtin.command:
+        cmd: pg_isready -h {{ database_host }} -p {{ database_port }}
+      register: backup_pg_ready
+      retries: "{{ backup_postgresql_ready_retries }}"
+      delay: "{{ backup_postgresql_ready_delay }}"
+      until: backup_pg_ready.rc == 0
+      changed_when: false
+
+    - name: Build database backup configuration
+      ansible.builtin.set_fact:
+        backup_databases_config: "{{ backup_databases_config | default([]) + [db_entry] }}"
+      vars:
+        db_entry:
+          name: "{{ item.name }}"
+          database: "{{ item.database }}"
+          host: "{{ database_host }}"
+          port: "{{ database_port }}"
+          user: "{{ item.user }}"
+          password: "{{ item.password }}"
+      loop: "{{ backup_databases }}"
+      no_log: true
+
+    - name: Build database names list for display
+      ansible.builtin.set_fact:
+        backup_databases_to_backup: "{{ backup_databases | map(attribute='database') | list }}"
+
+    - name: Dump databases
+      ansible.builtin.include_tasks:
+        file: database_dumps.yaml
+
+    - name: Backup foremanctl state directory
+      community.general.archive:
+        path: "{{ obsah_state_path }}"
+        dest: "{{ backup_dir_full }}/foremanctl-state.tar.gz"
+        format: gz
+        mode: '0644'
+
+    - name: Backup pulp content
+      ansible.builtin.include_tasks:
+        file: pulp_content.yaml
+      when: not skip_pulp_content | default(false)
+
+    - name: Generate backup metadata
+      ansible.builtin.include_tasks:
+        file: metadata.yaml
+
+    - name: Stop PostgreSQL
+      ansible.builtin.systemd:
+        name: postgresql.service
+        state: stopped
+      when:
+        - backup_database_mode == 'internal'
+        - backup_postgresql_started | default(false)
+
+    - name: Mark PostgreSQL as stopped
+      ansible.builtin.set_fact:
+        backup_postgresql_started: false
+      when: backup_database_mode == 'internal'
+
+    - name: Start Foreman services
+      ansible.builtin.systemd:
+        name: foreman.target
+        state: started
+
+    - name: Mark services as started
+      ansible.builtin.set_fact:
+        backup_service_stopped: false
+
+    - name: Display backup completion
+      ansible.builtin.debug:
+        msg: |
+          Backup completed successfully.
+          Location: {{ backup_dir_full }}
+          Databases: {{ backup_databases_to_backup | join(', ') }}
+
+  rescue:
+    - name: Restore PostgreSQL on failure
+      ansible.builtin.systemd:
+        name: postgresql.service
+        state: stopped
+      when:
+        - backup_database_mode == 'internal'
+        - backup_postgresql_started | default(false)
+      failed_when: false
+
+    - name: Restore Foreman services on failure
+      ansible.builtin.systemd:
+        name: foreman.target
+        state: started
+      when: backup_service_stopped | default(false)
+      failed_when: false
+
+    - name: Report failure
+      ansible.builtin.fail:
+        msg: |
+          Backup failed: {{ ansible_failed_result.msg | default('Unknown error') }}
+          Services have been restarted.
+          Partial backup may exist at: {{ backup_dir_full }}

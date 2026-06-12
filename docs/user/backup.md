@@ -1,0 +1,205 @@
+# Backup
+
+The `foremanctl backup` command creates an offline backup of your Foreman deployment, including databases, configuration, and optionally Pulp content.
+
+## Overview
+
+The backup process performs the following steps:
+
+1. **Preflight checks** - Verifies no tasks are running and database integrity
+2. **Service shutdown** - Stops all Foreman services cleanly
+3. **Database dumps** - Creates PostgreSQL dumps of all databases
+4. **Configuration backup** - Archives foremanctl state and configuration
+5. **Content backup** - Optionally backs up Pulp content directory
+6. **Service restart** - Restores all services to running state
+
+The backup is **offline** - all Foreman services are stopped during the backup process to ensure data consistency.
+
+## Basic Usage
+
+```bash
+foremanctl backup /var/backup
+```
+
+This creates a timestamped backup directory at `/var/backup/foreman-backup-YYYYMMDDTHHMMSS/` containing:
+
+- Database dumps (`.dump` files in PostgreSQL custom format)
+- foremanctl state archive (`foremanctl-state.tar.gz`)
+- Pulp content archive (`pulp-content.tar.gz`, unless `--skip-pulp-content`)
+- Backup metadata (`metadata.yml`)
+
+## Options
+
+### Required
+
+| Argument | Description |
+|----------|-------------|
+| `BACKUP_DIR` | Directory where backup files will be stored. The backup process creates a timestamped subdirectory inside this location. |
+
+### Optional
+
+| Option | Description |
+|--------|-------------|
+| `--skip-pulp-content` | Skip backing up `/var/lib/pulp`. This is for debugging purposes or if you plan to copy `/var/lib/pulp` using other methods such as rsync or shared storage. **Warning:** You will not have a complete backup if you use this option. |
+| `--wait-for-tasks` | Wait for running Foreman and Pulp tasks to complete instead of failing immediately. The backup will poll until all tasks finish before proceeding. |
+
+## Examples
+
+### Standard Backup
+
+```bash
+foremanctl backup /var/backup
+```
+
+### Backup Without Pulp Content
+
+Skip Pulp content for debugging or when backing up `/var/lib/pulp` separately (e.g., via rsync or shared storage):
+
+```bash
+foremanctl backup /var/backup --skip-pulp-content
+```
+
+**Note:** This will not create a complete backup.
+
+### Backup with Task Waiting
+
+Allow in-progress tasks to complete before starting backup:
+
+```bash
+foremanctl backup /var/backup --wait-for-tasks
+```
+
+## Backup Contents
+
+### Databases
+
+**Base:**
+- `foreman`
+
+**Katello (when enabled):**
+- `candlepin`
+- `pulp`
+
+**IOP (when enabled):**
+- `iop_advisor`
+- `iop_inventory`
+- `iop_remediations`
+- `iop_vmaas`
+- `iop_vulnerability`
+
+Database dumps use PostgreSQL's custom format (`--format=c`), which provides:
+
+- Compression
+- Selective restoration
+- Parallel restoration support
+
+### Configuration
+
+- **foremanctl state** - All deployment configuration and parameters for foremanctl.
+
+### Pulp Content
+
+Unless `--skip-pulp-content` is specified, the backup includes:
+
+- Content repository files
+- Database encryption keys
+- Django secret key
+
+The following directories are excluded from Pulp content backups:
+
+- `media/exports` - Temporary export files
+- `media/imports` - Temporary import files  
+- `media/sync_imports` - Temporary sync import files
+
+### Metadata
+
+The backup includes a `metadata.yml` file with:
+
+- Hostname
+- OS version
+- Backup timestamp
+- foremanctl version
+- Backup type
+- Enabled features
+- Database mode
+- Container image list with digests
+- List of backed up components
+
+## Preflight Checks
+
+Before starting the backup, the following checks are performed:
+
+### Running Tasks
+
+The backup fails if any Foreman or Pulp tasks are running (unless `--wait-for-tasks` is used).
+
+If `--wait-for-tasks` is specified:
+
+- Foreman tasks are individually waited on with a timeout of 60 minutes (3600 seconds)
+- Pulp tasks are polled every 10 seconds for up to 10 minutes (600 seconds)
+
+### Database Integrity
+
+For internal databases (`--database-mode internal`), the backup verifies that all database indexes are healthy before proceeding (if PostgreSQL `amcheck` extension is available). This ensures the backup will be consistent and restorable.
+
+## Backup Process
+
+### Service Shutdown Sequence
+
+1. Stop `foreman.target` (all Foreman services)
+2. Wait for PostgreSQL to fully stop (internal mode only)
+3. Start PostgreSQL in standalone mode for dumps (internal mode only)
+
+### Database Dump
+
+Each database is dumped using `pg_dump`:
+
+```bash
+pg_dump --host=<host> --port=<port> --username=<user> --format=custom --file=<backup_dir>/<name>.dump <database>
+```
+
+For external databases, dumps connect to the external host. For internal databases, dumps connect to the locally-running PostgreSQL instance.
+
+### Service Restoration
+
+After backup completes (or on failure):
+
+1. Stop PostgreSQL (if started for dumps)
+2. Start `foreman.target` (restores all services)
+
+Services are restored even if the backup fails to avoid leaving the system in a stopped state.
+
+## Storage Requirements
+
+Plan for adequate storage in the backup directory. The following table shows compression ratios for different backup components:
+
+| Component        | Source                     | Compression Ratio | Example           |
+|------------------|----------------------------|-------------------|-------------------|
+| Database dumps   | PostgreSQL data            | 80-85%            | 100 GB → 15-20 GB |
+| foremanctl state | foremanctl state directory | ~85%              | 10 MB → ~1.5 MB   |
+| Pulp content     | `/var/lib/pulp`            | Not compressed    | 100 GB → 100 GB   |
+
+`--skip-pulp-content` skips backing up `/var/lib/pulp`. This option is for debugging purposes or if you plan to copy `/var/lib/pulp` in other ways, such as rsync or shared storage. **You will not have a complete backup if you use this option.**
+
+## Backup Verification
+
+After backup completes, verify the backup:
+
+```bash
+# Check backup directory
+ls -lh /var/backup/foreman-backup-*/
+
+# Review metadata
+cat /var/backup/foreman-backup-*/metadata.yml
+
+# Verify database dumps exist
+ls -lh /var/backup/foreman-backup-*/*.dump
+```
+
+## Retention and Rotation
+
+The `foremanctl backup` command does **not** automatically delete old backups. You are responsible for:
+
+- Implementing backup retention policies
+- Rotating old backups
+- Monitoring backup storage usage
