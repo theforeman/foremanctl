@@ -1,0 +1,7 @@
+---
+provisioner:
+  inventory:
+    group_vars:
+      all:
+        certificates_source: custom_server
+        certificates_ca_directory: /var/lib/foremanctl/molecule-certs-custom

@@ -1,0 +1,7 @@
+---
+- name: Check expected certificate files exist
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: certificates_file_stats
+  failed_when: not certificates_file_stats.stat.exists
+  loop: "{{ certificates_expected_files }}"

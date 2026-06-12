@@ -1,0 +1,9 @@
+---
+- name: Verify
+  hosts: quadlet
+  gather_facts: true
+  vars_files:
+    - ../common/vars/verify.yml
+  tasks:
+    - ansible.builtin.import_tasks: ../common/tasks/verify_invariant.yml
+    - ansible.builtin.import_tasks: ../common/tasks/verify_default.yml

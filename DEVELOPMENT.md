@@ -73,6 +73,23 @@ pytest tests/postgresql_test.py
 pytest tests/foreman_test.py::test_foreman_service
 ```
 
+Run Molecule role tests (requires `./setup-environment`):
+
+```
+# run all tests, including molecule
+pytest --molecule
+#run a specific molecule test
+pytest --molecule tests/molecule_roles/test_roles.py::test_molecule_role[certificates[default]]
+```
+Running molecule tests directly is also possible with:
+
+```
+cd src/roles/<role>
+molecule test --all
+```
+
+Shared Molecule settings (Podman driver, collections path, test sequence) are in `.config/molecule/config.yml`. Per-role converge and verify steps belong under `src/roles/<role>/molecule/common/`; each scenario only sets variables in `molecule.yml`.
+
 Additonally, you can run [smoker](https://github.com/theforeman/smoker) based tests with:
 
 ```
