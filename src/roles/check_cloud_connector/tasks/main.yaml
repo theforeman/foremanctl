@@ -10,6 +10,19 @@
           The cloud-connector feature cannot be used together with the iop feature.
           Remove one of them with --remove-feature before deploying.
 
+    - name: Check that consumer certificate exists
+      ansible.builtin.stat:
+        path: /etc/pki/consumer/cert.pem
+      register: __cloud_connector_consumer_cert
+
+    - name: Verify consumer certificate exists
+      ansible.builtin.assert:
+        that:
+          - __cloud_connector_consumer_cert.stat.exists
+        fail_msg: >-
+          /etc/pki/consumer/cert.pem not found.
+          The system must be registered with subscription-manager.
+
     - name: Check that yggdrasil-worker-forwarder package is available
       ansible.builtin.command: dnf info yggdrasil-worker-forwarder
       changed_when: false
