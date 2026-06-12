@@ -13,12 +13,12 @@
     - name: Check that consumer certificate exists
       ansible.builtin.stat:
         path: /etc/pki/consumer/cert.pem
-      register: __cloud_connector_consumer_cert
+      register: check_cloud_connector_consumer_cert
 
     - name: Verify consumer certificate exists
       ansible.builtin.assert:
         that:
-          - __cloud_connector_consumer_cert.stat.exists
+          - check_cloud_connector_consumer_cert.stat.exists
         fail_msg: >-
           /etc/pki/consumer/cert.pem not found.
           The system must be registered with subscription-manager.
@@ -27,12 +27,12 @@
       ansible.builtin.command: dnf info yggdrasil-worker-forwarder
       changed_when: false
       failed_when: false
-      register: __cloud_connector_pkg_check
+      register: check_cloud_connector_pkg_check
 
     - name: Verify yggdrasil-worker-forwarder is available
       ansible.builtin.assert:
         that:
-          - __cloud_connector_pkg_check.rc == 0
+          - check_cloud_connector_pkg_check.rc == 0
         fail_msg: >-
           The yggdrasil-worker-forwarder package is not available.
           Ensure the appropriate repository is enabled.
