@@ -71,6 +71,8 @@ jobs:
         exclude:
           - certificate_source: installer
             box: centos/stream10
+          - certificate_source: installer
+            box: debian/trixie64
         include:
           - certificate_source: default
             security: fapolicyd
@@ -86,6 +88,11 @@ jobs:
             security: none
             database: internal
             box: centos/stream9
+          - certificate_source: default
+            security: none
+            database: internal
+            iop: disabled
+            box: debian/trixie64
     runs-on: ubuntu-24.04
     env:
       FOREMANCTL_BASE_BOX: ${{ matrix.box }}
@@ -151,10 +158,14 @@ jobs:
             --tuning development \
             --content-import-path /custom/import \
             --content-export-path /custom/export
-      - name: Deploy features
+      - name: Deploy hammer
+        if: contains(matrix.box, 'centos')
         run: |
           ./foremanctl deploy \
             --add-feature hammer \
+      - name: Deploy features
+        run: |
+          ./foremanctl deploy \
             --add-feature foreman-proxy \
             --add-feature azure-rm \
             --add-feature google \
