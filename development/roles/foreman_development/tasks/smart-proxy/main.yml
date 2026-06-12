@@ -138,7 +138,7 @@
 
 - name: Configure smart-proxy for development
   theforeman.foreman.smart_proxy:
-    name: "{{ ansible_facts['fqdn'] }}-dev"
+    name: "{{ ansible_facts['fqdn'] }}"
     url: "https://{{ ansible_facts['fqdn'] }}:8443"
     server_url: "{{ foreman_development_url }}"
     oauth1_consumer_key: "{{ foreman_development_oauth_consumer_key }}"
