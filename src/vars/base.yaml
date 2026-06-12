@@ -48,3 +48,7 @@ foreman_proxy_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
 iop_core_foreman_url: "{{ foreman_url }}"
 iop_core_foreman_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
 iop_core_foreman_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+
+cloud_connector_url: "{{ foreman_url }}"
+cloud_connector_user: "{{ foreman_initial_admin_username }}"
+cloud_connector_password: "{{ foreman_initial_admin_password }}"

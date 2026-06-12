@@ -29,6 +29,13 @@ variables:
   foreman_development_github_username:
     help: GitHub username to add as additional remote for git checkouts
     action: store
+  cloud_connector_http_proxy:
+    parameter: --cloud-connector-http-proxy
+    help: HTTP proxy URL for the cloud connector rhcd service.
+  foreman_development_preserve_plugin_branches:
+    parameter: --preserve-plugin-branches
+    help: Skip git checkout for plugins, preserving local branches and changes.
+    type: Boolean
 
 include:
   - _flavor_features
