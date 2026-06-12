@@ -44,4 +44,13 @@ Vagrant.configure("2") do |config|
       libvirt.memory = 2048
     end
   end
+
+  config.vm.define "named" do |override|
+    override.vm.box = "centos/stream9"
+    override.vm.hostname = "named.#{DOMAIN}"
+
+    override.vm.provider "libvirt" do |libvirt, provider|
+      libvirt.memory = 2048
+    end
+  end
 end
