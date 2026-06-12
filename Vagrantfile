@@ -18,6 +18,9 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "quadlet" do |override|
     override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream9")
+    if override.vm.box == "centos/stream10"
+      override.vm.box_url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box"
+    end
     override.vm.hostname = "quadlet.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
