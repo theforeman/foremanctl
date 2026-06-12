@@ -34,6 +34,20 @@
     group: root
     mode: '0755'
 
+- name: Add Foreman CA to system trust store
+  ansible.builtin.copy:
+    src: "{{ foreman_ca_certificate }}"
+    dest: /etc/pki/ca-trust/source/anchors/foreman-ca.pem
+    remote_src: true
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart rhcd
+
+- name: Update system CA trust
+  ansible.builtin.command: update-ca-trust
+  changed_when: true
+
 - name: Ensure rhcd started and enabled
   ansible.builtin.service:
     name: rhcd
@@ -68,6 +82,7 @@
     method: POST
     ca_path: "{{ foreman_ca_certificate }}"
     force_basic_auth: true
+    body_format: json
     status_code: [200, 201]
 
 - name: Configure HTTP proxy for rhcd
