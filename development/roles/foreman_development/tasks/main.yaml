@@ -153,7 +153,9 @@
     foreman_development_plugin_name: "{{ foreman_development_plugin_config.name.split('/')[1] }}"
     foreman_development_plugin_org: "{{ foreman_development_plugin_config.name.split('/')[0] }}"
     foreman_development_plugin_repo_url: "https://github.com/{{ foreman_development_plugin_config.name }}.git"
-    foreman_development_plugin_manage_repo: "{{ foreman_development_plugin_config.manage_repo | default(true) }}"
+    foreman_development_plugin_manage_repo: >-
+      {{ false if foreman_development_preserve_plugin_branches | default(false)
+      else foreman_development_plugin_config.manage_repo | default(true) }}
     foreman_development_plugin_settings_template: "{{ foreman_development_plugin_config.settings_template | default('') }}"
     foreman_development_plugin_extra_gemfiles: "{{ foreman_development_plugin_config.extra_gemfiles | default([]) }}"
   loop: "{{ foreman_development_default_plugins + foreman_development_enabled_plugins }}"
