@@ -14,7 +14,7 @@
     group: root
     mode: '0755'
 
-- name: Configure rhc-cloud-connector-worker
+- name: Configure foreman-rh-cloud worker
   ansible.builtin.template:
     src: foreman_rh_cloud.toml.j2
     dest: "{{ cloud_connector_config_file }}"
@@ -56,7 +56,7 @@
 
 - name: Read client ID from CN of consumer certificate
   ansible.builtin.command: openssl x509 -in /etc/pki/consumer/cert.pem -subject -noout
-  register: __cloud_connector_cert_output
+  register: cloud_connector_cert_output
   changed_when: false
 
 - name: Set rhc_instance_id in Foreman
@@ -66,13 +66,13 @@
     password: "{{ cloud_connector_password }}"
     body:
       setting:
-        value: "{{ __cloud_connector_client_id }}"
+        value: "{{ cloud_connector_client_id }}"
     method: PUT
     ca_path: "{{ foreman_ca_certificate }}"
     force_basic_auth: true
     body_format: json
   vars:
-    __cloud_connector_client_id: "{{ __cloud_connector_cert_output.stdout | regex_search('CN\\s?=\\s?([a-z0-9-]+)', '\\1') | first }}"
+    cloud_connector_client_id: "{{ cloud_connector_cert_output.stdout | regex_search('CN\\s?=\\s?([a-z0-9-]+)', '\\1') | first }}"
 
 - name: Enable automatic inventory upload
   ansible.builtin.uri:
@@ -87,7 +87,7 @@
     force_basic_auth: true
     body_format: json
 
-- name: Announce Satellite to Sources
+- name: Announce to Sources
   ansible.builtin.uri:
     url: "{{ cloud_connector_url }}/api/v2/rh_cloud/announce_to_sources"
     user: "{{ cloud_connector_user }}"
