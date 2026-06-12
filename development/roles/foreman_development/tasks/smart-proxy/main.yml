@@ -145,6 +145,16 @@
     oauth1_consumer_secret: "{{ foreman_development_oauth_consumer_secret }}"
     ca_path: "{{ foreman_development_ca_certificate }}"
     validate_certs: false
+  register: _foreman_development_proxy_registration
+
+- name: Warn about unrecognized Smart Proxy features
+  ansible.builtin.debug:
+    msg: >-
+      Proxy {{ ansible_facts['fqdn'] }}-dev has features not recognized by Foreman:
+      {{ _foreman_development_proxy_registration.entity.smart_proxies[0].unrecognized_features | join(', ') }}.
+      If these features come from a Smart Proxy plugin, make sure Foreman has the plugin installed too.
+  when:
+    - _foreman_development_proxy_registration.entity.smart_proxies[0].unrecognized_features | default([]) | length > 0
 
 - name: Stop smart-proxy-development service
   ansible.builtin.systemd:
