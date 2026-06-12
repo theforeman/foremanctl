@@ -103,12 +103,10 @@
     dest: /etc/systemd/system/httpd.service.d/foreman-target.conf
     mode: "0644"
     content: |
+      [Install]
+      WantedBy=default.target foreman.target
       [Unit]
       PartOf=foreman.target
-
-      [Install]
-      WantedBy=foreman.target
-  notify: Restart httpd
 
 - name: Reload systemd daemon
   ansible.builtin.systemd:
