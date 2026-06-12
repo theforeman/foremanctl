@@ -60,6 +60,16 @@
   vars:
     __cloud_connector_client_id: "{{ __cloud_connector_cert_output.stdout | regex_search('CN\\s?=\\s?([a-z0-9-]+)', '\\1') | first }}"
 
+- name: Announce Satellite to Sources
+  ansible.builtin.uri:
+    url: "{{ cloud_connector_url }}/api/v2/rh_cloud/announce_to_sources"
+    user: "{{ cloud_connector_user }}"
+    password: "{{ cloud_connector_password }}"
+    method: POST
+    ca_path: "{{ foreman_ca_certificate }}"
+    force_basic_auth: true
+    status_code: [200, 201]
+
 - name: Configure HTTP proxy for rhcd
   ansible.builtin.include_tasks: http_proxy.yaml
   when: cloud_connector_http_proxy is defined
