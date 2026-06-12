@@ -1,0 +1,77 @@
+---
+# Phase 4: Restore Pulp content and encryption keys
+# CRITICAL: Includes database_fields.symmetric.key and django_secret_key
+
+- name: Check if pulp content archive exists
+  ansible.builtin.stat:
+    path: "{{ backup_dir }}/pulp-content.tar.gz"
+  register: restore_pulp_content_check
+
+- name: Display pulp content availability
+  ansible.builtin.debug:
+    msg: "{{ 'Pulp content found in backup, will restore' if restore_pulp_content_check.stat.exists else 'Pulp content not in backup, skipping (backup used --skip-pulp-content)' }}"
+
+- name: Restore pulp content and encryption keys
+  when: restore_pulp_content_check.stat.exists
+  block:
+    - name: Ensure pulp storage directory exists
+      ansible.builtin.file:
+        path: "{{ pulp_storage_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Check if media directory exists
+      ansible.builtin.stat:
+        path: "{{ pulp_storage_path }}/media"
+      register: restore_pulp_media_dir
+
+    - name: Backup existing pulp media directory
+      ansible.builtin.command:
+        cmd: mv {{ pulp_storage_path }}/media {{ pulp_storage_path }}/media.backup-{{ ansible_date_time.epoch }}
+      when: restore_pulp_media_dir.stat.exists
+      changed_when: true
+      failed_when: false
+
+    - name: Extract pulp content archive
+      ansible.builtin.unarchive:
+        src: "{{ backup_dir }}/pulp-content.tar.gz"
+        dest: "{{ pulp_storage_path }}"
+        remote_src: true
+
+    - name: Verify Pulp encryption key was restored
+      ansible.builtin.stat:
+        path: "{{ pulp_storage_path }}/database_fields.symmetric.key"
+      register: restore_pulp_encryption_key
+      failed_when: not restore_pulp_encryption_key.stat.exists
+
+    - name: Verify Django secret key was restored
+      ansible.builtin.stat:
+        path: "{{ pulp_storage_path }}/django_secret_key"
+      register: restore_django_secret_key
+      failed_when: not restore_django_secret_key.stat.exists
+
+    - name: Count restored media files
+      ansible.builtin.find:
+        paths: "{{ pulp_storage_path }}/media"
+        file_type: file
+        recurse: true
+      register: restore_pulp_media_files
+
+    - name: Get archive size
+      ansible.builtin.stat:
+        path: "{{ backup_dir }}/pulp-content.tar.gz"
+      register: restore_pulp_content_size
+
+    - name: Display pulp content restore completion
+      ansible.builtin.debug:
+        msg: |
+          Pulp content extracted to {{ pulp_storage_path }}
+          Pulp encryption key restored: {{ pulp_storage_path }}/database_fields.symmetric.key
+          Django secret key restored: {{ pulp_storage_path }}/django_secret_key
+          Media files restored: {{ restore_pulp_media_files.matched }} files
+          Archive size: {{ (restore_pulp_content_size.stat.size / 1024 / 1024) | round(2) }} MB
+
+- name: Display skip message
+  ansible.builtin.debug:
+    msg: "Pulp content restore skipped (not present in backup)"
+  when: not restore_pulp_content_check.stat.exists

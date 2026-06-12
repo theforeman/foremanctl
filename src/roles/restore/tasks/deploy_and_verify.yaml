@@ -1,0 +1,101 @@
+---
+# Deploy and verify
+# Run foremanctl deploy to regenerate podman secrets from restored credentials
+
+- name: Stop PostgreSQL
+  ansible.builtin.systemd:
+    name: postgresql.service
+    state: stopped
+  when:
+    - database_mode == 'internal'
+    - restore_postgresql_started | default(false)
+
+- name: Mark PostgreSQL as stopped
+  ansible.builtin.set_fact:
+    restore_postgresql_started: false
+  when: database_mode == 'internal'
+
+- name: Display deployment status
+  ansible.builtin.debug:
+    msg: |
+      Running foremanctl deploy to regenerate configuration...
+      All data has been restored:
+      - Databases restored
+      - Pulp content and encryption keys restored
+      - OAuth keys and passwords restored
+      - Foremanctl state restored
+
+      Deploy will regenerate podman secrets from restored credentials.
+
+- name: Run foremanctl deploy
+  ansible.builtin.command:
+    cmd: foremanctl deploy
+  register: restore_deploy_result
+  changed_when: true
+
+- name: Display deploy completion
+  ansible.builtin.debug:
+    msg: "Deploy completed - podman secrets regenerated from restored state"
+
+- name: Mark services as started
+  ansible.builtin.set_fact:
+    restore_service_stopped: false
+
+- name: Wait for services to stabilize
+  ansible.builtin.pause:
+    seconds: 30
+    prompt: "Waiting for deployed services to stabilize..."
+
+- name: Wait for Foreman API to respond
+  ansible.builtin.uri:
+    url: "https://{{ ansible_fqdn }}/api/status"
+    method: GET
+    validate_certs: false
+    status_code: [200, 401]
+  register: restore_api_check
+  until: restore_api_check.status in [200, 401]
+  retries: 30
+  delay: 10
+  changed_when: false
+
+- name: Set API status message
+  ansible.builtin.set_fact:
+    restore_api_status: "{{ 'responding (authenticated)' if restore_api_check.status == 200 else 'responding (requires auth)' }}"
+
+- name: Check service health
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+  register: restore_service_check
+  failed_when: restore_service_check.status.ActiveState != 'active'
+  loop:
+    - foreman.target
+    - foreman.service
+    - postgresql.service
+  changed_when: false
+
+- name: Display restore success
+  ansible.builtin.debug:
+    msg: |
+      ═══════════════════════════════════════════════════════════════
+      Restore complete
+      ═══════════════════════════════════════════════════════════════
+
+      Restored from: {{ backup_dir }}
+      System: {{ ansible_fqdn }}
+
+      - Backup validated
+      - System prepared
+      - Databases restored ({{ restore_databases_to_restore | length }} databases)
+      - Pulp content and encryption keys restored
+      - OAuth keys and passwords restored
+      - System deployed and verified
+
+      All services are running:
+      - foreman.target - active
+      - foreman.service - active
+      - postgresql.service - active
+
+      Foreman API: https://{{ ansible_fqdn }}/api/status - {{ restore_api_status }}
+
+      Your Foreman instance has been successfully restored.
+      ═══════════════════════════════════════════════════════════════

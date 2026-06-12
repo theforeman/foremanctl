@@ -1,0 +1,80 @@
+---
+# Main restore orchestration
+
+- name: Run validation checks
+  ansible.builtin.include_tasks:
+    file: validate.yaml
+
+- name: Perform restore operations
+  block:
+    - name: Prepare system for restore
+      ansible.builtin.include_tasks:
+        file: prepare_system.yaml
+
+    - name: System prepared
+      ansible.builtin.debug:
+        msg: |
+          ═══════════════════════════════════════════════════════════════
+          System prepared for restore
+          ═══════════════════════════════════════════════════════════════
+
+    - name: Restore databases
+      ansible.builtin.include_tasks:
+        file: restore_databases.yaml
+
+    - name: Databases restored
+      ansible.builtin.debug:
+        msg: |
+          ═══════════════════════════════════════════════════════════════
+          Databases restored
+          ═══════════════════════════════════════════════════════════════
+
+    - name: Restore Pulp content
+      ansible.builtin.include_tasks:
+        file: restore_pulp_content.yaml
+
+    - name: Pulp content restored
+      ansible.builtin.debug:
+        msg: |
+          ═══════════════════════════════════════════════════════════════
+          Pulp content and encryption keys restored
+          ═══════════════════════════════════════════════════════════════
+
+    - name: Restore foremanctl state
+      ansible.builtin.include_tasks:
+        file: restore_foremanctl_state.yaml
+
+    - name: Foremanctl state restored
+      ansible.builtin.debug:
+        msg: |
+          ═══════════════════════════════════════════════════════════════
+          OAuth keys and passwords restored
+          ═══════════════════════════════════════════════════════════════
+
+    - name: Start services and verify
+      ansible.builtin.include_tasks:
+        file: deploy_and_verify.yaml
+
+  rescue:
+    - name: Stop PostgreSQL on failure
+      ansible.builtin.systemd:
+        name: postgresql.service
+        state: stopped
+      when:
+        - database_mode == 'internal'
+        - restore_postgresql_started | default(false)
+      failed_when: false
+
+    - name: Restart Foreman services on failure
+      ansible.builtin.systemd:
+        name: foreman.target
+        state: started
+      when: restore_service_stopped | default(false)
+      failed_when: false
+
+    - name: Report failure
+      ansible.builtin.fail:
+        msg: |
+          Restore failed: {{ ansible_failed_result.msg | default('Unknown error') }}
+          Services have been restarted.
+          System is back to running state.

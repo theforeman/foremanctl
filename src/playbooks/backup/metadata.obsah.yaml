@@ -1,0 +1,20 @@
+---
+help: |
+  Create offline backup of Foreman databases and configuration
+
+variables:
+  backup_dir:
+    parameter: backup_dir
+    help: Directory where backup files will be stored
+    type: AbsolutePath
+    persist: false
+
+  skip_pulp_content:
+    help: Skip Pulp content directory backup
+    action: store_true
+    persist: false
+
+  wait_for_tasks:
+    help: Wait for running tasks to complete instead of failing immediately
+    action: store_true
+    persist: false

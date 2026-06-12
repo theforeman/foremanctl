@@ -1,0 +1,11 @@
+---
+# Timeout and retry settings
+backup_task_wait_retries: 60
+backup_task_wait_delay: 10
+backup_postgresql_ready_retries: 10
+backup_postgresql_ready_delay: 2
+backup_postgresql_stop_retries: 30
+backup_postgresql_stop_delay: 1
+# State tracking variables
+backup_service_stopped: false
+backup_postgresql_started: false

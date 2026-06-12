@@ -7,6 +7,32 @@
     - check_database_connection
     - check_system_requirements
 
+- name: Run database index integrity checks
+  ansible.builtin.include_role:
+    name: check_db_index
+  vars:
+    check_db_index_database: "{{ item }}"
+  loop:
+    - "{{ foreman_database_name }}"
+    - "{{ candlepin_database_name }}"
+    - "{{ pulp_database_name }}"
+  when: database_mode == 'internal'
+
+- name: Run IOP database index integrity checks
+  ansible.builtin.include_role:
+    name: check_db_index
+  vars:
+    check_db_index_database: "{{ item }}"
+  loop:
+    - "{{ iop_advisor_database_name }}"
+    - "{{ iop_inventory_database_name }}"
+    - "{{ iop_remediation_database_name }}"
+    - "{{ iop_vmaas_database_name }}"
+    - "{{ iop_vulnerability_database_name }}"
+  when:
+    - database_mode == 'internal'
+    - "'iop' in enabled_features"
+
 - name: Report status of checks
   ansible.builtin.fail:
     msg: "{{ checks_results }}"

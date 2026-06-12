@@ -1,0 +1,16 @@
+---
+- name: Restore from offline backup
+  hosts: quadlet
+  become: true
+  gather_facts: true
+  vars_files:
+    - "../../vars/defaults.yml"
+    - "../../vars/flavors/{{ flavor }}.yml"
+    - "../../vars/{{ certificates_source }}_certificates.yml"
+    - "../../vars/foreman.yml"
+    - "../../vars/database.yml"
+    - "../../vars/database_iop.yml"
+    - "../../vars/base.yaml"
+    - "../../roles/pulp/defaults/main.yaml"
+  roles:
+    - restore

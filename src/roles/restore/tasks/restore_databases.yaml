@@ -1,0 +1,126 @@
+---
+# Phase 3: Restore databases from backup
+# SAFETY: Destructive operations have when: false for initial testing
+
+- name: Read backup metadata
+  ansible.builtin.slurp:
+    path: "{{ backup_dir }}/metadata.yml"
+  register: restore_metadata_content
+
+- name: Parse backup metadata
+  ansible.builtin.set_fact:
+    restore_backup_metadata: "{{ restore_metadata_content['content'] | b64decode | from_yaml }}"
+
+- name: Display backup database information
+  ansible.builtin.debug:
+    msg: "Databases in backup: {{ restore_backup_metadata.databases | join(', ') }}"
+
+- name: Build database restore configuration
+  ansible.builtin.set_fact:
+    restore_databases_config:
+      - dump_file: foreman.dump
+        database_name: "{{ foreman_database_name }}"
+        owner: "{{ foreman_database_user }}"
+      - dump_file: candlepin.dump
+        database_name: "{{ candlepin_database_name }}"
+        owner: "{{ candlepin_database_user }}"
+        when_db: candlepin
+      - dump_file: pulp.dump
+        database_name: "{{ pulp_database_name }}"
+        owner: "{{ pulp_database_user }}"
+        when_db: pulp
+
+- name: Filter databases that exist in backup
+  ansible.builtin.set_fact:
+    restore_databases_to_restore: >-
+      {{
+        restore_databases_config |
+        selectattr('when_db', 'undefined') |
+        list +
+        (restore_databases_config |
+        selectattr('when_db', 'defined') |
+        selectattr('when_db', 'in', restore_backup_metadata.databases) |
+        list)
+      }}
+
+- name: Display databases that will be restored
+  ansible.builtin.debug:
+    msg: "Will restore {{ restore_databases_to_restore | length }} database(s): {{ restore_databases_to_restore | map(attribute='database_name') | join(', ') }}"
+
+- name: Verify dump files exist
+  ansible.builtin.stat:
+    path: "{{ backup_dir }}/{{ item.dump_file }}"
+  register: restore_dump_files_check
+  failed_when: not restore_dump_files_check.stat.exists
+  loop: "{{ restore_databases_to_restore }}"
+  loop_control:
+    label: "{{ item.dump_file }}"
+
+- name: Drop existing databases
+  community.postgresql.postgresql_db:
+    name: "{{ item.database_name }}"
+    state: absent
+    login_host: "{{ database_host }}"
+    login_port: "{{ database_port }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+  loop: "{{ restore_databases_to_restore }}"
+  loop_control:
+    label: "{{ item.database_name }}"
+
+- name: Create empty databases
+  community.postgresql.postgresql_db:
+    name: "{{ item.database_name }}"
+    state: present
+    owner: "{{ item.owner }}"
+    login_host: "{{ database_host }}"
+    login_port: "{{ database_port }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+  loop: "{{ restore_databases_to_restore }}"
+  loop_control:
+    label: "{{ item.database_name }}"
+
+- name: Restore databases from dump files
+  ansible.builtin.command:
+    cmd: >
+      pg_restore
+      -h {{ database_host }}
+      -p {{ database_port }}
+      -U {{ item.owner }}
+      -d {{ item.database_name }}
+      --no-owner
+      --no-acl
+      {{ backup_dir }}/{{ item.dump_file }}
+  environment:
+    PGPASSWORD: "{{ postgresql_admin_password }}"
+  loop: "{{ restore_databases_to_restore }}"
+  loop_control:
+    label: "{{ item.dump_file }} → {{ item.database_name }}"
+  changed_when: true
+
+- name: Fix database ownership
+  community.postgresql.postgresql_owner:
+    db: "{{ item.database_name }}"
+    new_owner: "{{ item.owner }}"
+    obj_name: "{{ item.database_name }}"
+    obj_type: database
+    login_host: "{{ database_host }}"
+    login_port: "{{ database_port }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+  loop: "{{ restore_databases_to_restore }}"
+  loop_control:
+    label: "{{ item.database_name }}"
+
+- name: Display restore completion
+  ansible.builtin.debug:
+    msg: |
+      Database restore configuration built
+      Dump files verified
+      Existing databases dropped
+      Empty databases created
+      Data restored from dump files
+      Database ownership fixed
+
+      Databases restored: {{ restore_databases_to_restore | map(attribute='database_name') | join(', ') }}

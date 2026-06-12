@@ -1,0 +1,18 @@
+---
+help: |
+  Restore Foreman from an offline backup
+
+  Validates backup contents, extracts configuration files, restores databases,
+  restores Pulp content, and redeploys the system.
+
+variables:
+  backup_dir:
+    parameter: backup_dir
+    help: Directory containing the backup files
+    type: AbsolutePath
+    persist: false
+
+  dry_run:
+    help: Validate backup without making any changes
+    action: store_true
+    persist: false

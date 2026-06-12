@@ -1,0 +1,11 @@
+---
+# Timeout and retry settings for restore operations
+restore_postgresql_ready_retries: 10
+restore_postgresql_ready_delay: 2
+restore_postgresql_stop_retries: 30
+restore_postgresql_stop_delay: 1
+
+# State tracking variables
+restore_service_stopped: false
+restore_postgresql_started: false
+restore_destructive_action_taken: false
