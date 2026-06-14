@@ -70,17 +70,32 @@
 
 - name: Configure external authentication
   ansible.builtin.include_tasks: "external_auth/{{ httpd_external_authentication }}.yml"
-  when: httpd_external_authentication in ['ipa', 'ipa_with_api']
+  when:
+    - httpd_with_foreman
+    - httpd_external_authentication in ['ipa', 'ipa_with_api']
 
 - name: Remove external authentication configuration if not enabled
   ansible.builtin.include_tasks: external_auth/cleanup.yml
-  when: httpd_external_authentication is none
+  when:
+    - httpd_with_foreman
+    - httpd_external_authentication is none
+
 
 - name: Configure foreman vhost
   ansible.builtin.template:
     src: foreman-vhost.conf.j2
     dest: /etc/httpd/conf.d/foreman.conf
     mode: "0644"
+  when: httpd_with_foreman
+  notify:
+    - Restart httpd
+
+- name: Configure pulpcore vhost
+  ansible.builtin.template:
+    src: pulpcore-vhost.conf.j2
+    dest: /etc/httpd/conf.d/pulpcore.conf
+    mode: "0644"
+  when: httpd_with_pulp_mirror
   notify:
     - Restart httpd
 
@@ -89,6 +104,7 @@
     src: foreman-ssl-vhost.conf.j2
     dest: /etc/httpd/conf.d/foreman-ssl.conf
     mode: "0644"
+  when: httpd_with_foreman
   notify:
     - Restart httpd
 

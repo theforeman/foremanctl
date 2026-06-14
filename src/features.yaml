@@ -5,6 +5,12 @@ foreman-proxy:
   description: Base Foreman Proxy
 hammer:
   description: Foreman CLI
+pulp:
+  description: Pulp content management service
+  internal: true
+candlepin:
+  description: Candlepin subscription management service
+  internal: true
 katello:
   description: Content and Subscription Management plugin for Foreman
   foreman:
@@ -12,6 +18,8 @@ katello:
   hammer: katello
   dependencies:
     - tasks
+    - pulp
+    - candlepin
 google:
   description: Google Compute Engine plugin for Foreman
   hammer: foreman_google

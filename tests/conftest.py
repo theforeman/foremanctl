@@ -44,6 +44,10 @@ class UserParameters:
         return set(feature for feature, status, _desc in self.features if status == 'enabled')
 
 
+def pytest_addoption(parser):
+    parser.addoption("--server-hostname", action="store", default="quadlet", help="Hostname of the server VM to test against")
+
+
 @pytest.fixture(scope="module")
 def enabled_features(pytestconfig):
     return pytestconfig.user_parameters.enabled_features
@@ -55,8 +59,8 @@ def fixture_dir():
 
 
 @pytest.fixture(scope="module")
-def server_hostname():
-    return 'quadlet'
+def server_hostname(pytestconfig):
+    return pytestconfig.getoption("server_hostname")
 
 
 @pytest.fixture(scope="module")

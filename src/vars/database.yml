@@ -91,7 +91,7 @@ databases:
     password: "{{ candlepin_database_password }}"
     ssl_mode: "{{ candlepin_database_ssl_mode }}"
     ssl_ca: "{{ candlepin_database_ssl_ca }}"
-    feature: katello
+    feature: candlepin
   - name: pulp
     database: "{{ pulp_database_name }}"
     host: "{{ pulp_database_host }}"
@@ -100,7 +100,7 @@ databases:
     password: "{{ pulp_database_password }}"
     ssl_mode: "{{ pulp_database_ssl_mode }}"
     ssl_ca: "{{ pulp_database_ssl_ca }}"
-    feature: katello
+    feature: pulp
   - name: iop_advisor
     database: "{{ iop_advisor_database_name }}"
     host: "{{ iop_advisor_database_host }}"
@@ -138,7 +138,7 @@ databases:
     feature: iop
 
 all_databases: >-
-  {{ databases | selectattr('feature', 'in', enabled_features) | list }}
+  {{ databases | databases_for_features(enabled_features) }}
 
 postgresql_databases: >-
   {{ all_databases | to_postgresql_databases }}

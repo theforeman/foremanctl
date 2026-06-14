@@ -1,0 +1,9 @@
+flavor_features:
+  - foreman-proxy
+  - content/rpm
+  - content/deb
+  - content/container
+  - content/ansible
+  - content/python
+
+pulp_mirror: true
