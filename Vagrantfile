@@ -47,4 +47,14 @@ Vagrant.configure("2") do |config|
       libvirt.memory = 2048
     end
   end
+
+  config.vm.define "proxy" do |override|
+    override.vm.box = "centos/stream9"
+    override.vm.hostname = "proxy.#{DOMAIN}"
+
+    override.vm.provider "libvirt" do |libvirt, provider|
+      libvirt.memory = 4096
+      libvirt.cpus = 4
+    end
+  end
 end

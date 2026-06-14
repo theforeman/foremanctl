@@ -1,0 +1,26 @@
+<VirtualHost *:80>
+  ServerName {{ ansible_facts['fqdn'] }}
+
+  ErrorLog "/var/log/httpd/mirror_error.log"
+  ServerSignature Off
+  CustomLog "/var/log/httpd/mirror_access.log" combined
+
+  RequestHeader set X-FORWARDED-PROTO "http"
+
+  <Location "/pulp/content">
+    RequestHeader unset X-CLIENT-CERT
+    RequestHeader set X-CLIENT-CERT "%{SSL_CLIENT_CERT}s" env=SSL_CLIENT_CERT
+    RequestHeader set X-FORWARDED-PROTO expr=%{REQUEST_SCHEME}
+    ProxyPass {{ httpd_pulp_content_backend }}/pulp/content disablereuse=on timeout=600
+    ProxyPassReverse {{ httpd_pulp_content_backend }}/pulp/content
+  </Location>
+
+  Alias /pub {{ httpd_pub_dir }}
+
+  <Location /pub>
+    Options +FollowSymLinks +Indexes
+    Require all granted
+  </Location>
+
+  AddDefaultCharset UTF-8
+</VirtualHost>

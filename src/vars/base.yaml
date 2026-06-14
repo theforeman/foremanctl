@@ -35,6 +35,7 @@ pulp_storage_path: /var/lib/pulp
 pulp_content_origin: "https://{{ ansible_facts['fqdn'] }}"
 pulp_pulp_url: "https://{{ ansible_facts['fqdn'] }}"
 pulp_plugins: "{{ enabled_features | select('contains', 'content/') | map('replace', 'content/', 'pulp_') | list }}"
+pulp_rhsm_url: "{{ foreman_proxy_foreman_server_url }}/rhsm"
 
 hammer_ca_certificate: "{{ server_ca_certificate }}"
 hammer_plugins: "{{ enabled_features | features_to_hammer_plugins }}"
