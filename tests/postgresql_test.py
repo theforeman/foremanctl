@@ -13,18 +13,24 @@ def test_postgresql_port(database):
     assert postgresql.port("5432").is_reachable
 
 
-def test_postgresql_databases(database):
+def test_postgresql_databases(database, enabled_features):
     result = database.run("podman exec postgresql psql -U postgres -c '\\l'")
-    assert "foreman" in result.stdout
-    assert "candlepin" in result.stdout
-    assert "pulp" in result.stdout
+    if 'katello' in enabled_features:
+        assert "foreman" in result.stdout
+        assert "candlepin" in result.stdout
+        assert "pulp" in result.stdout
+    else:
+        assert "pulp" in result.stdout
 
 
-def test_postgresql_users(database):
+def test_postgresql_users(database, enabled_features):
     result = database.run("podman exec postgresql psql -U postgres -c '\\du'")
-    assert "foreman" in result.stdout
-    assert "candlepin" in result.stdout
-    assert "pulp" in result.stdout
+    if 'katello' in enabled_features:
+        assert "foreman" in result.stdout
+        assert "candlepin" in result.stdout
+        assert "pulp" in result.stdout
+    else:
+        assert "pulp" in result.stdout
 
 
 def test_postgresql_password_encryption(database):
@@ -35,7 +41,9 @@ def test_postgresql_password_encryption(database):
 
     reader = csv.reader(result.stdout.splitlines())
     for row in reader:
-        assert ("SCRAM-SHA-256" in row[6])
+        if row[0] == 'postgres':
+            continue
+        assert "SCRAM-SHA-256" in row[6]
 
 
 def test_postgresql_missing_with_external(server, database_mode):

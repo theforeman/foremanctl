@@ -24,9 +24,12 @@ pulp_content_origin: "http://{{ ansible_facts['fqdn'] }}:24816"
 pulp_pulp_url: "http://{{ ansible_facts['fqdn'] }}:24817"
 
 pulp_enable_analytics: false
+pulp_mirror: false
+pulp_rhsm_url: "https://{{ ansible_facts['fqdn'] }}/rhsm"
+pulp_smart_proxy_auth_methods: "['client_certificate']"
 
-pulp_default_import_paths: ["/var/lib/pulp/sync_imports", "/var/lib/pulp/imports"]
-pulp_default_export_paths: ["/var/lib/pulp/exports"]
+pulp_default_import_paths: "{{ pulp_mirror | ternary(['/var/lib/pulp/sync_imports'], ['/var/lib/pulp/sync_imports', '/var/lib/pulp/imports']) }}"
+pulp_default_export_paths: "{{ pulp_mirror | ternary([], ['/var/lib/pulp/exports']) }}"
 pulp_import_paths: []
 pulp_export_paths: []
 
@@ -69,7 +72,11 @@ pulp_settings_other_env:
   PULP_REMOTE_USER_ENVIRON_NAME: "HTTP_REMOTE_USER"
   PULP_REST_FRAMEWORK__DEFAULT_AUTHENTICATION_CLASSES: >-
     ['rest_framework.authentication.SessionAuthentication', 'pulpcore.app.authentication.PulpRemoteUserAuthentication']
-  PULP_SMART_PROXY_PULP_URL: "{{ pulp_pulp_url }}"
+  SMART_PROXY_PULP_URL: "{{ pulp_pulp_url }}"
+  SMART_PROXY_MIRROR: "{{ pulp_mirror }}"
+  SMART_PROXY_RHSM_URL: "{{ pulp_rhsm_url }}"
+  SMART_PROXY_AUTH_METHODS: >-
+    {{ pulp_smart_proxy_auth_methods }}
   PULP_API_WORKERS: "{{ pulp_api_service_worker_count }}"
   PULP_CONTENT_WORKERS: "{{ pulp_content_service_worker_count }}"
   PULP_TOKEN_AUTH_DISABLED: "true"

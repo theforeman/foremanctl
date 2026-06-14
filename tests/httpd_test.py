@@ -1,3 +1,5 @@
+import pytest
+
 HTTP_HOST = 'localhost'
 HTTP_PORT = 80
 HTTPS_PORT = 443
@@ -21,12 +23,14 @@ def test_https_port(server):
     assert httpd.port(HTTPS_PORT).is_reachable
 
 
+@pytest.mark.feature('foreman')
 def test_http_foreman_ping(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{redirect_url}}' http://{server_fqdn}/api/v2/ping")
     assert cmd.succeeded
     assert cmd.stdout == f'https://{server_fqdn}/api/v2/ping'
 
 
+@pytest.mark.feature('foreman')
 def test_https_foreman_ping(server, certificates, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/api/v2/ping")
     assert cmd.succeeded
@@ -102,12 +106,14 @@ def test_https_pub_server_ca_certificate_downloadable(server, certificates, serv
     assert cmd.stdout == '200'
 
 
+@pytest.mark.feature('foreman')
 def test_http_foreman_login(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/users/login")
     assert cmd.succeeded
     assert cmd.stdout == '301'
 
 
+@pytest.mark.feature('foreman')
 def test_https_foreman_login(server, certificates, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/users/login")
     assert cmd.succeeded
@@ -135,6 +141,7 @@ def test_httpd_config_syntax(server):
     assert cmd.succeeded
 
 
+@pytest.mark.feature('foreman')
 def test_httpd_headers_use_dashes(server):
     cmd = server.run("grep -rPn 'RequestHeader\\s+set\\s+\\S*_\\S*\\s' /etc/httpd/conf.d/foreman.conf /etc/httpd/conf.d/foreman-ssl.conf /etc/httpd/conf.d/05-foreman.d/ /etc/httpd/conf.d/05-foreman-ssl.d/ 2>/dev/null")
     assert cmd.stdout.strip() == '', f"HTTP header names should use dashes, not underscores:\n{cmd.stdout}"

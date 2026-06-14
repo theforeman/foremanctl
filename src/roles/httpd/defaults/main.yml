@@ -5,6 +5,10 @@ httpd_foreman_backend: http://localhost:3000
 httpd_pub_dir: /var/www/html/pub
 httpd_enabled_pulp_snippets: []
 
+httpd_proxy_foreman_url: "{{ foreman_proxy_foreman_server_url }}"
+httpd_client_certificate: "{{ client_certificate }}"
+httpd_client_key: "{{ client_key }}"
+
 # MPM event module defaults
 httpd_server_limit: 25
 httpd_start_servers: 2
@@ -20,3 +24,7 @@ httpd_ipa_manage_sssd: true
 httpd_ipa_keytab: /etc/httpd/conf/http.keytab
 httpd_ipa_pam_service: "{{ external_authentication_pam_service | default('foreman') }}"
 httpd_ipa_gssapi_local_name: true
+
+httpd_with_foreman: "{{ 'foreman' in enabled_features }}"
+httpd_with_pulpcore: "{{ not httpd_with_foreman and not httpd_with_pulp_mirror }}"
+httpd_with_pulp_mirror: "{{ pulp_mirror | default(false) }}"

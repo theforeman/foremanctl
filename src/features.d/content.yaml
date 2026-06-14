@@ -1,0 +1,26 @@
+---
+content/rpm:
+  description: RPM content type for Pulp
+  internal: true
+  dependencies:
+    - pulp
+content/deb:
+  description: Debian content type for Pulp
+  internal: true
+  dependencies:
+    - pulp
+content/container:
+  description: Container content type for Pulp
+  internal: true
+  dependencies:
+    - pulp
+content/ansible:
+  description: Ansible content type for Pulp
+  internal: true
+  dependencies:
+    - pulp
+content/python:
+  description: Python content type for Pulp
+  internal: true
+  dependencies:
+    - pulp

@@ -4,6 +4,7 @@ variables:
     help: Base flavor to use in this deployment.
     choices:
       - katello
+      - foreman-proxy-content
   features:
     parameter: --add-feature
     help: Additional features to enable in this deployment.

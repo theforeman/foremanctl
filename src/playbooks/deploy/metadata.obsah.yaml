@@ -56,6 +56,24 @@ variables:
     parameter: --bmc-redfish-verify-ssl
     help: Verify SSL certificates for Redfish BMC connections.
     type: Boolean
+  foreman_proxy_foreman_server_url:
+    parameter: --foreman-url
+    help: URL of the parent Foreman server this proxy connects to.
+  foreman_proxy_trusted_hosts:
+    help: FQDN of a host trusted by the smart proxy. Can be specified multiple times.
+    action: append_unique
+  foreman_oauth_consumer_key:
+    parameter: --oauth-consumer-key
+    help: OAuth consumer key.
+  foreman_oauth_consumer_secret:
+    parameter: --oauth-consumer-secret
+    help: OAuth consumer secret.
+  pulp_rhsm_url:
+    parameter: --rhsm-url
+    help: RHSM URL for Pulp smart proxy content mirroring.
+  pulp_smart_proxy_auth_methods:
+    parameter: --smart-proxy-auth-methods
+    help: Authentication methods for Pulp smart proxy.
 
 constraints:
   required_together:

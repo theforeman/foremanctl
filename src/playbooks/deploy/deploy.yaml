@@ -1,7 +1,7 @@
 ---
-- name: Setup quadlet demo machine
+- name: Setup quadlet machine
   hosts:
-    - quadlet
+    - "{{ foremanctl_target | default('quadlet') }}"
   become: true
   vars_files:
     - "../../vars/defaults.yml"
@@ -17,8 +17,10 @@
     - role: checks
       vars:
         checks_databases: "{{ all_databases }}"
+    # TODO: Add tar_file check/extractation step for certificates_source == 'proxy'
     - role: certificates
       when: "certificates_source in ['default', 'custom_server']"
+    # TODO: remove proxy condition and add tar check
     - role: certificate_checks
       vars:
         certificate_checks_certificate: "{{ server_certificate }}"
@@ -26,12 +28,15 @@
         certificate_checks_ca: "{{ server_ca_certificate }}"
     - role: postgresql
       when:
-        - database_mode == 'internal'
+         - database_mode == 'internal'
     - valkey
-    - candlepin
+    - role: candlepin
+      when: enabled_features | has_feature('candlepin')
     - httpd
-    - pulp
-    - foreman
+    - role: pulp
+      when: enabled_features | has_feature('pulp')
+    - role: foreman
+      when: "'foreman' in enabled_features"
     - role: systemd_target
     - role: iop_core
       when:
@@ -43,4 +48,5 @@
     - role: hammer
       when:
         - "'hammer' in enabled_features"
-    - post_install
+    - role: post_install
+      when: "'foreman' in enabled_features"
