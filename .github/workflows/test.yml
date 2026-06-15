@@ -281,7 +281,7 @@ jobs:
           ./foremanctl health
       - name: Run tests
         run: |
-          ./forge test
+          ./forge test --pytest-args="--flavor=katello"
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
@@ -346,7 +346,7 @@ jobs:
             --add-feature remote-execution
       - name: Run tests
         run: |
-          ./forge test
+          ./forge test --pytest-args="--flavor=katello"
       - name: Run smoker
         run: |
           ./forge smoker

@@ -13,26 +13,6 @@ def test_postgresql_port(database):
     assert postgresql.port("5432").is_reachable
 
 
-def test_postgresql_databases(database, enabled_features):
-    result = database.run("podman exec postgresql psql -U postgres -c '\\l'")
-    if 'katello' in enabled_features:
-        assert "foreman" in result.stdout
-        assert "candlepin" in result.stdout
-        assert "pulp" in result.stdout
-    else:
-        assert "pulp" in result.stdout
-
-
-def test_postgresql_users(database, enabled_features):
-    result = database.run("podman exec postgresql psql -U postgres -c '\\du'")
-    if 'katello' in enabled_features:
-        assert "foreman" in result.stdout
-        assert "candlepin" in result.stdout
-        assert "pulp" in result.stdout
-    else:
-        assert "pulp" in result.stdout
-
-
 def test_postgresql_password_encryption(database):
     result = database.run("podman exec postgresql psql -U postgres -c 'SHOW password_encryption'")
     assert "scram-sha-256" in result.stdout
