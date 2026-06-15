@@ -58,3 +58,7 @@ bmc:
   description: Power management for bare metal hosts (IPMI, Redfish)
   foreman_proxy:
     plugin_name: bmc
+dns:
+  description: DNS management
+  foreman_proxy:
+    plugin_name: dns
