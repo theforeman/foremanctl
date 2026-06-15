@@ -18,6 +18,7 @@ from requests.adapters import HTTPAdapter
 SSH_CONFIG = './.tmp/ssh-config'
 OBSAH_STATE = os.environ.get('OBSAH_STATE', '.var/lib/foremanctl')
 PARAMETERS_FILE = os.path.join(OBSAH_STATE, 'parameters.yaml')
+FLAVOR_TESTS_DIR = py.path.local(__file__).dirpath() / 'flavor'
 
 
 class UserParameters:
@@ -46,6 +47,7 @@ class UserParameters:
 
 def pytest_addoption(parser):
     parser.addoption("--server-hostname", action="store", default="quadlet", help="Hostname of the server VM to test against")
+    parser.addoption("--flavor", action="store", default="katello", choices=('foreman', 'katello', 'foreman-proxy-content'), help="Deployment flavor")
 
 
 @pytest.fixture(scope="module")
@@ -61,6 +63,11 @@ def fixture_dir():
 @pytest.fixture(scope="module")
 def server_hostname(pytestconfig):
     return pytestconfig.getoption("server_hostname")
+
+
+@pytest.fixture(scope="module")
+def flavor(pytestconfig):
+    return pytestconfig.getoption("flavor")
 
 
 @pytest.fixture(scope="module")
@@ -249,6 +256,25 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "feature(name): mark a test as requiring a feature")
 
     config.user_parameters = UserParameters(config)
+
+
+def pytest_collection_modifyitems(config, items):
+    flavor = config.getoption("flavor")
+    active_flavor_dir = FLAVOR_TESTS_DIR / flavor
+
+    deselected = []
+    selected = []
+    for item in items:
+        test_path = py.path.local(item.fspath)
+        if test_path.relto(FLAVOR_TESTS_DIR):
+            if not test_path.relto(active_flavor_dir):
+                deselected.append(item)
+                continue
+        selected.append(item)
+
+    if deselected:
+        config.hook.pytest_deselected(items=deselected)
+        items[:] = selected
 
 
 def pytest_runtest_setup(item):

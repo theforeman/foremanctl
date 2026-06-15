@@ -396,7 +396,6 @@ jobs:
         run: |
           OBSAH_ALLOW_EXTRA_VARS=true ./foremanctl deploy \
             --flavor foreman-proxy-content \
-            --foreman-url https://quadlet.example.com \
             -e foremanctl_target=proxy
       - name: Run tests
         run: |
