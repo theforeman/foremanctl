@@ -6,6 +6,33 @@
       - yggdrasil-worker-forwarder
     disable_plugin: foreman-protector
 
+- name: Create cloud connector role
+  theforeman.foreman.role:
+    name: Cloud Connector
+    filters:
+      - permissions:
+          - dispatch_cloud_requests
+    server_url: "{{ cloud_connector_url }}"
+    username: "{{ cloud_connector_user }}"
+    password: "{{ cloud_connector_password }}"
+    ca_path: "{{ foreman_ca_certificate }}"
+    state: present
+
+- name: Create cloud connector service user
+  theforeman.foreman.user:
+    login: "{{ cloud_connector_service_user }}"
+    user_password: "{{ cloud_connector_service_password }}"
+    mail: "{{ cloud_connector_service_user }}@localhost"
+    auth_source: Internal
+    roles:
+      - Cloud Connector
+    admin: false
+    server_url: "{{ cloud_connector_url }}"
+    username: "{{ cloud_connector_user }}"
+    password: "{{ cloud_connector_password }}"
+    ca_path: "{{ foreman_ca_certificate }}"
+    state: present
+
 - name: Configure foreman-rh-cloud worker
   ansible.builtin.template:
     src: foreman_rh_cloud.toml.j2
