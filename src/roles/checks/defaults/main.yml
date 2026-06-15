@@ -1,2 +1,13 @@
 ---
 checks_databases: []
+checks_per_flavor:
+  katello:
+    - check_features
+    - check_hostname
+    - check_database_connection
+    - check_system_requirements
+
+  foreman-proxy-content:
+    - check_features
+    - check_hostname
+    - check_database_connection
