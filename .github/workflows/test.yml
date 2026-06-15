@@ -281,7 +281,7 @@ jobs:
           ./foremanctl health
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--flavor=katello"
+          ./forge test
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
@@ -346,7 +346,7 @@ jobs:
             --add-feature remote-execution
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--flavor=katello"
+          ./forge test
       - name: Run smoker
         run: |
           ./forge smoker
@@ -396,7 +396,6 @@ jobs:
         run: |
           OBSAH_ALLOW_EXTRA_VARS=true ./foremanctl deploy \
             --flavor foreman-proxy-content \
-            --foreman-url https://quadlet.example.com \
             -e foremanctl_target=proxy
       - name: Run tests
         run: |
