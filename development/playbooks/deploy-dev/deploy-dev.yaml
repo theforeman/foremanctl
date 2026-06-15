@@ -66,8 +66,8 @@
       when:
         - "'cloud-connector' in enabled_features"
       vars:
-        cloud_connector_user: "{{ foreman_development_admin_user }}"
-        cloud_connector_password: "{{ foreman_development_admin_password }}"
+        cloud_connector_admin_user: "{{ foreman_development_admin_user }}"
+        cloud_connector_admin_password: "{{ foreman_development_admin_password }}"
   post_tasks:
     - name: Stop Foreman development service
       ansible.builtin.include_role:

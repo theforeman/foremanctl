@@ -1,7 +1,7 @@
 ---
 cloud_connector_url: "https://{{ ansible_facts['fqdn'] }}"
-cloud_connector_user: admin
-cloud_connector_password: changeme # noqa: no-static-secrets
-cloud_connector_service_user: cloud_connector_user
+cloud_connector_admin_user: admin
+cloud_connector_admin_password: changeme # noqa: no-static-secrets
+cloud_connector_service_user: cloud_connector_admin_user
 cloud_connector_service_password: changeme # noqa: no-static-secrets
 cloud_connector_config_file: /etc/rhc/workers/foreman_rh_cloud.toml

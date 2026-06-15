@@ -13,8 +13,8 @@
       - permissions:
           - dispatch_cloud_requests
     server_url: "{{ cloud_connector_url }}"
-    username: "{{ cloud_connector_user }}"
-    password: "{{ cloud_connector_password }}"
+    username: "{{ cloud_connector_admin_user }}"
+    password: "{{ cloud_connector_admin_password }}"
     ca_path: "{{ foreman_ca_certificate }}"
     state: present
 
@@ -28,8 +28,8 @@
       - Cloud Connector
     admin: false
     server_url: "{{ cloud_connector_url }}"
-    username: "{{ cloud_connector_user }}"
-    password: "{{ cloud_connector_password }}"
+    username: "{{ cloud_connector_admin_user }}"
+    password: "{{ cloud_connector_admin_password }}"
     ca_path: "{{ foreman_ca_certificate }}"
     state: present
 
@@ -83,8 +83,8 @@
     name: rhc_instance_id
     value: "{{ cloud_connector_client_id }}"
     server_url: "{{ cloud_connector_url }}"
-    username: "{{ cloud_connector_user }}"
-    password: "{{ cloud_connector_password }}"
+    username: "{{ cloud_connector_admin_user }}"
+    password: "{{ cloud_connector_admin_password }}"
     ca_path: "{{ foreman_ca_certificate }}"
   vars:
     cloud_connector_client_id: "{{ cloud_connector_cert_output.stdout | regex_search('CN\\s?=\\s?([a-z0-9-]+)', '\\1') | first }}"
@@ -94,15 +94,15 @@
     name: allow_auto_inventory_upload
     value: true
     server_url: "{{ cloud_connector_url }}"
-    username: "{{ cloud_connector_user }}"
-    password: "{{ cloud_connector_password }}"
+    username: "{{ cloud_connector_admin_user }}"
+    password: "{{ cloud_connector_admin_password }}"
     ca_path: "{{ foreman_ca_certificate }}"
 
 - name: Announce to Sources
   ansible.builtin.uri:
     url: "{{ cloud_connector_url }}/api/v2/rh_cloud/announce_to_sources"
-    user: "{{ cloud_connector_user }}"
-    password: "{{ cloud_connector_password }}"
+    user: "{{ cloud_connector_admin_user }}"
+    password: "{{ cloud_connector_admin_password }}"
     method: POST
     ca_path: "{{ foreman_ca_certificate }}"
     force_basic_auth: true
