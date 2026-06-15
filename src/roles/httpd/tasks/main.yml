@@ -108,6 +108,15 @@
   notify:
     - Restart httpd
 
+- name: Configure rhsm-pulpcore vhost
+  ansible.builtin.template:
+    src: rhsm-pulpcore-vhost.conf.j2
+    dest: /etc/httpd/conf.d/rhsm-pulpcore.conf
+    mode: "0644"
+  when: httpd_with_pulp_mirror
+  notify:
+    - Restart httpd
+
 - name: Create systemd drop-in directory for httpd
   ansible.builtin.file:
     path: /etc/systemd/system/httpd.service.d
