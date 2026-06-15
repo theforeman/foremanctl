@@ -6,14 +6,6 @@
       - yggdrasil-worker-forwarder
     disable_plugin: foreman-protector
 
-- name: Create workers directory
-  ansible.builtin.file:
-    state: directory
-    path: /etc/rhc/workers
-    owner: root
-    group: root
-    mode: '0755'
-
 - name: Configure foreman-rh-cloud worker
   ansible.builtin.template:
     src: foreman_rh_cloud.toml.j2
@@ -60,32 +52,24 @@
   changed_when: false
 
 - name: Set rhc_instance_id in Foreman
-  ansible.builtin.uri:
-    url: "{{ cloud_connector_url }}/api/settings/rhc_instance_id"
-    user: "{{ cloud_connector_user }}"
+  theforeman.foreman.setting:
+    name: rhc_instance_id
+    value: "{{ cloud_connector_client_id }}"
+    server_url: "{{ cloud_connector_url }}"
+    username: "{{ cloud_connector_user }}"
     password: "{{ cloud_connector_password }}"
-    body:
-      setting:
-        value: "{{ cloud_connector_client_id }}"
-    method: PUT
     ca_path: "{{ foreman_ca_certificate }}"
-    force_basic_auth: true
-    body_format: json
   vars:
     cloud_connector_client_id: "{{ cloud_connector_cert_output.stdout | regex_search('CN\\s?=\\s?([a-z0-9-]+)', '\\1') | first }}"
 
 - name: Enable automatic inventory upload
-  ansible.builtin.uri:
-    url: "{{ cloud_connector_url }}/api/settings/allow_auto_inventory_upload"
-    user: "{{ cloud_connector_user }}"
+  theforeman.foreman.setting:
+    name: allow_auto_inventory_upload
+    value: true
+    server_url: "{{ cloud_connector_url }}"
+    username: "{{ cloud_connector_user }}"
     password: "{{ cloud_connector_password }}"
-    body:
-      setting:
-        value: true
-    method: PUT
     ca_path: "{{ foreman_ca_certificate }}"
-    force_basic_auth: true
-    body_format: json
 
 - name: Announce to Sources
   ansible.builtin.uri:
