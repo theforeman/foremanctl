@@ -1,3 +1,6 @@
 ---
 - name: Run post install tasks
   ansible.builtin.include_tasks: "{{ flavor }}.yaml"
+
+- name: Check for unrecognized Smart Proxy features
+  ansible.builtin.include_tasks: smart_proxy_features_check.yaml
