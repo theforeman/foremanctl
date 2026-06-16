@@ -10,3 +10,5 @@ variables:
     action: append_unique
     type: AbsolutePath
     parameter: --content-export-path
+  pulp_worker_count:
+    help: Number of Pulp workers. Defaults to 8 or the number of CPU cores, whichever is smaller.
