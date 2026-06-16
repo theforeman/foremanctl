@@ -1,11 +1,11 @@
 ---
 variables:
   foreman_proxy_bmc_ipmi_implementation:
-      parameter: --bmc-ipmi-implementation
-      help: IPMI implementation to use for BMC.
-      choices:
-        - freeipmi
-        - ipmitool
+    parameter: --bmc-ipmi-implementation
+    help: IPMI implementation to use for BMC.
+    choices:
+      - freeipmi
+      - ipmitool
   foreman_proxy_bmc_redfish_verify_ssl:
     parameter: --bmc-redfish-verify-ssl
     help: Verify SSL certificates for Redfish BMC connections.
