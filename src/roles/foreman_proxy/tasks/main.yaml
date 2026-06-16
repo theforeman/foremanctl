@@ -74,16 +74,6 @@
     oauth1_consumer_key: "{{ foreman_proxy_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ foreman_proxy_oauth_consumer_secret }}"
     ca_path: "{{ foreman_proxy_foreman_ca_certificate | default(omit) }}"
-  register: _foreman_proxy_registration
-
-- name: Warn about unrecognized Smart Proxy features
-  ansible.builtin.debug:
-    msg: >-
-      Proxy {{ foreman_proxy_name }} has features not recognized by Foreman:
-      {{ _foreman_proxy_registration.entity.smart_proxies[0].unrecognized_features | join(', ') }}.
-      If these features come from a Smart Proxy plugin, make sure Foreman has the plugin installed too.
-  when:
-    - _foreman_proxy_registration.entity.smart_proxies[0].unrecognized_features | default([]) | length > 0
 
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers

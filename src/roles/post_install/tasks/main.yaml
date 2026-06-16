@@ -14,3 +14,6 @@
     mode: '0640'
   delegate_to: localhost
   become: false
+
+- name: Check for unrecognized Smart Proxy features
+  ansible.builtin.include_tasks: smart_proxy_features_check.yaml

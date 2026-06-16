@@ -78,6 +78,27 @@
         name: foreman_development
         tasks_from: stop-server.yml
 
+    - name: Check for unrecognized Smart Proxy features
+      block:
+        - name: Get all registered Smart Proxies
+          theforeman.foreman.resource_info:
+            server_url: "{{ foreman_development_url }}"
+            username: "{{ foreman_development_admin_user }}"
+            password: "{{ foreman_development_admin_password }}"
+            resource: smart_proxies
+            full_details: true
+          register: _deploy_dev_smart_proxies
+
+        - name: Warn about unrecognized Smart Proxy features
+          ansible.builtin.debug:
+            msg: >-
+              Proxy {{ item.name }} has features not recognized by Foreman:
+              {{ item.unrecognized_features | join(', ') }}.
+              If these features come from a Smart Proxy plugin, make sure Foreman has the plugin installed too.
+          loop: "{{ _deploy_dev_smart_proxies.resources }}"
+          when:
+            - item.unrecognized_features | default([]) | length > 0
+
     - name: Display development environment information
       ansible.builtin.debug:
         msg: |
