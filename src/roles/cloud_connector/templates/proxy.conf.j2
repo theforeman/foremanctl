@@ -1,0 +1,3 @@
+[Service]
+Environment=HTTPS_PROXY={{ cloud_connector_http_proxy }}
+Environment=NO_PROXY={{ cloud_connector_url | ansible.builtin.urlsplit('hostname') }}

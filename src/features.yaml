@@ -50,6 +50,12 @@ rh-cloud:
   hammer: foreman_rh_cloud
   dependencies:
     - katello
+cloud-connector:
+  description: Cloud Connector for Red Hat Hybrid Cloud Console
+  dependencies:
+    - rh-cloud
+  conflicts:
+    - iop
 iop:
   description: iop services
   dependencies:
