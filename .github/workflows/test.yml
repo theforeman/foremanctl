@@ -391,15 +391,19 @@ jobs:
         run: ./setup-environment
       - name: Start VMs
         run: |
-          ./forge vms start --vms proxy
+          ./forge vms start
       - name: Run deployment
         run: |
           OBSAH_ALLOW_EXTRA_VARS=true ./foremanctl deploy \
             --flavor foreman-proxy-content \
-            -e foremanctl_target=proxy
+            -e foremanctl_target=content-proxy
+      - name: Deploy features
+        run: |
+          ./foremanctl deploy \
+            --add-feature remote-execution
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--server-hostname=proxy --flavor=foreman-proxy-content"
+          ./forge test --pytest-args="--server-hostname=content-proxy --flavor=foreman-proxy-content"
       - name: Archive smoker report
         if: ${{ always() }}
         uses: actions/upload-artifact@v7
