@@ -1,5 +1,5 @@
 ---
-- name: Setup quadlet machine
+- name: Setup machine
   hosts:
     - "{{ foremanctl_target | default('quadlet') }}"
   become: true
@@ -36,17 +36,16 @@
     - role: pulp
       when: enabled_features | has_feature('pulp')
     - role: foreman
-      when: "'foreman' in enabled_features"
+      when: enabled_features | has_feature('foreman')
     - role: systemd_target
     - role: iop_core
       when:
-        - "'iop' in enabled_features"
+        - enabled_features | has_feature('iop')
         - database_mode == 'internal'
     - role: foreman_proxy
       when:
-        - "'foreman-proxy' in enabled_features"
+        - enabled_features | has_feature('foreman-proxy')
     - role: hammer
       when:
-        - "'hammer' in enabled_features"
-    - role: post_install
-      when: "'foreman' in enabled_features"
+        - enabled_features | has_feature('hammer')
+    - post_install

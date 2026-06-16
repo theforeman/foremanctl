@@ -48,7 +48,7 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  config.vm.define "proxy" do |override|
+  config.vm.define "content-proxy" do |override|
     override.vm.box = "centos/stream9"
     override.vm.hostname = "proxy.#{DOMAIN}"
 
