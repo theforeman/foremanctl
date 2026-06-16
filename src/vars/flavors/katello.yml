@@ -7,3 +7,9 @@ flavor_features:
   - content/deb
   - content/python
   - content/rpm
+
+checks_to_execute:
+  - check_features
+  - check_hostname
+  - check_database_connection
+  - check_system_requirements

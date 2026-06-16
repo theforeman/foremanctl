@@ -1,0 +1,22 @@
+---
+variables:
+  foreman_proxy_bmc_ipmi_implementation:
+      parameter: --bmc-ipmi-implementation
+      help: IPMI implementation to use for BMC.
+      choices:
+        - freeipmi
+        - ipmitool
+  foreman_proxy_bmc_redfish_verify_ssl:
+    parameter: --bmc-redfish-verify-ssl
+    help: Verify SSL certificates for Redfish BMC connections.
+    type: Boolean
+  foreman_proxy_foreman_server_url:
+    parameter: --foreman-base-url
+    help: URL of Base Foreman server this proxy connects to.
+  foreman_proxy_trusted_hosts:
+    help: FQDN of a host trusted by the proxy.
+    action: append_unique
+  foreman_proxy_oauth_consumer_key:
+    help: OAuth key to be used for REST interaction.
+  foreman_proxy_oauth_consumer_secret:
+    help: OAuth secret to be used for REST interaction.

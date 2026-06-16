@@ -1,5 +1,5 @@
 ---
-- name: Setup quadlet machine
+- name: Setup machine
   hosts:
     - "{{ foremanctl_target | default('quadlet') }}"
   become: true
@@ -48,4 +48,3 @@
       when:
         - "'hammer' in enabled_features"
     - role: post_install
-      when: "'foreman' in enabled_features"
