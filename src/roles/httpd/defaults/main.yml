@@ -6,8 +6,6 @@ httpd_pub_dir: /var/www/html/pub
 httpd_enabled_pulp_snippets: []
 
 httpd_proxy_foreman_url: "{{ foreman_proxy_foreman_server_url }}"
-httpd_client_certificate: "{{ client_certificate }}"
-httpd_client_key: "{{ client_key }}"
 
 # MPM event module defaults
 httpd_server_limit: 25

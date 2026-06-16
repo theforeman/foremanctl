@@ -7,3 +7,8 @@ flavor_features:
   - content/python
 
 pulp_mirror: true
+
+checks_to_execute:
+  - check_features
+  - check_hostname
+  - check_database_connection

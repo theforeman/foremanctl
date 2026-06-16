@@ -1,7 +1,7 @@
 ---
 - name: Execute checks
   ansible.builtin.include_tasks: execute_check.yml
-  loop: "{{ checks_per_flavor[flavor] | default(checks_per_flavor['katello']) }}"
+  loop: "{{ checks_to_execute }}"
 
 - name: Run database index integrity checks
   ansible.builtin.include_role:
