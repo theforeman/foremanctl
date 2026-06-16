@@ -1,0 +1,7 @@
+---
+include:
+  - _certificate_source
+  - _certificate_validity
+  - _certificates_custom
+  - _pulp
+  - _foreman_proxy
