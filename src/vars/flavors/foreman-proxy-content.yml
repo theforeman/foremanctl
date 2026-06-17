@@ -12,3 +12,8 @@ checks_to_execute:
   - check_features
   - check_hostname
   - check_database_connection
+
+health_checks_to_execute:
+  - check_hostname
+  - check_database_connection
+  - check_services
