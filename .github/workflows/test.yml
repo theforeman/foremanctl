@@ -391,7 +391,7 @@ jobs:
         run: ./setup-environment
       - name: Start VMs
         run: |
-          ./forge vms start
+          ./forge vms start --vms "content-proxy quadlet"
       - name: Run deployment
         run: |
           OBSAH_ALLOW_EXTRA_VARS=true ./foremanctl deploy \
