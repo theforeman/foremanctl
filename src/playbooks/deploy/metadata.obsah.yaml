@@ -13,4 +13,4 @@ variables:
 
 include:
   - _flavor_features
-  - _flavors/{{ flavor }}
+  - _flavors/katello
