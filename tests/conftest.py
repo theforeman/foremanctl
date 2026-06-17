@@ -56,6 +56,11 @@ def enabled_features(pytestconfig):
 
 
 @pytest.fixture(scope="module")
+def available_features(pytestconfig):
+    return pytestconfig.user_parameters.available_features
+
+
+@pytest.fixture(scope="module")
 def fixture_dir():
     return py.path.local(__file__).realpath() / '..' / 'fixtures'
 
