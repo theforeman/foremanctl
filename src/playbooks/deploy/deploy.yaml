@@ -27,11 +27,15 @@
     - role: postgresql
       when:
         - database_mode == 'internal'
-    - redis
-    - candlepin
+    - role: redis
+      when: "'foreman' in enabled_features or 'katello' in enabled_features"
+    - role: candlepin
+      when: "'katello' in enabled_features"
     - httpd
-    - pulp
-    - foreman
+    - role: pulp
+      when: "'katello' in enabled_features"
+    - role: foreman
+      when: "'foreman' in enabled_features"
     - role: systemd_target
     - role: iop_core
       when:
