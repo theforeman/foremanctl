@@ -20,8 +20,8 @@
     # TODO: Add tar_file check/extractation step for certificates_source == 'proxy'
     - role: certificates
       when: "certificates_source in ['default', 'custom_server']"
-    # TODO: remove proxy condition and add tar check
     - role: certificate_checks
+      when: certificates_generate | default(true)
       vars:
         certificate_checks_certificate: "{{ server_certificate }}"
         certificate_checks_key: "{{ server_key }}"
