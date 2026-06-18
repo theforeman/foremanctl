@@ -35,7 +35,9 @@
 
 - name: Issue host certificates
   ansible.builtin.include_tasks: host.yml
-  when: certificates_hostnames is defined
+  when:
+    - certificates_hostnames is defined
+    - certificates_generate
   with_items: "{{ certificates_hostnames }}"
   loop_control:
     loop_var: certificates_hostname
