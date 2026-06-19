@@ -12,6 +12,7 @@
   environment:
     PGPASSWORD: "{{ item.password }}"
   loop: "{{ backup_databases_config }}"
+  no_log: true
   loop_control:
     label: "{{ item.name }}"
   changed_when: true
