@@ -15,7 +15,7 @@ jobs:
     name: Build the tarball
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         # the "ref: github.ref" is required for the tag to be properly checked out, as a workaround
         # for https://github.com/actions/checkout/issues/1638
         with:
