@@ -31,7 +31,9 @@
 
 - name: 'Generate CA certificate'
   ansible.builtin.include_tasks: ca.yml
-  when: certificates_ca
+  when:
+    - certificates_ca
+    - certificates_generate
 
 - name: Issue host certificates
   ansible.builtin.include_tasks: host.yml
@@ -41,6 +43,12 @@
   with_items: "{{ certificates_hostnames }}"
   loop_control:
     loop_var: certificates_hostname
+
+- name: Extract proxy certificate bundle
+  ansible.builtin.include_tasks: proxy.yml
+  when:
+    - not certificates_generate
+    - certificate_tar_file is defined
 
 - name: Create CA bundle with internal CA and custom server CA
   ansible.builtin.assemble:

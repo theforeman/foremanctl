@@ -17,7 +17,6 @@
     - role: checks
       vars:
         checks_databases: "{{ all_databases }}"
-    # TODO: Add tar_file check/extractation step for certificates_source == 'proxy'
     - role: certificates
       when: "certificates_source in ['default', 'custom_server']"
     - role: certificate_checks

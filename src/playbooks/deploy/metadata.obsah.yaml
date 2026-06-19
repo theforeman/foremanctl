@@ -14,3 +14,4 @@ variables:
 include:
   - _flavor_features
   - _flavors/katello
+  - _certificates_proxy # Temporary until we dynamically include correct _flavors/*

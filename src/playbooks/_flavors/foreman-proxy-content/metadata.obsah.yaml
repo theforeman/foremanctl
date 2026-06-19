@@ -3,5 +3,6 @@ include:
   - _certificate_source
   - _certificate_validity
   - _certificates_custom
+  - _certificates_proxy
   - _pulp
   - _foreman_proxy
