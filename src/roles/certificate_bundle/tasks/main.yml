@@ -42,6 +42,13 @@
         remote_src: true
         mode: '0444'
 
+    - name: Copy CA bundle
+      ansible.builtin.copy:
+        src: "{{ certificate_bundle_ca_bundle }}"
+        dest: "{{ certificate_bundle_build_directory.path }}/certs/certs/ca-bundle.crt"
+        remote_src: true
+        mode: '0444'
+
     - name: Copy server certificate
       ansible.builtin.copy:
         src: "{{ certificate_bundle_server_certificate }}"
