@@ -93,4 +93,5 @@
   vars:
     check_database_index_database: "{{ item.database }}"
   loop: "{{ backup_databases }}"
+  no_log: true
   when: backup_database_mode == 'internal'

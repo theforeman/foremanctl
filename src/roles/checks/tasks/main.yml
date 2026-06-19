@@ -13,6 +13,7 @@
   vars:
     check_database_index_database: "{{ item.database }}"
   loop: "{{ checks_databases }}"
+  no_log: true
   when: database_mode == 'internal'
 
 - name: Report status of checks
