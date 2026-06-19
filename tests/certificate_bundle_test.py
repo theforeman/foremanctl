@@ -8,6 +8,7 @@ TARBALL = f'/var/lib/foremanctl/certs/bundles/{HOSTNAME}.tar.gz'
 EXPECTED_CA_FILES = [
     'certs/certs/ca.crt',
     'certs/certs/server-ca.crt',
+    'certs/certs/ca-bundle.crt',
 ]
 
 EXPECTED_SERVER_FILES = [

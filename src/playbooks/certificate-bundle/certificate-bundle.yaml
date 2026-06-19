@@ -22,6 +22,7 @@
     - role: certificate_bundle
       vars:
         certificate_bundle_hostname: "{{ hostname }}"
+        certificate_bundle_ca_bundle: "{{ ca_bundle }}"
         certificate_bundle_ca_certificate: "{{ ca_certificate }}"
         certificate_bundle_server_ca_certificate: "{{ server_ca_certificate }}"
         certificate_bundle_server_certificate: "{{ certificates_ca_directory }}/hosts/{{ hostname }}/certs/{{ hostname }}.crt"
