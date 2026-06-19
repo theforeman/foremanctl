@@ -1,7 +1,7 @@
 [Unit]
 Description=Foreman Development Server
-After=redis.service postgresql.service
-Wants=redis.service postgresql.service
+After=valkey.service postgresql.service
+Wants=valkey.service postgresql.service
 
 [Service]
 Type=simple

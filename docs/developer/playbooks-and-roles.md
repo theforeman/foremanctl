@@ -34,7 +34,7 @@ Each directory under `playbooks/` becomes a CLI subcommand (e.g. `foremanctl dep
 Roles live under `src/roles/` (production) and `development/roles/` (development).
 
 - Use **lowercase with underscores** as separators: `postgresql`, `foreman_proxy`, `post_install`, `foreman_development`.
-- Name roles after the service or concern they manage: `redis`, `httpd`, `certificates`, `systemd_target`.
+- Name roles after the service or concern they manage: `valkey`, `httpd`, `certificates`, `systemd_target`.
 
 ## Shared Metadata Fragments
 

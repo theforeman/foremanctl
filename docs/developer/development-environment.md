@@ -6,7 +6,7 @@ This document describes how to set up and use the Foreman development environmen
 
 The development environment provides:
 - Git-based Foreman installation (cloned from GitHub)
-- Containerized backend services (PostgreSQL, Redis, Candlepin, Pulp, Apache HTTP Server)
+- Containerized backend services (PostgreSQL, Valkey, Candlepin, Pulp, Apache HTTP Server)
 - Plugin support with registry system
 - Development-specific configurations
 - Direct Rails server access for debugging
@@ -128,7 +128,7 @@ After deployment, the environment includes:
 
 The development environment integrates:
 - **Apache HTTP Server**: Provides HTTPS proxy to the Rails development server
-- **Backend Services**: All services (PostgreSQL, Redis, Candlepin, Pulp) run in containers
+- **Backend Services**: All services (PostgreSQL, Valkey, Candlepin, Pulp) run in containers
 - **Rails Development Server**: Runs directly on the VM for live debugging and development
 - **Pulp Smart Proxy Registration**: Automatically configures Pulp integration during deployment
 - **Hammer CLI**: Automatically sets up hammer for development, if `hammer` feature was enabled

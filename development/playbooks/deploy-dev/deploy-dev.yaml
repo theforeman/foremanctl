@@ -42,7 +42,7 @@
     - role: pre_install
     - role: certificates
     - role: postgresql
-    - role: redis
+    - role: valkey
     - role: candlepin
     - role: httpd
     - role: pulp

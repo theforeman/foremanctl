@@ -1,25 +1,28 @@
 ---
-- name: Deploy redis image
+- name: Deploy valkey image
   ansible.builtin.include_tasks: image.yaml
 
-- name: Create directory for Redis data
+- name: Cleanup Redis
+  ansible.builtin.include_tasks: cleanup_redis.yaml
+
+- name: Create directory for Valkey data
   ansible.builtin.file:
-    path: /var/lib/redis
+    path: /var/lib/valkey
     state: directory
     owner: 1001
     group: 1001
     mode: '0755'
 
-- name: Run Redis as a container
+- name: Run Valkey as a container
   containers.podman.podman_container:
-    name: redis
-    image: redis.image
+    name: valkey
+    image: valkey.image
     state: quadlet
     network: host
     sdnotify: true
-    command: ["run-redis", "--supervised", "systemd"]
+    command: ["run-valkey", "--supervised", "systemd"]
     volumes:
-      - /var/lib/redis:/data:rw,Z
+      - /var/lib/valkey:/data:rw,Z
     quadlet_options:
       - |
         [Install]
@@ -31,7 +34,7 @@
   ansible.builtin.systemd:
     daemon_reload: true
 
-- name: Start the Redis Service
+- name: Start the Valkey Service
   ansible.builtin.systemd:
-    name: redis
+    name: valkey
     state: started

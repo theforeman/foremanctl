@@ -139,7 +139,7 @@ For example:
 
 ```python
 def test_service_running(server):
-    assert server.service("redis").is_running
+    assert server.service("valkey").is_running
 
 
 def test_service_port(server):
