@@ -19,7 +19,7 @@
         - foreman
         - candlepin
         - pulp
-        - redis
+        - valkey
 
     - name: Deploy database image units
       ansible.builtin.include_role:

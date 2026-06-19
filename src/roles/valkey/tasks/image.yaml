@@ -1,0 +1,9 @@
+---
+- name: Deploy valkey image unit
+  ansible.builtin.include_role:
+    name: images
+    tasks_from: deploy_image.yaml
+  vars:
+    images_definition:
+      name: valkey
+      image: "{{ valkey_container_image }}:{{ valkey_container_tag }}"

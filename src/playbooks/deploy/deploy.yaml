@@ -27,7 +27,7 @@
     - role: postgresql
       when:
         - database_mode == 'internal'
-    - redis
+    - valkey
     - candlepin
     - httpd
     - pulp

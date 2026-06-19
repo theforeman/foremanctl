@@ -1,0 +1,36 @@
+---
+- name: Populate service facts
+  ansible.builtin.service_facts:
+
+- name: Stop Redis service
+  ansible.builtin.service:
+    name: redis
+    state: stopped
+  when: ansible_facts['services']['redis.service']['status'] | default('not-found') != 'not-found'
+
+- name: Remove Redis package
+  ansible.builtin.package:
+    name: redis
+    state: absent
+
+- name: Remove Redis image
+  ansible.builtin.file:
+    path: /etc/containers/systemd/redis.image
+    state: absent
+
+- name: Remove Redis image drop-in directory
+  ansible.builtin.file:
+    path: /etc/containers/systemd/redis.image.d
+    state: absent
+
+- name: Remove Redis container
+  ansible.builtin.file:
+    path: /etc/containers/systemd/redis.container
+    state: absent
+  register: _valkey_remove_redis_container
+
+- name: Run daemon reload # noqa: no-handler
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when:
+    - _valkey_remove_redis_container is changed

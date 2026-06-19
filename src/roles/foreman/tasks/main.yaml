@@ -134,8 +134,8 @@
         WantedBy=default.target foreman.target
         [Unit]
         PartOf=foreman.target
-        Wants=redis.service postgresql.service candlepin.service
-        After=redis.service postgresql.service candlepin.service
+        Wants=valkey.service postgresql.service candlepin.service
+        After=valkey.service postgresql.service candlepin.service
         Requires=foreman-db-migrate.service
         After=foreman-db-migrate.service
   notify: Restart foreman
@@ -172,8 +172,8 @@
         WantedBy=default.target foreman.target
         [Unit]
         PartOf=foreman.target
-        Wants=redis.service postgresql.service
-        After=redis.service postgresql.service
+        Wants=valkey.service postgresql.service
+        After=valkey.service postgresql.service
         Requires=foreman-db-migrate.service
         After=foreman-db-migrate.service
       - |

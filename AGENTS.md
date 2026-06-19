@@ -119,7 +119,7 @@ See [docs/developer/playbooks-and-roles.md](docs/developer/playbooks-and-roles.m
 
 Roles in `src/roles/` correspond to services and deployment stages:
 
-- Service roles: `foreman`, `pulp`, `candlepin`, `postgresql`, `redis`, `httpd`
+- Service roles: `foreman`, `pulp`, `candlepin`, `postgresql`, `valkey`, `httpd`
 - Feature roles: `hammer`, `foreman_proxy`
 - Infrastructure: `certificates`, `systemd_target`
 - Lifecycle: `pre_install`, `post_install`
