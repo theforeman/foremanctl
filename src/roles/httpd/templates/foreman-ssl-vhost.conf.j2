@@ -53,7 +53,9 @@
   <Location "/pulpcore_registry/v2/">
     RequestHeader unset REMOTE_USER
     RequestHeader unset REMOTE-USER
-    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_facts['fqdn'] }}'"
+    {% for httpd_pulp_trusted_host in httpd_pulp_trusted_hosts %}
+    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ httpd_pulp_trusted_host }}'"
+    {% endfor %}
     ProxyPass {{ httpd_pulp_api_backend }}/v2/
     ProxyPassReverse {{ httpd_pulp_api_backend }}/v2/
   </Location>
@@ -75,7 +77,9 @@
   <Location "/pulp/api/v3">
     RequestHeader unset REMOTE_USER
     RequestHeader unset REMOTE-USER
-    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_facts['fqdn'] }}'"
+    {% for httpd_pulp_trusted_host in httpd_pulp_trusted_hosts %}
+    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ httpd_pulp_trusted_host }}'"
+    {% endfor %}
     ProxyPass {{ httpd_pulp_api_backend }}/pulp/api/v3 timeout=600
     ProxyPassReverse {{ httpd_pulp_api_backend }}/pulp/api/v3
   </Location>

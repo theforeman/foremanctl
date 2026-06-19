@@ -45,12 +45,12 @@
     - role: redis
     - role: candlepin
     - role: httpd
-    - role: pulp
     - role: foreman_development
       vars:
         foreman_development_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
         foreman_development_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
         foreman_development_candlepin_oauth_secret: "{{ candlepin_oauth_secret }}"
+    - role: pulp
     - role: iop_core
       when:
         - "'iop' in enabled_features"

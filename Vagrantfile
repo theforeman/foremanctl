@@ -30,6 +30,20 @@ Vagrant.configure("2") do |config|
     end
   end
 
+  config.vm.define "proxy" do |override|
+    override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream9")
+    if override.vm.box == "centos/stream10"
+      override.vm.box_url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box"
+    end
+    override.vm.hostname = "proxy.#{DOMAIN}"
+
+    override.vm.provider "libvirt" do |libvirt, provider|
+      libvirt.memory = 10240
+      libvirt.cpus = 4
+      libvirt.machine_virtual_size = 30
+    end
+  end
+
   config.vm.define "client" do |override|
     override.vm.box = "centos/stream9"
     override.vm.hostname = "client.#{DOMAIN}"

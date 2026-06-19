@@ -104,7 +104,7 @@ jobs:
         run: ./setup-environment
       - name: Start VMs
         run: |
-          ./forge vms start --vms "quadlet client ${{ matrix.database == 'external' && 'database' || '' }}"
+          ./forge vms start --vms "quadlet proxy client ${{ matrix.database == 'external' && 'database' || '' }}"
       - name: Configure remote-database
         if: matrix.database == 'external'
         run: |
@@ -116,6 +116,7 @@ jobs:
         if: matrix.certificate_source == 'custom_server'
         run: |
           ./forge custom-certs
+          ./forge custom-certs --hostname proxy.example.com
       - name: Setup security mode ${{ matrix.security }}
         if: matrix.security != 'none'
         run: |
@@ -153,6 +154,16 @@ jobs:
             --add-feature remote-execution \
             --add-feature bmc \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
+      - name: Build certs bundle for proxy
+        run: |
+          ./foremanctl certificate-bundle proxy.example.com \
+            ${{ matrix.certificate_source == 'custom_server' && '--certificate-server-certificate /root/custom-certificates/certs/proxy.example.com.crt --certificate-server-key /root/custom-certificates/private/proxy.example.com.key' || '' }}
+      - name: Deploy proxy
+        run: |
+          ./forge fetch-bundle proxy.example.com
+          ./foremanctl deploy-node \
+            --certificate-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
+            --foreman-name quadlet.example.com
       - name: Run tests
         run: |
           ./forge test --pytest-args="--database-mode=${{ matrix.database }}"
