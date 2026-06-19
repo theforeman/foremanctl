@@ -71,10 +71,10 @@ pulp_settings_other_env:
   PULP_REMOTE_USER_ENVIRON_NAME: "HTTP_REMOTE_USER"
   PULP_REST_FRAMEWORK__DEFAULT_AUTHENTICATION_CLASSES: >-
     ['rest_framework.authentication.SessionAuthentication', 'pulpcore.app.authentication.PulpRemoteUserAuthentication']
-  SMART_PROXY_PULP_URL: "{{ pulp_pulp_url }}"
-  SMART_PROXY_MIRROR: "{{ pulp_mirror }}"
-  SMART_PROXY_RHSM_URL: "{{ pulp_rhsm_url }}"
-  SMART_PROXY_AUTH_METHODS: ['client_certificate']
+  PULP_SMART_PROXY_PULP_URL: "{{ pulp_pulp_url }}"
+  PULP_SMART_PROXY_MIRROR: "{{ pulp_mirror }}"
+  PULP_SMART_PROXY_RHSM_URL: "{{ pulp_rhsm_url }}"
+  PULP_SMART_PROXY_AUTH_METHODS: ['client_certificate']
   PULP_API_WORKERS: "{{ pulp_api_service_worker_count }}"
   PULP_CONTENT_WORKERS: "{{ pulp_content_service_worker_count }}"
   PULP_TOKEN_AUTH_DISABLED: "true"
