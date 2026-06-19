@@ -1,6 +1,16 @@
 <VirtualHost *:443>
   ServerName {{ ansible_facts['fqdn'] }}
 
+  ## SSL directives
+  SSLEngine on
+  SSLCertificateFile      "{{ httpd_ssl_dir }}/certs/katello-apache.crt"
+  SSLCertificateKeyFile   "{{ httpd_ssl_dir }}/private/katello-apache.key"
+  SSLCertificateChainFile "{{ httpd_ssl_dir }}/certs/katello-server-ca.crt"
+  SSLVerifyClient         optional
+  SSLVerifyDepth          10
+  SSLCACertificateFile    "{{ httpd_ssl_dir }}/certs/katello-default-ca.crt"
+  SSLOptions +StdEnvVars +ExportCertData
+
   ## Logging
   ErrorLog "/var/log/httpd/rhsm-pulpcore_error.log"
   ServerSignature Off
@@ -28,7 +38,7 @@
     RequestHeader unset REMOTE_USER
     RequestHeader unset REMOTE-USER
     RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_facts['fqdn'] }}'"
-    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ httpd_proxy_foreman_url }}'"
+    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ httpd_proxy_foreman_fqdn }}'"
     ProxyPass {{ httpd_pulp_api_backend }}/v2/
     ProxyPassReverse {{ httpd_pulp_api_backend }}/v2/
   </Location>
@@ -47,7 +57,7 @@
     RequestHeader unset REMOTE_USER
     RequestHeader unset REMOTE-USER
     RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_facts['fqdn'] }}'"
-    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ httpd_proxy_foreman_url }}'"
+    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ httpd_proxy_foreman_fqdn }}'"
     ProxyPass {{ httpd_pulp_api_backend }}/pulp/api/v3 timeout=600
     ProxyPassReverse {{ httpd_pulp_api_backend }}/pulp/api/v3
   </Location>
