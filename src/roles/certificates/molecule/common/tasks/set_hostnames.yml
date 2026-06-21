@@ -1,0 +1,6 @@
+---
+- name: Set certificate hostnames from VM FQDN
+  ansible.builtin.set_fact:
+    certificates_hostnames:
+      - "{{ ansible_facts['fqdn'] }}"
+      - localhost

@@ -1,0 +1,45 @@
+---
+dependency:
+  name: galaxy
+  options:
+    requirements-file: ${MOLECULE_PROJECT_DIRECTORY}/../../requirements.yml
+
+driver:
+  name: podman
+
+platforms:
+  - name: quadlet
+    image: registry.access.redhat.com/ubi9/ubi
+    volumes:
+      - "${MOLECULE_PROJECT_DIRECTORY}/../../../:/vagrant:Z"
+    tmpfs:
+      /tmp: exec
+      /run: rw,noexec,nosuid,nodev
+
+provisioner:
+  name: ansible
+  env:
+    ANSIBLE_COLLECTIONS_PATH: ${MOLECULE_PROJECT_DIRECTORY}/../../../build/collections/foremanctl
+    ANSIBLE_COLLECTIONS_SCAN_SYS_PATH: "false"
+  inventory:
+    group_vars:
+      all:
+        certificates_ca_password: molecule-test-password
+  config_options:
+    defaults:
+      roles_path: ${MOLECULE_PROJECT_DIRECTORY}/..
+
+verifier:
+  name: ansible
+
+scenario:
+  test_sequence:
+    - cleanup
+    - destroy
+    - syntax
+    - create
+    - converge
+    - idempotence
+    - verify
+    - cleanup
+    - destroy

@@ -1,0 +1,36 @@
+---
+- name: Verify CA certificate subject
+  ansible.builtin.command:
+    cmd: >-
+      openssl x509 -in {{ certificates_ca_directory_certs }}/ca.crt
+      -noout -subject
+  register: certificates_ca_subject
+  changed_when: false
+  failed_when: "'Foreman Self-signed CA' not in certificates_ca_subject.stdout"
+
+- name: Verify server certificate chains to CA
+  ansible.builtin.command:
+    cmd: >-
+      openssl verify -CAfile {{ certificates_ca_directory_certs }}/ca.crt
+      {{ certificates_ca_directory_certs }}/{{ certificates_test_hostname }}.crt
+  register: certificates_server_verify
+  changed_when: false
+  failed_when: "'OK' not in certificates_server_verify.stdout"
+
+- name: Verify client certificate chains to CA
+  ansible.builtin.command:
+    cmd: >-
+      openssl verify -CAfile {{ certificates_ca_directory_certs }}/ca.crt
+      {{ certificates_ca_directory_certs }}/{{ certificates_test_hostname }}-client.crt
+  register: certificates_client_verify
+  changed_when: false
+  failed_when: "'OK' not in certificates_client_verify.stdout"
+
+- name: Verify localhost server certificate chains to CA
+  ansible.builtin.command:
+    cmd: >-
+      openssl verify -CAfile {{ certificates_ca_directory_certs }}/ca.crt
+      {{ certificates_ca_directory_certs }}/localhost.crt
+  register: certificates_localhost_verify
+  changed_when: false
+  failed_when: "'OK' not in certificates_localhost_verify.stdout"
