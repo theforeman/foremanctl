@@ -245,7 +245,6 @@
         Type=oneshot
         RemainAfterExit=yes
         TimeoutStartSec=10m
-  when: not pulp_mirror
 
 - name: Run daemon reload to load service files
   ansible.builtin.systemd:

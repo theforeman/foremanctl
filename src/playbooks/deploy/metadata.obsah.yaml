@@ -3,6 +3,10 @@ help: |
   Install
 
 variables:
+  flavor:
+    help: Base flavor to use in this deployment.
+    choices:
+      - katello
   external_authentication:
     help: External authentication method to use
     choices:
@@ -14,4 +18,3 @@ variables:
 include:
   - _flavor_features
   - _flavors/katello
-  - _certificates_proxy # Temporary until we dynamically include correct _flavors/*

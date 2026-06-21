@@ -17,4 +17,3 @@ certificates_ca_validity_days: 7300
 certificates_validity_days: 7300
 certificates_renew: false
 certificates_renew_ca: false
-certificates_generate: true

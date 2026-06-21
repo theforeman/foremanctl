@@ -1,7 +1,7 @@
 ---
 - name: Pull images
   hosts:
-    - "{{ foremanctl_target | default('quadlet') }}"
+    - quadlet
   vars_files:
     - "../../vars/defaults.yml"
     - "../../vars/flavors/{{ flavor }}.yml"

@@ -7,7 +7,6 @@ flavor_features:
   - content/python
 
 pulp_mirror: true
-certificates_generate: false
 
 checks_to_execute:
   - check_features

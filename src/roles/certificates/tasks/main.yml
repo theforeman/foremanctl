@@ -29,33 +29,34 @@
     state: directory
     mode: '0755'
 
-- name: 'Generate CA certificate'
-  ansible.builtin.include_tasks: ca.yml
-  when:
-    - certificates_ca
-    - certificates_generate
+- name: 'Generate certificates'
+  when: certificates_bundle is not defined
+  block:
+    - name: 'Generate CA certificate'
+      ansible.builtin.include_tasks: ca.yml
+      when:
+        - certificates_ca
 
-- name: Issue host certificates
-  ansible.builtin.include_tasks: host.yml
-  when:
-    - certificates_hostnames is defined
-    - certificates_generate
-  with_items: "{{ certificates_hostnames }}"
-  loop_control:
-    loop_var: certificates_hostname
+    - name: Issue host certificates
+      ansible.builtin.include_tasks: host.yml
+      when:
+        - certificates_hostnames is defined
+      with_items: "{{ certificates_hostnames }}"
+      loop_control:
+        loop_var: certificates_hostname
 
-- name: Extract proxy certificate bundle
-  ansible.builtin.include_tasks: proxy.yml
-  when:
-    - not certificates_generate
-    - certificate_tar_file is defined
+    - name: Create CA bundle with internal CA and custom server CA
+      ansible.builtin.assemble:
+        src: "{{ certificates_ca_directory_certs }}"
+        dest: "{{ certificates_ca_directory_certs }}/ca-bundle.crt"
+        regexp: '(ca|server-ca)\.crt$'
+        mode: '0444'
+      when:
+        - certificates_source == 'custom_server'
+        - certificates_custom_server_certificate is defined
 
-- name: Create CA bundle with internal CA and custom server CA
-  ansible.builtin.assemble:
-    src: "{{ certificates_ca_directory_certs }}"
-    dest: "{{ certificates_ca_directory_certs }}/ca-bundle.crt"
-    regexp: '(ca|server-ca)\.crt$'
-    mode: '0444'
-  when:
-    - certificates_source == 'custom_server'
-    - certificates_custom_server_certificate is defined
+- name: 'Consume certs'
+  when: certificates_bundle is defined
+  block:
+    - name: Extract proxy certificate bundle
+      ansible.builtin.include_tasks: extract.yml

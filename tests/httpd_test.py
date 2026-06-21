@@ -67,6 +67,7 @@ def test_https_pulp_auth(server, certificates, server_fqdn):
     assert cmd.stdout == '200'
 
 
+@pytest.mark.feature('katello')
 def test_https_pypi_endpoint(server, certificates, server_fqdn):
     cmd = server.run(f"curl --cacert {certificates['server_ca_certificate']} https://{server_fqdn}/pypi/test/")
     assert cmd.succeeded

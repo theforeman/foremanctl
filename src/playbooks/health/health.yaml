@@ -1,6 +1,6 @@
 ---
 - name: Run Foreman health checks
-  hosts: "{{ foremanctl_target | default('quadlet') }}"
+  hosts: quadlet
   become: true
   gather_facts: true
   vars_files:
