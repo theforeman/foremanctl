@@ -1,7 +1,7 @@
 ---
 - name: Install test dependencies
   hosts:
-    - "{{ foremanctl_target | default('quadlet') }}"
+    - quadlet
   become: true
   tasks:
     - name: Install testing dependencies

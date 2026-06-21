@@ -1,7 +1,7 @@
 ---
-- name: Setup machine
+- name: Setup proxy machine
   hosts:
-    - quadlet
+    - proxy
   become: true
   vars_files:
     - "../../vars/defaults.yml"
@@ -27,20 +27,9 @@
     - role: postgresql
       when:
         - database_mode == 'internal'
-    - valkey
-    - candlepin
+    - redis
     - httpd
     - pulp
-    - foreman
-    - role: systemd_target
-    - role: iop_core
-      when:
-        - "'iop' in enabled_features"
-        - database_mode == 'internal'
-    - role: foreman_proxy
-      when:
-        - "'foreman-proxy' in enabled_features"
-    - role: hammer
-      when:
-        - "'hammer' in enabled_features"
+    - systemd_target
+    - foreman_proxy
     - post_install
