@@ -1,0 +1,13 @@
+#!/bin/sh
+
+RED=$(tput setaf 1 2>/dev/null)
+RESET=$(tput sgr0 2>/dev/null)
+
+if grep -q "ipv6.disable=1" /proc/cmdline ; then
+  echo "${RED}FAIL${RESET}: The kernel contains ipv6.disable=1 which breaks installation and upgrade."
+  echo "Remove this boot parameter and reboot before continuing."
+  exit 2
+fi
+
+echo "IPv6 check: OK"
+exit 0
