@@ -23,6 +23,9 @@
     image: postgresql.image
     state: quadlet
     healthcheck: pg_isready
+    health_startup_cmd: pg_isready
+    health_startup_interval: 5s
+    health_on_failure: kill
     sdnotify: healthy
     network: host
     volumes:
@@ -39,6 +42,9 @@
         WantedBy=default.target foreman.target
         [Unit]
         PartOf=foreman.target
+        After=foreman.target
+        [Service]
+        TimeoutStartSec=300
   notify:
     - Restart postgresql
 
