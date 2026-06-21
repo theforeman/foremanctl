@@ -1,5 +1,30 @@
 # Deployment Design
 
+## Deployment Types
+
+foremanctl supports two deployment types: **server** and **proxy**. Each has its own sub-command, flavor, and set of services.
+
+### Server
+
+Deploys a Foreman server. This is the primary deployment type and the default entry point.
+
+
+```bash
+./foremanctl deploy
+```
+
+### Proxy
+
+Deploys a Foreman Smart Proxy node that connects to an foreman server.
+
+```bash
+./foremanctl deploy-proxy \
+  --flavor foreman-proxy-content \
+  --certs-tar-file=/root/proxy.example.com-certs.tar \
+  --foreman-url=https://server.example.com \
+  --foreman-proxy-trusted-hosts quadlet.example.com
+```
+
 ## Deployment Paths
 
 ### Happy Path

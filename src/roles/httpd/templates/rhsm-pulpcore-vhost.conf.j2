@@ -7,7 +7,7 @@
   SSLCertificateKeyFile   "{{ httpd_ssl_dir }}/private/katello-apache.key"
   SSLCertificateChainFile "{{ httpd_ssl_dir }}/certs/katello-server-ca.crt"
   SSLVerifyClient         optional
-  SSLVerifyDepth          10
+  SSLVerifyDepth          3
   SSLCACertificateFile    "{{ httpd_ssl_dir }}/certs/katello-default-ca.crt"
   SSLOptions +StdEnvVars +ExportCertData
 

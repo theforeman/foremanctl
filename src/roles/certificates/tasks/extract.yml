@@ -1,0 +1,18 @@
+---
+- name: Check path to certificate tar file exists
+  ansible.builtin.stat:
+    path: "{{ certificates_bundle }}"
+  register: _certificates_tar_file_path
+
+- name: Fail if path to certificate tar file does not exist
+  ansible.builtin.fail:
+    msg: "Path to certificate tar file not found: {{ certificates_bundle }}"
+  when: not _certificates_tar_file_path.stat.exists
+
+- name: Extract certificate bundle
+  ansible.builtin.unarchive:
+    src: "{{ certificates_bundle }}"
+    dest: "{{ certificates_ca_directory }}"
+    remote_src: true
+    extra_opts:
+      - --strip-components=1

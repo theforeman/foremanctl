@@ -47,7 +47,12 @@ class UserParameters:
 
 def pytest_addoption(parser):
     parser.addoption("--server-hostname", action="store", default="quadlet", help="Hostname of the server VM to test against")
-    parser.addoption("--flavor", action="store", default="katello", choices=('foreman', 'katello', 'foreman-proxy-content'), help="Deployment flavor")
+
+
+def flavor():
+    with open(PARAMETERS_FILE) as f:
+        params = yaml.safe_load(f)
+    return params.get('flavor', 'katello')
 
 
 @pytest.fixture(scope="module")
@@ -68,11 +73,6 @@ def fixture_dir():
 @pytest.fixture(scope="module")
 def server_hostname(pytestconfig):
     return pytestconfig.getoption("server_hostname")
-
-
-@pytest.fixture(scope="module")
-def flavor(pytestconfig):
-    return pytestconfig.getoption("flavor")
 
 
 @pytest.fixture(scope="module")
@@ -264,8 +264,8 @@ def pytest_configure(config):
 
 
 def pytest_collection_modifyitems(config, items):
-    flavor = config.getoption("flavor")
-    active_flavor_dir = FLAVOR_TESTS_DIR / flavor
+    active_flavor = flavor()
+    active_flavor_dir = FLAVOR_TESTS_DIR / active_flavor
 
     deselected = []
     selected = []

@@ -374,7 +374,7 @@ jobs:
 
   foreman-proxy-content-tests:
     runs-on: ubuntu-24.04
-    name: "Tests (flavor: foreman-proxy-content)"
+    name: "Tests Proxy Deployment"
     steps:
       - uses: actions/checkout@v6
       - name: Set up Python
@@ -391,10 +391,7 @@ jobs:
         run: ./setup-environment
       - name: Start VMs
         run: |
-          ./forge vms start --vms "quadlet content-proxy"
-      - name: Configure repositories
-        run: |
-          ./forge setup-repositories
+          ./forge vms start --vms "quadlet proxy"
       - name: Run image pull
         run: |
           ./foremanctl pull-images
@@ -402,37 +399,27 @@ jobs:
         run: |
           ./foremanctl deploy \
             --initial-admin-password=changeme \
-            --tuning development
-      - name: Deploy features on quadlet
-        run: |
-          ./foremanctl deploy \
-            --add-feature hammer \
+            --tuning development \
             --add-feature foreman-proxy
       - name: Remove old parameters.yaml
         run: rm -f .var/lib/foremanctl/parameters.yaml
       - name: Generate certificates bundle on quadlet
         run: |
-          ./foremanctl certificate-bundle content-proxy.example.com
+          ./foremanctl certificate-bundle proxy.example.com
       - name: Copy certificates bundle to content-proxy
         run: |
-          vagrant ssh quadlet -- sudo cat /var/lib/foremanctl/certs/bundles/content-proxy.example.com.tar.gz | \
-          vagrant ssh content-proxy -- "sudo tee /root/content-proxy.example.com.tar.gz > /dev/null"
-      - name: Deploy foreman-proxy-content on content-proxy
+          vagrant ssh quadlet -- sudo cat /var/lib/foremanctl/certs/bundles/proxy.example.com.tar.gz | \
+          vagrant ssh proxy -- "sudo tee /root/proxy.example.com.tar.gz > /dev/null"
+      - name: Deploy content proxy
         run: |
-          OBSAH_ALLOW_EXTRA_VARS=true ./foremanctl deploy \
+          ./foremanctl deploy-proxy \
             --flavor foreman-proxy-content \
-            --certs-tar-file /root/content-proxy.example.com.tar.gz \
+            --certs-tar-file /root/proxy.example.com.tar.gz \
             --foreman-proxy-trusted-hosts quadlet.example.com \
-            --foreman-url https://quadlet.example.com \
-            -e foremanctl_target=content-proxy
-      - name: Deploy features on content-proxy
-        run: |
-          OBSAH_ALLOW_EXTRA_VARS=true ./foremanctl deploy \
-            --add-feature remote-execution \
-            -e foremanctl_target=content-proxy
+            --foreman-url https://quadlet.example.com
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--server-hostname=content-proxy --flavor=foreman-proxy-content"
+          ./forge test --pytest-args="--server-hostname=proxy"
       - name: Archive smoker report
         if: ${{ always() }}
         uses: actions/upload-artifact@v7
