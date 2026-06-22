@@ -58,7 +58,7 @@ variables:
     type: Boolean
   foreman_proxy_tftp_root:
     parameter: --tftp-root
-    help: Directory to serve TFTP files from.
+    help: Directory to serve TFTP files from, defaults to /var/lib/tftpboot if not specified.
     type: AbsolutePath
   foreman_proxy_tftp_servername:
     parameter: --tftp-servername
