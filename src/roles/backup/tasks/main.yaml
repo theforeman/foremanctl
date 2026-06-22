@@ -1,7 +1,7 @@
 ---
 - name: Set backup timestamp
   ansible.builtin.set_fact:
-    backup_timestamp: "{{ ansible_date_time.iso8601_basic_short }}"
+    backup_timestamp: "{{ ansible_facts['date_time']['iso8601_basic_short'] }}"
 
 - name: Set full backup directory path
   ansible.builtin.set_fact:
@@ -49,7 +49,7 @@
       ansible.builtin.systemd:
         name: postgresql.service
       register: backup_postgres_status
-      until: backup_postgres_status.status.ActiveState == 'inactive'
+      until: backup_postgres_status.status.ActiveState in ['inactive', 'failed']
       retries: "{{ backup_postgresql_stop_retries }}"
       delay: "{{ backup_postgresql_stop_delay }}"
       when: backup_database_mode == 'internal'
