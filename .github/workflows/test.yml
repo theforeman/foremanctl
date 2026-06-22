@@ -155,7 +155,7 @@ jobs:
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--database-mode=${{ matrix.database }}"
+          ./forge test
       - name: Run smoker
         run: |
           ./forge smoker
