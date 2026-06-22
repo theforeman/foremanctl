@@ -1,7 +1,7 @@
 ---
 - name: Check for running Foreman tasks
   theforeman.foreman.resource_info:
-    server_url: "https://{{ ansible_fqdn }}"
+    server_url: "https://{{ ansible_facts['fqdn'] }}"
     oauth1_consumer_key: "{{ backup_foreman_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ backup_foreman_oauth_consumer_secret }}"
     ca_path: "{{ backup_foreman_ca_certificate }}"
@@ -18,7 +18,7 @@
 
 - name: Wait for Foreman tasks to complete (if --wait-for-tasks)
   theforeman.foreman.wait_for_task:
-    server_url: "https://{{ ansible_fqdn }}"
+    server_url: "https://{{ ansible_facts['fqdn'] }}"
     oauth1_consumer_key: "{{ backup_foreman_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ backup_foreman_oauth_consumer_secret }}"
     ca_path: "{{ backup_foreman_ca_certificate }}"
@@ -42,7 +42,7 @@
 
 - name: Check for running Pulp tasks
   ansible.builtin.uri:
-    url: "https://{{ ansible_fqdn }}/pulp/api/v3/tasks/?state__in=running,waiting"
+    url: "https://{{ ansible_facts['fqdn'] }}/pulp/api/v3/tasks/?state__in=running,waiting"
     method: GET
     client_cert: "{{ backup_foreman_client_certificate }}"
     client_key: "{{ backup_foreman_client_key }}"
@@ -61,7 +61,7 @@
 
 - name: Wait for Pulp tasks to complete (if --wait-for-tasks)
   ansible.builtin.uri:
-    url: "https://{{ ansible_fqdn }}/pulp/api/v3/tasks/?state__in=running,waiting"
+    url: "https://{{ ansible_facts['fqdn'] }}/pulp/api/v3/tasks/?state__in=running,waiting"
     method: GET
     client_cert: "{{ backup_foreman_client_certificate }}"
     client_key: "{{ backup_foreman_client_key }}"
