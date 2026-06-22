@@ -257,7 +257,7 @@
 - name: Ensure Pulp admin user exists
   ansible.builtin.systemd:
     name: pulpcore-manager-admin-password.service
-    state: restarted
+    state: started
 
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers
