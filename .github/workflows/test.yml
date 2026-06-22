@@ -222,12 +222,13 @@ jobs:
       fail-fast: false
       matrix:
         upgrade_from:
-          - '3.18'
-        upgrade_to:
-          - 'nightly'
+          - '2.y-stable'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ matrix.upgrade_from }}
+          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -244,9 +245,6 @@ jobs:
       - name: Configure repositories
         run: |
           ./forge setup-repositories
-      - name: Configure base version
-        run: |
-          sed -i '/container_tag_stream:/ s/:.*/: "${{ matrix.upgrade_from }}"/' src/vars/images.yml
       - name: Run image pull
         run: |
           ./foremanctl pull-images
@@ -268,9 +266,10 @@ jobs:
       - name: Stop services
         run:
           vagrant ssh quadlet -- sudo systemctl stop foreman.target
-      - name: Configure upgrade version
+      - name: Switch foremanctl version
         run: |
-          sed -i '/container_tag_stream:/ s/:.*/: "${{ matrix.upgrade_to }}"/' src/vars/images.yml
+          git fetch origin ${{ github.ref }}
+          git checkout FETCH_HEAD
       - name: Run image pull
         run: |
           ./foremanctl pull-images
