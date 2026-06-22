@@ -44,10 +44,6 @@ class UserParameters:
         return set(feature for feature, status, _desc in self.features if status == 'enabled')
 
 
-def pytest_addoption(parser):
-    parser.addoption("--database-mode", action="store", default="internal", choices=('internal', 'external'), help="Whether the database is internal or external")
-
-
 @pytest.fixture(scope="module")
 def enabled_features(pytestconfig):
     return pytestconfig.user_parameters.enabled_features
@@ -89,10 +85,15 @@ def certificates(server_fqdn):
 
 
 @pytest.fixture(scope="module")
-def certificate_source():
+def obsah_params():
     with open(PARAMETERS_FILE) as f:
         params = yaml.safe_load(f)
-    return params.get('certificates_source', 'default')
+    return params
+
+
+@pytest.fixture(scope="module")
+def certificate_source(obsah_params):
+    return obsah_params.get('certificates_source', 'default')
 
 
 @pytest.fixture(scope="module")
@@ -108,8 +109,8 @@ def default_certificates(certificate_source):
 
 
 @pytest.fixture(scope="module")
-def database_mode(pytestconfig):
-    return pytestconfig.getoption("database_mode")
+def database_mode(obsah_params):
+    return obsah_params.get('database_mode', 'internal')
 
 
 @pytest.fixture(scope="module")
