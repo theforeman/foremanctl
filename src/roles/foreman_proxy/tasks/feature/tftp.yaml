@@ -8,7 +8,9 @@
       ansible.builtin.file:
         path: "{{ foreman_proxy_tftp_root }}"
         state: directory
-        mode: "0777"
+        mode: "0755"
+        owner: 998
+        group: 998
 
     - name: Mount the directory into foreman-proxy container
       ansible.builtin.copy:
