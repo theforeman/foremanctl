@@ -29,6 +29,15 @@
     - Restart foreman
     - Restart dynflow-sidekiq@
 
+- name: Create secret for ENCRYPTION_KEY
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-encryption-key
+    data: "{{ foreman_encryption_key }}"
+  notify:
+    - Restart foreman
+    - Restart dynflow-sidekiq@
+
 - name: Create settings config secret
   containers.podman.podman_secret:
     state: present
@@ -103,6 +112,7 @@
       - 'foreman-data-run:/var/run/foreman:rw,z'
     secrets:
       - 'foreman-database-url,type=env,target=DATABASE_URL'
+      - 'foreman-encryption-key,type=env,target=ENCRYPTION_KEY'
       - 'foreman-seed-admin-user,type=env,target=SEED_ADMIN_USER'
       - 'foreman-seed-admin-password,type=env,target=SEED_ADMIN_PASSWORD'
       - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
@@ -143,6 +153,7 @@
       - 'foreman-data-run:/var/run/foreman:rw,z'
     secrets:
       - 'foreman-database-url,type=env,target=DATABASE_URL'
+      - 'foreman-encryption-key,type=env,target=ENCRYPTION_KEY'
       - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
       - 'foreman-katello-yaml,type=mount,target=/etc/foreman/plugins/katello.yaml'
       - 'foreman-ca-cert,type=mount,target=/etc/foreman/katello-default-ca.crt'
@@ -200,6 +211,7 @@
       - 'foreman-data-run:/var/run/foreman:rw,z'
     secrets:
       - 'foreman-database-url,type=env,target=DATABASE_URL'
+      - 'foreman-encryption-key,type=env,target=ENCRYPTION_KEY'
       - 'foreman-seed-admin-user,type=env,target=SEED_ADMIN_USER'
       - 'foreman-seed-admin-password,type=env,target=SEED_ADMIN_PASSWORD'
       - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
@@ -246,6 +258,7 @@
       SEED_LOCATION: "{{ foreman_initial_location }}"
     secrets:
       - 'foreman-database-url,type=env,target=DATABASE_URL'
+      - 'foreman-encryption-key,type=env,target=ENCRYPTION_KEY'
       - 'foreman-seed-admin-user,type=env,target=SEED_ADMIN_USER'
       - 'foreman-seed-admin-password,type=env,target=SEED_ADMIN_PASSWORD'
       - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
