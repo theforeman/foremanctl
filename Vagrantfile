@@ -1,7 +1,7 @@
 DOMAIN = ENV.fetch('VAGRANT_DOMAIN', 'example.com'.freeze)
 
 Vagrant.configure("2") do |config|
-  config.vm.synced_folder ".", "/vagrant"
+  config.vm.synced_folder ".", "/vagrant", disabled: true
 
   config.vm.provider "libvirt" do |libvirt|
     libvirt.management_network_domain = DOMAIN
@@ -9,33 +9,11 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "quadlet" do |override|
     override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream9")
-    if override.vm.box == "centos/stream10"
-      override.vm.box_url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box"
-    end
     override.vm.hostname = "quadlet.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
       libvirt.memory = 10240
       libvirt.cpus = 4
-      libvirt.machine_virtual_size = 30
-    end
-  end
-
-  config.vm.define "client" do |override|
-    override.vm.box = "centos/stream9"
-    override.vm.hostname = "client.#{DOMAIN}"
-
-    override.vm.provider "libvirt" do |libvirt, provider|
-      libvirt.memory = 1024
-    end
-  end
-
-  config.vm.define "database" do |override|
-    override.vm.box = "centos/stream9"
-    override.vm.hostname = "database.#{DOMAIN}"
-
-    override.vm.provider "libvirt" do |libvirt, provider|
-      libvirt.memory = 2048
     end
   end
 end
