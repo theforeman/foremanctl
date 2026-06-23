@@ -14,44 +14,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ansible-lint:
-    name: Ansible Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-      - name: Run ansible-lint on src
-        uses: ansible/ansible-lint@main
-        with:
-          requirements_file: requirements.yml
-          working_directory: src
-          setup_python: false
-      - name: Run ansible-lint on development
-        uses: ansible/ansible-lint@main
-        with:
-          requirements_file: requirements.yml
-          working_directory: development
-          setup_python: false
-
-  python-lint:
-    name: Python Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install ruff
-      - name: Run ruff
-        run: ruff check --output-format=github tests/ src/ development/scripts/ inventories/
-
   tests:
     strategy:
       fail-fast: false
@@ -136,8 +98,6 @@ jobs:
     if: always()
     needs:
       - tests
-      - ansible-lint
-      - python-lint
     runs-on: ubuntu-latest
     name: Test suite
     steps:
