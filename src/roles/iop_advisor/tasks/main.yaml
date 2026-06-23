@@ -70,10 +70,11 @@
         Description=Advisor Backend API
         After=iop-core-kafka.service
         Wants=iop-core-kafka.service
+        PartOf=foreman.target
         [Service]
         Restart=on-failure
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
 
 - name: Deploy Advisor Backend Service Container
   containers.podman.podman_container:
@@ -99,10 +100,11 @@
         Description=Advisor Backend Service
         After=iop-core-kafka.service
         Wants=iop-core-kafka.service
+        PartOf=foreman.target
         [Service]
         Restart=on-failure
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
