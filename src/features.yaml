@@ -147,3 +147,5 @@ dhcp:
   description: DHCP management
   foreman_proxy:
     plugin_name: dhcp
+  dependencies:
+    - foreman-proxy
