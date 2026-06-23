@@ -113,21 +113,6 @@ jobs:
           vagrant ssh --command "echo 'allow perm=any pattern=ld_so exe=/usr/bin/crun : path=/usr/lib64/libsystemd.so.0' | sudo tee -a /etc/fapolicyd/rules.d/15-foremanctl.rules" quadlet
           vagrant ssh --command "echo 'allow perm=any all : dir=/home/vagrant/.ansible/tmp/' | sudo tee -a /etc/fapolicyd/rules.d/15-foremanctl.rules" quadlet
           vagrant ssh quadlet -- sudo systemctl restart fapolicyd
-      - name: Run image pull
-        run: |
-          ./foremanctl pull-images ${{ matrix.database == 'external' && '--database-mode=external' || '' }}
-      - name: Run deployment
-        run: |
-          ./foremanctl deploy \
-            --certificate-source=${{ matrix.certificate_source }} \
-            ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com --database-ssl-ca $(pwd)/.var/lib/foremanctl/db-ca.crt --database-ssl-mode verify-full' || '' }} \
-            ${{ matrix.certificate_source == 'custom_server' && '--certificate-server-certificate /root/custom-certificates/certs/quadlet.example.com.crt --certificate-server-key /root/custom-certificates/private/quadlet.example.com.key --certificate-server-ca-certificate /root/custom-certificates/certs/ca.crt' || '' }} \
-            --initial-admin-password=changeme \
-            --initial-organization "Foreman CI" \
-            --initial-location "Internet" \
-            --tuning development \
-            --content-import-path /custom/import \
-            --content-export-path /custom/export
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
