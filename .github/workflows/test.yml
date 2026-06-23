@@ -34,8 +34,6 @@ jobs:
       FOREMANCTL_BASE_BOX: ${{ matrix.box }}
     name: "Tests (certificates: ${{ matrix.certificate_source }}, database: ${{ matrix.database }}, security: ${{ matrix.security }}, box: ${{ matrix.box }}, iop: ${{ matrix.iop }})"
     steps:
-      - name: generate artifact suffix
-        run: echo "ARTIFACT_SUFFIX=$(echo '${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.database }}-${{ matrix.box }}-iop${{ matrix.iop }}' | tr -cd '[:alnum:]-')" >> "${GITHUB_ENV}"
       - uses: actions/checkout@v7
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -52,17 +50,6 @@ jobs:
       - name: Start VMs
         run: |
           ./forge vms start --vms "quadlet client ${{ matrix.database == 'external' && 'database' || '' }}"
-      - name: Configure remote-database
-        if: matrix.database == 'external'
-        run: |
-          ./forge remote-database
-      - name: Configure repositories
-        run: |
-          ./forge setup-repositories
-      - name: Create custom certificates
-        if: matrix.certificate_source == 'custom_server'
-        run: |
-          ./forge custom-certs
       - name: Setup security mode ${{ matrix.security }}
         if: matrix.security != 'none'
         run: |
@@ -78,12 +65,6 @@ jobs:
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
-      - name: Archive sos reports
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: sosreport-${{ env.ARTIFACT_SUFFIX }}
-          path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}
         uses: owenthereal/action-upterm@v1
