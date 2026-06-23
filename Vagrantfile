@@ -3,15 +3,6 @@ DOMAIN = ENV.fetch('VAGRANT_DOMAIN', 'example.com'.freeze)
 Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant"
 
-  config.vm.provision("etc_hosts", type: 'ansible') do |ansible|
-    ansible.playbook = "development/playbooks/etc_host.yml"
-    ansible.compatibility_mode = "2.0"
-  end
-
-  config.vm.provision('disk_resize', type: 'ansible') do |ansible_provisioner|
-    ansible_provisioner.playbook = 'development/playbooks/resize_disk.yaml'
-  end
-
   config.vm.provider "libvirt" do |libvirt|
     libvirt.management_network_domain = DOMAIN
   end
