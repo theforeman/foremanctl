@@ -45,8 +45,6 @@ jobs:
           configure_dns: true
       - name: Install Ansible
         run: pip install --upgrade ansible-core
-      - name: Setup environment
-        run: ./setup-environment
       - name: Start VMs
         run: vagrant up quadlet
       - name: generate inventory
@@ -54,8 +52,7 @@ jobs:
       - name: Configure fapolicyd
         run: ansible-playbook -i ./inventories -l quadlet ./fapolicyd.yaml
       - name: Generate sos reports
-        if: ${{ always() }}
-        run: ./forge sos
+        run: ansible-playbook -i ./inventories -l quadlet ./sos.yaml
       - name: Setup upterm session
         if: ${{ failure() }}
         uses: owenthereal/action-upterm@v1
