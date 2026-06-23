@@ -1,0 +1,20 @@
+---
+- hosts: all
+  tasks:
+    - name: Install fapolicyd
+      package:
+        name: fapolicyd
+        state: installed
+
+    - name: Allow podman and ansible
+      ansible.builtin.copy:
+        dest: /etc/fapolicyd/rules.d/15-foremanctl.rules
+        content: |
+          allow perm=any pattern=ld_so exe=/usr/bin/crun : path=/usr/lib64/libsystemd.so.0
+          allow perm=any all : dir=/home/vagrant/.ansible/tmp/
+
+    - name: Start fapolicyd
+      service:
+        name: fapolicyd
+        state: started
+        enabled: true
