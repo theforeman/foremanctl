@@ -183,7 +183,6 @@ jobs:
             --add-feature tftp \
             --tftp-servername quadlet.example.com \
             --add-feature dhcp \
-            --foreman-proxy-dhcp-provider dhcp_kea \
             --foreman-proxy-dhcp-kea-url http://127.0.0.1:8000 \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
@@ -309,7 +308,6 @@ jobs:
             --add-feature remote-execution \
             --add-feature iop
             --add-feature dhcp \
-            --foreman-proxy-dhcp-provider dhcp_kea \
             --foreman-proxy-dhcp-kea-url http://127.0.0.1:8000
       - name: Stop services
         run:
