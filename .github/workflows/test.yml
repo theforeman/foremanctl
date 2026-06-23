@@ -48,10 +48,11 @@ jobs:
       - name: Setup environment
         run: ./setup-environment
       - name: Start VMs
-        run: |
-          ./forge vms start --vms "quadlet"
+        run: vagrant up quadlet
+      - name: generate inventory
+        run: ./development/scripts/vagrant.py --yaml > inventories/local_vagrant
       - name: Configure fapolicyd
-        run: ansible-playbook -l quadlet ./fapolicyd.yaml
+        run: ansible-playbook -i ./inventories -l quadlet ./fapolicyd.yaml
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
