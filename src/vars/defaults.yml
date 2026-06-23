@@ -7,3 +7,4 @@ enabled_features: "{{ (flavor_features + features) }}"
 air_gapped: false
 
 foreman_proxy_ansible_callback: theforeman.foreman.foreman
+enabled_features: "{{ (flavor_features + features) | expand_features }}"
