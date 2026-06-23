@@ -1,5 +1,6 @@
 ---
 - hosts: all
+  become: true
   tasks:
     - name: Install fapolicyd
       package:
