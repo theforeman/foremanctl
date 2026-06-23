@@ -15,6 +15,22 @@
           - kea
         state: present
 
+    - name: Create Kea runtime directory
+      ansible.builtin.file:
+        path: /var/run/kea
+        state: directory
+        mode: '0750'
+        owner: root
+        group: root
+
+    - name: Create Kea lib directory
+      ansible.builtin.file:
+        path: /var/lib/kea
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+
     - name: Configure Kea DHCP4 server
       ansible.builtin.copy:
         dest: /etc/kea/kea-dhcp4.conf
@@ -26,7 +42,7 @@
               },
               "control-socket": {
                 "socket-type": "unix",
-                "socket-name": "/run/kea/kea4-ctrl-socket"
+                "socket-name": "/var/run/kea/kea4-ctrl-socket"
               },
               "subnet4": [
                 {
@@ -58,7 +74,7 @@
               "control-sockets": {
                 "dhcp4": {
                   "socket-type": "unix",
-                  "socket-name": "/run/kea/kea4-ctrl-socket"
+                  "socket-name": "/var/run/kea/kea4-ctrl-socket"
                 }
               }
             }
@@ -68,14 +84,33 @@
         group: root
       notify: Restart Kea Control Agent
 
-    - name: Start Kea services
+    - name: Validate Kea DHCP4 configuration
+      ansible.builtin.command: kea-dhcp4 -t /etc/kea/kea-dhcp4.conf
+      changed_when: false
+      register: dhcp4_validation
+
+    - name: Validate Kea Control Agent configuration
+      ansible.builtin.command: kea-ctrl-agent -t /etc/kea/kea-ctrl-agent.conf
+      changed_when: false
+      register: ctrl_agent_validation
+
+    - name: Enable Kea services
       ansible.builtin.systemd:
         name: "{{ item }}"
-        state: started
         enabled: true
       loop:
         - kea-dhcp4
         - kea-ctrl-agent
+
+    - name: Start Kea DHCP4 service
+      ansible.builtin.systemd:
+        name: kea-dhcp4
+        state: started
+
+    - name: Start Kea Control Agent service
+      ansible.builtin.systemd:
+        name: kea-ctrl-agent
+        state: started
 
     - name: Wait for Kea Control Agent to be ready
       ansible.builtin.wait_for:
