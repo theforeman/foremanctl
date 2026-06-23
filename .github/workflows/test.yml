@@ -112,6 +112,13 @@ jobs:
       - name: Configure repositories
         run: |
           ./forge setup-repositories
+      - name: Setup Kea DHCP server
+        run: |
+          ./forge kea
+      - name: Create installer certificates
+        if: contains(matrix.certificate_source, 'installer')
+        run: |
+          ./forge installer-certs
       - name: Create custom certificates
         if: matrix.certificate_source == 'custom_server'
         run: |
@@ -152,6 +159,9 @@ jobs:
             --add-feature google \
             --add-feature remote-execution \
             --add-feature bmc \
+            --add-feature dhcp \
+            --foreman-proxy-dhcp-provider dhcp_kea \
+            --foreman-proxy-dhcp-kea-url http://127.0.0.1:8000 \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
@@ -245,6 +255,12 @@ jobs:
       - name: Configure repositories
         run: |
           ./forge setup-repositories
+      - name: Setup Kea DHCP server
+        run: |
+          ./forge kea
+      - name: Configure base version
+        run: |
+          sed -i '/container_tag_stream:/ s/:.*/: "${{ matrix.upgrade_from }}"/' src/vars/images.yml
       - name: Run image pull
         run: |
           ./foremanctl pull-images
@@ -262,7 +278,10 @@ jobs:
             --add-feature foreman-proxy \
             --add-feature azure-rm \
             --add-feature google \
-            --add-feature remote-execution
+            --add-feature remote-execution \
+            --add-feature dhcp \
+            --foreman-proxy-dhcp-provider dhcp_kea \
+            --foreman-proxy-dhcp-kea-url http://127.0.0.1:8000
       - name: Stop services
         run:
           vagrant ssh quadlet -- sudo systemctl stop foreman.target

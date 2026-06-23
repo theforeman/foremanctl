@@ -27,9 +27,9 @@ foreman_proxy_bmc_redfish_verify_ssl: true
 foreman_proxy_dhcp_provider: dhcp_kea
 foreman_proxy_dhcp_subnets: []
 
-# KEA DHCP provider settings (when foreman_proxy_dhcp_provider is dhcp_kea)
-foreman_proxy_dhcp_kea_url: "{{ undef(hint='You must specify the KEA API URL') }}"
-foreman_proxy_dhcp_kea_username: "{{ undef(hint='HTTP Basic Auth username for KEA API') }}"
-foreman_proxy_dhcp_kea_password: "{{ undef(hint='HTTP Basic Auth password for KEA API') }}"
+# Kea DHCP provider settings (when foreman_proxy_dhcp_provider is dhcp_kea)
+foreman_proxy_dhcp_kea_url: "{{ undef(hint='You must specify the Kea API URL') }}"
+foreman_proxy_dhcp_kea_username: "{{ undef(hint='HTTP Basic Auth username for Kea API') }}"
+foreman_proxy_dhcp_kea_password: "{{ undef(hint='HTTP Basic Auth password for Kea API') }}"
 foreman_proxy_dhcp_kea_verify_ssl: true
 foreman_proxy_dhcp_kea_lease_timeout: 60
