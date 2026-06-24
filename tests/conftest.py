@@ -216,11 +216,12 @@ def client_environment(activation_key, content_view, lifecycle_environment, yum_
     foremanapi.resource_action('content_views', 'publish', {'id': content_view['id']})
 
     library = foremanapi.list('lifecycle_environments', 'name=Library', {'organization_id': organization['id']})[0]
-    foremanapi.update('activation_keys', {'id': activation_key['id'], 'organization_id': organization['id'], 'environment_id': library['id'], 'content_view_id': content_view['id']})
+    cve = foremanapi.list('content_view_environments', params={'organization_id': organization['id'], 'environment_id': library['id'], 'content_view_id': content_view['id']})[0]
+    foremanapi.update('activation_keys', {'id': activation_key['id'], 'organization_id': organization['id'], 'content_view_environment_ids': [cve['id']]})
 
     yield activation_key
 
-    foremanapi.update('activation_keys', {'id': activation_key['id'], 'organization_id': organization['id'], 'environment_id': None, 'content_view_id': None})
+    foremanapi.update('activation_keys', {'id': activation_key['id'], 'organization_id': organization['id'], 'content_view_environment_ids': []})
 
     versions = foremanapi.list('content_view_versions', params={'content_view_id': content_view['id']})
     for version in versions:
