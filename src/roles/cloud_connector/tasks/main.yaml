@@ -61,11 +61,7 @@
     owner: root
     group: root
     mode: '0644'
-  notify: Restart rhcd
-
-- name: Update system CA trust
-  ansible.builtin.command: update-ca-trust
-  changed_when: true
+  notify: Foreman CA changed
 
 - name: Ensure rhcd started and enabled
   ansible.builtin.service:

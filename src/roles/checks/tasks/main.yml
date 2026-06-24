@@ -3,10 +3,14 @@
   ansible.builtin.include_tasks: execute_check.yml
   loop:
     - check_features
-    - check_cloud_connector
     - check_hostname
     - check_database_connection
     - check_system_requirements
+
+- name: Run cloud connector checks
+  ansible.builtin.include_role:
+    name: check_cloud_connector
+  when: "'cloud-connector' in enabled_features"
 
 - name: Run database index integrity checks
   ansible.builtin.include_role:

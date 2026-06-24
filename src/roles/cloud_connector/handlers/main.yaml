@@ -1,6 +1,12 @@
 ---
+- name: Update system CA trust
+  ansible.builtin.command: update-ca-trust
+  changed_when: true # noqa: no-changed-when
+  listen: Foreman CA changed
+
 - name: Restart rhcd
   ansible.builtin.systemd_service:
     name: rhcd
     state: restarted
     daemon_reload: true
+  listen: Foreman CA changed
