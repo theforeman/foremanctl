@@ -32,53 +32,18 @@
         group: root
 
     - name: Configure Kea DHCP4 server
-      ansible.builtin.copy:
+      ansible.builtin.template:
+        src: templates/kea-dhcp4.conf.j2
         dest: /etc/kea/kea-dhcp4.conf
-        content: |
-          {
-            "Dhcp4": {
-              "interfaces-config": {
-                "interfaces": [ "*" ]
-              },
-              "control-socket": {
-                "socket-type": "unix",
-                "socket-name": "/var/run/kea/kea4-ctrl-socket"
-              },
-              "subnet4": [
-                {
-                  "id": 1,
-                  "subnet": "192.168.122.0/24",
-                  "pools": [{ "pool": "192.168.122.100 - 192.168.122.200" }]
-                }
-              ],
-              "lease-database": {
-                "type": "memfile",
-                "persist": true,
-                "name": "/var/lib/kea/kea-leases4.csv"
-              }
-            }
-          }
         mode: '0644'
         owner: root
         group: root
       notify: Restart Kea DHCP4
 
     - name: Configure Kea Control Agent
-      ansible.builtin.copy:
+      ansible.builtin.template:
+        src: templates/kea-ctrl-agent.conf.j2
         dest: /etc/kea/kea-ctrl-agent.conf
-        content: |
-          {
-            "Control-agent": {
-              "http-host": "127.0.0.1",
-              "http-port": 8000,
-              "control-sockets": {
-                "dhcp4": {
-                  "socket-type": "unix",
-                  "socket-name": "/var/run/kea/kea4-ctrl-socket"
-                }
-              }
-            }
-          }
         mode: '0644'
         owner: root
         group: root
@@ -106,6 +71,21 @@
       ansible.builtin.systemd:
         name: kea-dhcp4
         state: started
+
+    - name: Check Kea DHCP4 service status
+      ansible.builtin.systemd:
+        name: kea-dhcp4
+      register: kea_dhcp4_status
+      failed_when: false
+
+    - name: Display Kea DHCP4 service status
+      ansible.builtin.debug:
+        var: kea_dhcp4_status
+
+    - name: Wait for DHCP4 control socket to be created
+      ansible.builtin.wait_for:
+        path: /var/run/kea/kea4-ctrl-socket
+        timeout: 30
 
     - name: Start Kea Control Agent service
       ansible.builtin.systemd:
