@@ -22,7 +22,8 @@
         extended_key_usage:
           - serverAuth
       vars:
-        _certificates_desired_server_sans: "{{ (([certificates_hostname] + certificates_cnames) | map('regex_replace', '^', 'DNS:') | list) }}"
+        _certificates_extra_sans: "{{ certificates_cnames if certificates_hostname != 'localhost' else [] }}"
+        _certificates_desired_server_sans: "{{ ([certificates_hostname] + _certificates_extra_sans) | map('regex_replace', '^', 'DNS:') | list }}"
 
     - name: 'Sign server certificate'
       community.crypto.x509_certificate:
