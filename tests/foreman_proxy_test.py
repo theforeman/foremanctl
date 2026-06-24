@@ -29,6 +29,10 @@ def test_foreman_proxy_features(server, certificates, server_fqdn, enabled_featu
         assert "bmc" in features
     else:
         assert "bmc" not in features
+    if 'httpboot' in enabled_features:
+        assert "httpboot" in features
+    else:
+        assert "httpboot" not in features
 
 
 def test_foreman_proxy_service(server):
