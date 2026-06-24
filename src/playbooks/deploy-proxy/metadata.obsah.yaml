@@ -10,14 +10,11 @@ variables:
   certificates_bundle:
     help: Path to the certificate bundle tar file.
     type: AbsolutePath
-    parameter: --certs-tar-file
+    parameter: --certificate-bundle
     persist: false
-  foreman_proxy_foreman_server_url:
-    parameter: --foreman-url
-    help: URL of Foreman server this proxy connects to.
-  foreman_proxy_trusted_hosts:
-    help: FQDN of a host trusted by the proxy.
-    action: append_unique
+  foreman_name:
+    parameter: --foreman-fqdn
+    help: FQDN of the Foreman server this proxy connects to.
   foreman_proxy_oauth_consumer_key:
     parameter: --oauth-consumer-key
     help: OAuth key to be used for communication with Foreman.

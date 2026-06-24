@@ -20,9 +20,8 @@ Deploys a Foreman Smart Proxy node that connects to an foreman server.
 ```bash
 ./foremanctl deploy-proxy \
   --flavor foreman-proxy-content \
-  --certs-tar-file=/root/proxy.example.com-certs.tar \
-  --foreman-url=https://server.example.com \
-  --foreman-proxy-trusted-hosts quadlet.example.com
+  --certificate-bundle /root/proxy.example.com-certs.tar \
+  --foreman-fqdn quadlet.example.com
 ```
 
 ## Deployment Paths

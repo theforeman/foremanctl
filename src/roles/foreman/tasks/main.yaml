@@ -325,12 +325,3 @@
   register: foreman_tasks_status
   when:
     - "'katello' in foreman_status.json['results']"
-
-- name: Configure Foreman Proxy
-  theforeman.foreman.smart_proxy:
-    name: "{{ ansible_facts['fqdn'] }}-pulp"
-    url: "https://{{ ansible_facts['fqdn'] }}/pulp/api/v3/smart_proxy"
-    server_url: "{{ foreman_url }}"
-    oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
-    oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
-    ca_path: "{{ foreman_ca_certificate }}"

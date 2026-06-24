@@ -312,3 +312,13 @@
   when:
     - pulp_existing_workers | length > 0
     - (item | regex_replace('^' + pulp_worker_container_name + '@(\\d+)\\.service$', '\\1') | int) > (pulp_worker_count | int)
+
+- name: Configure Foreman Proxy
+  theforeman.foreman.smart_proxy:
+    name: "{{ ansible_facts['fqdn'] }}-pulp"
+    url: "https://{{ ansible_facts['fqdn'] }}/pulp/api/v3/smart_proxy"
+    server_url: "{{ pulp_foreman_url }}"
+    oauth1_consumer_key: "{{ pulp_foreman_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ pulp_foreman_oauth_consumer_secret }}"
+    ca_path: "{{ pulp_foreman_ca_certificate }}"
+  when: pulp_register_foreman_proxy
