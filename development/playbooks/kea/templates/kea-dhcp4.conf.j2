@@ -1,0 +1,31 @@
+{
+  "Dhcp4": {
+    "interfaces-config": {
+      "interfaces": [ "*" ]
+    },
+    "control-socket": {
+      "socket-type": "unix",
+      "socket-name": "/var/run/kea/kea4-ctrl-socket"
+    },
+    "hooks-libraries": [
+      {
+        "library": "/usr/lib64/kea/hooks/libdhcp_host_cmds.so"
+      },
+      {
+        "library": "/usr/lib64/kea/hooks/libdhcp_lease_cmds.so"
+      }
+    ],
+    "subnet4": [
+      {
+        "id": 1,
+        "subnet": "192.168.122.0/24",
+        "pools": [{ "pool": "192.168.122.100 - 192.168.122.200" }]
+      }
+    ],
+    "lease-database": {
+      "type": "memfile",
+      "persist": true,
+      "name": "/var/lib/kea/kea-leases4.csv"
+    }
+  }
+}

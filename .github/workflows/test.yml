@@ -115,10 +115,6 @@ jobs:
       - name: Setup Kea DHCP server
         run: |
           ./forge kea
-      - name: Create installer certificates
-        if: contains(matrix.certificate_source, 'installer')
-        run: |
-          ./forge installer-certs
       - name: Create custom certificates
         if: matrix.certificate_source == 'custom_server'
         run: |
