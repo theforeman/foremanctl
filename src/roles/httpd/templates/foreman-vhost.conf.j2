@@ -42,6 +42,14 @@
     ProxyPassReverse {{ httpd_pulp_content_backend }}/pulp/content
   </Location>
 
+  <Location "/pulp/isos">
+    RequestHeader unset X-CLIENT-CERT
+    RequestHeader set X-CLIENT-CERT "%{SSL_CLIENT_CERT}s" env=SSL_CLIENT_CERT
+    RequestHeader set X-FORWARDED-PROTO expr=%{REQUEST_SCHEME}
+    ProxyPass {{ httpd_pulp_content_backend }}/pulp/content disablereuse=on timeout=600
+    ProxyPassReverse {{ httpd_pulp_content_backend }}/pulp/content
+  </Location>
+
   Alias /pub /var/www/html/pub
 
   <Location /pub>

@@ -68,6 +68,13 @@
     ProxyPassReverse {{ httpd_pulp_content_backend }}/pulp/content
   </Location>
 
+  <Location "/pulp/isos">
+    RequestHeader unset X-CLIENT-CERT
+    RequestHeader set X-CLIENT-CERT "%{SSL_CLIENT_CERT}s" env=SSL_CLIENT_CERT
+    ProxyPass {{ httpd_pulp_content_backend }}/pulp/content disablereuse=on timeout=600
+    ProxyPassReverse {{ httpd_pulp_content_backend }}/pulp/content
+  </Location>
+
 {% for httpd_pulp_snippet in httpd_enabled_pulp_snippets %}
 {% include httpd_pulp_snippet+'.j2' %}
 {% endfor %}
