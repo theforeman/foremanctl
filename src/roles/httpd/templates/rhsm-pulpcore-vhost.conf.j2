@@ -25,9 +25,9 @@
   # SSL Proxy directives
   SSLProxyEngine On
   SSLProxyCACertificateFile "{{ httpd_ssl_dir }}/certs/katello-default-ca.crt"
-  ProxyPass /katello/api/v2/repositories/ {{ httpd_proxy_foreman_url }}/katello/api/v2/repositories/
+  ProxyPass /katello/api/v2/repositories/ {{ httpd_foreman_url }}/katello/api/v2/repositories/
   <Location /katello/api/v2/repositories/>
-    ProxyPassReverse {{ httpd_proxy_foreman_url }}/katello/api/v2/repositories/
+    ProxyPassReverse {{ httpd_foreman_url }}/katello/api/v2/repositories/
   </Location>
   SSLProxyEngine On
 
@@ -38,7 +38,7 @@
     RequestHeader unset REMOTE_USER
     RequestHeader unset REMOTE-USER
     RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_facts['fqdn'] }}'"
-    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ httpd_proxy_foreman_fqdn }}'"
+    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ foreman_name }}'"
     ProxyPass {{ httpd_pulp_api_backend }}/v2/
     ProxyPassReverse {{ httpd_pulp_api_backend }}/v2/
   </Location>
@@ -57,7 +57,7 @@
     RequestHeader unset REMOTE_USER
     RequestHeader unset REMOTE-USER
     RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_facts['fqdn'] }}'"
-    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ httpd_proxy_foreman_fqdn }}'"
+    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ foreman_name }}'"
     ProxyPass {{ httpd_pulp_api_backend }}/pulp/api/v3 timeout=600
     ProxyPassReverse {{ httpd_pulp_api_backend }}/pulp/api/v3
   </Location>
@@ -68,14 +68,14 @@
   ## Proxy rules
   ProxyRequests Off
   ProxyPreserveHost Off
-  ProxyPass /rhsm {{ httpd_proxy_foreman_url }}/rhsm disablereuse=on retry=0
-  ProxyPassReverse /rhsm {{ httpd_proxy_foreman_url }}/rhsm
-  ProxyPass /redhat_access {{ httpd_proxy_foreman_url }}/redhat_access disablereuse=on retry=0
-  ProxyPassReverse /redhat_access {{ httpd_proxy_foreman_url }}/redhat_access
-  ProxyPass /api/lightspeed {{ httpd_proxy_foreman_url }}/api/lightspeed disablereuse=on retry=0
-  ProxyPassReverse /api/lightspeed {{ httpd_proxy_foreman_url }}/api/lightspeed
-  ProxyPass /api/registration_commands {{ httpd_proxy_foreman_url }}/api/registration_commands disablereuse=on retry=0
-  ProxyPassReverse /api/registration_commands {{ httpd_proxy_foreman_url }}/api/registration_commands
+  ProxyPass /rhsm {{ httpd_foreman_url }}/rhsm disablereuse=on retry=0
+  ProxyPassReverse /rhsm {{ httpd_foreman_url }}/rhsm
+  ProxyPass /redhat_access {{ httpd_foreman_url }}/redhat_access disablereuse=on retry=0
+  ProxyPassReverse /redhat_access {{ httpd_foreman_url }}/redhat_access
+  ProxyPass /api/lightspeed {{ httpd_foreman_url }}/api/lightspeed disablereuse=on retry=0
+  ProxyPassReverse /api/lightspeed {{ httpd_foreman_url }}/api/lightspeed
+  ProxyPass /api/registration_commands {{ httpd_foreman_url }}/api/registration_commands disablereuse=on retry=0
+  ProxyPassReverse /api/registration_commands {{ httpd_foreman_url }}/api/registration_commands
 
   Alias /pub {{ httpd_pub_dir }}
 

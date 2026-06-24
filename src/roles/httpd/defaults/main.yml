@@ -5,9 +5,6 @@ httpd_foreman_backend: http://localhost:3000
 httpd_pub_dir: /var/www/html/pub
 httpd_enabled_pulp_snippets: []
 
-httpd_proxy_foreman_url: "{{ foreman_proxy_foreman_server_url }}"
-
-httpd_proxy_foreman_fqdn: "{{ httpd_proxy_foreman_url | urlsplit('hostname') }}"
 # MPM event module defaults
 httpd_server_limit: 25
 httpd_start_servers: 2

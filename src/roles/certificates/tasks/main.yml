@@ -30,7 +30,9 @@
     mode: '0755'
 
 - name: 'Generate certificates'
-  when: certificates_bundle is not defined
+  when:
+    - certificates_bundle is not defined
+    - certificates_generate
   block:
     - name: 'Generate CA certificate'
       ansible.builtin.include_tasks: ca.yml
@@ -56,7 +58,9 @@
         - certificates_custom_server_certificate is defined
 
 - name: 'Consume certs'
-  when: certificates_bundle is defined
+  when:
+    - certificates_bundle is defined
+    - not certificates_generate
   block:
     - name: Extract proxy certificate bundle
       ansible.builtin.include_tasks: extract.yml

@@ -25,6 +25,7 @@ pulp_pulp_url: "http://{{ ansible_facts['fqdn'] }}:24817"
 
 pulp_enable_analytics: false
 pulp_mirror: false
+pulp_register_foreman_proxy: true
 pulp_rhsm_url: "https://{{ ansible_facts['fqdn'] }}/rhsm"
 
 pulp_default_import_paths: "{{ pulp_mirror | ternary(['/var/lib/pulp/sync_imports'], ['/var/lib/pulp/sync_imports', '/var/lib/pulp/imports']) }}"

@@ -18,7 +18,6 @@
       vars:
         checks_databases: "{{ all_databases }}"
     - role: certificates
-      when: "certificates_source in ['default', 'custom_server']"
     - role: certificate_checks
       vars:
         certificate_checks_certificate: "{{ server_certificate }}"
