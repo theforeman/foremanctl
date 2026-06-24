@@ -414,9 +414,8 @@ jobs:
         run: |
           ./foremanctl deploy-proxy \
             --flavor foreman-proxy-content \
-            --certs-tar-file /root/proxy.example.com.tar.gz \
-            --foreman-proxy-trusted-hosts quadlet.example.com \
-            --foreman-url https://quadlet.example.com
+            --certificate-bundle /root/proxy.example.com.tar.gz \
+            --foreman-fqdn quadlet.example.com
       - name: Run tests
         run: |
           ./forge test --pytest-args="--server-hostname=proxy"

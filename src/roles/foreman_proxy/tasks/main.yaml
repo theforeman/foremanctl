@@ -75,15 +75,5 @@
     oauth1_consumer_secret: "{{ foreman_proxy_oauth_consumer_secret }}"
     ca_path: "{{ foreman_proxy_foreman_ca_certificate | default(omit) }}"
 
-- name: Register Pulp Proxy to Foreman
-  theforeman.foreman.smart_proxy:
-    name: "{{ foreman_proxy_name }}-pulp"
-    url: "https://{{ foreman_proxy_name }}/pulp/api/v3/smart_proxy"
-    server_url: "{{ foreman_proxy_foreman_server_url }}"
-    oauth1_consumer_key: "{{ foreman_proxy_oauth_consumer_key }}"
-    oauth1_consumer_secret: "{{ foreman_proxy_oauth_consumer_secret }}"
-    ca_path: "{{ foreman_proxy_foreman_ca_certificate | default(omit) }}"
-  when: foreman_proxy_with_pulp_mirror
-
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers

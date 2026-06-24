@@ -17,3 +17,5 @@ health_checks_to_execute:
   - check_hostname
   - check_database_connection
   - check_services
+
+certificates_generate: false

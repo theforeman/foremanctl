@@ -12,6 +12,7 @@
     - "../../../src/vars/base.yaml"
   vars:
     httpd_foreman_backend: "http://localhost:3000"
+    pulp_register_foreman_proxy: false
   pre_tasks:
     - name: Set development postgresql databases
       ansible.builtin.set_fact:
