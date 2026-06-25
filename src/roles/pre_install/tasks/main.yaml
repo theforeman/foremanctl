@@ -3,10 +3,11 @@
   ansible.builtin.include_role:
     name: debug_tools
 
-- name: Install podman
+- name: Install podman and utilities
   ansible.builtin.package:
     name:
       - podman
+      - skopeo
 
 - name: Install other dependencies
   ansible.builtin.package:
