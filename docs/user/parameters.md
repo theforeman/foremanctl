@@ -112,6 +112,9 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--add-feature bmc` | Enable BMC feature | `--foreman-proxy-bmc` |
 | `--bmc-ipmi-implementation` | IPMI implementation to use for BMC | `--foreman-proxy-bmc-default-provider` |
 | `--bmc-redfish-verify-ssl` | Verify SSL certificates for Redfish BMC connections | `--foreman-proxy-bmc-redfish-verify-ssl` |
+| `--add-feature templates` | Enable Templates feature on Smart Proxy | `--foreman-proxy-templates` |
+| `--templates-listen-on` | Templates proxy to listen on https, http, or both | `--foreman-proxy-templates-listen-on` |
+| `--templates-url` | URL that hosts will use to contact the proxy for provisioning templates | `--foreman-proxy-templates-url` |
 
 ### Undetermined
 
@@ -186,8 +189,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-proxy-realm-provider` | | | |
 | `--foreman-proxy-registration` | | | |
 | `--foreman-proxy-registration-url` | | | |
-| `--foreman-proxy-templates` | | | |
-| `--foreman-proxy-template-url` | | | |
 | `--puppet-server` | | puppet | server |
 | `--puppet-server-ca` | | puppet | server_ca |
 | `--puppet-dns-alt-names` | | puppet | dns_alt_names |
