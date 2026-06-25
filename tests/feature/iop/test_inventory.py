@@ -1,8 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.feature("iop")
-
-
 def test_inventory_migrate_service(server):
     service = server.service("iop-core-host-inventory-migrate")
     assert service.is_enabled
