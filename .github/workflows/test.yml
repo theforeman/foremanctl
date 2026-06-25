@@ -419,12 +419,6 @@ jobs:
       - name: Run tests
         run: |
           ./forge test --pytest-args="--server-hostname=proxy"
-      - name: Archive smoker report
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: smoker-proxy-content
-          path: "/home/runner/smoker/report/"
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos

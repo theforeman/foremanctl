@@ -21,8 +21,6 @@ def test_postgresql_password_encryption(database):
 
     reader = csv.reader(result.stdout.splitlines())
     for row in reader:
-        if row[0] == 'postgres':
-            continue
         assert "SCRAM-SHA-256" in row[6]
 
 

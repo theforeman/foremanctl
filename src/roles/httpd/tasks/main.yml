@@ -81,39 +81,19 @@
     - httpd_external_authentication is none
 
 
-- name: Configure foreman vhost
+- name: Configure vhost
   ansible.builtin.template:
     src: foreman-vhost.conf.j2
-    dest: /etc/httpd/conf.d/foreman.conf
+    dest: /etc/httpd/conf.d/{{ 'foreman' if httpd_with_foreman else 'pulpcore' }}.conf
     mode: "0644"
-  when: httpd_with_foreman
   notify:
     - Restart httpd
 
-- name: Configure pulpcore vhost
-  ansible.builtin.template:
-    src: pulpcore-vhost.conf.j2
-    dest: /etc/httpd/conf.d/pulpcore.conf
-    mode: "0644"
-  when: httpd_with_pulp_mirror
-  notify:
-    - Restart httpd
-
-- name: Configure foreman-ssl vhost
+- name: Configure SSL vhost
   ansible.builtin.template:
     src: foreman-ssl-vhost.conf.j2
-    dest: /etc/httpd/conf.d/foreman-ssl.conf
+    dest: /etc/httpd/conf.d/{{ 'foreman-ssl' if httpd_with_foreman else 'pulpcore-ssl' }}.conf
     mode: "0644"
-  when: httpd_with_foreman
-  notify:
-    - Restart httpd
-
-- name: Configure rhsm-pulpcore vhost
-  ansible.builtin.template:
-    src: rhsm-pulpcore-vhost.conf.j2
-    dest: /etc/httpd/conf.d/rhsm-pulpcore.conf
-    mode: "0644"
-  when: httpd_with_pulp_mirror
   notify:
     - Restart httpd
 
