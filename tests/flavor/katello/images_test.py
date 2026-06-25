@@ -1,13 +1,13 @@
 import pytest
 
-FlAVOR_CORE_IMAGES = [
+FLAVOR_CORE_IMAGES = [
     "pulp",
     "candlepin",
     "foreman"
 ]
 
 
-@pytest.fixture(params=FlAVOR_CORE_IMAGES)
+@pytest.fixture(params=FLAVOR_CORE_IMAGES)
 def core_image(request):
     return request.param
 

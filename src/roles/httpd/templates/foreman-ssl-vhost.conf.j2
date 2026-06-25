@@ -5,12 +5,13 @@
   IncludeOptional "/etc/httpd/conf.d/05-foreman-ssl.d/*.conf"
 
   ## Logging
-  ErrorLog "/var/log/httpd/foreman-ssl_error_ssl.log"
+  ErrorLog "/var/log/httpd/{{ 'foreman-ssl_error_ssl' if httpd_with_foreman else 'pulpcore_error' }}.log"
   ServerSignature Off
-  CustomLog "/var/log/httpd/foreman-ssl_access_ssl.log" combined
+  CustomLog "/var/log/httpd/{{ 'foreman-ssl_access_ssl' if httpd_with_foreman else 'pulpcore_access' }}.log" combined
 
   ## Request header rules
   ## as per http://httpd.apache.org/docs/2.4/mod/mod_headers.html#requestheader
+{% if httpd_with_foreman %}
   RequestHeader set X-FORWARDED-PROTO "https"
   RequestHeader set SSL-CLIENT-S-DN "%{SSL_CLIENT_S_DN}s"
   RequestHeader set SSL-CLIENT-CERT "%{SSL_CLIENT_CERT}s"
@@ -33,6 +34,9 @@
   RequestHeader unset REMOTE-USER_GROUPS
   RequestHeader unset REMOTE_USER-GROUPS
   RequestHeader unset REMOTE_USER_GROUPS
+{% else %}
+  RequestHeader set X_RHSM_SSL_CLIENT_CERT "%{SSL_CLIENT_CERT}s"
+{% endif %}
 
   ## SSL directives
   SSLEngine on
@@ -46,6 +50,13 @@
 
   # SSL Proxy directives
   SSLProxyEngine On
+{% if not httpd_with_foreman %}
+  SSLProxyCACertificateFile "{{ httpd_ssl_dir }}/certs/katello-default-ca.crt"
+  ProxyPass /katello/api/v2/repositories/ {{ httpd_foreman_url }}/katello/api/v2/repositories/
+  <Location /katello/api/v2/repositories/>
+    ProxyPassReverse {{ httpd_foreman_url }}/katello/api/v2/repositories/
+  </Location>
+{% endif %}
 
   ProxyPass /pulp_ansible/galaxy/ {{ httpd_pulp_api_backend }}/pulp_ansible/galaxy/
   ProxyPassReverse /pulp_ansible/galaxy/ {{ httpd_pulp_api_backend }}/pulp_ansible/galaxy/
@@ -54,6 +65,9 @@
     RequestHeader unset REMOTE_USER
     RequestHeader unset REMOTE-USER
     RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_facts['fqdn'] }}'"
+    {% for httpd_pulp_trusted_host in httpd_pulp_trusted_hosts %}
+    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ httpd_pulp_trusted_host }}'"
+    {% endfor %}
     ProxyPass {{ httpd_pulp_api_backend }}/v2/
     ProxyPassReverse {{ httpd_pulp_api_backend }}/v2/
   </Location>
@@ -83,6 +97,9 @@
     RequestHeader unset REMOTE_USER
     RequestHeader unset REMOTE-USER
     RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_facts['fqdn'] }}'"
+    {% for httpd_pulp_trusted_host in httpd_pulp_trusted_hosts %}
+    RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ httpd_pulp_trusted_host }}'"
+    {% endfor %}
     ProxyPass {{ httpd_pulp_api_backend }}/pulp/api/v3 timeout=600
     ProxyPassReverse {{ httpd_pulp_api_backend }}/pulp/api/v3
   </Location>
@@ -99,7 +116,8 @@
 
   ## Proxy rules
   ProxyRequests Off
-  ProxyPreserveHost On
+  ProxyPreserveHost {{ 'On' if httpd_with_foreman else 'Off' }}
+{% if httpd_with_foreman %}
   ProxyAddHeaders On
   ProxyPass /pulp !
   ProxyPass /pub !
@@ -108,6 +126,16 @@
   ProxyPass /server-status !
   ProxyPass / {{ httpd_foreman_backend }}/ retry=0 timeout=900 upgrade=websocket
   ProxyPassReverse / {{ httpd_foreman_backend }}/
+{% else %}
+  ProxyPass /rhsm {{ httpd_foreman_url }}/rhsm disablereuse=on retry=0
+  ProxyPassReverse /rhsm {{ httpd_foreman_url }}/rhsm
+  ProxyPass /redhat_access {{ httpd_foreman_url }}/redhat_access disablereuse=on retry=0
+  ProxyPassReverse /redhat_access {{ httpd_foreman_url }}/redhat_access
+  ProxyPass /api/lightspeed {{ httpd_foreman_url }}/api/lightspeed disablereuse=on retry=0
+  ProxyPassReverse /api/lightspeed {{ httpd_foreman_url }}/api/lightspeed
+  ProxyPass /api/registration_commands {{ httpd_foreman_url }}/api/registration_commands disablereuse=on retry=0
+  ProxyPassReverse /api/registration_commands {{ httpd_foreman_url }}/api/registration_commands
+{% endif %}
 
   AddDefaultCharset UTF-8
 </VirtualHost>
