@@ -2,7 +2,9 @@
 
 :foreman_url: {{ foreman_proxy_foreman_server_url }}
 :trusted_hosts:
-  - {{ foreman_proxy_trusted_hosts }}
+{% for host in foreman_proxy_trusted_hosts %}
+  - {{ host }}
+{% endfor %}
 
 :https_port: {{ foreman_proxy_https_port }}
 :ssl_ca_file: /etc/foreman-proxy/ssl_ca.pem

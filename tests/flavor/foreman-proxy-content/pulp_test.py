@@ -30,19 +30,12 @@ def pulp_settings(server):
 
 
 def test_import_paths_restricted(pulp_settings):
-    assert '/var/lib/pulp/sync_imports' in pulp_settings['import']
+    assert [] == pulp_settings['import']
     assert '/var/lib/pulp/imports' not in pulp_settings['import']
 
 
-def test_sync_imports_directory(server):
-    assert server.file("/var/lib/pulp/sync_imports").is_directory
-
-
-def test_no_exports_directory(server):
+def test_no_imports_or_exports_directories(server):
     assert not server.file("/var/lib/pulp/exports").exists
-
-
-def test_no_imports_directory(server):
     assert not server.file("/var/lib/pulp/imports").exists
 
 

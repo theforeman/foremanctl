@@ -1,8 +1,8 @@
 CURL_CMD = "curl --silent --output /dev/null"
 
 
-def test_rhsm_pulpcore_vhost_exists(server):
-    conf = server.file("/etc/httpd/conf.d/rhsm-pulpcore.conf")
+def test_pulpcore_vhost_exists(server):
+    conf = server.file("/etc/httpd/conf.d/pulpcore.conf")
     assert conf.exists
     assert conf.is_file
 

@@ -5,13 +5,14 @@
   IncludeOptional "/etc/httpd/conf.d/05-foreman.d/*.conf"
 
   ## Logging
-  ErrorLog "/var/log/httpd/foreman_error.log"
+  ErrorLog "/var/log/httpd/{{ 'foreman_error' if httpd_with_foreman else 'mirror_error' }}.log"
   ServerSignature Off
-  CustomLog "/var/log/httpd/foreman_access.log" combined
+  CustomLog "/var/log/httpd/{{ 'foreman_access' if httpd_with_foreman else 'mirror_access' }}.log" combined
 
   ## Request header rules
   ## as per http://httpd.apache.org/docs/2.4/mod/mod_headers.html#requestheader
   RequestHeader set X-FORWARDED-PROTO "http"
+{% if httpd_with_foreman %}
   RequestHeader set SSL-CLIENT-S-DN ""
   RequestHeader set SSL-CLIENT-CERT ""
   RequestHeader set SSL-CLIENT-VERIFY ""
@@ -33,6 +34,7 @@
   RequestHeader unset REMOTE-USER_GROUPS
   RequestHeader unset REMOTE_USER-GROUPS
   RequestHeader unset REMOTE_USER_GROUPS
+{% endif %}
 
   <Location "/pulp/content">
     RequestHeader unset X-CLIENT-CERT
@@ -50,7 +52,7 @@
     ProxyPassReverse {{ httpd_pulp_content_backend }}/pulp/content
   </Location>
 
-  Alias /pub /var/www/html/pub
+  Alias /pub {{ httpd_pub_dir }}
 
   <Location /pub>
     Options +FollowSymLinks +Indexes
@@ -59,6 +61,7 @@
 
   ## Proxy rules
   ProxyRequests Off
+{% if httpd_with_foreman %}
   ProxyPreserveHost On
   ProxyAddHeaders On
   ProxyPass /pulp !
@@ -68,6 +71,7 @@
   ProxyPass /server-status !
   ProxyPass / {{ httpd_foreman_backend }}/ retry=0 timeout=900 upgrade=websocket
   ProxyPassReverse / {{ httpd_foreman_backend }}/
+{% endif %}
 
   AddDefaultCharset UTF-8
 </VirtualHost>
