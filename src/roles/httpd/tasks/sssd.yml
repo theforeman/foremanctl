@@ -39,7 +39,7 @@
     path: /etc/sssd/sssd.conf
     section: ifp
     option: allowed_uids
-    value: "root, apache"
+    value: "root, {{ httpd_user }}"
     mode: "0600"
   notify:
     - Restart sssd

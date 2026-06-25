@@ -9,6 +9,8 @@
           Policy=always
         mode: "0644"
       loop: "{{ images_deployed_names | default([]) }}"
+      when:
+        - ansible_facts['os_family'] != 'Debian'
 
     - name: Run daemon reload
       ansible.builtin.systemd:
