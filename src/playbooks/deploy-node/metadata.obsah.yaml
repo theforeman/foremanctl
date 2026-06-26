@@ -1,0 +1,20 @@
+---
+help: |
+  Install infra node
+
+variables:
+  certificates_bundle:
+    help: Path to the certificates bundle
+    type: AbsolutePath
+    parameter: --certificate-bundle
+    persist: false
+  foreman_name:
+    help: Hostname of the main Foreman instance
+    type: FQDN
+
+include:
+  - _database_mode
+  - _database_connection
+  - _tuning
+  - _flavor_features
+  - _pulp

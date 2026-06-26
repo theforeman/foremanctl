@@ -1,7 +1,7 @@
 ---
-- name: Setup quadlet demo machine
+- name: Setup proxy demo machine
   hosts:
-    - quadlet
+    - proxy
   become: true
   vars_files:
     - "../../vars/defaults.yml"
@@ -18,7 +18,6 @@
       vars:
         checks_databases: "{{ all_databases }}"
     - role: certificates
-      when: "certificates_source in ['default', 'custom_server']"
     - role: certificate_checks
       vars:
         certificate_checks_certificate: "{{ server_certificate }}"
@@ -28,19 +27,7 @@
       when:
         - database_mode == 'internal'
     - redis
-    - candlepin
     - httpd
-    - foreman
     - pulp
     - role: systemd_target
-    - role: iop_core
-      when:
-        - "'iop' in enabled_features"
-        - database_mode == 'internal'
     - role: foreman_proxy
-      when:
-        - "'foreman-proxy' in enabled_features"
-    - role: hammer
-      when:
-        - "'hammer' in enabled_features"
-    - post_install
