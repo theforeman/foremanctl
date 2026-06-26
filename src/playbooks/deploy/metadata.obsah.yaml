@@ -56,6 +56,26 @@ variables:
     parameter: --bmc-redfish-verify-ssl
     help: Verify SSL certificates for Redfish BMC connections.
     type: Boolean
+  foreman_proxy_dhcp_kea_url:
+    parameter: --foreman-proxy-dhcp-kea-url
+    help: Kea Control Agent API URL (e.g., https://kea-server)
+  foreman_proxy_dhcp_kea_username:
+    parameter: --foreman-proxy-dhcp-kea-username
+    help: HTTP Basic Auth username for Kea API
+  foreman_proxy_dhcp_kea_password:
+    parameter: --foreman-proxy-dhcp-kea-password
+    help: HTTP Basic Auth password for Kea API
+  foreman_proxy_dhcp_kea_verify_ssl:
+    parameter: --foreman-proxy-dhcp-kea-verify-ssl
+    help: "Verify SSL certificates when connecting to Kea (default: true)"
+    type: Boolean
+  foreman_proxy_dhcp_kea_lease_timeout:
+    parameter: --foreman-proxy-dhcp-kea-lease-timeout
+    help: "Timeout in seconds for Kea lease operations (default: 60)"
+  foreman_proxy_dhcp_subnets:
+    parameter: --foreman-proxy-dhcp-subnets
+    help: Restrict DHCP management to specific subnets (CIDR format)
+    action: append
 
 constraints:
   required_together:
