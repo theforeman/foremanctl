@@ -68,6 +68,8 @@
     secrets:
       - 'candlepin-ca-cert,target=/etc/candlepin/certs/candlepin-ca.crt,mode=0440,type=mount'
       - 'candlepin-ca-key,target=/etc/candlepin/certs/candlepin-ca.key,mode=0440,type=mount'
+      - 'candlepin-tomcat-cert,target=/etc/candlepin/certs/tomcat.crt,mode=0440,type=mount'
+      - 'candlepin-tomcat-key,target=/etc/candlepin/certs/tomcat.key,mode=0440,type=mount'
       - 'candlepin-tomcat-keystore,target=/etc/candlepin/certs/keystore,mode=0440,type=mount'
       - 'candlepin-candlepin-conf,target=/etc/candlepin/candlepin.conf,mode=0440,type=mount'
       - 'candlepin-tomcat-server-xml,target=/etc/tomcat/server.xml,mode=440,type=mount'
