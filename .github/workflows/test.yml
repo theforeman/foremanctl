@@ -406,15 +406,14 @@ jobs:
       - name: Generate certificates bundle on quadlet
         run: |
           ./foremanctl certificate-bundle proxy.example.com
-      - name: Copy certificates bundle to content-proxy
+      - name: Fetch certificates bundle from quadlet
         run: |
-          vagrant ssh quadlet -- sudo cat /var/lib/foremanctl/certs/bundles/proxy.example.com.tar.gz | \
-          vagrant ssh proxy -- "sudo tee /root/proxy.example.com.tar.gz > /dev/null"
+          ./forge fetch-bundle proxy.example.com
       - name: Deploy content proxy
         run: |
           ./foremanctl deploy-proxy \
             --flavor foreman-proxy-content \
-            --certificate-bundle /root/proxy.example.com.tar.gz \
+            --certificate-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
             --foreman-fqdn quadlet.example.com
       - name: Run tests
         run: |
