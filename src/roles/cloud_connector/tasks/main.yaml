@@ -15,7 +15,7 @@
     server_url: "{{ cloud_connector_url }}"
     username: "{{ cloud_connector_admin_user }}"
     password: "{{ cloud_connector_admin_password }}"
-    ca_path: "{{ foreman_ca_certificate }}"
+    ca_path: "{{ foreman_ca_certificate | default(omit) }}"
     state: present
 
 - name: Create cloud connector service user
@@ -30,7 +30,7 @@
     server_url: "{{ cloud_connector_url }}"
     username: "{{ cloud_connector_admin_user }}"
     password: "{{ cloud_connector_admin_password }}"
-    ca_path: "{{ foreman_ca_certificate }}"
+    ca_path: "{{ foreman_ca_certificate | default(omit) }}"
     state: present
 
 - name: Configure foreman-rh-cloud worker
@@ -62,6 +62,7 @@
     group: root
     mode: '0644'
   notify: Foreman CA changed
+  when: foreman_ca_certificate is defined
 
 - name: Ensure rhcd started and enabled
   ansible.builtin.service:
@@ -81,7 +82,7 @@
     server_url: "{{ cloud_connector_url }}"
     username: "{{ cloud_connector_admin_user }}"
     password: "{{ cloud_connector_admin_password }}"
-    ca_path: "{{ foreman_ca_certificate }}"
+    ca_path: "{{ foreman_ca_certificate | default(omit) }}"
   vars:
     cloud_connector_client_id: "{{ cloud_connector_cert_output.stdout | regex_search('CN\\s?=\\s?([a-z0-9-]+)', '\\1') | first }}"
 
@@ -92,7 +93,7 @@
     server_url: "{{ cloud_connector_url }}"
     username: "{{ cloud_connector_admin_user }}"
     password: "{{ cloud_connector_admin_password }}"
-    ca_path: "{{ foreman_ca_certificate }}"
+    ca_path: "{{ foreman_ca_certificate | default(omit) }}"
 
 - name: Announce to Sources
   ansible.builtin.uri:
@@ -100,7 +101,7 @@
     user: "{{ cloud_connector_admin_user }}"
     password: "{{ cloud_connector_admin_password }}"
     method: POST
-    ca_path: "{{ foreman_ca_certificate }}"
+    ca_path: "{{ foreman_ca_certificate | default(omit) }}"
     force_basic_auth: true
     body_format: json
     status_code: [200, 201]
