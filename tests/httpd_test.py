@@ -24,8 +24,8 @@ def test_https_port(server):
 
 
 @pytest.mark.feature('foreman')
-def test_http_foreman_ping(server, server_fqdn):
-    cmd = server.run(f"{CURL_CMD} --write-out '%{{redirect_url}}' http://{server_fqdn}/api/v2/ping")
+def test_http_foreman_ping(curl_request, server_fqdn):
+    cmd = curl_request("api/v2/ping")
     assert cmd.succeeded
     assert cmd.stdout == f'https://{server_fqdn}/api/v2/ping'
 
@@ -61,14 +61,14 @@ def test_https_pulp_content(server, certificates, server_fqdn):
     assert "Index of /pulp/content/" in cmd.stdout
 
 
-def test_https_pulp_auth(server, certificates, server_fqdn):
-    cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' --cert {certificates['client_certificate']} --key {certificates['client_key']} https://{server_fqdn}/pulp/api/v3/users/")
+def test_https_pulp_auth(curl_request):
+    cmd = curl_request("pulp/api/v3/users/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
 
-def test_https_pypi_endpoint(server, certificates, server_fqdn):
-    cmd = server.run(f"curl --cacert {certificates['server_ca_certificate']} https://{server_fqdn}/pypi/test/")
+def test_https_pypi_endpoint(curl_request):
+    cmd = curl_request("pypi/test/", return_body=True)
     assert cmd.succeeded
     # Verify route proxies to Pulp's Python plugin by checking for PythonDistribution in response
     # (Rails or unconfigured routes would return different errors)
@@ -82,40 +82,40 @@ def test_pub_directory_exists(server):
     assert pub_dir.mode == 0o755
 
 
-def test_http_pub_directory_accessible(server, server_fqdn):
-    cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/pub/")
+def test_http_pub_directory_accessible(curl_request):
+    cmd = curl_request("pub/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
 
-def test_https_pub_directory_accessible(server, certificates, server_fqdn):
-    cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/pub/")
+def test_https_pub_directory_accessible(curl_request):
+    cmd = curl_request("pub/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
 
-def test_http_pub_server_ca_certificate_downloadable(server, server_fqdn):
-    cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/pub/katello-server-ca.crt")
+def test_http_pub_server_ca_certificate_downloadable(curl_request):
+    cmd = curl_request("pub/katello-server-ca.crt")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
 
-def test_https_pub_server_ca_certificate_downloadable(server, certificates, server_fqdn):
-    cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/pub/katello-server-ca.crt")
+def test_https_pub_server_ca_certificate_downloadable(curl_request):
+    cmd = curl_request("pub/katello-server-ca.crt")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 
 
 @pytest.mark.feature('foreman')
-def test_http_foreman_login(server, server_fqdn):
-    cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/users/login")
+def test_http_foreman_login(curl_request):
+    cmd = curl_request("users/login")
     assert cmd.succeeded
     assert cmd.stdout == '301'
 
 
 @pytest.mark.feature('foreman')
-def test_https_foreman_login(server, certificates, server_fqdn):
-    cmd = server.run(f"{CURL_CMD} --cacert {certificates['server_ca_certificate']} --write-out '%{{http_code}}' https://{server_fqdn}/users/login")
+def test_https_foreman_login(curl_request):
+    cmd = curl_request("users/login")
     assert cmd.succeeded
     assert cmd.stdout == '200'
 

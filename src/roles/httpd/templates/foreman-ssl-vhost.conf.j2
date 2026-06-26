@@ -50,8 +50,8 @@
 
   # SSL Proxy directives
   SSLProxyEngine On
-{% if not httpd_with_foreman %}
   SSLProxyCACertificateFile "{{ httpd_ssl_dir }}/certs/katello-default-ca.crt"
+{% if not httpd_with_foreman %}
   ProxyPass /katello/api/v2/repositories/ {{ httpd_foreman_url }}/katello/api/v2/repositories/
   <Location /katello/api/v2/repositories/>
     ProxyPassReverse {{ httpd_foreman_url }}/katello/api/v2/repositories/

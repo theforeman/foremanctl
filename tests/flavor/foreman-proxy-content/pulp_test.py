@@ -2,17 +2,10 @@ import json
 
 import pytest
 
-FOREMAN_PROXY_PORT = 8443
-
 
 @pytest.fixture(scope="module")
-def pulp_smart_proxy_features(server, certificates, server_fqdn):
-    cmd = server.run(
-        f"curl --silent --cacert {certificates['server_ca_certificate']} "
-        f"--cert {certificates['client_certificate']} "
-        f"--key {certificates['client_key']} "
-        f"https://{server_fqdn}/pulp/api/v3/smart_proxy/v2/features"
-    )
+def pulp_smart_proxy_features(curl_request):
+    cmd = curl_request("pulp/api/v3/smart_proxy/v2/features", return_body=True)
     assert cmd.succeeded, f"Failed to query smart_proxy features: {cmd.stderr}"
     return json.loads(cmd.stdout)
 
@@ -53,11 +46,7 @@ def test_pulp_smart_proxy_features(pulp_smart_proxy_features):
         assert expected in capabilities, f"Missing capability: {expected}"
 
 
-def test_pulp_api_status(server, certificates, server_fqdn):
-    cmd = server.run(
-        f"curl --silent --output /dev/null --cacert {certificates['server_ca_certificate']} "
-        f"--write-out '%{{http_code}}' "
-        f"https://{server_fqdn}/pulp/api/v3/status/"
-    )
+def test_pulp_api_status(curl_request):
+    cmd = curl_request("pulp/api/v3/status/")
     assert cmd.succeeded
     assert cmd.stdout == '200'
