@@ -120,6 +120,9 @@ jobs:
         if: matrix.security != 'none'
         run: |
           ./forge security --mode ${{ matrix.security }}
+      - name: Setup TFTP server
+        run: |
+          ./forge tftp
       - name: Apply fapolicyd workarounds
         # https://access.redhat.com/solutions/7072618 / https://issues.redhat.com/browse/RHEL-37912
         # https://github.com/theforeman/foreman-fapolicyd/blob/develop/15-foreman-container.rules
@@ -152,6 +155,8 @@ jobs:
             --add-feature google \
             --add-feature remote-execution \
             --add-feature bmc \
+            --add-feature tftp \
+            --tftp-servername 127.0.0.1 \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |

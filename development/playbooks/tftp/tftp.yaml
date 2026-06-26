@@ -1,0 +1,20 @@
+---
+- name: TFTP
+  hosts:
+    - quadlet
+  become: true
+  tasks:
+    - name: Install packages
+      ansible.builtin.package:
+        name:
+          - tftp-server
+          - tftp
+        state: present
+
+    - name: Start TFTP services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      with_items:
+        - tftp.service
