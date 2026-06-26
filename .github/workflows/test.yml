@@ -373,6 +373,12 @@ jobs:
           wait-timeout-minutes: 5
 
   foreman-proxy-content-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        certificate_source:
+          - default
+          - custom_server
     runs-on: ubuntu-24.04
     name: "Tests Proxy Deployment"
     steps:
@@ -395,9 +401,16 @@ jobs:
       - name: Run image pull
         run: |
           ./foremanctl pull-images
+      - name: Create custom certificates
+        if: matrix.certificate_source == 'custom_server'
+        run: |
+          ./forge custom-certs
+          ./forge custom-certs --hostname proxy.example.com
       - name: Deploy Katello on quadlet
         run: |
           ./foremanctl deploy \
+            --certificate-source=${{ matrix.certificate_source }} \
+            ${{ matrix.certificate_source == 'custom_server' && '--certificate-server-certificate /root/custom-certificates/certs/quadlet.example.com.crt --certificate-server-key /root/custom-certificates/private/quadlet.example.com.key --certificate-server-ca-certificate /root/custom-certificates/certs/ca.crt' || '' }} \
             --initial-admin-password=changeme \
             --tuning development \
             --add-feature foreman-proxy
@@ -405,7 +418,9 @@ jobs:
         run: rm -f .var/lib/foremanctl/parameters.yaml
       - name: Generate certificates bundle on quadlet
         run: |
-          ./foremanctl certificate-bundle proxy.example.com
+          ./foremanctl certificate-bundle proxy.example.com \
+            --certificate-source=${{ matrix.certificate_source }} \
+            ${{ matrix.certificate_source == 'custom_server' && '--certificate-server-certificate /root/custom-certificates/certs/proxy.example.com.crt --certificate-server-key /root/custom-certificates/private/proxy.example.com.key' || '' }}
       - name: Fetch certificates bundle from quadlet
         run: |
           ./forge fetch-bundle proxy.example.com
