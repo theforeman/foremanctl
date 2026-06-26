@@ -66,10 +66,11 @@
       - |
         [Unit]
         Description=VMAAS Reposcan Service
+        PartOf=foreman.target
         [Service]
         Restart=on-failure
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
 
 - name: Deploy VMAAS Webapp-Go container
   containers.podman.podman_container:
@@ -97,10 +98,11 @@
         Description=VMAAS Webapp-Go Service
         Wants=iop-service-vmaas-reposcan.service
         After=iop-service-vmaas-reposcan.service
+        PartOf=foreman.target
         [Service]
         Restart=on-failure
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:

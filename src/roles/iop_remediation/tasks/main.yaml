@@ -64,10 +64,11 @@
         Description=Remediations API
         Wants=iop-core-host-inventory-api.service iop-service-advisor-backend-api.service
         After=iop-core-host-inventory-api.service iop-service-advisor-backend-api.service
+        PartOf=foreman.target
         [Service]
         Restart=on-failure
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:

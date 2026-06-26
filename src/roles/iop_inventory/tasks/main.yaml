@@ -54,11 +54,12 @@
       - |
         [Unit]
         Description=Database Readiness and Migration Init Container
+        PartOf=foreman.target
         [Service]
         Type=oneshot
         RemainAfterExit=true
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
 
 - name: Deploy Host Inventory MQ Service Container
   containers.podman.podman_container:
@@ -84,10 +85,11 @@
         Description=IOP Core Host-Based Inventory Container
         After=network-online.target iop-core-host-inventory-migrate.service
         Requires=iop-core-host-inventory-migrate.service
+        PartOf=foreman.target
         [Service]
         Restart=on-failure
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
 
 - name: Deploy Host Inventory API Container
   containers.podman.podman_container:
@@ -113,10 +115,11 @@
       - |
         [Unit]
         Description=IOP Core Host-Based Inventory Web Container
+        PartOf=foreman.target
         [Service]
         Restart=on-failure
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
 
 - name: Deploy Host Inventory Cleanup Container
   containers.podman.podman_container:

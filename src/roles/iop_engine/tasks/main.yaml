@@ -27,10 +27,11 @@
         Description=IOP Core Engine Container
         After=iop-core-kafka.service iop-core-ingress.service iop-core-puptoo.service
         Wants=iop-core-kafka.service iop-core-ingress.service iop-core-puptoo.service
+        PartOf=foreman.target
         [Service]
         Restart=on-failure
         [Install]
-        WantedBy=default.target
+        WantedBy=default.target foreman.target
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
