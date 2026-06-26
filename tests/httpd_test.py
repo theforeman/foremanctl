@@ -24,10 +24,10 @@ def test_https_port(server):
 
 
 @pytest.mark.feature('foreman')
-def test_http_foreman_ping(curl_request, server_fqdn):
+def test_http_foreman_ping(curl_request):
     cmd = curl_request("api/v2/ping")
     assert cmd.succeeded
-    assert cmd.stdout == f'https://{server_fqdn}/api/v2/ping'
+    assert cmd.stdout == '200'
 
 
 @pytest.mark.feature('foreman')
@@ -107,8 +107,8 @@ def test_https_pub_server_ca_certificate_downloadable(curl_request):
 
 
 @pytest.mark.feature('foreman')
-def test_http_foreman_login(curl_request):
-    cmd = curl_request("users/login")
+def test_http_foreman_login(server, server_fqdn):
+    cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/users/login")
     assert cmd.succeeded
     assert cmd.stdout == '301'
 
