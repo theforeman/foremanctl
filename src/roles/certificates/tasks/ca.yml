@@ -5,7 +5,8 @@
   register: _certificates_ca_cert
 
 - name: 'Generate CA'
-  when: not _certificates_ca_cert.stat.exists or certificates_renew_ca
+  when:
+    - (not _certificates_ca_cert.stat.exists or certificates_renew_ca)
   block:
     - name: 'Create CA key password file'
       ansible.builtin.copy:

@@ -11,15 +11,28 @@
   roles:
     - role: pre_install
   post_tasks:
-    - name: Deploy core image units
+    - name: Deploy Foreman image units
       ansible.builtin.include_role:
-        name: "{{ item }}"
+        name: foreman
         tasks_from: image.yaml
-      loop:
-        - foreman
-        - candlepin
-        - pulp
-        - redis
+      when: enabled_features | has_feature('foreman')
+
+    - name: Deploy Candlepin image units
+      ansible.builtin.include_role:
+        name: candlepin
+        tasks_from: image.yaml
+      when: enabled_features | has_feature('candlepin')
+
+    - name: Deploy Pulp image units
+      ansible.builtin.include_role:
+        name: pulp
+        tasks_from: image.yaml
+      when: enabled_features | has_feature('pulp')
+
+    - name: Deploy Redis image units
+      ansible.builtin.include_role:
+        name: redis
+        tasks_from: image.yaml
 
     - name: Deploy database image units
       ansible.builtin.include_role:
@@ -31,7 +44,7 @@
       ansible.builtin.include_role:
         name: foreman_proxy
         tasks_from: image.yaml
-      when: "'foreman-proxy' in enabled_features"
+      when: enabled_features | has_feature('foreman-proxy')
 
     - name: Deploy IOP image units
       ansible.builtin.include_role:
@@ -52,7 +65,7 @@
         - iop_advisor_frontend
         - iop_inventory_frontend
         - iop_vulnerability_frontend
-      when: "'iop' in enabled_features"
+      when: enabled_features | has_feature('iop')
 
     - name: Pull images
       ansible.builtin.include_role:

@@ -117,6 +117,11 @@ def has_feature(features, feature):
             or feature in get_dependencies(list(features)))
 
 
+def databases_for_features(databases, enabled_features):
+    """Return databases whose feature gate matches enabled_features."""
+    return [db for db in databases if has_feature(enabled_features, db['feature'])]
+
+
 def to_postgresql_databases(databases):
     return [{'name': db['database'], 'owner': db['user']} for db in databases]
 
@@ -138,6 +143,7 @@ class FilterModule(object):
             'list_all_features': list_all_features,
             'invalid_features': invalid_features,
             'has_feature': has_feature,
+            'databases_for_features': databases_for_features,
             'to_postgresql_databases': to_postgresql_databases,
             'to_postgresql_users': to_postgresql_users,
         }

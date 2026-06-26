@@ -1,0 +1,34 @@
+---
+- name: Setup proxy machine
+  hosts:
+    - proxy
+  become: true
+  vars_files:
+    - "../../vars/defaults.yml"
+    - "../../vars/flavors/{{ flavor }}.yml"
+    - "../../vars/certificates.yml"
+    - "../../vars/images.yml"
+    - "../../vars/tuning/{{ tuning }}.yml"
+    - "../../vars/database.yml"
+    - "../../vars/foreman.yml"
+    - "../../vars/base.yaml"
+  roles:
+    - role: pre_install
+    - role: checks
+      vars:
+        checks_databases: "{{ all_databases }}"
+    - role: certificates
+    - role: certificate_checks
+      vars:
+        certificate_checks_certificate: "{{ server_certificate }}"
+        certificate_checks_key: "{{ server_key }}"
+        certificate_checks_ca: "{{ server_ca_certificate }}"
+    - role: postgresql
+      when:
+        - database_mode == 'internal'
+    - redis
+    - httpd
+    - pulp
+    - systemd_target
+    - foreman_proxy
+    - post_install

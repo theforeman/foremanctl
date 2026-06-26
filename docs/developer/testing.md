@@ -172,6 +172,40 @@ def test_ingress_http_endpoint(server):
     # ...
 ```
 
+### Flavor-specific tests
+
+Some assertions only apply to a particular deployment flavor (for example, Katello expects `candlepin` and `pulp` databases; but a content proxy does not). Put flavor specific tests under `tests/flavor/<flavor>/`. Tests outside that tree always run regardless of flavor.
+
+#### How tests are selected
+
+During collection, `pytest_collection_modifyitems` in `tests/conftest.py` reads the active flavor from the foremanctl parameters file (`.var/lib/foremanctl/parameters.yaml`). It defaults to `katello`.
+
+For each collected test:
+
+- If the test file is **not** under `tests/flavor/`, it is kept.
+- If it **is** under `tests/flavor/`, it is kept only when it lives in `tests/flavor/<active_flavor>/`; tests in sibling flavor directories are deselected.
+
+So a Katello deployment runs `tests/flavor/katello/` plus all shared tests, but skips `tests/flavor/foreman-proxy-content/`. After `./foremanctl deploy-proxy --flavor foreman-proxy-content`, the opposite applies.
+
+This is separate from [feature guarding](#feature-guarding): feature marks skip tests at runtime based on enabled features; flavor selection happens at collection time from the deployed flavor.
+
+#### Layout
+
+```
+tests/
+  postgresql_test.py              # shared — always collected
+  flavor/
+    katello/                      # runs only when flavor is katello
+      postgresql_test.py
+      images_test.py
+    foreman-proxy-content/        # runs only when flavor is foreman-proxy-content         
+      pulp_test.py
+      httpd_test.py
+      postgresql_test.py
+```
+
+Use feature marks when behavior depends on an optional add-on feature; use `tests/flavor/<flavor>/` when the whole deployment type differs (server vs content proxy, different services, different defaults).
+
 ### API test
 
 The `foremanapi` fixture is an [apypie](https://github.com/Apipie/apypie) `ForemanApi` client that connects to the deployed Foreman instance(authenticated as `admin`/`changeme`). It maps directly to the Foreman REST API — each method takes a resource name that corresponds to an API endpoint:
@@ -232,5 +266,6 @@ def test_dynflow_service_instances(server, instance):
 | Client registration or content workflows | `tests/client_test.py` |
 | CLI flags, playbooks, or feature management | `tests/features_test.py` or `tests/playbooks_test.py` |
 | A standalone script (no deployment needed) | `tests/unit/<name>_test.py` |
+| Behavior specific to a deployment flavor | `tests/flavor/<flavor>/<name>_test.py` |
 
 When adding a new file, follow the conventions of the nearest existing test file.
