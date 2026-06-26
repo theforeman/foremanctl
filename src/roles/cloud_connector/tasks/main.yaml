@@ -4,7 +4,6 @@
     name:
       - rhc
       - yggdrasil-worker-forwarder
-    disable_plugin: foreman-protector
 
 - name: Create cloud connector role
   theforeman.foreman.role:
