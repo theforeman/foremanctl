@@ -80,6 +80,8 @@ def test_client_certificate_chain_verifies(server, certificates):
 
 
 def test_localhost_certificate_issued_by_internal_ca(server, certificates, custom_certificates):
+    if not server.file(certificates['localhost_certificate']).exists:
+        pytest.skip("localhost certificate not present in proxy deployment")
     localhost_info = certificate_info(server, certificates['localhost_certificate'])
     ca_info = certificate_info(server, certificates['ca_certificate'])
     assert localhost_info['issuer'] == ca_info['subject'], \
