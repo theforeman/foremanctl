@@ -13,5 +13,5 @@ postgresql_container_image: quay.io/sclorg/postgresql-13-c9s
 postgresql_container_tag: "latest"
 pulp_container_image: quay.io/foreman/pulp
 pulp_container_tag: "foreman-{{ container_tag_stream }}"
-redis_container_image: quay.io/sclorg/redis-6-c9s
-redis_container_tag: "latest"
+valkey_container_image: quay.io/sclorg/valkey-8-c10s
+valkey_container_tag: "latest"

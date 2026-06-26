@@ -4,7 +4,7 @@ CORE_IMAGES = [
     "foreman",
     "candlepin",
     "pulp",
-    "redis",
+    "valkey",
 ]
 
 
