@@ -1,0 +1,72 @@
+---
+# Import a user-supplied CA (certificate + key)
+#
+# The CA private key is stored unencrypted, matching the internal CA
+
+- name: 'Read the provided custom CA certificate'
+  community.crypto.x509_certificate_info:
+    path: "{{ certificates_custom_ca_certificate }}"
+  register: _certificates_custom_ca_info
+
+- name: 'Assert the provided custom CA can sign certificates'
+  ansible.builtin.assert:
+    that:
+      - "'CA:TRUE' in (_certificates_custom_ca_info.basic_constraints | default([]))"
+    fail_msg: >-
+      The certificate at {{ certificates_custom_ca_certificate }} is not a CA
+      certificate.
+    success_msg: 'Provided custom CA is a valid signing CA.'
+
+- name: 'Stat the existing managed CA'
+  ansible.builtin.stat:
+    path: "{{ certificates_ca_directory_certs }}/ca.crt"
+  register: _certificates_existing_ca
+
+- name: 'Read the existing managed CA for comparison'
+  community.crypto.x509_certificate_info:
+    path: "{{ certificates_ca_directory_certs }}/ca.crt"
+  register: _certificates_existing_ca_info
+  when: _certificates_existing_ca.stat.exists
+
+- name: 'Do not replace existing ca without --replace-ca'
+  ansible.builtin.fail:
+    msg: >-
+      --certificate-source=custom_ca would REPLACE the existing CA at
+      {{ certificates_ca_directory_certs }}/ca.crt!
+      That would invalidate all previously signed certs!
+      Re-run with --replace-ca only if you know what you are doing!
+  when:
+    - _certificates_existing_ca.stat.exists
+    - (_certificates_existing_ca_info.fingerprints.sha256 | default(''))
+      != (_certificates_custom_ca_info.fingerprints.sha256 | default(''))
+    - not (certificates_replace_ca | default(false) | bool)
+
+- name: 'Import custom CA certificate'
+  ansible.builtin.copy:
+    src: "{{ certificates_custom_ca_certificate }}"
+    dest: "{{ certificates_ca_directory_certs }}/ca.crt"
+    remote_src: true
+    mode: '0444'
+
+- name: 'Import the custom CA key, unencrypted'
+  community.crypto.openssl_privatekey_convert:
+    src_path: "{{ certificates_custom_ca_key }}"
+    src_passphrase: "{{ certificates_custom_ca_key_password | default(omit, true) }}"
+    dest_path: "{{ certificates_ca_directory_keys }}/ca.key"
+    format: pkcs8
+    mode: '0600'
+  no_log: true
+
+- name: 'Copy custom CA as server CA certificate'
+  ansible.builtin.copy:
+    src: "{{ certificates_ca_directory_certs }}/ca.crt"
+    dest: "{{ certificates_ca_directory_certs }}/server-ca.crt"
+    remote_src: true
+    mode: '0444'
+
+- name: 'Create CA bundle from the custom CA'
+  ansible.builtin.copy:
+    src: "{{ certificates_ca_directory_certs }}/ca.crt"
+    dest: "{{ certificates_ca_directory_certs }}/ca-bundle.crt"
+    remote_src: true
+    mode: '0444'

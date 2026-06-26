@@ -6,7 +6,7 @@ This document describes how certificate generation and management works in forem
 
 ### Certificate Sources
 
-foremanctl supports two certificate sources that determine how certificates are obtained:
+foremanctl supports three certificate sources that determine how certificates are obtained:
 
 **Default Source (`certificate_source: default`)**
 - Automatically generates self-signed certificates during deployment
@@ -18,6 +18,14 @@ foremanctl supports two certificate sources that determine how certificates are 
 - Automatically generates an internal CA for client certificates and localhost
 - Server certificate, key, and CA bundle are copied to `/var/lib/foremanctl/certs/`
 - Certificate source persists across deployments; original files only needed on first deploy or when updating certificates
+
+**Custom CA (`certificate_source: custom_ca`)**
+- Uses a CA provided certificate and key that issues all certs
+- The provided CA key is stored unencrypted, the same way the managed internal CA key is stored
+- The CA must have `basicConstraints CA:TRUE`
+- **On an existing deployment, replacing the CA invalidates all certs**
+  `custom_ca` refuses to overwrite an existing CA unless you pass `--replace-ca`.
+  A fresh install, or re-applying the same CA, does not need `--replace-ca`
 
 ### Usage
 
@@ -52,6 +60,19 @@ foremanctl deploy \
 
 # Switch back to auto-generated certificates
 foremanctl deploy --certificate-source=default
+```
+
+#### Using a Custom CA
+
+```bash
+# First deployment
+foremanctl deploy \
+  --certificate-source=custom_ca \
+  --certificate-ca-certificate /path/to/ca.crt \
+  --certificate-ca-key /path/to/ca.key
+
+# With encrypted CA, add:
+  --certificate-ca-key-password 'secret'
 ```
 
 #### Migrating from foreman-installer
