@@ -166,10 +166,10 @@ jobs:
           name: smoker-${{ env.ARTIFACT_SUFFIX }}
           path: "/home/runner/smoker/report/"
       - name: Generate sos reports
-        if: ${{ always() }}
+        if: ${{ always() && matrix.security != 'fapolicyd' }}
         run: ./forge sos
       - name: Archive sos reports
-        if: ${{ always() }}
+        if: ${{ always() && matrix.security != 'fapolicyd' }}
         uses: actions/upload-artifact@v7
         with:
           name: sosreport-${{ env.ARTIFACT_SUFFIX }}
