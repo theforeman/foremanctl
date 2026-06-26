@@ -1,0 +1,58 @@
+---
+# Import a user-supplied CA (certificate + key)
+#
+# The CA private key is re-encrypted with the managed certificates_ca_password
+
+- name: 'Read the provided custom CA certificate'
+  community.crypto.x509_certificate_info:
+    path: "{{ certificates_custom_ca_certificate }}"
+  register: _certificates_custom_ca_info
+
+- name: 'Assert the provided custom CA can sign certificates'
+  ansible.builtin.assert:
+    that:
+      - "'CA:TRUE' in (_certificates_custom_ca_info.basic_constraints | default([]))"
+    fail_msg: >-
+      The certificate at {{ certificates_custom_ca_certificate }} is not a CA
+      certificate.
+    success_msg: 'Provided custom CA is a valid signing CA.'
+
+- name: 'Import custom CA certificate'
+  ansible.builtin.copy:
+    src: "{{ certificates_custom_ca_certificate }}"
+    dest: "{{ certificates_ca_directory_certs }}/ca.crt"
+    remote_src: true
+    mode: '0444'
+
+- name: 'Store the managed CA key password'
+  ansible.builtin.copy:
+    content: "{{ certificates_ca_password }}"
+    dest: "{{ certificates_ca_directory_keys }}/ca.pwd"
+    owner: root
+    group: root
+    mode: '0600'
+  no_log: true
+
+- name: 'Import the custom CA key, re-encrypted with the managed password'
+  community.crypto.openssl_privatekey_convert:
+    src_path: "{{ certificates_custom_ca_key }}"
+    src_passphrase: "{{ certificates_custom_ca_key_password | default(omit, true) }}"
+    dest_path: "{{ certificates_ca_directory_keys }}/ca.key"
+    dest_passphrase: "{{ certificates_ca_password }}"
+    format: pkcs8
+    mode: '0600'
+  no_log: true
+
+- name: 'Copy custom CA as server CA certificate'
+  ansible.builtin.copy:
+    src: "{{ certificates_ca_directory_certs }}/ca.crt"
+    dest: "{{ certificates_ca_directory_certs }}/server-ca.crt"
+    remote_src: true
+    mode: '0444'
+
+- name: 'Create CA bundle from the custom CA'
+  ansible.builtin.copy:
+    src: "{{ certificates_ca_directory_certs }}/ca.crt"
+    dest: "{{ certificates_ca_directory_certs }}/ca-bundle.crt"
+    remote_src: true
+    mode: '0444'
