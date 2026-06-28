@@ -17,7 +17,7 @@
     state: quadlet
     network: host
     sdnotify: true
-    command: ["run-redis", "--supervised", "systemd"]
+    command: ["run-valkey", "--supervised", "systemd"]
     volumes:
       - /var/lib/redis:/data:rw,Z
     quadlet_options:
