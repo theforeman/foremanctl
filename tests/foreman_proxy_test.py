@@ -29,6 +29,10 @@ def test_foreman_proxy_features(server, certificates, server_fqdn, enabled_featu
         assert "bmc" in features
     else:
         assert "bmc" not in features
+    if 'templates' in enabled_features:
+        assert "templates" in features
+    else:
+        assert "templates" not in features
 
 
 def test_foreman_proxy_service(server):
@@ -69,3 +73,11 @@ def test_bmc_capabilities(proxy_v2_features):
 def test_bmc_default_provider(proxy_v2_features):
     settings = proxy_v2_features['bmc'].get('settings', {})
     assert settings.get('bmc_default_provider') == 'ipmitool'
+
+
+@pytest.mark.feature('templates')
+def test_templates_template_url(proxy_v2_features):
+    settings = proxy_v2_features['templates'].get('settings', {})
+    template_url = settings.get('template_url')
+    assert template_url == 'http://quadlet.example.com:8000'
+
