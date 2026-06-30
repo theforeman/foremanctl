@@ -146,6 +146,6 @@
     PGPASSWORD: "{{ postgresql_admin_password }}"
   loop: "{{ restore_databases_to_restore }}"
   loop_control:
-    label: "{{ item.dump_file }} → {{ item.database_name }}"
+    label: "{{ item.dump_file }} -> {{ item.database_name }}"
   changed_when: true
   failed_when: false

@@ -21,3 +21,10 @@ variables:
     help: Force restore on existing system (bypasses safety check)
     action: store_true
     persist: false
+
+  restore_chain:
+    help: |
+      Automatically restore full backup chain for incremental backups.
+      Detects and restores base backup(s) first, then applies incrementals in order.
+    action: store_true
+    persist: false

@@ -92,12 +92,157 @@
       ansible.builtin.include_tasks:
         file: database_dumps.yaml
 
-    - name: Backup foremanctl state directory
-      community.general.archive:
-        path: "{{ obsah_state_path }}"
-        dest: "{{ backup_dir_full }}/foremanctl-state.tar.gz"
-        format: gz
-        mode: '0644'
+    - name: Copy incremental metadata from previous backup
+      when: incremental is defined and incremental | length > 0
+      block:
+        - name: Validate previous backup directory exists
+          ansible.builtin.stat:
+            path: "{{ incremental }}/metadata.yml"
+          register: backup_previous_metadata_file
+          failed_when: not backup_previous_metadata_file.stat.exists
+
+        - name: Read previous backup metadata
+          ansible.builtin.slurp:
+            path: "{{ incremental }}/metadata.yml"
+          register: backup_previous_metadata_content
+
+        - name: Parse previous backup metadata
+          ansible.builtin.set_fact:
+            backup_previous_metadata: "{{ backup_previous_metadata_content['content'] | b64decode | from_yaml }}"
+
+        - name: Check for required .snar files in previous backup
+          ansible.builtin.stat:
+            path: "{{ incremental }}/{{ item }}"
+          register: backup_snar_files_check
+          loop:
+            - ".config.snar"
+            - ".pulp.snar"
+          failed_when: false
+
+        - name: Find alternative backups with .snar files if current is missing
+          when: backup_snar_files_check.results | selectattr('stat.exists', 'equalto', false) | list | length > 0
+          block:
+            - name: Find all backup directories in parent directory
+              ansible.builtin.find:
+                paths: "{{ incremental | dirname }}"
+                file_type: directory
+                patterns: "foreman-backup-*"
+              register: backup_alternative_dirs
+              failed_when: false
+
+            - name: Check for .snar files in alternative backups
+              ansible.builtin.stat:
+                path: "{{ item.path }}/.config.snar"
+              register: backup_alternative_snar_check
+              loop: "{{ backup_alternative_dirs.files | default([]) }}"
+              failed_when: false
+              when: backup_alternative_dirs.matched | default(0) > 0
+
+            - name: Build list of backups with .snar support
+              ansible.builtin.set_fact:
+                backup_alternatives_with_snar: >-
+                  {{
+                    backup_alternative_snar_check.results | default([])
+                    | selectattr('stat.exists', 'defined')
+                    | selectattr('stat.exists', 'equalto', true)
+                    | map(attribute='item')
+                    | map(attribute='path')
+                    | list
+                  }}
+              when: backup_alternative_snar_check.results | default([]) | length > 0
+
+            - name: Read metadata for alternative backups
+              ansible.builtin.slurp:
+                path: "{{ item }}/metadata.yml"
+              register: backup_alternatives_metadata
+              loop: "{{ backup_alternatives_with_snar | default([]) }}"
+              failed_when: false
+              when: backup_alternatives_with_snar | default([]) | length > 0
+
+            - name: Build suggestions list with backup info
+              ansible.builtin.set_fact:
+                backup_suggestions: >-
+                  {{
+                    backup_alternatives_metadata.results | default([])
+                    | selectattr('content', 'defined')
+                    | map(attribute='content')
+                    | map('b64decode')
+                    | map('from_yaml')
+                    | map('combine', {'path': ''})
+                    | list
+                  }}
+              when: backup_alternatives_metadata.results | default([]) | length > 0
+
+            - name: Combine paths with metadata
+              ansible.builtin.set_fact:
+                backup_suggestions_formatted: >-
+                  {{
+                    backup_suggestions_formatted | default([]) +
+                    [{
+                      'path': backup_alternatives_with_snar[idx],
+                      'timestamp': item.timestamp,
+                      'type': 'Full' if not (item.incremental.is_incremental | default(item.incremental | default(false)) | bool) else 'Incremental'
+                    }]
+                  }}
+              loop: "{{ backup_suggestions | default([]) }}"
+              loop_control:
+                index_var: idx
+              when: backup_suggestions | default([]) | length > 0
+
+            - name: Fail with suggestions if alternatives exist
+              ansible.builtin.fail:
+                msg: |
+                  Incremental backup requested, but previous backup is missing .snar files.
+                  Previous backup: {{ incremental }}
+                  Missing files: {{ backup_snar_files_check.results | selectattr('stat.exists', 'equalto', false) | map(attribute='item') | list }}
+
+                  This usually means the previous backup was not created with incremental support.
+                  You must use a backup created with foremanctl >= 2.x as the base for incremental backups.
+
+                  Available backups with incremental support:
+                  {% for suggestion in backup_suggestions_formatted | default([]) | sort(attribute='timestamp', reverse=true) %}
+                  - {{ suggestion.path }} ({{ suggestion.type }}, {{ suggestion.timestamp }})
+                  {% endfor %}
+
+                  Retry with one of the above backups, for example:
+                    foremanctl backup {{ backup_dir }} --incremental {{ (backup_suggestions_formatted | default([]) | sort(attribute='timestamp', reverse=true) | first).path }}
+              when: backup_suggestions_formatted | default([]) | length > 0
+
+            - name: Fail without suggestions if no alternatives
+              ansible.builtin.fail:
+                msg: |
+                  Incremental backup requested, but previous backup is missing .snar files.
+                  Previous backup: {{ incremental }}
+                  Missing files: {{ backup_snar_files_check.results | selectattr('stat.exists', 'equalto', false) | map(attribute='item') | list }}
+
+                  This usually means the previous backup was not created with incremental support.
+                  You must use a backup created with foremanctl >= 2.x as the base for incremental backups.
+
+                  No other backups with incremental support were found in {{ incremental | dirname }}.
+                  Create a new full backup first:
+                    foremanctl backup {{ backup_dir }}
+              when: backup_suggestions_formatted | default([]) | length == 0
+
+        - name: Copy .snar files from previous backup
+          ansible.builtin.copy:
+            src: "{{ incremental }}/{{ item }}"
+            dest: "{{ backup_dir_full }}/{{ item }}"
+            remote_src: true
+            mode: '0644'
+          loop:
+            - ".config.snar"
+            - ".pulp.snar"
+          when: not skip_pulp_content | default(false) or item != ".pulp.snar"
+
+    - name: Backup foremanctl state directory  # noqa: command-instead-of-module
+      ansible.builtin.command:
+        cmd: >
+          tar -czf {{ backup_dir_full }}/foremanctl-state.tar.gz
+          --listed-incremental={{ backup_dir_full }}/.config.snar
+          -C {{ obsah_state_path | dirname }}
+          {{ obsah_state_path | basename }}
+      register: backup_foremanctl_state_archive
+      changed_when: true
 
     - name: Backup pulp content
       ansible.builtin.include_tasks:

@@ -43,6 +43,7 @@ This restores from the specified backup directory, which must contain:
 |--------|-------------|
 | `--validate` | Validate the backup without performing the restore. Checks that all required files exist and the backup metadata is valid. |
 | `--force` | Force restore on existing system. Required when restoring over an existing Foreman deployment to confirm you understand data will be permanently deleted. |
+| `--restore-chain` | Automatically restore full backup chain for incremental backups. Detects base backup(s) and restores them in order (full -> inc1 -> inc2). Only applies to incremental backups. |
 
 ## Examples
 
@@ -61,6 +62,51 @@ foremanctl restore /var/backup/foreman-backup-20260617T104115 --validate
 ```
 
 This validates the backup and checks system requirements before proceeding.
+
+### Restore Incremental Backups
+
+#### Automatic Chain Restore (Recommended)
+
+The easiest way to restore an incremental backup is using `--restore-chain`:
+
+```bash
+# Automatically restores full backup + all incrementals in order
+foremanctl restore /var/backup/foreman-backup-20260701T080000 --restore-chain
+```
+
+This command:
+1. Detects the backup chain automatically (full -> inc1 -> inc2)
+2. Restores all backups in chronological order
+3. No need to manually restore each backup separately
+
+#### Manual Chain Restore
+
+Alternatively, restore each backup in the chain manually:
+
+```bash
+# Step 1: Restore the full (base) backup first
+foremanctl restore /var/backup/foreman-backup-20260629T120000
+
+# Step 2: Restore the first incremental
+foremanctl restore /var/backup/foreman-backup-20260630T080000 --force
+
+# Step 3: Restore the second incremental
+foremanctl restore /var/backup/foreman-backup-20260701T080000 --force
+```
+
+**Important:**
+- Incremental backups contain only files changed since the previous backup
+- All backups in the chain must be restored in order (full -> inc1 -> inc2)
+- The restore command automatically detects incremental backups from metadata
+- The `--force` flag is required for subsequent incrementals since the system is already deployed
+
+**Automatic validation:**
+The restore command validates the backup chain:
+- Verifies the base backup directory exists
+- Confirms the base backup metadata matches the expected timestamp
+- Warns if the base backup has not been restored yet
+
+If any validation fails, a clear error message explains which backup is missing or incorrect.
 
 ## Prerequisites
 

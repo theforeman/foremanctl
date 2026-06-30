@@ -1,0 +1,37 @@
+---
+- name: Display restore progress for current backup
+  ansible.builtin.debug:
+    msg: |
+      Restoring backup {{ restore_single_index }}/{{ restore_single_total }}: {{ restore_single_backup_dir }}
+
+- name: Set active backup directory
+  ansible.builtin.set_fact:
+    backup_dir: "{{ restore_single_backup_dir }}"
+
+- name: Validate current backup
+  ansible.builtin.include_tasks:
+    file: validate.yaml
+
+- name: Restore foremanctl state from current backup
+  ansible.builtin.include_tasks:
+    file: restore_foremanctl_state.yaml
+
+- name: Prepare system for first backup in chain
+  ansible.builtin.include_tasks:
+    file: prepare_system.yaml
+  when: restore_single_is_first
+
+- name: Restore databases from first backup in chain
+  ansible.builtin.include_tasks:
+    file: restore_databases.yaml
+  when: restore_single_is_first
+
+- name: Restore Pulp content from current backup
+  ansible.builtin.include_tasks:
+    file: restore_pulp_content.yaml
+
+- name: Record timestamp of successfully restored backup
+  ansible.builtin.copy:
+    content: "{{ restore_backup_metadata.timestamp }}"
+    dest: /var/lib/foremanctl/.last_restore_timestamp
+    mode: '0644'

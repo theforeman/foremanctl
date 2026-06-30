@@ -1,0 +1,39 @@
+---
+- name: Build backup chain for incremental restore
+  when: restore_is_incremental
+  block:
+    - name: Initialize backup chain with current backup
+      ansible.builtin.set_fact:
+        restore_backup_chain: ["{{ backup_dir }}"]
+        restore_chain_current: "{{ backup_dir }}"
+
+    - name: Walk backwards through chain to find full backup
+      ansible.builtin.include_tasks:
+        file: restore_chain_walk.yaml
+      vars:
+        restore_chain_backup_dir: "{{ restore_chain_current }}"
+
+    - name: Reverse chain to restore full backup first
+      ansible.builtin.set_fact:
+        restore_backup_chain_ordered: "{{ restore_backup_chain | reverse | list }}"
+
+    - name: Display detected backup chain
+      ansible.builtin.debug:
+        msg: |
+          Backup chain detected ({{ restore_backup_chain_ordered | length }} backups):
+          {% for idx in range(restore_backup_chain_ordered | length) %}
+          {{ idx + 1 }}. {{ restore_backup_chain_ordered[idx] }}
+          {% endfor %}
+
+    - name: Restore each backup in chronological order
+      ansible.builtin.include_tasks:
+        file: restore_single.yaml
+      vars:
+        restore_single_backup_dir: "{{ item }}"
+        restore_single_is_first: "{{ item == restore_backup_chain_ordered[0] }}"
+        restore_single_index: "{{ idx + 1 }}"
+        restore_single_total: "{{ restore_backup_chain_ordered | length }}"
+      loop: "{{ restore_backup_chain_ordered }}"
+      loop_control:
+        index_var: idx
+        label: "{{ item }}"
