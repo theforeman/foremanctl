@@ -127,6 +127,14 @@
   ProxyPass / {{ httpd_foreman_backend }}/ retry=0 timeout=900 upgrade=websocket
   ProxyPassReverse / {{ httpd_foreman_backend }}/
 {% else %}
+  ## Container Gateway
+  ProxyPass /v1/ {{ httpd_foreman_proxy_url }}/container_gateway/v1/
+  ProxyPassReverse /v1/ {{ httpd_foreman_proxy_url }}/container_gateway/v1/
+  ProxyPass /v2/ {{ httpd_foreman_proxy_url }}/container_gateway/v2/
+  ProxyPassReverse /v2/ {{ httpd_foreman_proxy_url }}/container_gateway/v2/
+  ProxyPass /index/ {{ httpd_foreman_proxy_url }}/container_gateway/index/
+  ProxyPassReverse /index/ {{ httpd_foreman_proxy_url }}/container_gateway/index/
+
   ProxyPass /rhsm {{ httpd_foreman_url }}/rhsm disablereuse=on retry=0
   ProxyPassReverse /rhsm {{ httpd_foreman_url }}/rhsm
   ProxyPass /redhat_access {{ httpd_foreman_url }}/redhat_access disablereuse=on retry=0
