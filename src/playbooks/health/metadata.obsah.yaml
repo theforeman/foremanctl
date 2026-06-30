@@ -1,6 +1,6 @@
 ---
 help: |
-  Check the health of your running Foreman server
+  Check the health of your running server
 variables:
   health_skip_check_foreman_tasks_param:
     help: |
