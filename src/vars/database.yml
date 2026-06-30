@@ -17,6 +17,13 @@ pulp_database_user: pulp
 pulp_database_password_file: "{{ obsah_state_path }}/pulp-db-password"
 pulp_database_password: "{{ lookup('ansible.builtin.password', pulp_database_password_file, chars=['ascii_letters', 'digits']) }}"
 
+container_gateway_database_name: container_gateway
+container_gateway_database_user: container_gateway
+container_gateway_database_password_file: "{{ obsah_state_path }}/container-gateway-db-password"
+container_gateway_database_password: "{{ lookup('ansible.builtin.password', container_gateway_database_password_file, chars=['ascii_letters', 'digits']) }}"
+container_gateway_database_host: "{{ database_host }}"
+container_gateway_database_port: "{{ database_port }}"
+
 postgresql_admin_password_file: "{{ obsah_state_path }}/postgresql-admin-password"
 postgresql_admin_password: "{{ lookup('ansible.builtin.password', postgresql_admin_password_file, chars=['ascii_letters', 'digits']) }}"
 
@@ -101,6 +108,13 @@ databases:
     ssl_mode: "{{ pulp_database_ssl_mode }}"
     ssl_ca: "{{ pulp_database_ssl_ca }}"
     feature: pulp
+  - name: container_gateway
+    database: "{{ container_gateway_database_name }}"
+    host: "{{ container_gateway_database_host }}"
+    port: "{{ container_gateway_database_port }}"
+    user: "{{ container_gateway_database_user }}"
+    password: "{{ container_gateway_database_password }}"
+    feature: container-gateway
   - name: iop_advisor
     database: "{{ iop_advisor_database_name }}"
     host: "{{ iop_advisor_database_host }}"
