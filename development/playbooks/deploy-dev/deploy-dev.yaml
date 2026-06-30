@@ -43,6 +43,14 @@
         - name: Enable foreman_ansible plugin for iop
           ansible.builtin.set_fact:
             foreman_development_enabled_plugins: "{{ foreman_development_enabled_plugins + ['foreman_ansible'] }}"
+
+    - name: Setup cloud-connector requirements
+      when:
+        - "'cloud-connector' in enabled_features"
+      block:
+        - name: Enable foreman_rh_cloud plugin for cloud-connector
+          ansible.builtin.set_fact:
+            foreman_development_enabled_plugins: "{{ foreman_development_enabled_plugins + ['foreman_rh_cloud'] }}"
   roles:
     - role: pre_install
     - role: certificates

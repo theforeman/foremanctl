@@ -19,17 +19,3 @@
     fail_msg: >-
       /etc/pki/consumer/cert.pem not found.
       The system must be registered with subscription-manager.
-
-- name: Check that yggdrasil-worker-forwarder package is available
-  ansible.builtin.command: dnf info yggdrasil-worker-forwarder
-  changed_when: false
-  failed_when: false
-  register: check_cloud_connector_pkg_check
-
-- name: Verify yggdrasil-worker-forwarder is available
-  ansible.builtin.assert:
-    that:
-      - check_cloud_connector_pkg_check.rc == 0
-    fail_msg: >-
-      The yggdrasil-worker-forwarder package is not available.
-      Ensure the appropriate repository is enabled.

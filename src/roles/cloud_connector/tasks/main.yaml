@@ -50,7 +50,7 @@
       CONFIG_FILE="{{ cloud_connector_config_file }}" exec /usr/libexec/yggdrasil-worker-forwarder
     owner: root
     group: root
-    mode: '0755'
+    mode: '0750'
 
 - name: Add Foreman CA to system trust store
   ansible.builtin.copy:
@@ -69,21 +69,19 @@
     state: started
     enabled: true
 
-- name: Read client ID from CN of consumer certificate
-  ansible.builtin.command: openssl x509 -in /etc/pki/consumer/cert.pem -subject -noout
-  register: cloud_connector_cert_output
-  changed_when: false
+- name: Read client ID from consumer certificate
+  community.crypto.x509_certificate_info:
+    path: /etc/pki/consumer/cert.pem
+  register: cloud_connector_cert_info
 
 - name: Set rhc_instance_id in Foreman
   theforeman.foreman.setting:
     name: rhc_instance_id
-    value: "{{ cloud_connector_client_id }}"
+    value: "{{ cloud_connector_cert_info.subject.commonName }}"
     server_url: "{{ cloud_connector_url }}"
     username: "{{ cloud_connector_admin_user }}"
     password: "{{ cloud_connector_admin_password }}"
     ca_path: "{{ foreman_ca_certificate | default(omit) }}"
-  vars:
-    cloud_connector_client_id: "{{ cloud_connector_cert_output.stdout | regex_search('CN\\s?=\\s?([a-z0-9-]+)', '\\1') | first }}"
 
 - name: Enable automatic inventory upload
   theforeman.foreman.setting:
@@ -108,3 +106,18 @@
 - name: Configure HTTP proxy for rhcd
   ansible.builtin.include_tasks: http_proxy.yaml
   when: cloud_connector_http_proxy is defined
+
+- name: Remove HTTP proxy configuration for rhcd
+  when: cloud_connector_http_proxy is not defined
+  block:
+    - name: Remove HTTP proxy systemd drop-in for rhcd
+      ansible.builtin.file:
+        path: /etc/systemd/system/rhcd.service.d/proxy.conf
+        state: absent
+      notify: Restart rhcd
+
+    - name: Remove systemd drop-in directory if empty
+      ansible.builtin.file:
+        path: /etc/systemd/system/rhcd.service.d
+        state: absent
+      notify: Restart rhcd

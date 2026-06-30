@@ -10,7 +10,7 @@
 - name: Run cloud connector checks
   ansible.builtin.include_role:
     name: check_cloud_connector
-  when: "'cloud-connector' in enabled_features"
+  when: enabled_features | has_feature('cloud-connector')
 
 - name: Run database index integrity checks
   ansible.builtin.include_role:
