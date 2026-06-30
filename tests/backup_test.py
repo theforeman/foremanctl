@@ -1,4 +1,5 @@
 import re
+import subprocess
 
 import pytest
 import yaml
@@ -13,20 +14,26 @@ def backup_result(server):
     result = server.run(f"mkdir -p {BACKUP_DIR}")
     assert result.rc == 0, f"Failed to create backup directory on VM: {result.stderr}"
 
-    result = server.run(f"./foremanctl backup {BACKUP_DIR}")
+    result = subprocess.run(
+        ['./foremanctl', 'backup', BACKUP_DIR],
+        capture_output=True, text=True,
+    )
+    returncode = result.returncode
 
     find_result = server.run(f"ls -1 {BACKUP_DIR}")
     assert find_result.rc == 0, f"Backup directory should exist on VM. ls output: {find_result.stderr}"
 
     backup_dirs = [d for d in find_result.stdout.split('\n') if d.startswith('foreman-backup-')]
     assert len(backup_dirs) > 0, \
-        f"Should have created a timestamped backup directory. Command rc={result.rc}, stdout={result.stdout}, stderr={result.stderr}, ls output={find_result.stdout}"
+        f"Should have created a timestamped backup directory. Command rc={returncode}, stdout={result.stdout}, stderr={result.stderr}, ls output={find_result.stdout}"
 
     backup_dir_name = backup_dirs[0]
     full_backup_path = f"{BACKUP_DIR}/{backup_dir_name}"
 
     return {
-        'result': result,
+        'returncode': returncode,
+        'stdout': result.stdout,
+        'stderr': result.stderr,
         'backup_dir': full_backup_path,
         'backup_dir_name': backup_dir_name,
     }
@@ -59,8 +66,10 @@ def test_backup_directory_created(server, backup_result):
 
 def test_backup_command_succeeded(backup_result):
     """Test that backup command completed successfully"""
-    result = backup_result['result']
-    assert result.rc == 0, f"Backup command should succeed, got rc={result.rc}\nstdout: {result.stdout}\nstderr: {result.stderr}"
+    returncode = backup_result['returncode']
+    stdout = backup_result['stdout']
+    stderr = backup_result['stderr']
+    assert returncode == 0, f"Backup command should succeed, got rc={returncode}\nstdout: {stdout}\nstderr: {stderr}"
 
 
 def test_database_dumps_created(server, backup_result):
@@ -116,40 +125,24 @@ def test_foremanctl_state_archived(server, backup_result):
     """
     Test that foremanctl state directory is archived.
 
-    NOTE: This test is conditional because foremanctl-state.tar.gz is only
-    created in production deployments where Foreman and foremanctl run on
-    the same machine (ansible_connection=local).
+    The backup role handles both deployment modes:
+    - Local deployment: archives state directory directly from target
+    - Remote deployment: syncs state from controller to target, then archives
 
-    In VM-based development and CI environments:
-    - foremanctl runs on the HOST
-    - Foreman runs on a separate VM
-    - obsah_state_path points to the host's .var/lib/foremanctl/
-    - The backup playbook runs on the VM where this path doesn't exist
-    - Therefore, foremanctl-state.tar.gz is NOT created
-
-    This is expected and not a bug. The backup feature is designed for
-    production deployments where everything runs on the same server.
+    This ensures foremanctl state is always backed up regardless of whether
+    foremanctl runs on the same machine as Foreman or on a separate controller.
     """
     backup_dir = backup_result['backup_dir']
     state_archive = f"{backup_dir}/foremanctl-state.tar.gz"
 
     file_check = server.file(state_archive)
+    assert file_check.exists, "foremanctl-state.tar.gz should exist"
+    assert file_check.is_file, "foremanctl-state.tar.gz should be a file"
+    assert file_check.size > 0, "foremanctl-state.tar.gz should not be empty"
+    assert file_check.mode & 0o400, "foremanctl-state.tar.gz should be readable by owner"
 
-    if file_check.exists:
-        # Production deployment - verify the archive
-        assert file_check.is_file, "foremanctl-state.tar.gz should be a file"
-        assert file_check.size > 0, "foremanctl-state.tar.gz should not be empty"
-        assert file_check.mode & 0o400, "foremanctl-state.tar.gz should be readable by owner"
-
-        result = server.run(f"tar -tzf {state_archive} | head -5")
-        assert result.rc == 0, "foremanctl-state.tar.gz should be a valid tar.gz archive"
-    else:
-        pytest.skip(
-            "foremanctl-state.tar.gz not created in VM-based testing. "
-            "This is expected - the state directory exists on the host, "
-            "but the backup playbook runs on the VM. "
-            "In production (ansible_connection=local), this file is created."
-        )
+    result = server.run(f"tar -tzf {state_archive} | head -5")
+    assert result.rc == 0, "foremanctl-state.tar.gz should be a valid tar.gz archive"
 
 
 def test_pulp_content_archived(server, backup_result):
@@ -249,5 +242,5 @@ def test_metadata_timestamp_valid(backup_result, backup_metadata):
 
 def test_health_check_passes_after_backup(server, backup_result):
     """Verify system is healthy after backup using foremanctl health check"""
-    result = server.run("./foremanctl health")
-    assert result.rc == 0, f"Health check should pass after backup. Output:\n{result.stdout}\n{result.stderr}"
+    result = subprocess.run(['./foremanctl', 'health'], capture_output=True, text=True)
+    assert result.returncode == 0, f"Health check should pass after backup. Output:\n{result.stdout}\n{result.stderr}"
