@@ -1,0 +1,17 @@
+---
+# Kea DHCP provider configuration
+# Kea DHCP provider is included in Smart Proxy core (version 3.8+)
+
+:dhcp_kea_url: {{ foreman_proxy_dhcp_kea_url }}
+{% if foreman_proxy_dhcp_kea_username is defined and foreman_proxy_dhcp_kea_username %}
+:dhcp_kea_username: {{ foreman_proxy_dhcp_kea_username }}
+{% else %}
+:dhcp_kea_username: ~
+{% endif %}
+{% if foreman_proxy_dhcp_kea_password is defined and foreman_proxy_dhcp_kea_password %}
+:dhcp_kea_password: {{ foreman_proxy_dhcp_kea_password }}
+{% else %}
+:dhcp_kea_password: ~
+{% endif %}
+:dhcp_kea_verify_ssl: {{ foreman_proxy_dhcp_kea_verify_ssl | lower }}
+:dhcp_kea_lease_timeout: {{ foreman_proxy_dhcp_kea_lease_timeout }}

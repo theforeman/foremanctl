@@ -1,0 +1,111 @@
+---
+- name: Kea DHCP
+  hosts:
+    - quadlet
+  become: true
+  tasks:
+    - name: Install EPEL repository
+      ansible.builtin.package:
+        name: epel-release
+        state: present
+
+    - name: Install Kea packages
+      ansible.builtin.package:
+        name:
+          - kea
+        state: present
+
+    - name: Create Kea runtime directory
+      ansible.builtin.file:
+        path: /var/run/kea
+        state: directory
+        mode: '0750'
+        owner: root
+        group: root
+
+    - name: Create Kea lib directory
+      ansible.builtin.file:
+        path: /var/lib/kea
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Configure Kea DHCP4 server
+      ansible.builtin.template:
+        src: templates/kea-dhcp4.conf.j2
+        dest: /etc/kea/kea-dhcp4.conf
+        mode: '0644'
+        owner: root
+        group: root
+      notify: Restart Kea DHCP4
+
+    - name: Configure Kea Control Agent
+      ansible.builtin.template:
+        src: templates/kea-ctrl-agent.conf.j2
+        dest: /etc/kea/kea-ctrl-agent.conf
+        mode: '0644'
+        owner: root
+        group: root
+      notify: Restart Kea Control Agent
+
+    - name: Validate Kea DHCP4 configuration
+      ansible.builtin.command: kea-dhcp4 -t /etc/kea/kea-dhcp4.conf
+      changed_when: false
+      register: dhcp4_validation
+
+    - name: Validate Kea Control Agent configuration
+      ansible.builtin.command: kea-ctrl-agent -t /etc/kea/kea-ctrl-agent.conf
+      changed_when: false
+      register: ctrl_agent_validation
+
+    - name: Enable Kea services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: true
+      loop:
+        - kea-dhcp4
+        - kea-ctrl-agent
+
+    - name: Start Kea DHCP4 service
+      ansible.builtin.systemd:
+        name: kea-dhcp4
+        state: started
+
+    - name: Check Kea DHCP4 service status
+      ansible.builtin.systemd:
+        name: kea-dhcp4
+      register: kea_dhcp4_status
+      failed_when: false
+
+    - name: Display Kea DHCP4 service status
+      ansible.builtin.debug:
+        var: kea_dhcp4_status
+
+    - name: Wait for DHCP4 control socket to be created
+      ansible.builtin.wait_for:
+        path: /var/run/kea/kea4-ctrl-socket
+        timeout: 30
+
+    - name: Start Kea Control Agent service
+      ansible.builtin.systemd:
+        name: kea-ctrl-agent
+        state: started
+
+    - name: Wait for Kea Control Agent to be ready
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: 8000
+        state: started
+        timeout: 30
+
+  handlers:
+    - name: Restart Kea DHCP4
+      ansible.builtin.systemd:
+        name: kea-dhcp4
+        state: restarted
+
+    - name: Restart Kea Control Agent
+      ansible.builtin.systemd:
+        name: kea-ctrl-agent
+        state: restarted
