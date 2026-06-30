@@ -6,26 +6,35 @@
 - name: Perform restore operations
   when: not validate | default(false)
   block:
+    - name: Restore foremanctl state
+      ansible.builtin.include_tasks:
+        file: restore_foremanctl_state.yaml
+
     - name: Prepare system for restore
       ansible.builtin.include_tasks:
         file: prepare_system.yaml
 
-    - name: Restore foremanctl state
-      ansible.builtin.include_tasks:
-        file: restore_foremanctl_state.yaml
-      when: "'foremanctl_state' in restore_backup_metadata.backed_up_components | default(['foremanctl_state'])"
-
     - name: Restore databases
       ansible.builtin.include_tasks:
         file: restore_databases.yaml
-      when:
-        - restore_database_mode == 'internal'
-        - "'databases' in restore_backup_metadata.backed_up_components | default(['databases'])"
 
     - name: Restore Pulp content
       ansible.builtin.include_tasks:
         file: restore_pulp_content.yaml
-      when: "'pulp_content' in restore_backup_metadata.backed_up_components | default([])"
+
+    - name: Record successful restore timestamp
+      ansible.builtin.copy:
+        content: "{{ restore_backup_metadata.timestamp }}"
+        dest: /var/lib/foremanctl/.last_restore_timestamp
+        mode: '0644'
+
+    - name: Display restore completion
+      ansible.builtin.debug:
+        msg: |
+          Restore completed successfully!
+          Backup: {{ backup_dir }}
+          Type: {{ 'Incremental' if restore_is_incremental else 'Full' }}
+          Timestamp: {{ restore_backup_metadata.timestamp }}
 
   rescue:
     - name: Ensure services are stopped on failure

@@ -1,11 +1,48 @@
 ---
-- name: Remove existing foremanctl state directory
+- name: Check for .config.snar file (incremental backup indicator)
+  ansible.builtin.stat:
+    path: "{{ backup_dir }}/.config.snar"
+  register: restore_config_snar_check
+
+- name: Remove existing foremanctl state directory for full restore
   ansible.builtin.file:
     path: "{{ obsah_state_path }}"
     state: absent
+  when: not restore_config_snar_check.stat.exists
 
-- name: Extract foremanctl state archive
+- name: Ensure state directory parent exists
+  ansible.builtin.file:
+    path: "{{ obsah_state_path | dirname }}"
+    state: directory
+    mode: '0755'
+
+- name: Extract foremanctl state archive (incremental with snar)
+  ansible.builtin.command:
+    cmd: >
+      tar -xzf {{ backup_dir }}/foremanctl-state.tar.gz
+      --listed-incremental=/dev/null
+      -C {{ obsah_state_path | dirname }}
+  when: restore_config_snar_check.stat.exists
+  changed_when: true
+
+- name: Extract foremanctl state archive (full backup)
   ansible.builtin.unarchive:
     src: "{{ backup_dir }}/foremanctl-state.tar.gz"
     dest: "{{ obsah_state_path | dirname }}"
     remote_src: true
+  when: not restore_config_snar_check.stat.exists
+
+- name: Build list of expected state files
+  ansible.builtin.set_fact:
+    restore_expected_state_files: >-
+      {{
+        ['parameters.yaml', 'foreman-oauth-consumer-key', 'foreman-oauth-consumer-secret', 'postgresql-admin-password'] +
+        (restore_backup_metadata.databases | map('regex_replace', '_', '-') | map('regex_replace', '$', '-db-password') | list)
+      }}
+
+- name: Verify critical files were restored
+  ansible.builtin.stat:
+    path: "{{ obsah_state_path }}/{{ item }}"
+  register: restore_state_files
+  failed_when: not restore_state_files.stat.exists
+  loop: "{{ restore_expected_state_files }}"

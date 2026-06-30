@@ -62,6 +62,35 @@ foremanctl restore /var/backup/foreman-backup-20260617T104115 --validate
 
 This validates the backup and checks system requirements before proceeding.
 
+### Restore Incremental Backups
+
+To restore from an incremental backup, restore each backup in the chain sequentially, starting with the full backup:
+
+```bash
+# Step 1: Restore the full (base) backup
+foremanctl restore /var/backup/foreman-backup-20260629T120000
+
+# Step 2: Restore the first incremental
+foremanctl restore /var/backup/foreman-backup-20260630T080000 --force
+
+# Step 3: Restore the second incremental
+foremanctl restore /var/backup/foreman-backup-20260701T080000 --force
+```
+
+**Important:**
+- Incremental backups contain only files changed since the previous backup
+- All backups in the chain must be restored in order (full -> inc1 -> inc2)
+- The restore command automatically detects incremental backups from metadata
+- The `--force` flag is required for subsequent restores since the system is already deployed
+
+**Automatic validation:**
+The restore command validates the backup chain:
+- Verifies the base backup directory exists
+- Confirms the base backup metadata matches the expected timestamp
+- Warns if the base backup has not been restored yet
+
+If any validation fails, a clear error message explains which backup is missing or incorrect.
+
 ## Prerequisites
 
 Before restoring, ensure:

@@ -3,6 +3,7 @@
   containers.podman.podman_secret:
     name: postgresql-admin-password
     data: "{{ postgresql_admin_password }}"
+    force: true
 
 - name: Start PostgreSQL for restore
   ansible.builtin.systemd:
@@ -93,13 +94,14 @@
       pg_restore
       --host={{ database_host }}
       --port={{ database_port }}
-      --username={{ item.user }}
+      --username=postgres
       --dbname={{ item.database }}
       {{ backup_dir }}/{{ item.dump_file }}
   environment:
     PGPASSWORD: "{{ postgresql_admin_password }}"
   loop: "{{ restore_databases_to_restore }}"
   loop_control:
-    label: "{{ item.dump_file }} → {{ item.database }}"
+    label: "{{ item.dump_file }} -> {{ item.database }}"
   changed_when: true
-  failed_when: false
+  register: restore_pg_restore_result
+  failed_when: restore_pg_restore_result.rc != 0 and 'WARNING' not in restore_pg_restore_result.stderr

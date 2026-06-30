@@ -13,16 +13,32 @@
         state: directory
         mode: '0755'
 
-    - name: Remove existing pulp media directory
+    - name: Check for .pulp.snar file (incremental backup indicator)
+      ansible.builtin.stat:
+        path: "{{ backup_dir }}/.pulp.snar"
+      register: restore_pulp_snar_check
+
+    - name: Remove existing pulp media directory for full restore
       ansible.builtin.file:
         path: "{{ pulp_storage_path }}/media"
         state: absent
+      when: not restore_pulp_snar_check.stat.exists
 
-    - name: Extract pulp content archive
+    - name: Extract pulp content archive (incremental with snar)
+      ansible.builtin.command:
+        cmd: >
+          tar -xzf {{ backup_dir }}/pulp-content.tar.gz
+          --listed-incremental=/dev/null
+          -C {{ pulp_storage_path }}
+      when: restore_pulp_snar_check.stat.exists
+      changed_when: true
+
+    - name: Extract pulp content archive (full backup)
       ansible.builtin.unarchive:
         src: "{{ backup_dir }}/pulp-content.tar.gz"
         dest: "{{ pulp_storage_path }}"
         remote_src: true
+      when: not restore_pulp_snar_check.stat.exists
 
     - name: Verify Pulp encryption key was restored
       ansible.builtin.stat:
@@ -35,3 +51,15 @@
         path: "{{ pulp_storage_path }}/django_secret_key"
       register: restore_django_secret_key
       failed_when: not restore_django_secret_key.stat.exists
+
+    - name: Count restored media files
+      ansible.builtin.find:
+        paths: "{{ pulp_storage_path }}/media"
+        file_type: file
+        recurse: true
+      register: restore_pulp_media_files
+
+    - name: Get archive size
+      ansible.builtin.stat:
+        path: "{{ backup_dir }}/pulp-content.tar.gz"
+      register: restore_pulp_content_size

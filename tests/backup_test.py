@@ -12,9 +12,9 @@ def expected_databases(enabled_features, flavor):
     """
     Determine expected databases based on flavor and enabled features.
 
-    Note: These names correspond to the actual database name used for
-    the dump filename (e.g., 'foreman.dump'), matching the database_mapping
-    in backup metadata.
+    Note: These are the logical 'name' values from database.yml
+    (e.g., 'foreman', 'iop_advisor'). Dump filenames use the actual
+    database name via database_mapping in backup metadata.
     """
     databases = []
 
@@ -29,11 +29,11 @@ def expected_databases(enabled_features, flavor):
     # Add IOP databases if IOP feature is enabled
     if 'iop' in enabled_features:
         databases.extend([
-            'advisor_db',
-            'inventory_db',
-            'remediations_db',
-            'vmaas_db',
-            'vulnerability_db',
+            'iop_advisor',
+            'iop_inventory',
+            'iop_remediation',
+            'iop_vmaas',
+            'iop_vulnerability',
         ])
 
     return databases
@@ -104,12 +104,14 @@ def test_backup_command_succeeded(backup_result):
     assert returncode == 0, f"Backup command should succeed, got rc={returncode}\nstdout: {stdout}\nstderr: {stderr}"
 
 
-def test_database_dumps_created(server, backup_result, expected_databases):
+def test_database_dumps_created(server, backup_result, expected_databases, backup_metadata):
     """Test that all database dump files are created and valid"""
     backup_dir = backup_result['backup_dir']
+    database_mapping = backup_metadata.get('database_mapping', {})
 
     for database_name in expected_databases:
-        dump_file = f"{database_name}.dump"
+        actual_db_name = database_mapping.get(database_name, database_name)
+        dump_file = f"{actual_db_name}.dump"
         dump_path = f"{backup_dir}/{dump_file}"
         file_check = server.file(dump_path)
         assert file_check.exists, f"Database dump {dump_file} should exist at {dump_path}"
@@ -125,19 +127,22 @@ def test_database_dumps_created(server, backup_result, expected_databases):
 
 
 @pytest.mark.feature("iop")
-def test_iop_database_dumps_created(server, backup_result):
+def test_iop_database_dumps_created(server, backup_result, backup_metadata):
     """Test that all IOP database dump files are created and valid"""
     backup_dir = backup_result['backup_dir']
+    database_mapping = backup_metadata.get('database_mapping', {})
 
-    expected_iop_dumps = [
-        'advisor_db.dump',
-        'inventory_db.dump',
-        'remediations_db.dump',
-        'vmaas_db.dump',
-        'vulnerability_db.dump',
+    expected_iop_databases = [
+        'iop_advisor',
+        'iop_inventory',
+        'iop_remediation',
+        'iop_vmaas',
+        'iop_vulnerability',
     ]
 
-    for dump_file in expected_iop_dumps:
+    for db_name in expected_iop_databases:
+        actual_db_name = database_mapping.get(db_name, db_name)
+        dump_file = f"{actual_db_name}.dump"
         dump_path = f"{backup_dir}/{dump_file}"
         file_check = server.file(dump_path)
         assert file_check.exists, f"IOP database dump {dump_file} should exist at {dump_path}"

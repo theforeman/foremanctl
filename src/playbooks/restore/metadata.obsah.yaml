@@ -3,7 +3,7 @@ help: |
   Restore from a backup
 
   Validates backup contents, extracts configuration files, restores databases,
-  restores Pulp content, and redeploys the system.
+  restores content, and redeploys the system.
 
 variables:
   backup_dir:

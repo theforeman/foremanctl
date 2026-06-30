@@ -53,6 +53,126 @@
   ansible.builtin.set_fact:
     restore_backup_metadata: "{{ restore_metadata_content['content'] | b64decode | from_yaml }}"
 
+- name: Detect if backup is incremental
+  ansible.builtin.set_fact:
+    restore_is_incremental: "{{ restore_backup_metadata.incremental.is_incremental | default(restore_backup_metadata.incremental | default(false)) | bool }}"
+    restore_base_backup_dir: "{{ restore_backup_metadata.incremental.base_backup_dir | default('') }}"
+    restore_base_backup_timestamp: "{{ restore_backup_metadata.incremental.base_backup_timestamp | default('') }}"
+
+- name: Display backup type
+  ansible.builtin.debug:
+    msg: "Backup type: {{ 'Incremental' if restore_is_incremental else 'Full' }}{{ ' (base: ' + restore_base_backup_dir + ')' if restore_is_incremental else '' }}"
+
+- name: Validate incremental backup chain
+  when: restore_is_incremental
+  block:
+    - name: Fail if base backup directory not specified
+      ansible.builtin.fail:
+        msg: |
+          INCREMENTAL BACKUP CHAIN ERROR:
+
+          This is an incremental backup but no base backup directory is specified in metadata.
+          Backup: {{ backup_dir }}
+
+          Incremental backups must reference a base (full) backup.
+          The metadata.yml file may be corrupted or incomplete.
+      when: restore_base_backup_dir | length == 0
+
+    - name: Check if base backup directory exists
+      ansible.builtin.stat:
+        path: "{{ restore_base_backup_dir }}"
+      register: restore_base_backup_stat
+      failed_when: false
+
+    - name: Fail if base backup directory missing
+      ansible.builtin.fail:
+        msg: |
+          INCOMPLETE BACKUP CHAIN:
+
+          This is an incremental backup that requires its base backup to be restored first.
+
+          Incremental backup: {{ backup_dir }}
+          Required base backup: {{ restore_base_backup_dir }}
+
+          ERROR: Base backup directory does not exist!
+
+          To restore an incremental backup, you must:
+          1. First restore the full (base) backup:
+             foremanctl restore {{ restore_base_backup_dir }}
+          2. Then restore this incremental backup:
+             foremanctl restore {{ backup_dir }}
+
+          All backups in the chain must be restored in chronological order.
+      when: not restore_base_backup_stat.stat.exists
+
+    - name: Check for base backup metadata
+      ansible.builtin.stat:
+        path: "{{ restore_base_backup_dir }}/metadata.yml"
+      register: restore_base_metadata_stat
+      failed_when: false
+
+    - name: Fail if base backup metadata missing
+      ansible.builtin.fail:
+        msg: |
+          INCOMPLETE BACKUP CHAIN:
+
+          Base backup directory exists but metadata.yml is missing.
+          Base backup: {{ restore_base_backup_dir }}
+
+          The base backup may be incomplete or corrupted.
+          Cannot validate backup chain integrity.
+      when: not restore_base_metadata_stat.stat.exists
+
+    - name: Read base backup metadata
+      ansible.builtin.slurp:
+        path: "{{ restore_base_backup_dir }}/metadata.yml"
+      register: restore_base_metadata_content
+
+    - name: Parse base backup metadata
+      ansible.builtin.set_fact:
+        restore_base_metadata: "{{ restore_base_metadata_content['content'] | b64decode | from_yaml }}"
+
+    - name: Validate base backup timestamp matches
+      ansible.builtin.fail:
+        msg: |
+          BACKUP CHAIN MISMATCH:
+
+          The incremental backup references a different base backup than provided.
+
+          Incremental backup: {{ backup_dir }}
+          Expected base timestamp: {{ restore_base_backup_timestamp }}
+          Actual base timestamp: {{ restore_base_metadata.timestamp }}
+
+          This incremental backup is not based on the backup at {{ restore_base_backup_dir }}.
+          Verify you are using the correct base backup directory.
+      when: restore_base_backup_timestamp != restore_base_metadata.timestamp
+
+    - name: Check if base backup has already been restored
+      ansible.builtin.stat:
+        path: /var/lib/foremanctl/.last_restore_timestamp
+      register: restore_last_restore_check
+      failed_when: false
+
+    - name: Read last restore timestamp
+      ansible.builtin.slurp:
+        path: /var/lib/foremanctl/.last_restore_timestamp
+      register: restore_last_restore_content
+      when: restore_last_restore_check.stat.exists
+      failed_when: false
+
+    - name: Warn if base backup not yet restored
+      ansible.builtin.debug:
+        msg: |
+          WARNING: Cannot verify if base backup has been restored.
+
+          This is an incremental backup. Before proceeding, ensure you have already restored:
+          Base backup: {{ restore_base_backup_dir }}
+
+          Restoring an incremental backup without its base will result in incomplete data!
+      when: >
+        not restore_last_restore_check.stat.exists or
+        (restore_last_restore_content['content'] | b64decode | trim) != restore_base_backup_timestamp
+
 - name: Set database mode from backup metadata
   ansible.builtin.set_fact:
     restore_database_mode: "{{ restore_backup_metadata.database_mode | default('internal') }}"
@@ -112,7 +232,6 @@
   ansible.builtin.stat:
     path: "{{ backup_dir }}/pulp-content.tar.gz"
   register: restore_pulp_archive
-  when: restore_pulp_archive is defined
 
 - name: Fail if insufficient Pulp disk space
   ansible.builtin.fail:
@@ -124,3 +243,8 @@
   when:
     - restore_pulp_archive.stat.exists | default(false)
     - restore_pulp_space.stdout | int < (restore_pulp_archive.stat.size / 1024 / 1024 / 1024) | int + 1
+
+- name: Check database mode matches backup
+  ansible.builtin.debug:
+    msg: "WARNING: Current database_mode ({{ database_mode }}) may not match backup configuration. Verify compatibility before proceeding."
+  when: restore_backup_metadata.database_mode is defined and restore_backup_metadata.database_mode != database_mode
