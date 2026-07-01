@@ -61,7 +61,7 @@
         src: "{{ certificate_bundle_server_key }}"
         dest: "{{ certificate_bundle_build_directory.path }}/certs/private/{{ certificate_bundle_hostname }}.key"
         remote_src: true
-        mode: '0600'
+        mode: '0440'
 
     - name: Copy client certificate
       ansible.builtin.copy:

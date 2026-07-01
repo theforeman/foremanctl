@@ -3,28 +3,26 @@ import json
 
 import pytest
 
-FOREMAN_PROXY_PORT = 8443
+from tests.conftest import FOREMAN_PROXY_PORT
 
 
 @pytest.fixture(scope="module")
-def proxy_v2_features(server, certificates, server_fqdn):
-    cmd = server.run(
-        f"curl --cacert {certificates['server_ca_certificate']} "
-        f"--cert {certificates['client_certificate']} "
-        f"--key {certificates['client_key']} "
-        f"--silent https://{server_fqdn}:{FOREMAN_PROXY_PORT}/v2/features"
-    )
+def proxy_v2_features(curl_request, proxy_base_url):
+    cmd = curl_request("v2/features", base_url=proxy_base_url, return_body=True)
     assert cmd.succeeded, f"Failed to query /v2/features: {cmd.stderr}"
     return json.loads(cmd.stdout)
 
 
-def test_foreman_proxy_features(server, certificates, server_fqdn, enabled_features):
-    cmd = server.run(f"curl --cacert {certificates['server_ca_certificate']} --silent https://{server_fqdn}:{FOREMAN_PROXY_PORT}/features")
+def test_foreman_proxy_features(curl_request, proxy_base_url, enabled_features):
+    cmd = curl_request("features", base_url=proxy_base_url, return_body=True)
     assert cmd.succeeded
     features = json.loads(cmd.stdout)
     assert "logs" in features
-    assert "script" in features
-    assert "dynflow" in features
+    if 'remote-execution' in enabled_features:
+        assert "script" in features
+        assert "dynflow" in features
+    else:
+        assert "script" not in features
     if 'bmc' in enabled_features:
         assert "bmc" in features
     else:
@@ -42,15 +40,13 @@ def test_foreman_proxy_port(server):
 
 
 @pytest.mark.xfail(reason='Fails until report feature is available')
-def test_foreman_proxy_client_auth_to_foreman(server, certificates, server_fqdn):
+def test_foreman_proxy_client_auth_to_foreman(curl_request):
     test_report = {"config_report": {"host": "test.example.com", "reported_at": datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M:%S UTC')}}
-    cmd = server.run(
-        f"curl --cacert {certificates['server_ca_certificate']} "
-        f"--cert {certificates['client_certificate']} "
-        f"--key {certificates['client_key']} "
-        f"--output /dev/null --write-out '%{{http_code}}' "
-        f"--data '{json.dumps(test_report)}' --header 'Content-Type: application/json' "
-        f"https://{server_fqdn}/api/v2/config_reports"
+    cmd = curl_request(
+        "api/v2/config_reports",
+        method="POST",
+        data=json.dumps(test_report),
+        headers={"Content-Type": "application/json"},
     )
     assert cmd.succeeded
     assert cmd.stdout == '201'

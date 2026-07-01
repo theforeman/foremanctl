@@ -1,0 +1,4 @@
+---
+:enabled: {{ feature_enabled }}
+:pulp_endpoint: {{ foreman_proxy_container_gateway_pulp_endpoint }}
+:db_connection_string: postgresql://{{ container_gateway_database_user }}:{{ container_gateway_database_password }}@{{ container_gateway_database_host }}:{{ container_gateway_database_port }}/{{ container_gateway_database_name }}

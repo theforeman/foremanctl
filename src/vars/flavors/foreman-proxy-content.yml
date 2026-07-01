@@ -1,0 +1,22 @@
+flavor_features:
+  - foreman-proxy
+  - container-gateway
+  - content/rpm
+  - content/deb
+  - content/container
+  - content/ansible
+  - content/python
+
+pulp_mirror: true
+
+checks_to_execute:
+  - check_features
+  - check_hostname
+  - check_database_connection
+
+health_checks_to_execute:
+  - check_hostname
+  - check_database_connection
+  - check_services
+
+certificates_generate: false
