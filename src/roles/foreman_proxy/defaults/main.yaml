@@ -16,9 +16,7 @@ foreman_proxy_features: "{{ foreman_proxy_base_features + foreman_proxy_plugins 
 foreman_proxy_available_features: "{{ [] | available_foreman_proxy_plugins }}"
 foreman_proxy_disabled_features: "{{ foreman_proxy_available_features | difference(foreman_proxy_features) }}"
 
-# In case of standalone proxy, we need to add foreman server URL not host fqdn
-foreman_proxy_with_foreman: "{{ 'foreman' in enabled_features }}"
-foreman_proxy_foreman_server_url: "{{ foreman_proxy_with_foreman | ternary('https://{{ ansible_facts['fqdn'] }}', foreman_proxy_foreman_server_url) }}"
+foreman_proxy_foreman_server_url: "https://{{ ansible_facts['fqdn'] }}"
 
 # BMC settings
 foreman_proxy_bmc_ipmi_implementation: ipmitool

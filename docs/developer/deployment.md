@@ -15,14 +15,32 @@ Deploys a Foreman server. This is the primary deployment type and the default en
 
 ### Proxy
 
-Deploys a Foreman Smart Proxy node that connects to an foreman server.
+Deploys a Foreman Proxy node that connects to a Foreman server.
 
-```bash
-./foremanctl deploy-proxy \
-  --flavor foreman-proxy-content \
-  --certificate-bundle /root/proxy.example.com-certs.tar \
-  --foreman-fqdn quadlet.example.com
-```
+Before running the proxy deployment, a certificate bundle must be generated on the Foreman server and copied to the proxy VM:
+
+1. On the **Foreman server**, generate a certificate bundle for the proxy hostname:
+
+   ```bash
+   ./foremanctl certificate-bundle proxy.example.com
+   ```
+
+   This produces a tar archive at a path like `/var/lib/foremanctl/certs/bundles/<hostname>.tar.gz`.
+
+2. Copy the bundle to the **proxy VM**:
+
+   ```bash
+   scp /var/lib/foremanctl/certs/bundles/proxy.example.com.tar.gz root@proxy.example.com:/root/proxy.example.com.tar.gz
+   ```
+
+3. On the **proxy VM**, run the deployment:
+
+   ```bash
+   ./foremanctl deploy-proxy \
+     --flavor foreman-proxy-content \
+     --certificate-bundle /root/proxy.example.com.tar.gz \
+     --foreman-fqdn quadlet.example.com
+   ```
 
 ## Deployment Paths
 
