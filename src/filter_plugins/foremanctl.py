@@ -93,6 +93,16 @@ def invalid_features(features):
     return [feature for feature in features if feature not in FEATURE_MAP]
 
 
+def conflicting_features(features):
+    """Return a list of conflict violation strings for enabled features."""
+    conflicts = set()
+    for feature in features:
+        for conflict in FEATURE_MAP.get(feature, {}).get('conflicts', []):
+            if conflict in features:
+                conflicts.add(tuple(sorted([feature, conflict])))
+    return [f"{pair[0]} conflicts with {pair[1]}" for pair in conflicts]
+
+
 def hammer_plugins(value):
     dependencies = list(get_dependencies(filter_features(value)))
     plugins = [FEATURE_MAP.get(feature, {}).get('hammer') for feature in filter_features(value + dependencies)]
@@ -142,6 +152,7 @@ class FilterModule(object):
             'available_foreman_proxy_plugins': available_foreman_proxy_plugins,
             'list_all_features': list_all_features,
             'invalid_features': invalid_features,
+            'conflicting_features': conflicting_features,
             'has_feature': has_feature,
             'databases_for_features': databases_for_features,
             'to_postgresql_databases': to_postgresql_databases,
