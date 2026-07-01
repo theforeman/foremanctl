@@ -12,6 +12,7 @@ foreman_database_ssl_ca: # noqa: no-empty-defaults
 foreman_database_ssl_ca_path: /etc/foreman/db-ca.crt
 
 foreman_name: "{{ ansible_facts['fqdn'] }}"
+foreman_listen_stream: 127.0.0.1:3000
 foreman_url: "http://{{ ansible_facts['fqdn'] }}:3000"
 
 # Puma threads calculation:
