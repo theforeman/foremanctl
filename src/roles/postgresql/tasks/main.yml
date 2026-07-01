@@ -17,6 +17,44 @@
   notify:
     - Restart postgresql
 
+- name: Check if PG_VERSION file exists
+  ansible.builtin.stat:
+    path: "{{ postgresql_data_dir }}/userdata/PG_VERSION"
+  register: postgresql_version_file
+
+- name: Read PG_VERSION file
+  ansible.builtin.slurp:
+    src: "{{ postgresql_data_dir }}/userdata/PG_VERSION"
+  register: postgresql_version_encoded
+  when: postgresql_version_file.stat.exists
+
+- name: Register PG version fact
+  ansible.builtin.set_fact:
+    postgresql_version: "{{ postgresql_version_encoded.content | b64decode | trim }}"
+  when: postgresql_version_file.stat.exists
+
+- name: Upgrade the database from 13 to 16
+  containers.podman.podman_container:
+    name: "{{ postgresql_container_name }}"
+    image: postgresql.image
+    state: present
+    healthcheck: pg_isready
+    sdnotify: healthy
+    network: host
+    volumes:
+      - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:rw,Z"
+    secrets:
+      - 'postgresql-admin-password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
+    env:
+      POSTGRESQL_MAX_CONNECTIONS: "{{ postgresql_max_connections }}"
+      POSTGRESQL_SHARED_BUFFERS: "{{ postgresql_shared_buffers }}"
+      POSTGRESQL_EFFECTIVE_CACHE_SIZE: "{{ postgresql_effective_cache_size }}"
+      POSTGRESQL_PREV_VERSION: "{{ postgresql_version }}"
+      POSTGRESQL_UPGRADE: "hardlink"
+  when:
+    - "postgresql_version is defined"
+    - "postgresql_version == '13'"
+
 - name: Deploy PostgreSQL container
   containers.podman.podman_container:
     name: "{{ postgresql_container_name }}"
@@ -106,18 +144,6 @@
   ansible.builtin.systemd:
     name: "{{ postgresql_container_name }}"
     state: started
-
-# SCRAM-SHA-256 is default for PostgreSQL 14+,
-# after the upgrade, we can drop this task.
-- name: Use scram-sha-256 for password encryption
-  community.postgresql.postgresql_set:
-    login_user: postgres
-    login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
-    name: password_encryption
-    value: "scram-sha-256"
-  notify:
-    - Restart postgresql
 
 - name: Create PostgreSQL users
   community.postgresql.postgresql_user:
