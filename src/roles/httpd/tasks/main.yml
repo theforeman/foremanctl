@@ -6,9 +6,9 @@
       - mod_ssl
     state: present
 
-- name: Set httpd_can_network_connect so Apache can connect to Puma and Gunicorn
+- name: Set daemons_enable_cluster_mode so Apache can connect to unix sockets
   ansible.posix.seboolean:
-    name: httpd_can_network_connect
+    name: daemons_enable_cluster_mode
     state: true
     persistent: true
   when: ansible_facts['selinux']['status'] == "enabled"

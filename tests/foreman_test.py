@@ -3,7 +3,7 @@ import json
 import pytest
 
 FOREMAN_HOST = 'localhost'
-FOREMAN_PORT = 3000
+FOREMAN_SOCKET = '/run/httpd.foreman.sock'
 
 RECURRING_INSTANCES = [
     "hourly",
@@ -15,7 +15,7 @@ RECURRING_INSTANCES = [
 
 @pytest.fixture(scope="module")
 def foreman_status_curl(server):
-    return server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' http://{FOREMAN_HOST}:{FOREMAN_PORT}/api/v2/ping")
+    return server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' --unix-socket {FOREMAN_SOCKET} http://{FOREMAN_HOST}/api/v2/ping")
 
 
 @pytest.fixture(scope="module")
@@ -28,9 +28,8 @@ def test_foreman_service(server):
     assert foreman.is_running
 
 
-def test_foreman_port(server):
-    foreman = server.addr(FOREMAN_HOST)
-    assert foreman.port(FOREMAN_PORT).is_reachable
+def test_foreman_socket(server):
+    assert server.socket(f"unix://{FOREMAN_SOCKET}").is_listening
 
 
 def test_foreman_status(foreman_status_curl):

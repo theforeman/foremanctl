@@ -23,6 +23,14 @@ foreman_plugins: "{{ enabled_features | features_to_foreman_plugins }}"
 foreman_name: "{{ ansible_facts['fqdn'] }}"
 foreman_url: "https://{{ foreman_name }}"
 
+foreman_listen_stream: /run/httpd.foreman.sock
+httpd_foreman_backend: "unix://{{ foreman_listen_stream }}|http://%{HTTP_HOST}"
+
+pulp_api_listen_stream: /run/httpd.pulp-api.sock
+pulp_content_listen_stream: /run/httpd.pulp-content.sock
+httpd_pulp_api_backend: "unix://{{ pulp_api_listen_stream }}|http://%{HTTP_HOST}"
+httpd_pulp_content_backend: "unix://{{ pulp_content_listen_stream }}|http://%{HTTP_HOST}"
+
 httpd_server_ca_certificate: "{{ server_ca_certificate }}"
 httpd_client_ca_certificate: "{{ client_ca_certificate }}"
 httpd_server_certificate: "{{ server_certificate }}"
