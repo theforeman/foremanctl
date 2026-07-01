@@ -48,6 +48,25 @@ You can deploy directly to a remote host using the `--target-host` parameter:
 ./forge deploy-dev --target-host=192.168.1.100
 ```
 
+### Defining New Hosts
+
+You can define custom hosts in boxes.yaml:
+
+```
+---
+# User-local box definitions (this file is gitignored)
+# Each entry becomes a vagrant box. Available settings:
+#   box:       base box (default: centos/stream9)
+#   memory:    RAM in MB (default: 3072)
+#   cpus:      CPU count (default: 1)
+#   disk_size: disk in GB (default: 50)
+
+katello-production:
+  memory: 12288
+  cpus: 4
+  disk_size: 50
+```
+
 ### SSH Authentication
 
 When deploying to remote hosts that require SSH password authentication:
