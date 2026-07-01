@@ -17,6 +17,9 @@
   notify:
     - Restart postgresql
 
+- name: Upgrade PostgreSQL database
+  ansible.builtin.include_tasks: upgrade.yaml
+
 - name: Deploy PostgreSQL container
   containers.podman.podman_container:
     name: "{{ postgresql_container_name }}"

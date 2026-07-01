@@ -1,0 +1,60 @@
+---
+- name: Check if PG_VERSION file exists
+  ansible.builtin.stat:
+    path: "{{ postgresql_data_dir }}/userdata/PG_VERSION"
+  register: postgresql_version_file
+
+- name: Set postgresql_version version fact
+  when: postgresql_version_file.stat.exists
+  block:
+    - name: Read PG_VERSION file
+      ansible.builtin.slurp:
+        src: "{{ postgresql_data_dir }}/userdata/PG_VERSION"
+      register: postgresql_version_encoded
+
+    - name: Register PG version fact
+      ansible.builtin.set_fact:
+        postgresql_version: "{{ postgresql_version_encoded.content | b64decode | trim }}"
+
+- name: Upgrade PostgreSQL 13 to 16
+  when:
+    - "postgresql_version is defined"
+    - "postgresql_version == '13'"
+  block:
+    - name: Stop PostgreSQL systemd service (Quadlet)
+      ansible.builtin.systemd:
+        name: postgresql.service
+        state: stopped
+        masked: true
+
+    - name: Wait for port 5432 to be completely freed by Podman
+      ansible.builtin.wait_for:
+        port: 5432
+        state: stopped
+        timeout: 30
+
+    - name: Upgrade the database from 13 to 16 but don't start the server
+      containers.podman.podman_container:
+        name: "{{ postgresql_container_name }}-upgrade"
+        image: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
+        state: started
+        volumes:
+          - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:rw,Z"
+        secrets:
+          - 'postgresql-admin-password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
+        env:
+          POSTGRESQL_MAX_CONNECTIONS: "{{ postgresql_max_connections }}"
+          POSTGRESQL_SHARED_BUFFERS: "{{ postgresql_shared_buffers }}"
+          POSTGRESQL_EFFECTIVE_CACHE_SIZE: "{{ postgresql_effective_cache_size }}"
+          # explicitly set the previous version to avoid the upgrade failure
+          # see https://github.com/sclorg/postgresql-container/issues/661
+          POSTGRESQL_PREV_VERSION: "{{ postgresql_version }}"
+          POSTGRESQL_UPGRADE: "{{ postgresql_upgrade }}"
+        detach: false
+        command: "run-postgresql -V"
+
+    - name: Unmask PostgreSQL systemd service (Quadlet)
+      ansible.builtin.systemd:
+        name: postgresql.service
+        state: stopped
+        masked: false

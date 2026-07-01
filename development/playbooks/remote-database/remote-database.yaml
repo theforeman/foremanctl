@@ -7,7 +7,6 @@
     - "../../../src/vars/defaults.yml"
     - "../../../src/vars/flavors/{{ flavor }}.yml"
     - "../../../src/vars/database.yml"
-    - "../../../src/vars/images.yml"
   vars:
     certificates_hostnames:
       - "{{ ansible_facts['fqdn'] }}"
