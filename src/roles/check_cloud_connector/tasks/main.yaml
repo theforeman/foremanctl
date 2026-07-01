@@ -1,0 +1,21 @@
+---
+- name: Verify cloud-connector is not used with iop
+  ansible.builtin.assert:
+    that:
+      - "'iop' not in enabled_features"
+    fail_msg: >-
+      The cloud-connector feature cannot be used together with the iop feature.
+      Remove one of them with --remove-feature before deploying.
+
+- name: Check that consumer certificate exists
+  ansible.builtin.stat:
+    path: /etc/pki/consumer/cert.pem
+  register: check_cloud_connector_consumer_cert
+
+- name: Verify consumer certificate exists
+  ansible.builtin.assert:
+    that:
+      - check_cloud_connector_consumer_cert.stat.exists
+    fail_msg: >-
+      /etc/pki/consumer/cert.pem not found.
+      The system must be registered with subscription-manager.

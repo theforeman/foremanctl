@@ -13,6 +13,11 @@
   vars:
     httpd_foreman_backend: "http://localhost:3000"
   pre_tasks:
+    - name: Check cloud-connector prerequisites
+      ansible.builtin.include_role:
+        name: check_cloud_connector
+      when: "'cloud-connector' in enabled_features"
+
     - name: Set development postgresql databases
       ansible.builtin.set_fact:
         postgresql_databases: >-
@@ -38,6 +43,14 @@
         - name: Enable foreman_ansible plugin for iop
           ansible.builtin.set_fact:
             foreman_development_enabled_plugins: "{{ foreman_development_enabled_plugins + ['foreman_ansible'] }}"
+
+    - name: Setup cloud-connector requirements
+      when:
+        - "'cloud-connector' in enabled_features"
+      block:
+        - name: Enable foreman_rh_cloud plugin for cloud-connector
+          ansible.builtin.set_fact:
+            foreman_development_enabled_plugins: "{{ foreman_development_enabled_plugins + ['foreman_rh_cloud'] }}"
   roles:
     - role: pre_install
     - role: certificates
@@ -57,6 +70,12 @@
       vars:
         iop_core_foreman_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
         iop_core_foreman_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+    - role: cloud_connector
+      when:
+        - "'cloud-connector' in enabled_features"
+      vars:
+        cloud_connector_admin_user: "{{ foreman_development_admin_user }}"
+        cloud_connector_admin_password: "{{ foreman_development_admin_password }}"
   post_tasks:
     - name: Stop Foreman development service
       ansible.builtin.include_role:

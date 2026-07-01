@@ -7,6 +7,11 @@
     - check_database_connection
     - check_system_requirements
 
+- name: Run cloud connector checks
+  ansible.builtin.include_role:
+    name: check_cloud_connector
+  when: enabled_features | has_feature('cloud-connector')
+
 - name: Run database index integrity checks
   ansible.builtin.include_role:
     name: check_database_index

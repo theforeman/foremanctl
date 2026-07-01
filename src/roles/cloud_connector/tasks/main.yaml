@@ -1,0 +1,123 @@
+---
+- name: Install rhc and yggdrasil-worker-forwarder
+  ansible.builtin.package:
+    name:
+      - rhc
+      - yggdrasil-worker-forwarder
+
+- name: Create cloud connector role
+  theforeman.foreman.role:
+    name: Cloud Connector
+    filters:
+      - permissions:
+          - dispatch_cloud_requests
+    server_url: "{{ cloud_connector_url }}"
+    username: "{{ cloud_connector_admin_user }}"
+    password: "{{ cloud_connector_admin_password }}"
+    ca_path: "{{ foreman_ca_certificate | default(omit) }}"
+    state: present
+
+- name: Create cloud connector service user
+  theforeman.foreman.user:
+    login: "{{ cloud_connector_service_user }}"
+    user_password: "{{ cloud_connector_service_password }}"
+    mail: "{{ cloud_connector_service_user }}@localhost"
+    auth_source: Internal
+    roles:
+      - Cloud Connector
+    admin: false
+    server_url: "{{ cloud_connector_url }}"
+    username: "{{ cloud_connector_admin_user }}"
+    password: "{{ cloud_connector_admin_password }}"
+    ca_path: "{{ foreman_ca_certificate | default(omit) }}"
+    state: present
+
+- name: Configure foreman-rh-cloud worker
+  ansible.builtin.template:
+    src: foreman_rh_cloud.toml.j2
+    dest: "{{ cloud_connector_config_file }}"
+    owner: root
+    group: root
+    mode: '0640'
+  notify: Restart rhcd
+
+- name: Create rhcd worker script
+  ansible.builtin.copy:
+    dest: /usr/libexec/rhc/foreman-rh-cloud-worker
+    content: |
+      #!/bin/bash
+
+      CONFIG_FILE="{{ cloud_connector_config_file }}" exec /usr/libexec/yggdrasil-worker-forwarder
+    owner: root
+    group: root
+    mode: '0750'
+
+- name: Add Foreman CA to system trust store
+  ansible.builtin.copy:
+    src: "{{ foreman_ca_certificate }}"
+    dest: /etc/pki/ca-trust/source/anchors/foreman-ca.pem
+    remote_src: true
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Foreman CA changed
+  when: foreman_ca_certificate is defined
+
+- name: Ensure rhcd started and enabled
+  ansible.builtin.service:
+    name: rhcd
+    state: started
+    enabled: true
+
+- name: Read client ID from consumer certificate
+  community.crypto.x509_certificate_info:
+    path: /etc/pki/consumer/cert.pem
+  register: cloud_connector_cert_info
+
+- name: Set rhc_instance_id in Foreman
+  theforeman.foreman.setting:
+    name: rhc_instance_id
+    value: "{{ cloud_connector_cert_info.subject.commonName }}"
+    server_url: "{{ cloud_connector_url }}"
+    username: "{{ cloud_connector_admin_user }}"
+    password: "{{ cloud_connector_admin_password }}"
+    ca_path: "{{ foreman_ca_certificate | default(omit) }}"
+
+- name: Enable automatic inventory upload
+  theforeman.foreman.setting:
+    name: allow_auto_inventory_upload
+    value: true
+    server_url: "{{ cloud_connector_url }}"
+    username: "{{ cloud_connector_admin_user }}"
+    password: "{{ cloud_connector_admin_password }}"
+    ca_path: "{{ foreman_ca_certificate | default(omit) }}"
+
+- name: Announce to Sources
+  ansible.builtin.uri:
+    url: "{{ cloud_connector_url }}/api/v2/rh_cloud/announce_to_sources"
+    user: "{{ cloud_connector_admin_user }}"
+    password: "{{ cloud_connector_admin_password }}"
+    method: POST
+    ca_path: "{{ foreman_ca_certificate | default(omit) }}"
+    force_basic_auth: true
+    body_format: json
+    status_code: [200, 201]
+
+- name: Configure HTTP proxy for rhcd
+  ansible.builtin.include_tasks: http_proxy.yaml
+  when: cloud_connector_http_proxy is defined
+
+- name: Remove HTTP proxy configuration for rhcd
+  when: cloud_connector_http_proxy is not defined
+  block:
+    - name: Remove HTTP proxy systemd drop-in for rhcd
+      ansible.builtin.file:
+        path: /etc/systemd/system/rhcd.service.d/proxy.conf
+        state: absent
+      notify: Restart rhcd
+
+    - name: Remove systemd drop-in directory if empty
+      ansible.builtin.file:
+        path: /etc/systemd/system/rhcd.service.d
+        state: absent
+      notify: Restart rhcd
