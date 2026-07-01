@@ -31,6 +31,7 @@ The following properties are defined:
   * `role` (_String_): The name of the Ansible role to be executed if the feature is not implemented as a Foreman Proxy plugin.
 * `hammer` (_String_): The name of the Hammer plugin to be enabled (the package installed will be `hammer-cli-plugin-{{ hammer }}`).
 * `dependencies` (_Array_ of _String_): List of features that are automatically enabled when the user requests this feature. Usually will point at features with `internal: true`.
+* `conflicts` (_Array_ of _String_): List of features that are mutually exclusive with this feature. If both are enabled, deployment will fail with an error. Conflicts must be declared on both sides — if feature A lists B in its conflicts, B must also list A.
 
 Properties can be omitted.
 
