@@ -75,7 +75,7 @@
         src: "{{ certificate_bundle_client_key }}"
         dest: "{{ certificate_bundle_build_directory.path }}/certs/private/{{ certificate_bundle_hostname }}-client.key"
         remote_src: true
-        mode: '0600'
+        mode: '0440'
 
     - name: Create tarball
       community.general.archive:
