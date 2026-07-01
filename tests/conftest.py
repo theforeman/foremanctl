@@ -18,6 +18,7 @@ from requests.adapters import HTTPAdapter
 SSH_CONFIG = './.tmp/ssh-config'
 OBSAH_STATE = os.environ.get('OBSAH_STATE', '.var/lib/foremanctl')
 PARAMETERS_FILE = os.path.join(OBSAH_STATE, 'parameters.yaml')
+FOREMAN_PROXY_PORT = 8443
 
 
 class UserParameters:
@@ -271,6 +272,26 @@ class ResolveAdapter(HTTPAdapter):
         conn.host = self.target_ip
 
         return conn
+
+
+@pytest.fixture(scope="module")
+def proxy_request(server, certificates, server_fqdn):
+    def _request(path, method=None, data=None, return_body=False):
+        curl_opts = (
+            f"--cacert {certificates['server_ca_certificate']} "
+            f"--cert {certificates['client_certificate']} "
+            f"--key {certificates['client_key']} "
+            f"--silent "
+        )
+        if not return_body:
+            curl_opts += "--output /dev/null --write-out '%{http_code}' "
+        if method:
+            curl_opts += f"-X {method} "
+        if data:
+            curl_opts += f"-d '{data}' "
+        return server.run(f"curl {curl_opts}https://{server_fqdn}:{FOREMAN_PROXY_PORT}/{path}")
+
+    return _request
 
 
 @pytest.fixture(scope="module")

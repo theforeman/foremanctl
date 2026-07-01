@@ -16,6 +16,8 @@
     sdnotify: true
     network: host
     hostname: "{{ ansible_facts['hostname'] }}.local"
+    security_opt:
+      - "label=disable"
     secrets:
       - 'foreman-proxy-settings-yml,type=mount,target=/etc/foreman-proxy/settings.yml'
       - 'foreman-proxy-ssl-ca,type=mount,target=/etc/foreman-proxy/ssl_ca.pem'

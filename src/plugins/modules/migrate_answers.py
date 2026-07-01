@@ -32,6 +32,11 @@ PARAMETER_MAP = {
     ('foreman', 'server_ssl_key'): 'IGNORE',
     ('foreman', 'server_ssl_ca'): 'IGNORE',
 
+    # Foreman Proxy TFTP
+    ('foreman_proxy', 'tftp_managed'): 'IGNORE',
+    ('foreman_proxy', 'tftp_root'): 'foreman_proxy_tftp_root',
+    ('foreman_proxy', 'tftp_servername'): 'foreman_proxy_tftp_servername',
+
     # TODO: Add more mappings as discovered
 }
 
