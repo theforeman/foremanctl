@@ -56,6 +56,14 @@ variables:
     parameter: --bmc-redfish-verify-ssl
     help: Verify SSL certificates for Redfish BMC connections.
     type: Boolean
+  cloud_connector_admin_user:
+    parameter: --cloud-connector-admin-user
+    help: Admin username for Foreman API calls during cloud connector setup.
+    persist: false
+  cloud_connector_admin_password:
+    parameter: --cloud-connector-admin-password
+    help: Admin password for Foreman API calls during cloud connector setup.
+    persist: false
   cloud_connector_http_proxy:
     parameter: --cloud-connector-http-proxy
     help: HTTP proxy URL for the cloud connector rhcd service.
