@@ -63,6 +63,28 @@ dynflow:
     plugin_name: dynflow
 ```
 
+### Conflicts
+
+Use `conflicts` to declare that two features are mutually exclusive and cannot both be enabled in the same deployment. Conflicts must be declared on both sides:
+
+```yaml
+cloud-connector:
+  description: Cloud Connector for Red Hat Hybrid Cloud Console
+  dependencies:
+    - rh-cloud
+  conflicts:
+    - iop
+
+iop:
+  description: iop services
+  dependencies:
+    - rh-cloud
+  conflicts:
+    - cloud-connector
+```
+
+When a user tries to enable both conflicting features, the deploy will fail early with an error identifying the conflict.
+
 ## Step 2: Configure the Foreman Proxy Plugin (if needed)
 
 If the feature has no `foreman_proxy` section, skip to Step 3.
