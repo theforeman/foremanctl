@@ -29,6 +29,10 @@ variables:
   foreman_development_github_username:
     help: GitHub username to add as additional remote for git checkouts
     action: store
+  foreman_development_manage_repos:
+    parameter: --manage-repos
+    help: Manage git repositories for Foreman and plugins. Set to false to skip cloning and checking out repositories.
+    type: Boolean
 
 include:
   - _flavor_features
