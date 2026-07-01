@@ -1,0 +1,30 @@
+---
+variables:
+  external_authentication:
+    help: External authentication method to use
+    choices:
+      - ipa
+      - ipa_with_api
+  external_authentication_pam_service:
+    help: Name of the PAM service to use for IPA authentication
+  pulp_import_paths:
+    help: Extra file path that Pulp can use for content imports. Argument may be used more than once.
+    action: append_unique
+    type: AbsolutePath
+    parameter: --content-import-path
+  pulp_export_paths:
+    help: Extra file path that Pulp can use for content exports. Argument may be used more than once.
+    action: append_unique
+    type: AbsolutePath
+    parameter: --content-export-path
+
+include:
+  - _certificate_source
+  - _certificate_validity
+  - _certificates_custom
+  - _database_mode
+  - _database_connection
+  - _foreman
+  - _foreman_proxy
+  - _pulp
+  - _tuning

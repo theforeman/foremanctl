@@ -3,22 +3,10 @@ help: |
   Install
 
 variables:
-  foreman_initial_admin_username:
-    help: Initial username for the admin user.
-    parameter: --initial-admin-username
-  foreman_initial_admin_password:
-    help: Initial password for the admin user.
-    parameter: --initial-admin-password
-  foreman_initial_organization:
-    help: Name of an initial organization.
-    parameter: --initial-organization
-  foreman_initial_location:
-    help: Name of an initial location.
-    parameter: --initial-location
-  foreman_puma_workers:
-    help: Number of workers for Puma.
-  pulp_worker_count:
-    help: Number of Pulp workers. Defaults to 8 or the number of CPU cores, whichever is smaller.
+  flavor:
+    help: Base flavor to use in this deployment.
+    choices:
+      - katello
   external_authentication:
     help: External authentication method to use
     choices:
@@ -26,46 +14,7 @@ variables:
       - ipa_with_api
   external_authentication_pam_service:
     help: Name of the PAM service to use for IPA authentication
-  certificates_cnames:
-    help: Additional DNS name to include in Subject Alternative Names for certificates. Can be specified multiple times.
-    action: append_unique
-    type: FQDN
-    parameter: --certificate-cname
-  certificates_custom_server_certificate:
-    help: Path to a custom server certificate to use instead of the auto-generated one.
-    type: AbsolutePath
-    parameter: --certificate-server-certificate
-    persist: false
-  certificates_custom_server_key:
-    help: Path to the private key for the custom server certificate.
-    type: AbsolutePath
-    parameter: --certificate-server-key
-    persist: false
-  certificates_custom_server_ca_certificate:
-    help: Path to the CA certificate that signed the custom server certificate.
-    type: AbsolutePath
-    parameter: --certificate-server-ca-certificate
-    persist: false
-  foreman_proxy_bmc_ipmi_implementation:
-    parameter: --bmc-ipmi-implementation
-    help: IPMI implementation to use for BMC.
-    choices:
-      - freeipmi
-      - ipmitool
-  foreman_proxy_bmc_redfish_verify_ssl:
-    parameter: --bmc-redfish-verify-ssl
-    help: Verify SSL certificates for Redfish BMC connections.
-    type: Boolean
-
-constraints:
-  required_together:
-    - [certificates_custom_server_certificate, certificates_custom_server_key, certificates_custom_server_ca_certificate]
 
 include:
-  - _certificate_source
-  - _certificate_validity
-  - _database_mode
-  - _database_connection
-  - _tuning
   - _flavor_features
-  - _pulp
+  - _flavors/katello

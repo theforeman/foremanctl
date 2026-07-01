@@ -18,6 +18,8 @@ from requests.adapters import HTTPAdapter
 SSH_CONFIG = './.tmp/ssh-config'
 OBSAH_STATE = os.environ.get('OBSAH_STATE', '.var/lib/foremanctl')
 PARAMETERS_FILE = os.path.join(OBSAH_STATE, 'parameters.yaml')
+FLAVOR_TESTS_DIR = py.path.local(__file__).dirpath() / 'flavor'
+FOREMAN_PROXY_PORT = 8443
 
 
 class UserParameters:
@@ -44,9 +46,24 @@ class UserParameters:
         return set(feature for feature, status, _desc in self.features if status == 'enabled')
 
 
+def pytest_addoption(parser):
+    parser.addoption("--server-hostname", action="store", default="quadlet", help="Hostname of the server VM to test against")
+
+
+def flavor():
+    with open(PARAMETERS_FILE) as f:
+        params = yaml.safe_load(f)
+    return params.get('flavor', 'katello')
+
+
 @pytest.fixture(scope="module")
 def enabled_features(pytestconfig):
     return pytestconfig.user_parameters.enabled_features
+
+
+@pytest.fixture(scope="module")
+def available_features(pytestconfig):
+    return pytestconfig.user_parameters.available_features
 
 
 @pytest.fixture(scope="module")
@@ -55,8 +72,8 @@ def fixture_dir():
 
 
 @pytest.fixture(scope="module")
-def server_hostname():
-    return 'quadlet'
+def server_hostname(pytestconfig):
+    return pytestconfig.getoption("server_hostname")
 
 
 @pytest.fixture(scope="module")
@@ -247,6 +264,25 @@ def pytest_configure(config):
     config.user_parameters = UserParameters(config)
 
 
+def pytest_collection_modifyitems(config, items):
+    active_flavor = flavor()
+    active_flavor_dir = FLAVOR_TESTS_DIR / active_flavor
+
+    deselected = []
+    selected = []
+    for item in items:
+        test_path = py.path.local(item.fspath)
+        if test_path.relto(FLAVOR_TESTS_DIR):
+            if not test_path.relto(active_flavor_dir):
+                deselected.append(item)
+                continue
+        selected.append(item)
+
+    if deselected:
+        config.hook.pytest_deselected(items=deselected)
+        items[:] = selected
+
+
 def pytest_runtest_setup(item):
     feature_markers = set(mark.args[0] for mark in item.iter_markers(name="feature"))
     if feature_markers:
@@ -280,3 +316,31 @@ def local_request(ssh_config, server_fqdn):
     session.mount(f"http://{server_fqdn}", adapter)
     session.mount(f"https://{server_fqdn}", adapter)
     return session
+
+
+@pytest.fixture(scope="module")
+def proxy_base_url(server_fqdn):
+    return f"https://{server_fqdn}:{FOREMAN_PROXY_PORT}"
+
+
+@pytest.fixture(scope="module")
+def curl_request(server, certificates, server_fqdn):
+    def _request(path, base_url=None, method=None, data=None, headers=None, return_body=False):
+        url = f"{base_url or f'https://{server_fqdn}'}/{path}"
+        curl_opts = (
+            f"--cacert {certificates['server_ca_certificate']} "
+            f"--cert {certificates['client_certificate']} "
+            f"--key {certificates['client_key']} "
+            f"--silent "
+        )
+        if not return_body:
+            curl_opts += "--write-out '%{http_code}' --output /dev/null "
+        if method:
+            curl_opts += f"-X {method} "
+        if data:
+            curl_opts += f"-d '{data}' "
+        if headers:
+            for key, value in headers.items():
+                curl_opts += f"--header '{key}: {value}' "
+        return server.run(f"curl {curl_opts}{url}")
+    return _request

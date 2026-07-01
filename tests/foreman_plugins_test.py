@@ -1,5 +1,7 @@
 import pytest
 
+pytestmark = pytest.mark.feature('foreman')
+
 
 @pytest.mark.parametrize("foreman_plugin", ['foreman_azure_rm', 'foreman_google'])
 def test_foreman_compute_resources(foremanapi, foreman_plugin):

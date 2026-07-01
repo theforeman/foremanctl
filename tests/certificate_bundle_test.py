@@ -2,6 +2,9 @@ import subprocess
 
 import pytest
 
+pytestmark = pytest.mark.feature('katello')
+
+
 HOSTNAME = 'proxy.example.com'
 TARBALL = f'/var/lib/foremanctl/certs/bundles/{HOSTNAME}.tar.gz'
 

@@ -1,5 +1,5 @@
 ---
-- name: Get all Foreman services as JSON
+- name: Get all Foreman target services as JSON
   ansible.builtin.shell:
     cmd: systemctl list-units --output=json --all $(systemctl list-dependencies --plain foreman.target)
   register: check_services_all_json
@@ -26,7 +26,7 @@
         list
       }}
 
-- name: Verify all Foreman services are active
+- name: Verify all Foreman target services are active
   ansible.builtin.assert:
     that:
       - check_services_not_running_list | length == 0

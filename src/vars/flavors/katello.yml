@@ -7,3 +7,18 @@ flavor_features:
   - content/deb
   - content/python
   - content/rpm
+
+checks_to_execute:
+  - check_features
+  - check_hostname
+  - check_database_connection
+  - check_system_requirements
+
+health_checks_to_execute:
+  - check_hostname
+  - check_database_connection
+  - check_services
+  - check_foreman_api
+  - check_foreman_tasks
+  - check_host_facts_count
+  - check_duplicate_permissions

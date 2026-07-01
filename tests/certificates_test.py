@@ -11,6 +11,8 @@ def certificate_info(server, certificate):
 
 @pytest.mark.parametrize("certificate_type", ['ca_certificate', 'server_ca_certificate', 'server_certificate', 'client_certificate', 'localhost_certificate'])
 def test_certificate_expiry(server, certificates, certificate_type):
+    if certificate_type == 'localhost_certificate' and not server.file(certificates[certificate_type]).exists:
+        pytest.skip("localhost certificate not present in proxy deployment")
     openssl_data = certificate_info(server, certificates[certificate_type])
     not_after = dateutil.parser.parse(openssl_data['notAfter'])
     now = datetime.datetime.now(tz=not_after.tzinfo)
@@ -78,6 +80,8 @@ def test_client_certificate_chain_verifies(server, certificates):
 
 
 def test_localhost_certificate_issued_by_internal_ca(server, certificates, custom_certificates):
+    if not server.file(certificates['localhost_certificate']).exists:
+        pytest.skip("localhost certificate not present in proxy deployment")
     localhost_info = certificate_info(server, certificates['localhost_certificate'])
     ca_info = certificate_info(server, certificates['ca_certificate'])
     assert localhost_info['issuer'] == ca_info['subject'], \
