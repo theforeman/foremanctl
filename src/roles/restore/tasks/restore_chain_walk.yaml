@@ -1,0 +1,34 @@
+---
+- name: Read metadata from current backup in chain
+  ansible.builtin.slurp:
+    path: "{{ restore_chain_backup_dir }}/metadata.yml"
+  register: restore_chain_metadata_content
+
+- name: Parse current backup metadata
+  ansible.builtin.set_fact:
+    restore_chain_metadata: "{{ restore_chain_metadata_content['content'] | b64decode | from_yaml }}"
+
+- name: Detect if current backup is incremental
+  ansible.builtin.set_fact:
+    restore_chain_is_incremental: "{{ restore_chain_metadata.incremental.is_incremental | default(restore_chain_metadata.incremental | default(false)) | bool }}"
+    restore_chain_base_dir: "{{ restore_chain_metadata.incremental.base_backup_dir | default('') }}"
+
+- name: Recursively add base backup to chain
+  when: restore_chain_is_incremental and restore_chain_base_dir | length > 0
+  block:
+    - name: Verify base backup directory exists
+      ansible.builtin.stat:
+        path: "{{ restore_chain_base_dir }}"
+      register: restore_chain_base_stat
+      failed_when: not restore_chain_base_stat.stat.exists
+
+    - name: Append base backup to chain
+      ansible.builtin.set_fact:
+        restore_backup_chain: "{{ restore_backup_chain + [restore_chain_base_dir] }}"
+        restore_chain_current: "{{ restore_chain_base_dir }}"
+
+    - name: Walk to next base backup if exists
+      ansible.builtin.include_tasks:
+        file: restore_chain_walk.yaml
+      vars:
+        restore_chain_backup_dir: "{{ restore_chain_base_dir }}"

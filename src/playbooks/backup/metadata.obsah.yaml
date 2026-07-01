@@ -18,3 +18,12 @@ variables:
     help: Wait for running tasks to complete instead of failing immediately
     action: store_true
     persist: false
+
+  incremental:
+    parameter: --incremental
+    help: |
+      Path to previous backup directory for incremental backup.
+      Creates a differential backup containing only files changed since
+      the previous backup. Requires .snar files from previous backup.
+    type: AbsolutePath
+    persist: false

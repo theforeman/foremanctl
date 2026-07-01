@@ -1,0 +1,151 @@
+---
+- name: Create PostgreSQL admin password secret
+  ansible.builtin.shell: |
+    cat {{ obsah_state_path }}/postgresql-admin-password | podman secret create postgresql-admin-password -
+  when: database_mode == 'internal'
+  changed_when: true
+  failed_when: false
+
+- name: Start PostgreSQL for restore
+  ansible.builtin.systemd:
+    name: postgresql.service
+    state: started
+  when: database_mode == 'internal'
+
+- name: Wait for PostgreSQL readiness
+  ansible.builtin.command:
+    cmd: pg_isready -h {{ database_host }} -p {{ database_port }}
+  register: restore_pg_ready
+  retries: "{{ restore_postgresql_ready_retries }}"
+  delay: "{{ restore_postgresql_ready_delay }}"
+  until: restore_pg_ready.rc == 0
+  when: database_mode == 'internal'
+  changed_when: false
+
+- name: Read backup metadata
+  ansible.builtin.slurp:
+    path: "{{ backup_dir }}/metadata.yml"
+  register: restore_metadata_content
+
+- name: Parse backup metadata
+  ansible.builtin.set_fact:
+    restore_backup_metadata: "{{ restore_metadata_content['content'] | b64decode | from_yaml }}"
+
+- name: Build database restore configuration
+  ansible.builtin.set_fact:
+    restore_databases_config:
+      - name: foreman
+        dump_file: "{{ foreman_database_name }}.dump"
+        database_name: "{{ foreman_database_name }}"
+        owner: "{{ foreman_database_user }}"
+      - name: candlepin
+        dump_file: "{{ candlepin_database_name }}.dump"
+        database_name: "{{ candlepin_database_name }}"
+        owner: "{{ candlepin_database_user }}"
+        when_feature: katello
+      - name: pulp
+        dump_file: "{{ pulp_database_name }}.dump"
+        database_name: "{{ pulp_database_name }}"
+        owner: "{{ pulp_database_user }}"
+      - name: iop_advisor
+        dump_file: "{{ iop_advisor_database_name }}.dump"
+        database_name: "{{ iop_advisor_database_name }}"
+        owner: "{{ iop_advisor_database_user }}"
+        when_feature: iop
+      - name: iop_inventory
+        dump_file: "{{ iop_inventory_database_name }}.dump"
+        database_name: "{{ iop_inventory_database_name }}"
+        owner: "{{ iop_inventory_database_user }}"
+        when_feature: iop
+      - name: iop_remediation
+        dump_file: "{{ iop_remediation_database_name }}.dump"
+        database_name: "{{ iop_remediation_database_name }}"
+        owner: "{{ iop_remediation_database_user }}"
+        when_feature: iop
+      - name: iop_vmaas
+        dump_file: "{{ iop_vmaas_database_name }}.dump"
+        database_name: "{{ iop_vmaas_database_name }}"
+        owner: "{{ iop_vmaas_database_user }}"
+        when_feature: iop
+      - name: iop_vulnerability
+        dump_file: "{{ iop_vulnerability_database_name }}.dump"
+        database_name: "{{ iop_vulnerability_database_name }}"
+        owner: "{{ iop_vulnerability_database_user }}"
+        when_feature: iop
+
+- name: Filter databases that exist in backup
+  ansible.builtin.set_fact:
+    restore_databases_to_restore: >-
+      {{
+        restore_databases_config |
+        rejectattr('when_feature', 'defined') |
+        list +
+        (restore_databases_config |
+        selectattr('when_feature', 'defined') |
+        selectattr('when_feature', 'in', restore_backup_metadata.enabled_features | default([])) |
+        list)
+      }}
+
+- name: Verify dump files exist
+  ansible.builtin.stat:
+    path: "{{ backup_dir }}/{{ item.dump_file }}"
+  register: restore_dump_files_check
+  failed_when: not restore_dump_files_check.stat.exists
+  loop: "{{ restore_databases_to_restore }}"
+  loop_control:
+    label: "{{ item.dump_file }}"
+
+- name: Drop existing databases
+  community.postgresql.postgresql_db:
+    name: "{{ item.database_name }}"
+    state: absent
+    login_host: "{{ database_host }}"
+    login_port: "{{ database_port }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+  loop: "{{ restore_databases_to_restore }}"
+  loop_control:
+    label: "{{ item.database_name }}"
+
+- name: Create empty databases
+  community.postgresql.postgresql_db:
+    name: "{{ item.database_name }}"
+    state: present
+    owner: "{{ item.owner }}"
+    login_host: "{{ database_host }}"
+    login_port: "{{ database_port }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+  loop: "{{ restore_databases_to_restore }}"
+  loop_control:
+    label: "{{ item.database_name }}"
+
+- name: Enable postgres_fdw extension for IOP databases
+  community.postgresql.postgresql_ext:
+    name: postgres_fdw
+    db: "{{ item.database_name }}"
+    login_host: "{{ database_host }}"
+    login_port: "{{ database_port }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+  loop: "{{ restore_databases_to_restore }}"
+  loop_control:
+    label: "{{ item.database_name }}"
+  when: item.name in ['iop_advisor', 'iop_inventory', 'iop_vulnerability']
+
+- name: Restore databases from dump files
+  ansible.builtin.command:
+    cmd: >
+      pg_restore
+      -h {{ database_host }}
+      -p {{ database_port }}
+      -U {{ item.owner }}
+      -d {{ item.database_name }}
+      {{ backup_dir }}/{{ item.dump_file }}
+  environment:
+    PGPASSWORD: "{{ postgresql_admin_password }}"
+  loop: "{{ restore_databases_to_restore }}"
+  loop_control:
+    label: "{{ item.dump_file }} -> {{ item.database_name }}"
+  changed_when: true
+  failed_when: false
