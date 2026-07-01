@@ -1,0 +1,45 @@
+---
+- name: Restore from a backup
+  hosts: quadlet
+  become: true
+  gather_facts: true
+  vars_files:
+    - "../../vars/defaults.yml"
+    - "../../vars/database.yml"
+    - "../../vars/base.yaml"
+  roles:
+    - restore
+
+- name: Deploy services after restore
+  import_playbook: ../deploy/deploy.yaml
+  when: not validate | default(false)
+
+- name: Verify restore completion
+  hosts: quadlet
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Verify services after restore
+      when: not validate | default(false)
+      block:
+        - name: Wait for services to stabilize
+          ansible.builtin.pause:
+            seconds: 30
+
+        - name: Check foreman.target status
+          ansible.builtin.systemd:
+            name: foreman.target
+          register: restore_target_status
+          failed_when: restore_target_status.status.ActiveState != 'active'
+
+        - name: Wait for Foreman API to respond
+          ansible.builtin.uri:
+            url: "https://{{ ansible_fqdn }}/api/status"
+            method: GET
+            validate_certs: false
+            status_code: [200, 401]
+          register: restore_api_check
+          until: restore_api_check.status in [200, 401]
+          retries: 30
+          delay: 10
+          changed_when: false

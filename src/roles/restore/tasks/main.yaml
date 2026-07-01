@@ -1,0 +1,45 @@
+---
+- name: Run validation checks
+  ansible.builtin.include_tasks:
+    file: validate.yaml
+
+- name: Perform restore operations
+  when: not validate | default(false)
+  block:
+    - name: Restore foremanctl state
+      ansible.builtin.include_tasks:
+        file: restore_foremanctl_state.yaml
+
+    - name: Prepare system for restore
+      ansible.builtin.include_tasks:
+        file: prepare_system.yaml
+
+    - name: Restore databases
+      ansible.builtin.include_tasks:
+        file: restore_databases.yaml
+
+    - name: Restore Pulp content
+      ansible.builtin.include_tasks:
+        file: restore_pulp_content.yaml
+
+  rescue:
+    - name: Ensure services are stopped on failure
+      ansible.builtin.systemd:
+        name: foreman.target
+        state: stopped
+      failed_when: false
+
+    - name: Report failure
+      ansible.builtin.fail:
+        msg: |
+          Restore failed: {{ ansible_failed_result.msg | default('Unknown error') }}
+
+          System state: Services stopped
+          The system has been left in a stopped state for investigation.
+
+          To recover:
+          1. Review the error above
+          2. Fix any issues with the backup or system
+          3. Re-run the restore command
+
+          If you need to start services without restoring, run: systemctl start foreman.target

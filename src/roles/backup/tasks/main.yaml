@@ -86,7 +86,7 @@
 
     - name: Build database names list for display
       ansible.builtin.set_fact:
-        backup_databases_to_backup: "{{ backup_databases | map(attribute='database') | list }}"
+        backup_databases_to_backup: "{{ backup_databases | map(attribute='name') | list }}"
 
     - name: Dump databases
       ansible.builtin.include_tasks:
