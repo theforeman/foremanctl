@@ -1,7 +1,7 @@
 ---
 - name: Set backup timestamp
   ansible.builtin.set_fact:
-    backup_timestamp: "{{ ansible_date_time.iso8601_basic_short }}"
+    backup_timestamp: "{{ ansible_facts['date_time']['iso8601_basic_short'] }}"
 
 - name: Set full backup directory path
   ansible.builtin.set_fact:
@@ -49,7 +49,7 @@
       ansible.builtin.systemd:
         name: postgresql.service
       register: backup_postgres_status
-      until: backup_postgres_status.status.ActiveState == 'inactive'
+      until: backup_postgres_status.status.ActiveState in ['inactive', 'failed']
       retries: "{{ backup_postgresql_stop_retries }}"
       delay: "{{ backup_postgresql_stop_delay }}"
       when: backup_database_mode == 'internal'
@@ -92,12 +92,39 @@
       ansible.builtin.include_tasks:
         file: database_dumps.yaml
 
-    - name: Backup foremanctl state directory
+    - name: Check if foremanctl state directory exists locally on target
+      ansible.builtin.stat:
+        path: "{{ obsah_state_path }}"
+      register: backup_state_path_stat
+
+    - name: Copy foremanctl state from controller to target (remote deployment)
+      ansible.builtin.copy:
+        src: "{{ obsah_state_path }}/"
+        dest: "{{ backup_dir_full }}/foremanctl-state-staging/"
+        mode: '0755'
+      when: not backup_state_path_stat.stat.exists
+
+    - name: Archive foremanctl state (localhost deployment)
       community.general.archive:
         path: "{{ obsah_state_path }}"
         dest: "{{ backup_dir_full }}/foremanctl-state.tar.gz"
         format: gz
         mode: '0644'
+      when: backup_state_path_stat.stat.exists
+
+    - name: Archive foremanctl state (remote deployment)
+      community.general.archive:
+        path: "{{ backup_dir_full }}/foremanctl-state-staging"
+        dest: "{{ backup_dir_full }}/foremanctl-state.tar.gz"
+        format: gz
+        mode: '0644'
+      when: not backup_state_path_stat.stat.exists
+
+    - name: Clean up staging directory
+      ansible.builtin.file:
+        path: "{{ backup_dir_full }}/foremanctl-state-staging"
+        state: absent
+      when: not backup_state_path_stat.stat.exists
 
     - name: Backup pulp content
       ansible.builtin.include_tasks:

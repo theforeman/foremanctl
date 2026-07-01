@@ -36,8 +36,8 @@
     mode: '0644'
   vars:
     backup_metadata:
-      hostname: "{{ ansible_fqdn }}"
-      os_version: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+      hostname: "{{ ansible_facts['fqdn'] }}"
+      os_version: "{{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}"
       foremanctl_version: "{{ ansible_facts.packages['foremanctl'][0].version | default('unknown') if 'foremanctl' in ansible_facts.packages else 'unknown' }}"
       type: offline
       incremental: false
