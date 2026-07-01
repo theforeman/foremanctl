@@ -46,6 +46,20 @@ variables:
     type: AbsolutePath
     parameter: --certificate-server-ca-certificate
     persist: false
+  certificates_custom_ca_certificate:
+    help: Path to self supplied CA certificate
+    type: AbsolutePath
+    parameter: --certificate-ca-certificate
+    persist: false
+  certificates_custom_ca_key:
+    help: Path to the private key of the CA certificate
+    type: AbsolutePath
+    parameter: --certificate-ca-key
+    persist: false
+  certificates_custom_ca_key_password:
+    help: Password for the custom CA private key
+    parameter: --certificate-ca-key-password
+    persist: false
   foreman_proxy_bmc_ipmi_implementation:
     parameter: --bmc-ipmi-implementation
     help: IPMI implementation to use for BMC.
@@ -60,6 +74,7 @@ variables:
 constraints:
   required_together:
     - [certificates_custom_server_certificate, certificates_custom_server_key, certificates_custom_server_ca_certificate]
+    - [certificates_custom_ca_certificate, certificates_custom_ca_key]
 
 include:
   - _certificate_source
