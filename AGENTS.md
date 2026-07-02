@@ -178,8 +178,10 @@ Developer docs:
 - [Testing](docs/developer/testing.md) - Additional info on test infrastructure, fixtures, patterns
 
 User docs:
+- [Backup](docs/user/backup.md) - How to back up your data
 - [Certificates](docs/user/certificates.md) - Overview of certificate sources
 - [Parameters](docs/user/parameters.md) - Map of Foreman installation parameters; update as parameters are created/modified
+- [Upgrade](docs/user/upgrade.md) - How to upgrade your Foreman server through foremanctl
 
 - [CONTRIBUTING](CONTRIBUTING.md) - How to contribute
 - [Development](DEVELOPMENT.md) - Foremanctl development overview
