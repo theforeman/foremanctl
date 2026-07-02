@@ -5,5 +5,7 @@
 - name: Check for unrecognized Smart Proxy features
   ansible.builtin.include_tasks: smart_proxy_features_check.yaml
   vars:
-    foreman_server_url: "{{ foreman_url }}"
-    foreman_ca_path: "{{ foreman_ca_certificate }}"
+    post_install_foreman_server_url: "{{ foreman_url }}"
+    post_install_foreman_ca_path: "{{ foreman_ca_certificate }}"
+    post_install_foreman_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
+    post_install_foreman_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
