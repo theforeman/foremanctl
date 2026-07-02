@@ -46,3 +46,23 @@ AI agent specifications (rules, skills, agent personas) live under `.agents/`.
 - [Check Roles](docs/developer/checks.md) — check role catalog and integration patterns
 - [Testing](docs/developer/testing.md) — test infrastructure, fixtures, patterns
 - [Parameters](docs/user/parameters.md) — installation parameter map; update when adding parameters
+Developer docs:
+- [Check roles](docs/developer/checks.md) - How to integrate check roles; update as checks are created/modified
+- [Container Image Builds](docs/developer/container-image-builds.md) - Info on image naming, registries
+- [Deployment Architecture](docs/developer/deployment.md)
+- [Development Environment](docs/developer/development-environment.md) - Dev environment setup with Foreman from source
+- [How to Add a Feature](docs/developer/how-to-add-a-feature.md) - End-to-end feature development
+- [Playbooks and Roles](docs/developer/playbooks-and-roles.md) - Playbook structure, naming, metadata
+- [Testing](docs/developer/testing.md) - Additional info on test infrastructure, fixtures, patterns
+
+User docs:
+- [Backup](docs/user/backup.md) - How to back up your data
+- [Certificates](docs/user/certificates.md) - Overview of certificate sources
+- [Parameters](docs/user/parameters.md) - Map of Foreman installation parameters; update as parameters are created/modified
+- [Upgrade](docs/user/upgrade.md) - How to upgrade your Foreman server through foremanctl
+
+- [CONTRIBUTING](CONTRIBUTING.md) - How to contribute
+- [Development](DEVELOPMENT.md) - Foremanctl development overview
+- [IOP](docs/iop.md) - Overview of insights on premise
+- [Migration Guide](docs/migration-guide.md) - Migrating from foreman-installer to foremanctl
+- [Release](RELEASE.md) - Info on Foremanctl releases
