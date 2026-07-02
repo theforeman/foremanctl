@@ -86,37 +86,30 @@
 
     - name: Build database names list for display
       ansible.builtin.set_fact:
-        backup_databases_to_backup: "{{ backup_databases | map(attribute='database') | list }}"
+        backup_databases_to_backup: "{{ backup_databases | map(attribute='name') | list }}"
 
     - name: Dump databases
       ansible.builtin.include_tasks:
         file: database_dumps.yaml
 
-    - name: Create temporary directory on controller
-      ansible.builtin.tempfile:
-        state: directory
-        suffix: foremanctl-backup
-      delegate_to: localhost
-      become: false
-      register: backup_temp_dir
-
     - name: Archive foremanctl state on controller
       community.general.archive:
         path: "{{ obsah_state_path }}"
-        dest: "{{ backup_temp_dir.path }}/foremanctl-state.tar.gz"
+        dest: "{{ obsah_state_path }}/foremanctl-state.tar.gz"
         format: gz
+        mode: '0644'
       delegate_to: localhost
       become: false
 
     - name: Copy foremanctl state archive to target
       ansible.builtin.copy:
-        src: "{{ backup_temp_dir.path }}/foremanctl-state.tar.gz"
+        src: "{{ obsah_state_path }}/foremanctl-state.tar.gz"
         dest: "{{ backup_dir_full }}/foremanctl-state.tar.gz"
         mode: '0644'
 
-    - name: Clean up temporary directory on controller
+    - name: Clean up foremanctl state archive on controller
       ansible.builtin.file:
-        path: "{{ backup_temp_dir.path }}"
+        path: "{{ obsah_state_path }}/foremanctl-state.tar.gz"
         state: absent
       delegate_to: localhost
       become: false

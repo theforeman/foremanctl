@@ -45,15 +45,20 @@ class UserParameters:
     def enabled_features(self):
         return set(feature for feature, status, _desc in self.features if status == 'enabled')
 
+    @cached_property
+    def flavor(self):
+        with open(PARAMETERS_FILE) as f:
+            params = yaml.safe_load(f)
+        return params.get('flavor', 'katello')
+
 
 def pytest_addoption(parser):
     parser.addoption("--server-hostname", action="store", default="quadlet", help="Hostname of the server VM to test against")
 
 
-def flavor():
-    with open(PARAMETERS_FILE) as f:
-        params = yaml.safe_load(f)
-    return params.get('flavor', 'katello')
+@pytest.fixture(scope="module")
+def flavor(pytestconfig):
+    return pytestconfig.user_parameters.flavor
 
 
 @pytest.fixture(scope="module")
@@ -265,7 +270,7 @@ def pytest_configure(config):
 
 
 def pytest_collection_modifyitems(config, items):
-    active_flavor = flavor()
+    active_flavor = config.user_parameters.flavor
     active_flavor_dir = FLAVOR_TESTS_DIR / active_flavor
 
     deselected = []

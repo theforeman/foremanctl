@@ -8,14 +8,46 @@ BACKUP_DIR = "/tmp/foremanctl-backup-test"
 
 
 @pytest.fixture(scope="module")
-def backup_result(server):
+def expected_databases(enabled_features, flavor):
+    """
+    Determine expected databases based on flavor and enabled features.
+
+    Note: These names correspond to the 'name' field in backup_databases,
+    which is used for the dump filename (e.g., 'foreman.dump'), not the
+    actual database name.
+    """
+    databases = []
+
+    # Katello flavor has foreman, candlepin, and pulp
+    if flavor == 'katello':
+        databases = ['foreman', 'candlepin', 'pulp']
+
+    # Foreman-proxy-content flavor only has pulp
+    elif flavor == 'foreman-proxy-content':
+        databases = ['pulp']
+
+    # Add IOP databases if IOP feature is enabled
+    if 'iop' in enabled_features:
+        databases.extend([
+            'iop_advisor',
+            'iop_inventory',
+            'iop_remediation',
+            'iop_vmaas',
+            'iop_vulnerability',
+        ])
+
+    return databases
+
+
+@pytest.fixture(scope="module")
+def backup_result(server, server_hostname):
     server.run(f"rm -rf {BACKUP_DIR}")
 
     result = server.run(f"mkdir -p {BACKUP_DIR}")
     assert result.rc == 0, f"Failed to create backup directory on VM: {result.stderr}"
 
     result = subprocess.run(
-        ['./foremanctl', 'backup', BACKUP_DIR],
+        ['./foremanctl', 'backup', BACKUP_DIR, '--target-host', server_hostname],
         capture_output=True, text=True,
     )
     returncode = result.returncode
@@ -72,13 +104,12 @@ def test_backup_command_succeeded(backup_result):
     assert returncode == 0, f"Backup command should succeed, got rc={returncode}\nstdout: {stdout}\nstderr: {stderr}"
 
 
-def test_database_dumps_created(server, backup_result):
+def test_database_dumps_created(server, backup_result, expected_databases):
     """Test that all database dump files are created and valid"""
     backup_dir = backup_result['backup_dir']
 
-    expected_dumps = ['foreman.dump', 'candlepin.dump', 'pulp.dump']
-
-    for dump_file in expected_dumps:
+    for database_name in expected_databases:
+        dump_file = f"{database_name}.dump"
         dump_path = f"{backup_dir}/{dump_file}"
         file_check = server.file(dump_path)
         assert file_check.exists, f"Database dump {dump_file} should exist at {dump_path}"
@@ -125,12 +156,11 @@ def test_foremanctl_state_archived(server, backup_result):
     """
     Test that foremanctl state directory is archived.
 
-    The backup role handles both deployment modes:
-    - Local deployment: archives state directory directly from target
-    - Remote deployment: syncs state from controller to target, then archives
-
-    This ensures foremanctl state is always backed up regardless of whether
-    foremanctl runs on the same machine as Foreman or on a separate controller.
+    The backup role archives the controller's obsah_state_path to capture
+    deployment state including secrets and configuration. This works for:
+    - Local deployment: controller and target are the same machine
+    - Quadlet deployment: controller has the state, archive transferred to target
+    - Proxy deployment: similar to quadlet
     """
     backup_dir = backup_result['backup_dir']
     state_archive = f"{backup_dir}/foremanctl-state.tar.gz"
@@ -143,6 +173,25 @@ def test_foremanctl_state_archived(server, backup_result):
 
     result = server.run(f"tar -tzf {state_archive} | head -5")
     assert result.rc == 0, "foremanctl-state.tar.gz should be a valid tar.gz archive"
+
+
+def test_foremanctl_state_archive_contents(server, backup_result):
+    """Test that foremanctl state archive contains expected deployment files"""
+    backup_dir = backup_result['backup_dir']
+    state_archive = f"{backup_dir}/foremanctl-state.tar.gz"
+
+    # Get archive contents
+    result = server.run(f"tar -tzf {state_archive}")
+    assert result.rc == 0, "Should be able to list archive contents"
+
+    archive_contents = result.stdout
+    file_list = [f for f in archive_contents.split('\n') if f and not f.endswith('/')]
+
+    assert len(file_list) > 0, "Archive should contain at least one file"
+
+    # Check for certificates-ca-password which should be present in all deployments
+    assert 'certificates-ca-password' in archive_contents, \
+        "Archive should contain certificates-ca-password (generated during deployment)"
 
 
 def test_pulp_content_archived(server, backup_result):
@@ -186,7 +235,7 @@ def test_metadata_file_exists(server, backup_result):
     assert file_check.mode & 0o400, "metadata.yml should be readable by owner"
 
 
-def test_metadata_structure(backup_metadata):
+def test_metadata_structure(backup_metadata, expected_databases):
     required_fields = ['hostname', 'os_version', 'type', 'timestamp', 'databases', 'database_mode']
     for field in required_fields:
         assert field in backup_metadata, f"Metadata should contain '{field}' field"
@@ -195,11 +244,11 @@ def test_metadata_structure(backup_metadata):
     assert backup_metadata['incremental'] is False, "Backup should not be incremental"
     assert backup_metadata['database_mode'] in ['internal', 'external'], "Database mode should be 'internal' or 'external'"
 
-    # Core databases should always be present
-    core_databases = {'foreman', 'candlepin', 'pulp'}
+    # Verify expected databases are present
+    expected_db_set = set(expected_databases)
     actual_databases = set(backup_metadata['databases'])
-    assert core_databases.issubset(actual_databases), \
-        f"Core databases {core_databases} should be present, got {actual_databases}"
+    assert expected_db_set == actual_databases, \
+        f"Expected databases {expected_db_set} should match actual {actual_databases}"
 
 
 def test_metadata_backed_up_components(backup_metadata):
@@ -213,23 +262,27 @@ def test_metadata_backed_up_components(backup_metadata):
 
 
 @pytest.mark.feature("iop")
-def test_metadata_includes_iop_databases(backup_metadata):
+def test_metadata_includes_iop_databases(backup_metadata, expected_databases):
     assert 'databases' in backup_metadata, "Metadata should contain 'databases' field"
 
-    expected_databases = {'foreman', 'candlepin', 'pulp'}
-    expected_iop_databases = {
-        'advisor_db',
-        'inventory_db',
-        'remediations_db',
-        'vmaas_db',
-        'vulnerability_db',
-    }
-
-    all_expected = expected_databases | expected_iop_databases
+    # With IOP enabled, expected_databases fixture should include IOP databases
+    expected_db_set = set(expected_databases)
     actual_databases = set(backup_metadata['databases'])
 
-    assert all_expected == actual_databases, \
-        f"With IOP enabled, databases should be {all_expected}, got {actual_databases}"
+    # Verify IOP databases are present
+    # Note: These are the 'name' values from database.yml, not the actual PostgreSQL database names
+    expected_iop_databases = {
+        'iop_advisor',
+        'iop_inventory',
+        'iop_remediation',
+        'iop_vmaas',
+        'iop_vulnerability',
+    }
+    assert expected_iop_databases.issubset(actual_databases), \
+        f"With IOP enabled, databases should include {expected_iop_databases}, got {actual_databases}"
+
+    assert expected_db_set == actual_databases, \
+        f"Expected databases {expected_db_set} should match actual {actual_databases}"
 
 
 def test_metadata_timestamp_valid(backup_result, backup_metadata):

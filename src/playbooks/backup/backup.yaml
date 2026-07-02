@@ -1,6 +1,6 @@
 ---
 - name: Backup databases and configuration
-  hosts: quadlet
+  hosts: "{{ target_host | default('quadlet') }}"
   become: true
   gather_facts: true
   vars_files:

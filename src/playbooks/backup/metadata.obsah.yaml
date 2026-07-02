@@ -9,6 +9,11 @@ variables:
     type: AbsolutePath
     persist: false
 
+
+  target_host:
+    help: Target host to backup (defaults to quadlet)
+    persist: false
+
   skip_pulp_content:
     help: Skip Pulp content directory backup
     action: store_true
