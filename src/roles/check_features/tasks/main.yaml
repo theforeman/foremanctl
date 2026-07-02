@@ -13,3 +13,17 @@
   vars:
     found_invalid_features: "{{ features | invalid_features }}"
   when: features | length > 0
+
+- name: Validate feature conflicts
+  ansible.builtin.assert:
+    that:
+      - found_conflicts | length == 0
+    fail_msg: |
+      ERROR: Conflicting features detected:
+      {% for conflict in found_conflicts %}
+        - {{ conflict }}
+      {% endfor %}
+
+      These features cannot be enabled together.
+  vars:
+    found_conflicts: "{{ enabled_features | conflicting_features }}"
