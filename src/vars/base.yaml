@@ -28,11 +28,19 @@ httpd_client_ca_certificate: "{{ client_ca_certificate }}"
 httpd_server_certificate: "{{ server_certificate }}"
 httpd_server_key: "{{ server_key }}"
 httpd_enabled_pulp_snippets: "{{ ['pypi'] if 'pulp_python' in pulp_plugins else [] }}"
+httpd_foreman_url: "{{ foreman_url }}"
+httpd_pulp_trusted_hosts:
+  - "{{ foreman_name }}"
 
 pulp_storage_path: /var/lib/pulp
 pulp_content_origin: "https://{{ ansible_facts['fqdn'] }}"
 pulp_pulp_url: "https://{{ ansible_facts['fqdn'] }}"
 pulp_plugins: "{{ enabled_features | select('contains', 'content/') | map('replace', 'content/', 'pulp_') | list }}"
+pulp_rhsm_url: "{{ foreman_proxy_foreman_server_url }}/rhsm"
+pulp_foreman_url: "{{ foreman_proxy_foreman_server_url }}"
+pulp_foreman_ca_certificate: "{{ foreman_ca_certificate }}"
+pulp_foreman_oauth_consumer_key: "{{ foreman_proxy_oauth_consumer_key }}"
+pulp_foreman_oauth_consumer_secret: "{{ foreman_proxy_oauth_consumer_secret }}"
 
 hammer_ca_certificate: "{{ server_ca_certificate }}"
 hammer_plugins: "{{ enabled_features | features_to_hammer_plugins }}"
@@ -43,6 +51,8 @@ foreman_proxy_foreman_server_url: "{{ foreman_url }}"
 foreman_proxy_foreman_ca_certificate: "{{ foreman_ca_certificate }}"
 foreman_proxy_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
 foreman_proxy_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+foreman_proxy_trusted_hosts:
+  - "{{ foreman_name }}"
 
 iop_core_foreman_url: "{{ foreman_url }}"
 iop_core_foreman_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"

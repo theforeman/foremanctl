@@ -372,6 +372,83 @@ jobs:
           limit-access-to-actor: true
           wait-timeout-minutes: 5
 
+  foreman-proxy-content-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        certificate_source:
+          - default
+          - custom_server
+    runs-on: ubuntu-24.04
+    name: "Tests Proxy Deployment"
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Setup libvirt for Vagrant
+        uses: voxpupuli/setup-vagrant@v0
+        with:
+          configure_dns: true
+      - name: Install Ansible
+        run: pip install --upgrade ansible-core
+      - name: Setup environment
+        run: ./setup-environment
+      - name: Start VMs
+        run: |
+          ./forge vms start --vms "quadlet proxy"
+      - name: Run image pull
+        run: |
+          ./foremanctl pull-images
+      - name: Create custom certificates
+        if: matrix.certificate_source == 'custom_server'
+        run: |
+          ./forge custom-certs
+          ./forge custom-certs --hostname proxy.example.com
+      - name: Deploy Katello on quadlet
+        run: |
+          ./foremanctl deploy \
+            --certificate-source=${{ matrix.certificate_source }} \
+            ${{ matrix.certificate_source == 'custom_server' && '--certificate-server-certificate /root/custom-certificates/certs/quadlet.example.com.crt --certificate-server-key /root/custom-certificates/private/quadlet.example.com.key --certificate-server-ca-certificate /root/custom-certificates/certs/ca.crt' || '' }} \
+            --initial-admin-password=changeme \
+            --tuning development \
+            --add-feature foreman-proxy
+      - name: Remove old parameters.yaml
+        run: rm -f .var/lib/foremanctl/parameters.yaml
+      - name: Generate certificates bundle on quadlet
+        run: |
+          ./foremanctl certificate-bundle proxy.example.com \
+            --certificate-source=${{ matrix.certificate_source }} \
+            ${{ matrix.certificate_source == 'custom_server' && '--certificate-server-certificate /root/custom-certificates/certs/proxy.example.com.crt --certificate-server-key /root/custom-certificates/private/proxy.example.com.key' || '' }}
+      - name: Fetch certificates bundle from quadlet
+        run: |
+          ./forge fetch-bundle proxy.example.com
+      - name: Deploy content proxy
+        run: |
+          ./foremanctl deploy-proxy \
+            --flavor foreman-proxy-content \
+            --certificate-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
+            --foreman-fqdn quadlet.example.com
+      - name: Run tests
+        run: |
+          ./forge test --pytest-args="--server-hostname=proxy"
+      - name: Generate sos reports
+        if: ${{ always() }}
+        run: ./forge sos
+      - name: Archive sos reports
+        if: ${{ always() }} 
+        uses: actions/upload-artifact@v7
+        with:
+          name: sosreport-proxy-content
+          path: sos/
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: owenthereal/action-upterm@v1
+        with:
+          limit-access-to-actor: true
+          wait-timeout-minutes: 5
+
   # A dummy job that you can mark as a required check instead of each individual test
   test-suite:
     if: always()
@@ -380,6 +457,7 @@ jobs:
       - devel-tests
       - upgrade
       - migration
+      - foreman-proxy-content-tests
       - ansible-lint
       - python-lint
     runs-on: ubuntu-latest

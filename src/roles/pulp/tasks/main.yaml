@@ -25,6 +25,7 @@
     state: directory
     mode: "0755"
   loop: "{{ pulp_default_import_paths + pulp_import_paths }}"
+  when: not pulp_mirror
 
 - name: Create export directories
   ansible.builtin.file:
@@ -32,6 +33,7 @@
     state: directory
     mode: "0755"
   loop: "{{ pulp_default_export_paths + pulp_export_paths }}"
+  when: not pulp_mirror
 
 - name: Create DB password secret
   containers.podman.podman_secret:
@@ -311,3 +313,13 @@
   when:
     - pulp_existing_workers | length > 0
     - (item | regex_replace('^' + pulp_worker_container_name + '@(\\d+)\\.service$', '\\1') | int) > (pulp_worker_count | int)
+
+- name: Configure Foreman Proxy
+  theforeman.foreman.smart_proxy:
+    name: "{{ ansible_facts['fqdn'] }}-pulp"
+    url: "https://{{ ansible_facts['fqdn'] }}/pulp/api/v3/smart_proxy"
+    server_url: "{{ pulp_foreman_url }}"
+    oauth1_consumer_key: "{{ pulp_foreman_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ pulp_foreman_oauth_consumer_secret }}"
+    ca_path: "{{ pulp_foreman_ca_certificate }}"
+  when: pulp_register_foreman_proxy

@@ -7,8 +7,7 @@ foreman_proxy_https_port: 8443
 foreman_proxy_url: "https://{{ foreman_proxy_name }}:{{ foreman_proxy_https_port }}"
 
 # Settings
-foreman_proxy_trusted_hosts:
-  - "{{ foreman_proxy_name }}"
+foreman_proxy_trusted_hosts: []
 
 foreman_proxy_base_features:
   - logs
@@ -22,3 +21,5 @@ foreman_proxy_foreman_server_url: "https://{{ ansible_facts['fqdn'] }}"
 # BMC settings
 foreman_proxy_bmc_ipmi_implementation: ipmitool
 foreman_proxy_bmc_redfish_verify_ssl: true
+
+foreman_proxy_with_pulp_mirror: "{{ pulp_mirror | default(false) }}"

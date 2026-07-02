@@ -1,10 +1,8 @@
 import pytest
 
 CORE_IMAGES = [
-    "foreman",
-    "candlepin",
-    "pulp",
     "valkey",
+    'pulp'
 ]
 
 

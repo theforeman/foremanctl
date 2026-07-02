@@ -1,5 +1,47 @@
 # Deployment Design
 
+## Deployment Types
+
+foremanctl supports two deployment types: **server** and **proxy**. Each has its own sub-command, flavor, and set of services.
+
+### Server
+
+Deploys a Foreman server. This is the primary deployment type and the default entry point.
+
+
+```bash
+./foremanctl deploy
+```
+
+### Proxy
+
+Deploys a Foreman Proxy node that connects to a Foreman server.
+
+Before running the proxy deployment, a certificate bundle must be generated on the Foreman server and copied to the proxy VM:
+
+1. On the **Foreman server**, generate a certificate bundle for the proxy hostname:
+
+   ```bash
+   ./foremanctl certificate-bundle proxy.example.com
+   ```
+
+   This produces a tar archive at a path like `/var/lib/foremanctl/certs/bundles/<hostname>.tar.gz`.
+
+2. Copy the bundle to the **proxy VM**:
+
+   ```bash
+   scp /var/lib/foremanctl/certs/bundles/proxy.example.com.tar.gz root@proxy.example.com:/root/proxy.example.com.tar.gz
+   ```
+
+3. On the **proxy VM**, run the deployment:
+
+   ```bash
+   ./foremanctl deploy-proxy \
+     --flavor foreman-proxy-content \
+     --certificate-bundle /root/proxy.example.com.tar.gz \
+     --foreman-fqdn quadlet.example.com
+   ```
+
 ## Deployment Paths
 
 ### Happy Path

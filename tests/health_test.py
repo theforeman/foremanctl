@@ -34,6 +34,7 @@ def test_health_checks_pass():
     )
 
 
+@pytest.mark.feature('foreman')
 def test_foreman_tasks_check_detects_errors(errored_foreman_task):
     """Verify foreman tasks check detects errored tasks and fails"""
 

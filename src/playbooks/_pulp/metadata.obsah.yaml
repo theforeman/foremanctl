@@ -1,12 +1,4 @@
 ---
 variables:
-  pulp_import_paths:
-    help: Extra file path that Pulp can use for content imports. Argument may be used more than once.
-    action: append_unique
-    type: AbsolutePath
-    parameter: --content-import-path
-  pulp_export_paths:
-    help: Extra file path that Pulp can use for content exports. Argument may be used more than once.
-    action: append_unique
-    type: AbsolutePath
-    parameter: --content-export-path
+  pulp_worker_count:
+    help: Number of Pulp workers. Defaults to 8 or the number of CPU cores, whichever is smaller.

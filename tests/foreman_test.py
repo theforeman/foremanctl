@@ -2,6 +2,8 @@ import json
 
 import pytest
 
+pytestmark = pytest.mark.feature('foreman')
+
 FOREMAN_HOST = 'localhost'
 FOREMAN_PORT = 3000
 

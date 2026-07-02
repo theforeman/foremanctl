@@ -1,0 +1,14 @@
+---
+- name: Fetch generated bundle from server
+  hosts:
+    - quadlet
+  become: true
+  vars_files:
+    - "../../../src/vars/base.yaml"
+    - "../../../src/vars/certificates.yml"
+  tasks:
+    - name: Fetch bundle
+      ansible.builtin.fetch:
+        src: "{{ certificates_ca_directory }}/bundles/{{ hostname }}.tar.gz"
+        dest: "{{ obsah_state_path }}/{{ hostname }}.tar.gz"
+        flat: true

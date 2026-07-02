@@ -1,0 +1,8 @@
+---
+help: |
+  Fetch a certificate bundle
+
+variables:
+  hostname:
+    parameter: hostname
+    help: Hostname to fetch the certificate bundle for.

@@ -13,14 +13,7 @@
       ansible.builtin.include_role:
         name: checks
         tasks_from: execute_check
-      loop:
-        - check_hostname
-        - check_services
-        - check_foreman_api
-        - check_database_connection
-        - check_foreman_tasks
-        - check_host_facts_count
-        - check_duplicate_permissions
+      loop: "{{ health_checks_to_execute }}"
       when: >-
         (item != 'check_foreman_tasks' or not (health_skip_check_foreman_tasks_param | default(false) | bool))
       # Add additional skips here

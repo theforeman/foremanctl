@@ -1,0 +1,27 @@
+---
+help: |
+  Install node
+
+variables:
+  flavor:
+    help: Base flavor to use in this deployment.
+    choices:
+      - foreman-proxy-content
+  certificates_bundle:
+    help: Path to the certificate bundle tar file.
+    type: AbsolutePath
+    parameter: --certificate-bundle
+    persist: false
+  foreman_name:
+    parameter: --foreman-fqdn
+    help: FQDN of the Foreman server this proxy connects to.
+  foreman_proxy_oauth_consumer_key:
+    parameter: --oauth-consumer-key
+    help: OAuth key to be used for communication with Foreman.
+  foreman_proxy_oauth_consumer_secret:
+    parameter: --oauth-consumer-secret
+    help: OAuth secret to be used for communication with Foreman.
+
+include:
+  - _flavor_features
+  - _flavors/foreman-proxy-content

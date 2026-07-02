@@ -1,21 +1,16 @@
 import time
 
-FOREMAN_PING_RETRIES = 90
-FOREMAN_PING_DELAY = 10
+TARGET_ACTIVE_RETRIES = 90
+TARGET_ACTIVE_DELAY = 10
 CURL_CMD = "curl --silent --output /dev/null"
 
 
-def _wait_for_foreman(server, server_fqdn, certificates):
-    """Poll the Foreman HTTPS frontend until available or timeout."""
-    for _ in range(FOREMAN_PING_RETRIES):
-        cmd = server.run(
-            f"{CURL_CMD} --cacert {certificates['server_ca_certificate']}"
-            f" --write-out '%{{http_code}}' https://{server_fqdn}/api/v2/ping"
-        )
-        if cmd.stdout == '200':
+def _wait_for_target_active(server, target="foreman.target"):
+    for _ in range(TARGET_ACTIVE_RETRIES):
+        if server.service(target).is_running:
             return
-        time.sleep(FOREMAN_PING_DELAY)
-    raise AssertionError("Foreman did not become available after target lifecycle operation")
+        time.sleep(TARGET_ACTIVE_DELAY)
+    raise AssertionError(f"{target} did not become active after lifecycle operation")
 
 
 def test_foreman_target_stop_start(server, server_fqdn, certificates):
@@ -25,12 +20,12 @@ def test_foreman_target_stop_start(server, server_fqdn, certificates):
 
     result = server.run("systemctl start foreman.target")
     assert result.rc == 0, f"Failed to start foreman.target: {result.stderr}"
-    _wait_for_foreman(server, server_fqdn, certificates)
+    _wait_for_target_active(server, "foreman.target")
     assert server.service("foreman.target").is_running
 
 
 def test_foreman_target_restart(server, server_fqdn, certificates):
     result = server.run("systemctl restart foreman.target")
     assert result.rc == 0, f"Failed to restart foreman.target: {result.stderr}"
-    _wait_for_foreman(server, server_fqdn, certificates)
+    _wait_for_target_active(server, "foreman.target")
     assert server.service("foreman.target").is_running
