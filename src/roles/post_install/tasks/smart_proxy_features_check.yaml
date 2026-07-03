@@ -4,7 +4,7 @@
     server_url: "{{ post_install_foreman_server_url }}"
     oauth1_consumer_key: "{{ post_install_foreman_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ post_install_foreman_oauth_consumer_secret }}"
-    ca_path: "{{ post_install_foreman_ca_path }}"
+    ca_path: "{{ post_install_foreman_ca_path | default(omit) }}"
     resource: smart_proxies
     full_details: true
   register: _post_install_smart_proxies
