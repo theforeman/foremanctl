@@ -44,9 +44,9 @@
         - "'hammer' in enabled_features"
     - role: post_install
       vars:
-        post_install_foreman_ca_path: "{{ foreman_ca_certificate }}"
-        post_install_foreman_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
-        post_install_foreman_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
-        post_install_foreman_server_url: "{{ foreman_url }}"
+        post_install_foreman_ca_path: "{{ foreman_ca_certificate | default(foreman_proxy_foreman_ca_certificate) }}"
+        post_install_foreman_oauth_consumer_key: "{{ foreman_oauth_consumer_key | default(foreman_proxy_oauth_consumer_key) }}"
+        post_install_foreman_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret | default(foreman_proxy_oauth_consumer_secret) }}"
+        post_install_foreman_server_url: "{{ foreman_url | default(foreman_proxy_foreman_server_url) }}"
         post_install_foreman_initial_admin_password: "{{ foreman_initial_admin_password }}"
         post_install_foreman_initial_admin_username: "{{ foreman_initial_admin_username }}"
