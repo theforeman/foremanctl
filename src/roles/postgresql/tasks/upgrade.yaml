@@ -33,11 +33,12 @@
         state: stopped
         timeout: 30
 
-    - name: Upgrade the database from 13 to 16 but don't start the server
+    - name: Deploy PostgreSQL upgrade container
       containers.podman.podman_container:
         name: "{{ postgresql_container_name }}-upgrade"
-        image: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
-        state: started
+        image: postgresql.image
+        state: quadlet
+        sdnotify: false
         volumes:
           - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:rw,Z"
         secrets:
@@ -50,11 +51,36 @@
           # see https://github.com/sclorg/postgresql-container/issues/661
           POSTGRESQL_PREV_VERSION: "{{ postgresql_version }}"
           POSTGRESQL_UPGRADE: "{{ postgresql_upgrade }}"
-        detach: false
         command: "run-postgresql -V"
+        quadlet_options:
+          - |
+            [Unit]
+            Description=PostgreSQL Database Upgrade from 13 to 16
+            [Service]
+            Type=oneshot
+            RemainAfterExit=yes
+            TimeoutStartSec=30m
+
+    - name: Run daemon reload to make Quadlet create the upgrade service file
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Upgrade the database from 13 to 16 but don't start the server
+      ansible.builtin.systemd:
+        name: "{{ postgresql_container_name }}-upgrade.service"
+        state: restarted
 
     - name: Unmask PostgreSQL systemd service (Quadlet)
       ansible.builtin.systemd:
         name: postgresql.service
         state: stopped
         masked: false
+
+    - name: Remove the quadlet file
+      ansible.builtin.file:
+        path: "/etc/containers/systemd/{{ postgresql_container_name }}-upgrade.container"
+        state: absent
+
+    - name: Reload systemd
+      ansible.builtin.systemd_service:
+        daemon_reload: true
