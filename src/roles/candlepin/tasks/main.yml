@@ -2,17 +2,6 @@
 - name: Deploy candlepin image
   ansible.builtin.include_tasks: image.yaml
 
-- name: Create log directories
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-  loop:
-    - /var/log/candlepin
-    - /var/log/tomcat
-
 - name: Configure certificates
   ansible.builtin.include_tasks:
     file: certs.yml
@@ -50,6 +39,28 @@
   notify:
     - Restart candlepin
 
+- name: Create Candlepin logback configuration
+  containers.podman.podman_secret:
+    state: present
+    name: candlepin-logback-xml
+    data: "{{ lookup('ansible.builtin.template', 'logback.xml') }}"
+    labels:
+      filename: logback.xml
+      app: candlepin
+  notify:
+    - Restart candlepin
+
+- name: Create Tomcat logging configuration
+  containers.podman.podman_secret:
+    state: present
+    name: candlepin-tomcat-logging-properties
+    data: "{{ lookup('ansible.builtin.template', 'logging.properties') }}"
+    labels:
+      filename: logging.properties
+      app: tomcat
+  notify:
+    - Restart candlepin
+
 - name: Create DB SSL cert
   containers.podman.podman_secret:
     state: present
@@ -73,10 +84,9 @@
       - 'candlepin-candlepin-conf,target=/etc/candlepin/candlepin.conf,mode=0440,type=mount'
       - 'candlepin-tomcat-server-xml,target=/etc/tomcat/server.xml,mode=0440,type=mount'
       - 'candlepin-tomcat-conf,target=/etc/tomcat/tomcat.conf,mode=0440,type=mount'
+      - 'candlepin-tomcat-logging-properties,target=/etc/tomcat/logging.properties,mode=0440,type=mount'
+      - 'candlepin-logback-xml,target=/var/lib/tomcat/webapps/candlepin/WEB-INF/classes/logback.xml,mode=0440,type=mount'
       - 'candlepin-db-ca,target={{ candlepin_database_ssl_ca_path }},mode=0440,type=mount'
-    volumes:
-      - /var/log/candlepin:/var/log/candlepin:rw,Z
-      - /var/log/tomcat:/var/log/tomcat:rw,Z
     quadlet_options:
       - |
         [Install]
