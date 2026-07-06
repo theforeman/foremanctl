@@ -25,6 +25,28 @@ def test_candlepin_status(server, certificates):
     assert status.stdout == '200'
 
 
+def test_candlepin_logs_in_journal(server, certificates):
+    server.run(
+        f"curl --cacert {certificates['ca_certificate']} --silent --output /dev/null "
+        f"https://localhost:23443/candlepin/status"
+    )
+
+    journal = server.run("journalctl -u candlepin --since '2 min ago' --no-pager").stdout
+    assert 'candlepin/status' in journal
+    assert 'LoggingFilter' in journal
+
+
+def test_candlepin_tomcat_logs_in_journal(server, certificates):
+    server.run(
+        f"curl --cacert {certificates['ca_certificate']} --silent --output /dev/null "
+        f"https://localhost:23443/candlepin/status"
+    )
+
+    journal = server.run("journalctl -u candlepin --no-pager").stdout
+    assert '"GET /candlepin/status HTTP/1.1"' in journal
+    assert 'org.apache.catalina' in journal
+
+
 def test_tls(server):
     result = server.run('nmap --script +ssl-enum-ciphers localhost -p 23443')
     result = result.stdout

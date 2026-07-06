@@ -38,6 +38,13 @@
 
       <Host name="localhost" appBase="webapps"
             unpackWARs="true" autoDeploy="true">
+
+        <Valve className="org.apache.catalina.valves.AccessLogValve"
+               directory="/proc/self/fd"
+               prefix="1"
+               suffix=""
+               rotatable="false"
+               pattern="%h %l %u %t &quot;%r&quot; %s %b" />
       </Host>
     </Engine>
   </Service>
