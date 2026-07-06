@@ -21,11 +21,10 @@
     - "postgresql_version is defined"
     - "postgresql_version == '13'"
   block:
-    - name: Stop PostgreSQL systemd service (Quadlet)
+    - name: Stop foreman target
       ansible.builtin.systemd:
-        name: postgresql.service
+        name: foreman.target
         state: stopped
-        masked: true
 
     - name: Wait for port 5432 to be completely freed by Podman
       ansible.builtin.wait_for:
@@ -69,12 +68,6 @@
       ansible.builtin.systemd:
         name: "{{ postgresql_container_name }}-upgrade.service"
         state: restarted
-
-    - name: Unmask PostgreSQL systemd service (Quadlet)
-      ansible.builtin.systemd:
-        name: postgresql.service
-        state: stopped
-        masked: false
 
     - name: Remove the quadlet file
       ansible.builtin.file:
