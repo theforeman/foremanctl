@@ -4,7 +4,6 @@ import os
 import pytest
 import yaml
 
-PULP_HOST = 'localhost'
 PULP_API_SOCKET = '/run/httpd.pulp-api.sock'
 PULP_CONTENT_SOCKET = '/run/httpd.pulp-content.sock'
 
@@ -24,8 +23,8 @@ def load_pulp_paths_from_parameters():
 
 
 @pytest.fixture(scope="module")
-def pulp_status_curl(server):
-    return server.run(f"curl -k -s -w '%{{stderr}}%{{http_code}}' --unix-socket {PULP_API_SOCKET} http://{PULP_HOST}/pulp/api/v3/status/")
+def pulp_status_curl(server, server_fqdn):
+    return server.run(f"curl -k -s -w '%{{stderr}}%{{http_code}}' --unix-socket {PULP_API_SOCKET} http://{server_fqdn}/pulp/api/v3/status/")
 
 
 @pytest.fixture(scope="module")

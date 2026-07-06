@@ -4,7 +4,6 @@ import pytest
 
 pytestmark = pytest.mark.feature('foreman')
 
-FOREMAN_HOST = 'localhost'
 FOREMAN_SOCKET = '/run/httpd.foreman.sock'
 
 RECURRING_INSTANCES = [
@@ -16,8 +15,8 @@ RECURRING_INSTANCES = [
 
 
 @pytest.fixture(scope="module")
-def foreman_status_curl(server):
-    return server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' --unix-socket {FOREMAN_SOCKET} http://{FOREMAN_HOST}/api/v2/ping")
+def foreman_status_curl(server, server_fqdn):
+    return server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' --unix-socket {FOREMAN_SOCKET} http://{server_fqdn}/api/v2/ping")
 
 
 @pytest.fixture(scope="module")
@@ -98,6 +97,6 @@ def test_foreman_domain_in_mail_settings(foremanapi, server_fqdn, setting):
 
 
 def test_foreman_host_injection(server):
-    cmd = server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' --unix-socket {FOREMAN_SOCKET} --header 'Host: evil.hackers.test' http://{FOREMAN_HOST}/api/v2/ping")
+    cmd = server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' --unix-socket {FOREMAN_SOCKET} http://evil.hackers.test/api/v2/ping")
     assert cmd.succeeded
     assert cmd.stderr == '403'
