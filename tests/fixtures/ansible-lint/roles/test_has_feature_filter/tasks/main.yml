@@ -1,0 +1,11 @@
+---
+# Should be flagged (raw 'in enabled_features')
+- name: Task with raw in check
+  ansible.builtin.debug:
+    msg: "checking feature"
+  when: "'iop' in enabled_features"
+
+- name: Task with raw not-in check
+  ansible.builtin.debug:
+    msg: "checking feature"
+  when: "'hammer' not in enabled_features"

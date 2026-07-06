@@ -1,0 +1,11 @@
+---
+# Should be flagged (raw 'in enabled_features' in role-level when)
+- name: Test play with role-level feature checks
+  hosts: all
+  roles:
+    - role: some_role
+      when:
+        - "'iop' in enabled_features"
+    - role: another_role
+      when:
+        - "'foreman-proxy' in enabled_features"

@@ -1,0 +1,5 @@
+---
+# Should be flagged (raw 'in enabled_features' in variable value)
+test_has_feature_with_foreman: "{{ 'foreman' in enabled_features }}"
+# Should NOT be flagged (uses has_feature)
+test_has_feature_with_pulp: "{{ enabled_features | has_feature('pulp') }}"

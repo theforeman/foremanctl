@@ -1,0 +1,11 @@
+---
+# Should NOT be flagged (uses has_feature filter)
+- name: Test play with correct role-level feature checks
+  hosts: all
+  roles:
+    - role: some_role
+      when:
+        - "enabled_features | has_feature('iop')"
+    - role: another_role
+      when:
+        - "enabled_features | has_feature('foreman-proxy')"

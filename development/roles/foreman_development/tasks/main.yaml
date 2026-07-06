@@ -252,9 +252,9 @@
 - name: Configure smart-proxy for development
   ansible.builtin.include_tasks: smart-proxy/main.yml
   when:
-    - "'foreman-proxy' in enabled_features"
+    - "enabled_features | has_feature('foreman-proxy')"
 
 - name: Configure hammer for development
   ansible.builtin.include_tasks: hammer/main.yml
   when:
-    - "'hammer' in enabled_features"
+    - "enabled_features | has_feature('hammer')"
