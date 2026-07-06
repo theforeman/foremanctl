@@ -1,12 +1,12 @@
 [Unit]
-Description=Foreman socket
+Description=Pulp API socket
 
 [Socket]
-ListenStream={{ foreman_listen_stream }}
+ListenStream={{ pulp_api_listen_stream }}
 SocketUser=apache
 SocketMode=0600
 
-NoDelay=true
+NoDelay=false
 ReusePort=true
 # Default on EL10 (v254+), needed explicitly for EL9 (v252)
 Backlog=4294967295

@@ -98,31 +98,16 @@
     dest: /etc/systemd/system/pulp-api.socket
     mode: '0644'
 
-# TODO: The --bind argument is passed here to override pulpcore-api's default
-# bind address (0.0.0.0:24817) with a unix socket. This duplicates arguments
-# from the container's pulp-api entry point script, which is fragile if the
-# image changes. The proper fix is to add a PULP_API_BIND environment variable
-# to the pulp-oci-images container (like PULP_API_WORKERS already works),
-# then set it via env: instead of overriding the command.
-# See: https://github.com/theforeman/pulp-oci-images
 - name: Deploy Pulp API Container
   containers.podman.podman_container:
     name: "{{ pulp_api_container_name }}"
     image: pulp.image
     state: quadlet
     sdnotify: true
-    command: >-
-      /usr/bin/pulpcore-api
-      --bind unix:{{ pulp_api_listen_stream }}
-      --timeout 90
-      --workers {{ pulp_api_service_worker_count }}
-      --max-requests 800
-      --max-requests-jitter 100
-      --access-logfile -
-      --access-logformat 'pulp [%({correlation-id}o)s]: %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
+    command: pulp-api
     network: host
     hostname: "pulp-api.{{ ansible_facts['hostname'] }}.local"
-    volumes: "{{ pulp_volumes + ['/run:/run:rw'] }}"
+    volumes: "{{ pulp_volumes }}"
     security_opt:
       - "label=disable"
     secrets:
@@ -152,23 +137,16 @@
     dest: /etc/systemd/system/pulp-content.socket
     mode: '0644'
 
-# TODO: Same as pulp-api above — add PULP_CONTENT_BIND to pulp-oci-images
-# and use env: instead of overriding the command.
 - name: Deploy Pulp Content Container
   containers.podman.podman_container:
     name: "{{ pulp_content_container_name }}"
     image: pulp.image
     state: quadlet
     sdnotify: true
-    command: >-
-      /usr/bin/pulpcore-content
-      --bind unix:{{ pulp_content_listen_stream }}
-      --timeout 90
-      --workers {{ pulp_content_service_worker_count }}
-      --access-logfile -
+    command: pulp-content
     network: host
     hostname: "pulp-content.{{ ansible_facts['hostname'] }}.local"
-    volumes: "{{ pulp_volumes + ['/run:/run:rw'] }}"
+    volumes: "{{ pulp_volumes }}"
     security_opt:
       - "label=disable"
     secrets:
