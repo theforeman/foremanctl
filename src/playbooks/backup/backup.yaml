@@ -3,6 +3,8 @@
   hosts: "{{ target_host | default('quadlet') }}"
   become: true
   gather_facts: true
+  vars:
+    flavor: katello
   vars_files:
     - "../../vars/defaults.yml"
     - "../../vars/flavors/{{ flavor }}.yml"
