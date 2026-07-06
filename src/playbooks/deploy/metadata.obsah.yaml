@@ -1,6 +1,6 @@
 ---
 help: |
-  Install
+  Install Server
 
 variables:
   flavor:

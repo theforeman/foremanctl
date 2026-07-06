@@ -1,6 +1,6 @@
 ---
 help: |
-  Install node
+  Install Proxy
 
 variables:
   flavor:
