@@ -3,6 +3,8 @@
   hosts:
     - proxy
   become: true
+  vars:
+    flavor: foreman-proxy-content
   vars_files:
     - "../../vars/defaults.yml"
     - "../../vars/flavors/{{ flavor }}.yml"

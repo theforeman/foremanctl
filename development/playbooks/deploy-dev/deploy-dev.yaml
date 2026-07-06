@@ -2,6 +2,10 @@
 - name: Deploy Foreman Development Environment
   hosts: "{{ target_host if target_host is defined and target_host != '' else 'quadlet' }}"
   become: true
+  vars:
+    flavor: katello
+    httpd_foreman_backend: "http://localhost:3000"
+    pulp_register_foreman_proxy: false
   vars_files:
     - "../../../src/vars/defaults.yml"
     - "../../../src/vars/flavors/{{ flavor }}.yml"
@@ -10,9 +14,6 @@
     - "../../../src/vars/database.yml"
     - "../../../src/vars/foreman.yml"
     - "../../../src/vars/base.yaml"
-  vars:
-    httpd_foreman_backend: "http://localhost:3000"
-    pulp_register_foreman_proxy: false
   pre_tasks:
     - name: Set development postgresql databases
       ansible.builtin.set_fact:

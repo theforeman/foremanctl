@@ -3,16 +3,17 @@
   hosts:
     - database
   become: true
-  vars_files:
-    - "../../../src/vars/defaults.yml"
-    - "../../../src/vars/flavors/{{ flavor }}.yml"
-    - "../../../src/vars/database.yml"
   vars:
+    flavor: katello
     certificates_hostnames:
       - "{{ ansible_facts['fqdn'] }}"
     certificates_ca_password: "CHANGEME"
     postgresql_ssl_crt: "{{ certificates_ca_directory }}/certs/{{ ansible_facts['fqdn'] }}.crt"
     postgresql_ssl_key: "{{ certificates_ca_directory }}/private/{{ ansible_facts['fqdn'] }}.key"
+  vars_files:
+    - "../../../src/vars/defaults.yml"
+    - "../../../src/vars/flavors/{{ flavor }}.yml"
+    - "../../../src/vars/database.yml"
   roles:
     - role: pre_install
     - role: certificates

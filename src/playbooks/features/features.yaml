@@ -5,6 +5,7 @@
   tags:
     - foremanctl_suppress_default_output
   vars:
+    flavor: katello
     list_enabled: false
   vars_files:
     - "../../vars/defaults.yml"
