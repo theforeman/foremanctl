@@ -1,7 +1,9 @@
 <Server port="8005" shutdown="SHUTDOWN">
 
+{% if candlepin_tomcat_major_version | int >= 10 %}
   <!-- OpenSSL library loader using FFM -->
   <Listener className="org.apache.catalina.core.OpenSSLLifecycleListener" />
+{% endif %}
   <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
   <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
@@ -16,7 +18,7 @@
 
   <Service name="Catalina">
 
-    <!-- SSL HTTP/1.1 Connector using OpenSSL via FFM -->
+    <!-- SSL HTTP/1.1 Connector -->
     <Connector port="{{ candlepin_ssl_port }}"
                address="{{ candlepin_hostname }}"
                protocol="org.apache.coyote.http11.Http11NioProtocol"

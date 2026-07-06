@@ -28,6 +28,19 @@
   notify:
     - Restart candlepin
 
+- name: Query Tomcat version from container image
+  ansible.builtin.command:
+    cmd: >-
+      podman run --rm --entrypoint rpm
+      {{ candlepin_container_image }}:{{ candlepin_container_tag }}
+      -q --queryformat '%{VERSION}' tomcat
+  register: _candlepin_tomcat_version
+  changed_when: false
+
+- name: Set Tomcat major version fact
+  ansible.builtin.set_fact:
+    candlepin_tomcat_major_version: "{{ _candlepin_tomcat_version.stdout.split('.')[0] | int }}"
+
 - name: Create Tomcat server.xml
   containers.podman.podman_secret:
     state: present
