@@ -34,14 +34,14 @@
     - role: systemd_target
     - role: iop_core
       when:
-        - "'iop' in enabled_features"
+        - "enabled_features | has_feature('iop')"
         - database_mode == 'internal'
     - role: foreman_proxy
       when:
-        - "'foreman-proxy' in enabled_features"
+        - "enabled_features | has_feature('foreman-proxy')"
     - role: hammer
       when:
-        - "'hammer' in enabled_features"
+        - "enabled_features | has_feature('hammer')"
     - role: post_install
       vars:
         post_install_foreman_ca_path: "{{ foreman_ca_certificate }}"

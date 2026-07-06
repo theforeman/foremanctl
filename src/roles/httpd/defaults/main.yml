@@ -21,6 +21,6 @@ httpd_ipa_keytab: /etc/httpd/conf/http.keytab
 httpd_ipa_pam_service: "{{ external_authentication_pam_service | default('foreman') }}"
 httpd_ipa_gssapi_local_name: true
 
-httpd_with_foreman: "{{ 'foreman' in enabled_features }}"
+httpd_with_foreman: "{{ enabled_features | has_feature('foreman') }}"
 httpd_with_pulpcore: "{{ not httpd_with_foreman and not httpd_with_pulp_mirror }}"
 httpd_with_pulp_mirror: "{{ pulp_mirror | default(false) }}"

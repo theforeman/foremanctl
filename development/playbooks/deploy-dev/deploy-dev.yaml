@@ -30,7 +30,7 @@
 
     - name: Setup iop requirements
       when:
-        - "'iop' in enabled_features"
+        - "enabled_features | has_feature('iop')"
       block:
         - name: Enable foreman_rh_cloud plugin for iop
           ansible.builtin.set_fact:
@@ -54,7 +54,7 @@
         foreman_development_candlepin_oauth_secret: "{{ candlepin_oauth_secret }}"
     - role: iop_core
       when:
-        - "'iop' in enabled_features"
+        - "enabled_features | has_feature('iop')"
       vars:
         iop_core_foreman_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
         iop_core_foreman_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"

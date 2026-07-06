@@ -1,0 +1,17 @@
+---
+# Should NOT be flagged (uses has_feature filter)
+- name: Task with has_feature filter
+  ansible.builtin.debug:
+    msg: "checking feature"
+  when: enabled_features | has_feature('iop')
+
+- name: Task with has_feature in list
+  ansible.builtin.debug:
+    msg: "checking feature"
+  when:
+    - enabled_features | has_feature('katello')
+    - database_mode == 'internal'
+
+- name: Task without feature check
+  ansible.builtin.debug:
+    msg: "no feature check here"

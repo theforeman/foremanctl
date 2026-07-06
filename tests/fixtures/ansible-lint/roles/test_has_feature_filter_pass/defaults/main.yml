@@ -1,0 +1,3 @@
+---
+test_has_feature_pass_with_foreman: "{{ enabled_features | has_feature('foreman') }}"
+test_has_feature_pass_unrelated: "some_value"
