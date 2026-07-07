@@ -90,3 +90,7 @@ registration:
     plugin_name: registration
   dependencies:
     - templates
+theme-satellite:
+  description: Satellite theme for Foreman
+  foreman:
+    plugin_name: foreman_theme_satellite

@@ -1,0 +1,12 @@
+---
+flavor_features:
+  - foreman
+  - katello
+  - content/ansible
+  - content/container
+  - content/deb
+  - content/python
+  - content/rpm
+  - remote-execution
+  - rh-cloud
+  - theme-satellite
