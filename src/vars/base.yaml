@@ -71,3 +71,10 @@ backup_foreman_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
 backup_foreman_ca_certificate: "{{ foreman_ca_certificate }}"
 backup_foreman_client_certificate: "{{ foreman_client_certificate }}"
 backup_foreman_client_key: "{{ foreman_client_key }}"
+
+cloud_connector_url: "{{ foreman_url }}"
+cloud_connector_service_user: cloud_connector_user
+cloud_connector_service_password_file: "{{ obsah_state_path }}/cloud-connector-service-password"
+cloud_connector_service_password: >-
+  {{ lookup('ansible.builtin.password', cloud_connector_service_password_file,
+  chars=['ascii_letters', 'digits'], length=32) }}
