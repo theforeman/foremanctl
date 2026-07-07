@@ -1,6 +1,6 @@
 ---
 - name: List features
-  hosts: quadlet
+  hosts: "{{ target_host | default('quadlet') }}"
   gather_facts: false
   tags:
     - foremanctl_suppress_default_output
