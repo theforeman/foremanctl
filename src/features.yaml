@@ -70,10 +70,18 @@ rh-cloud:
   hammer: foreman_rh_cloud
   dependencies:
     - katello
+cloud-connector:
+  description: Cloud Connector for Red Hat Hybrid Cloud Console
+  dependencies:
+    - rh-cloud
+  conflicts:
+    - iop
 iop:
   description: iop services
   dependencies:
     - rh-cloud
+  conflicts:
+    - cloud-connector
 container-gateway:
   description: Container registry gateway for smart proxy
   foreman_proxy:
