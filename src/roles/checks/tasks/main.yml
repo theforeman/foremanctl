@@ -3,6 +3,11 @@
   ansible.builtin.include_tasks: execute_check.yml
   loop: "{{ checks_to_execute }}"
 
+- name: Run cloud connector checks
+  ansible.builtin.include_role:
+    name: check_cloud_connector
+  when: enabled_features | has_feature('cloud-connector')
+
 - name: Run database index integrity checks
   ansible.builtin.include_role:
     name: check_database_index
