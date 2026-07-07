@@ -12,9 +12,9 @@ def expected_databases(enabled_features, flavor):
     """
     Determine expected databases based on flavor and enabled features.
 
-    Note: These names correspond to the 'name' field in backup_databases,
-    which is used for the dump filename (e.g., 'foreman.dump'), not the
-    actual database name.
+    Note: These names correspond to the actual database name used for
+    the dump filename (e.g., 'foreman.dump'), matching the database_mapping
+    in backup metadata.
     """
     databases = []
 
@@ -29,11 +29,11 @@ def expected_databases(enabled_features, flavor):
     # Add IOP databases if IOP feature is enabled
     if 'iop' in enabled_features:
         databases.extend([
-            'iop_advisor',
-            'iop_inventory',
-            'iop_remediation',
-            'iop_vmaas',
-            'iop_vulnerability',
+            'advisor_db',
+            'inventory_db',
+            'remediations_db',
+            'vmaas_db',
+            'vulnerability_db',
         ])
 
     return databases
@@ -130,11 +130,11 @@ def test_iop_database_dumps_created(server, backup_result):
     backup_dir = backup_result['backup_dir']
 
     expected_iop_dumps = [
-        'iop_advisor.dump',
-        'iop_inventory.dump',
-        'iop_remediation.dump',
-        'iop_vmaas.dump',
-        'iop_vulnerability.dump',
+        'advisor_db.dump',
+        'inventory_db.dump',
+        'remediations_db.dump',
+        'vmaas_db.dump',
+        'vulnerability_db.dump',
     ]
 
     for dump_file in expected_iop_dumps:
