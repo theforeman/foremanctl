@@ -1,0 +1,15 @@
+---
+- name: Task using password auth
+  theforeman.foreman.resource_info:
+    server_url: "https://foreman.example.com"
+    username: admin
+    password: changeme
+    resource: hosts
+
+- name: Task using password variables
+  theforeman.foreman.smart_proxy:
+    server_url: "https://foreman.example.com"
+    username: "{{ foreman_initial_admin_username }}"
+    password: "{{ foreman_initial_admin_password }}"
+    name: proxy
+    url: "https://proxy.example.com"

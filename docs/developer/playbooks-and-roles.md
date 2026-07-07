@@ -211,6 +211,33 @@ Define secrets in `src/vars/` files, not in role `defaults/`. Vars files have hi
 - State file path: `{{ obsah_state_path }}/<service>-<purpose>-password` (use hyphens, no underscores)
 - Secret variable: `<service>_<purpose>_password`
 
+## Foreman API Authentication
+
+Tasks that call `theforeman.foreman.*` modules must authenticate with OAuth (`oauth1_consumer_key`/`oauth1_consumer_secret`), never with `username`/`password`. The custom ansible-lint rule `foreman-oauth-only` enforces this.
+
+The OAuth credentials are defined in `src/vars/foreman.yml` and aliased per-service in `src/vars/base.yaml`:
+
+| Service | Key variable | Secret variable |
+|---------|-------------|----------------|
+| Foreman (base) | `foreman_oauth_consumer_key` | `foreman_oauth_consumer_secret` |
+| Foreman Proxy | `foreman_proxy_oauth_consumer_key` | `foreman_proxy_oauth_consumer_secret` |
+| Pulp | `pulp_foreman_oauth_consumer_key` | `pulp_foreman_oauth_consumer_secret` |
+| Backup | `backup_foreman_oauth_consumer_key` | `backup_foreman_oauth_consumer_secret` |
+| IOP Core | `iop_core_foreman_oauth_consumer_key` | `iop_core_foreman_oauth_consumer_secret` |
+
+Example:
+
+```yaml
+- name: Register smart proxy
+  theforeman.foreman.smart_proxy:
+    name: "{{ foreman_proxy_name }}"
+    url: "{{ foreman_proxy_url }}"
+    server_url: "{{ foreman_proxy_foreman_server_url }}"
+    oauth1_consumer_key: "{{ foreman_proxy_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ foreman_proxy_oauth_consumer_secret }}"
+    ca_path: "{{ foreman_proxy_foreman_ca_certificate | default(omit) }}"
+```
+
 ## How to Add a New Command
 
 1. Create a directory under `src/playbooks/<command-name>/` (or `development/playbooks/` for dev tools).
