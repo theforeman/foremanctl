@@ -235,8 +235,8 @@
     name: "{{ ansible_facts['fqdn'] }}-pulp"
     url: "https://{{ ansible_facts['fqdn'] }}/pulp/api/v3/smart_proxy"
     server_url: "{{ foreman_development_url }}"
-    username: "{{ foreman_development_admin_user }}"
-    password: "{{ foreman_development_admin_password }}"
+    oauth1_consumer_key: "{{ foreman_development_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ foreman_development_oauth_consumer_secret }}"
     ca_path: "{{ foreman_development_ca_certificate }}"
 
 - name: Configure smart-proxy for development

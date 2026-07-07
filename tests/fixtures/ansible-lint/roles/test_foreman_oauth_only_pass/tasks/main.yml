@@ -1,0 +1,12 @@
+---
+- name: Task using OAuth auth
+  theforeman.foreman.smart_proxy:
+    server_url: "https://foreman.example.com"
+    oauth1_consumer_key: "{{ foreman_proxy_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ foreman_proxy_oauth_consumer_secret }}"
+    name: proxy
+    url: "https://proxy.example.com"
+
+- name: Non-foreman task with password is not flagged
+  ansible.builtin.debug:
+    msg: "{{ foreman_initial_admin_password }}"
