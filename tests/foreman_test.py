@@ -30,6 +30,15 @@ def test_foreman_service(server):
     assert foreman.is_running
 
 
+def test_foreman_no_production_log(server):
+    settings = server.run("podman exec foreman grep -A1 ':logging:' /etc/foreman/settings.yaml")
+    assert settings.succeeded
+    assert ':type: stdout' in settings.stdout
+
+    log_file = server.run("podman exec foreman test ! -f /var/log/foreman/production.log")
+    assert log_file.succeeded
+
+
 def test_foreman_port(server):
     foreman = server.addr(FOREMAN_HOST)
     assert foreman.port(FOREMAN_PORT).is_reachable
