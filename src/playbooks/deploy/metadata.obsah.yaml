@@ -7,6 +7,7 @@ variables:
     help: Base flavor to use in this deployment.
     choices:
       - katello
+      - satellite
   external_authentication:
     help: External authentication method to use
     choices:
