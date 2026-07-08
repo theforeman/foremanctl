@@ -1,0 +1,44 @@
+#!/bin/bash
+
+set -euo pipefail
+
+URL="${1:-}"
+FILENAME_LATEST="${2:-}"
+OUTPUT_DIR="${3:-}"
+OUTPUT_FILENAME="${4:-}"
+
+if [[ -z "$URL" || -z "$OUTPUT_DIR" || -z "$FILENAME_LATEST" || -z "$OUTPUT_FILENAME" ]]; then
+    echo "Usage: $0 URL FILENAME_LATEST OUTPUT_DIR OUTPUT_FILENAME" >&2
+    echo "Example: $0 https://security.access.redhat.com/data/csaf/v2/vex/ archive_latest.txt /root/download/ vex-latest.tar.zst" >&2
+    exit 1
+fi
+
+URL="${URL%/}/"
+OUTPUT_DIR="${OUTPUT_DIR%/}/"
+
+ARCHIVE_DOWNLOAD_NAME_CONTENT=$(curl -sf $URL$FILENAME_LATEST)
+
+if [ "$?" -ne 0 ]; then
+    echo "Error: The tarball's name wasn't downloaded" >&2
+    exit 1
+fi
+
+mkdir -p "$OUTPUT_DIR"
+
+curl -sf $URL$ARCHIVE_DOWNLOAD_NAME_CONTENT -o $OUTPUT_DIR$OUTPUT_FILENAME
+
+RET=$?
+
+if [ "$RET" -ne 0 ]; then
+    echo "Error: Downloading of tarball failed. Curl failed with code $RET" >&2
+    exit 2
+fi
+
+curl -sf $URL$ARCHIVE_DOWNLOAD_NAME_CONTENT".asc" -o $OUTPUT_DIR$OUTPUT_FILENAME".asc"
+
+RET=$?
+
+if [ "$RET" -ne 0 ]; then
+    echo "Error: Downloading of tarball's signature failed. Curl failed with code $RET" >&2
+    exit 3
+fi

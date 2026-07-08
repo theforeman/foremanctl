@@ -1,0 +1,9 @@
+[Unit]
+Description=Path unit for vex-latest.tar.zst manual file watcher
+
+[Path]
+PathChanged=/var/lib/foreman/vex-latest.tar.zst
+PathModified=/var/lib/foreman/vex-latest.tar.zst
+
+[Install]
+WantedBy=multi-user.target

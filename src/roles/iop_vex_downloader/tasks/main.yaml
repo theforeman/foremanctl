@@ -1,0 +1,61 @@
+---
+- name: Install vex download script
+  ansible.builtin.template:
+    src: iop-vex-downloader.sh.j2
+    dest: /usr/local/bin/iop-vex-downloader.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create vex download service unit
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/iop-vex-download.service
+    content: |
+      [Unit]
+      Description=Manages vex-latest.tar.zst for IoP Vulnerability
+      After=network-online.target iop-core-gateway.service
+      Wants=network-online.target iop-core-gateway.service
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/iop-vex-downloader.sh \
+        '{{ iop_vex_downloader_base_url }}' \
+        '{{ iop_vex_downloader_latest_filename }}' \
+        '{{ iop_vex_downloader_output_dir }}' \
+        '{{ iop_vex_downloader_output_filename }}'
+      User=root
+      Group=root
+    mode: '0644'
+
+- name: Create vex download timer unit
+  ansible.builtin.template:
+    src: iop-vex-download.timer.j2
+    dest: /etc/systemd/system/iop-vex-download.timer
+    mode: '0644'
+  notify: Restart vex download timer
+
+- name: Create vex download path unit
+  ansible.builtin.copy:
+    src: iop-vex-download.path
+    dest: /etc/systemd/system/iop-vex-download.path
+    mode: '0644'
+  notify: Restart vex download path
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start vex download timer
+  ansible.builtin.systemd:
+    name: iop-vex-download.timer
+    enabled: true
+    state: started
+
+- name: Enable and start vex download path watcher
+  ansible.builtin.systemd:
+    name: iop-vex-download.path
+    enabled: true
+    state: started
