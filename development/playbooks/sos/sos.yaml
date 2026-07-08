@@ -3,6 +3,7 @@
   hosts:
     - quadlet
     - client
+    - proxy
   become: true
   roles:
     - role: theforeman.forklift.sos_report
