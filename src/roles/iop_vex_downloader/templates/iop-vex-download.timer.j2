@@ -1,0 +1,9 @@
+[Unit]
+Description=Timer for vex-latest.tar.zst download
+
+[Timer]
+OnActiveSec=0
+OnUnitActiveSec={{ iop_vex_downloader_timer_interval }}
+
+[Install]
+WantedBy=timers.target
