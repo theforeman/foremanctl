@@ -40,6 +40,11 @@ Please update this file as check usage evolves.
 - **Fail state**: Fails if FQDN conditions are not met.
 - **Rationale**: Foreman requires a properly-configured server FQDN. This check ensures server hostname was modified from the default and approximates a valid FQDN.
 
+### check_podman_network_backend
+- **Description**: Verifies the Podman network backend is `netavark`.
+- **Fail state**: Fails if the network backend is anything other than `netavark`.
+- **Rationale**: Foremanctl requires netavark as the Podman network backend. Using a different backend such as CNI can cause container networking failures. This is a documented installation prerequisite.
+
 ### check_services
 - **Description**: Reports the status of all non-recurring services in the foreman.target systemd dependency tree.
 - **Fail state**: Fails if any services are inactive.
