@@ -459,10 +459,10 @@ jobs:
         if: ${{ always() }}
         run: ./forge sos
       - name: Archive sos reports
-        if: ${{ always() }} 
+        if: ${{ always() }}
         uses: actions/upload-artifact@v7
         with:
-          name: sosreport-proxy-content
+          name: sosreport-proxy-content-${{ matrix.certificate_source }}
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}
