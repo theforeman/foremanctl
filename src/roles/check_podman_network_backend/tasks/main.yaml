@@ -1,0 +1,14 @@
+---
+- name: Gather Podman system info
+  containers.podman.podman_system_info:
+  register: check_podman_network_backend_info
+
+- name: Assert Podman network backend is netavark
+  ansible.builtin.assert:
+    that:
+      - check_podman_network_backend_value == 'netavark'
+    fail_msg: >-
+      Podman network backend is '{{ check_podman_network_backend_value }}'
+      but must be 'netavark'. See the installation prerequisites for more information.
+  vars:
+    check_podman_network_backend_value: "{{ check_podman_network_backend_info.podman_system_info.host.networkBackendInfo.backend }}"
