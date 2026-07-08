@@ -4,7 +4,9 @@
 :foreman_url: {{ foreman_url }}
 
 :hosts:
-  - {{ foreman_name }}
+{% for foreman_alias in ([foreman_name]+foreman_aliases) %}
+  - {{ foreman_alias }}
+{% endfor %}
 
 :ssl_certificate: /etc/foreman/client_cert.pem
 :ssl_ca_file: /etc/foreman/katello-default-ca.crt
