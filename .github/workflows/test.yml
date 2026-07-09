@@ -201,6 +201,8 @@ jobs:
           python-version: '3.12'
       - name: Setup libvirt for Vagrant
         uses: voxpupuli/setup-vagrant@v0
+        with:
+          configure_dns: true
       - name: Install Ansible
         run: pip install --upgrade ansible-core
       - name: Setup environment
@@ -244,6 +246,8 @@ jobs:
           python-version: '3.12'
       - name: Setup libvirt for Vagrant
         uses: voxpupuli/setup-vagrant@v0
+        with:
+          configure_dns: true
       - name: Install Ansible
         run: pip install --upgrade ansible-core
       - name: Setup environment
@@ -324,6 +328,8 @@ jobs:
           python-version: '3.12'
       - name: Setup libvirt for Vagrant
         uses: voxpupuli/setup-vagrant@v0
+        with:
+          configure_dns: true
       - name: Install Ansible
         run: pip install --upgrade ansible-core
       - name: Setup environment

@@ -11,3 +11,5 @@ foreman_oauth_consumer_secret_file: "{{ obsah_state_path }}/foreman-oauth-consum
 foreman_oauth_consumer_secret: "{{ lookup('ansible.builtin.password', foreman_oauth_consumer_secret_file, chars=['ascii_letters', 'digits'], length=32) }}"
 foreman_encryption_key_file: "{{ obsah_state_path }}/foreman-encryption-key"
 foreman_encryption_key: "{{ lookup('ansible.builtin.password', foreman_encryption_key_file, chars=['digits', 'abcdef'], length=32) }}"
+
+foreman_aliases: "{{ certificates_cnames }}"
