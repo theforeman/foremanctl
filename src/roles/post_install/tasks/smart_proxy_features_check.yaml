@@ -14,6 +14,11 @@
     msg: >-
       Proxy {{ item.name }} reports unrecognized features: {{ item.unrecognized_features | join(', ') }}.
       Enable matching features in foremanctl or disable them on the proxy.
-  loop: "{{ _post_install_smart_proxies.resources }}"
-  when:
-    - item.unrecognized_features | default([]) | length > 0
+  loop: "{{ _post_install_proxies_with_unrecognized_features }}"
+  loop_control:
+    label: "{{ item.name }}"
+  vars:
+    _post_install_proxies_with_unrecognized_features: >-
+      {{ _post_install_smart_proxies.resources |
+         selectattr('unrecognized_features', 'defined') |
+         selectattr('unrecognized_features', '!=', []) | list }}
