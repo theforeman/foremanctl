@@ -105,6 +105,7 @@
     src: foreman.socket.j2
     dest: /etc/systemd/system/foreman.socket
     mode: '0644'
+  notify: Restart foreman socket
 
 - name: Deploy Foreman Container
   containers.podman.podman_container:

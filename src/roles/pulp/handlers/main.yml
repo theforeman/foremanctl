@@ -1,7 +1,17 @@
 ---
+- name: Restart pulp-api socket
+  ansible.builtin.systemd:
+    name: pulp-api.socket
+    state: restarted
+
 - name: Restart pulp-api
   ansible.builtin.systemd:
     name: pulp-api
+    state: restarted
+
+- name: Restart pulp-content socket
+  ansible.builtin.systemd:
+    name: pulp-content.socket
     state: restarted
 
 - name: Restart pulp-content
