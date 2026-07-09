@@ -1,6 +1,6 @@
 ---
 help: |
-  Fetch a certificate bundle
+  Fetch a certificate bundle from the server and copy it to the proxy if available
 
 variables:
   hostname:

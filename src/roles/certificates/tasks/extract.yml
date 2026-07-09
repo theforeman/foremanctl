@@ -3,7 +3,6 @@
   ansible.builtin.stat:
     path: "{{ certificates_bundle }}"
   register: _certificates_tar_file_path
-  delegate_to: localhost
 
 - name: Fail if path to certificate tar file does not exist
   ansible.builtin.fail:
@@ -14,5 +13,6 @@
   ansible.builtin.unarchive:
     src: "{{ certificates_bundle }}"
     dest: "{{ certificates_ca_directory }}"
+    remote_src: true
     extra_opts:
       - --strip-components=1

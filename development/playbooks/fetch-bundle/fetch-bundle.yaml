@@ -6,9 +6,36 @@
   vars_files:
     - "../../../src/vars/base.yaml"
     - "../../../src/vars/certificates.yml"
+    - "../../../src/vars/foreman.yml"
   tasks:
     - name: Fetch bundle
       ansible.builtin.fetch:
         src: "{{ certificates_ca_directory }}/bundles/{{ hostname }}.tar.gz"
         dest: "{{ obsah_state_path }}/{{ hostname }}.tar.gz"
         flat: true
+
+    - name: Store oauth credentials
+      ansible.builtin.set_fact:
+        oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
+        oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+
+- name: Copy bundle to proxy
+  hosts:
+    - proxy
+  become: true
+  tasks:
+    - name: Copy bundle
+      ansible.builtin.copy:
+        src: "{{ obsah_state_base }}/quadlet/{{ hostname }}.tar.gz"
+        dest: "/root/{{ hostname }}.tar.gz"
+        mode: "0644"
+
+    - name: Print deploy-proxy instructions
+      ansible.builtin.debug:
+        msg: >-
+          To deploy the proxy, run:
+          ./foremanctl deploy-proxy
+          --certificate-bundle /root/{{ hostname }}.tar.gz
+          --foreman-fqdn {{ hostvars['quadlet']['ansible_facts']['fqdn'] }}
+          --oauth-consumer-key {{ hostvars['quadlet']['oauth_consumer_key'] }}
+          --oauth-consumer-secret {{ hostvars['quadlet']['oauth_consumer_secret'] }}
