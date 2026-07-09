@@ -13,6 +13,15 @@
     persistent: true
   when: ansible_facts['selinux']['status'] == "enabled"
 
+- name: Set httpd_can_network_relay so Apache can reverse proxy to remote servers
+  ansible.posix.seboolean:
+    name: httpd_can_network_relay
+    state: true
+    persistent: true
+  when:
+    - ansible_facts['selinux']['status'] == "enabled"
+    - not httpd_with_foreman
+
 - name: Disable welcome page
   ansible.builtin.file:
     path: /etc/httpd/conf.d/welcome.conf
