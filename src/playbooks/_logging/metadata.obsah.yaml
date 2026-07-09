@@ -1,0 +1,27 @@
+---
+variables:
+  log_level:
+    help: Default log level for all services.
+    parameter: --log-level
+    choices:
+      - debug
+      - info
+      - warn
+      - error
+      - fatal
+  foreman_log_level:
+    help: Log level for Foreman. Defaults to the global log level.
+    choices:
+      - debug
+      - info
+      - warn
+      - error
+      - fatal
+  foreman_proxy_log_level:
+    help: Log level for Foreman Proxy. Defaults to the global log level.
+    choices:
+      - debug
+      - info
+      - warn
+      - error
+      - fatal

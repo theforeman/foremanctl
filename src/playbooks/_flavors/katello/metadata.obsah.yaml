@@ -26,5 +26,6 @@ include:
   - _database_connection
   - _foreman
   - _foreman_proxy
+  - _logging
   - _pulp
   - _tuning

@@ -72,6 +72,21 @@ There are multiple use cases from the users perspective that dictate what parame
 | foreman-installer Parameter | Description | Reason |
 | --------------------------- | ----------- | ------ |
 
+#### Logging
+
+##### New
+
+| Parameter | Description |
+| ----------| ----------- |
+| `--log-level` | Default log level for all services. Accepted values: `debug`, `info`, `warn`, `error`, `fatal`. Defaults to `info`. |
+
+##### Mapped
+
+| Parameter | Description | foreman-installer Parameters |
+| ----------| ----------- | ---------------------------- |
+| `--foreman-log-level` | Log level for Foreman. Overrides `--log-level` for Foreman only. | `--foreman-logging-level` |
+| `--foreman-proxy-log-level` | Log level for Foreman Proxy. Overrides `--log-level` for Foreman Proxy only. | `--foreman-proxy-log-level` |
+
 #### Undetermined
 
 | foreman-installer Parameter | Description | Module | Puppet Parameter | Keep |
@@ -95,7 +110,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-keycloak-app-name` | | |
 | `--foreman-keycloak-realm` | | |
 | `--foreman-logging-layout` | | |
-| `--foreman-logging-level` | | |
 | `--foreman-logging-type` | | |
 | `--foreman-oauth-map-users` | | |
 | `--foreman-plugin-remote-execution-cockpit-ensure` | | |
@@ -165,7 +179,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-proxy-content-enable-ostree` | | | |
 | `--foreman-proxy-http` | | | |
 | `--foreman-proxy-log` | | | |
-| `--foreman-proxy-log-level` | | | |
 | `--foreman-proxy-plugin-ansible-working-dir` | | | |
 | `--foreman-proxy-plugin-dhcp-infoblox-dns-view` | | | |
 | `--foreman-proxy-plugin-dhcp-infoblox-network-view` | | | |
