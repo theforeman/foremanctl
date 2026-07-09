@@ -31,4 +31,9 @@
     - pulp
     - systemd_target
     - foreman_proxy
-    - post_install
+    - role: post_install
+      vars:
+        post_install_foreman_ca_path: "{{ foreman_proxy_foreman_ca_certificate | default(omit) }}"
+        post_install_foreman_oauth_consumer_key: "{{ foreman_proxy_oauth_consumer_key }}"
+        post_install_foreman_oauth_consumer_secret: "{{ foreman_proxy_oauth_consumer_secret }}"
+        post_install_foreman_server_url: "{{ foreman_proxy_foreman_server_url }}"

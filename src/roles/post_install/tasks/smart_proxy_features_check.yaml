@@ -1,0 +1,19 @@
+---
+- name: Get all registered Smart Proxies
+  theforeman.foreman.resource_info:
+    server_url: "{{ post_install_foreman_server_url }}"
+    oauth1_consumer_key: "{{ post_install_foreman_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ post_install_foreman_oauth_consumer_secret }}"
+    ca_path: "{{ post_install_foreman_ca_path | default(omit) }}"
+    resource: smart_proxies
+    full_details: true
+  register: _post_install_smart_proxies
+
+- name: Warn about unrecognized Smart Proxy features
+  ansible.builtin.debug:
+    msg: >-
+      Proxy {{ item.name }} reports unrecognized features: {{ item.unrecognized_features | join(', ') }}.
+      Enable matching features in foremanctl or disable them on the proxy.
+  loop: "{{ _post_install_smart_proxies.resources }}"
+  when:
+    - item.unrecognized_features | default([]) | length > 0
