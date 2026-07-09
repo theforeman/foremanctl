@@ -135,6 +135,7 @@
       FOREMAN_PUMA_THREADS_MAX: "{{ foreman_puma_threads_max }}"
       FOREMAN_PUMA_WORKERS: "{{ foreman_puma_workers }}"
       FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
+      FOREMAN_LOGGING_LEVEL: "{{ foreman_log_level }}"
     quadlet_options:
       - |
         [Unit]
@@ -174,6 +175,7 @@
       DYNFLOW_REDIS_URL: "redis://localhost:6379/6"
       REDIS_PROVIDER: "DYNFLOW_REDIS_URL"
       FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
+      FOREMAN_LOGGING_LEVEL: "{{ foreman_log_level }}"
     command: "/usr/libexec/foreman/sidekiq-selinux -e production -r ./extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yml"
     quadlet_options:
       - |
@@ -231,6 +233,7 @@
     env:
       SEED_ORGANIZATION: "{{ foreman_initial_organization }}"
       SEED_LOCATION: "{{ foreman_initial_location }}"
+      FOREMAN_LOGGING_LEVEL: "{{ foreman_log_level }}"
     quadlet_options:
       - |
         [Unit]

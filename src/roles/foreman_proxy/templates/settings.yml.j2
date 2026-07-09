@@ -17,7 +17,7 @@
 
 :bind_host: '*'
 
-:log_level: INFO
+:log_level: {{ _foreman_proxy_log_level_map[foreman_proxy_log_level] }}
 :log_file: JOURNAL
 :log_buffer: 2000
 :log_buffer_errors: 1000
