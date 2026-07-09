@@ -1,4 +1,9 @@
 ---
+- name: Restart foreman socket
+  ansible.builtin.systemd:
+    name: foreman.socket
+    state: restarted
+
 - name: Restart foreman
   ansible.builtin.systemd:
     name: foreman

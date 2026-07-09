@@ -97,6 +97,7 @@
     src: pulp-api.socket.j2
     dest: /etc/systemd/system/pulp-api.socket
     mode: '0644'
+  notify: Restart pulp-api socket
 
 - name: Deploy Pulp API Container
   containers.podman.podman_container:
@@ -136,6 +137,7 @@
     src: pulp-content.socket.j2
     dest: /etc/systemd/system/pulp-content.socket
     mode: '0644'
+  notify: Restart pulp-content socket
 
 - name: Deploy Pulp Content Container
   containers.podman.podman_container:
