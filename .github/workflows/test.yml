@@ -449,9 +449,9 @@ jobs:
           ./foremanctl certificate-bundle proxy.example.com \
             --certificate-source=${{ matrix.certificate_source }} \
             ${{ matrix.certificate_source == 'custom_server' && '--certificate-server-certificate /root/custom-certificates/certs/proxy.example.com.crt --certificate-server-key /root/custom-certificates/private/proxy.example.com.key' || '' }}
-      - name: Fetch certificates bundle from quadlet
+      - name: Prepare proxy host
         run: |
-          ./forge fetch-bundle proxy.example.com
+          ./foremanctl prepare-proxy proxy.example.com
       - name: Deploy content proxy
         run: |
           ./foremanctl deploy-proxy \

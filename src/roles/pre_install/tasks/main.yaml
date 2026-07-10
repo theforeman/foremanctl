@@ -1,4 +1,7 @@
 ---
+- name: Include flavor tasks
+  ansible.builtin.include_tasks: "{{ flavor }}.yaml"
+
 - name: Deploy debug_tools
   ansible.builtin.include_role:
     name: debug_tools
