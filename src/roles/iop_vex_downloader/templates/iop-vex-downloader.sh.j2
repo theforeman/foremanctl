@@ -2,43 +2,73 @@
 
 set -euo pipefail
 
-URL="${1:-}"
-FILENAME_LATEST="${2:-}"
-OUTPUT_DIR="${3:-}"
-OUTPUT_FILENAME="${4:-}"
+FILENAME_LATEST="archive_latest.txt"
+OUTPUT_FILENAME="vex-latest.tar.zst"
 
-if [[ -z "$URL" || -z "$OUTPUT_DIR" || -z "$FILENAME_LATEST" || -z "$OUTPUT_FILENAME" ]]; then
-    echo "Usage: $0 URL FILENAME_LATEST OUTPUT_DIR OUTPUT_FILENAME" >&2
-    echo "Example: $0 https://security.access.redhat.com/data/csaf/v2/vex/ archive_latest.txt /root/download/ vex-latest.tar.zst" >&2
+URL="${1:-}"
+OUTPUT_DIR="${2:-}"
+
+
+if [[ -z "${URL}" || -z "${OUTPUT_DIR}" ]]; then
+    echo "Usage: ${0} URL OUTPUT_DIR" >&2
+    echo "Example: ${0} https://security.access.redhat.com/data/csaf/v2/vex/ /root/download/" >&2
     exit 1
 fi
 
 URL="${URL%/}/"
 OUTPUT_DIR="${OUTPUT_DIR%/}/"
 
-ARCHIVE_DOWNLOAD_NAME_CONTENT=$(curl -sf $URL$FILENAME_LATEST)
+mkdir -p "${OUTPUT_DIR}"
 
-if [ "$?" -ne 0 ]; then
-    echo "Error: The tarball's name wasn't downloaded" >&2
-    exit 1
-fi
+MANUAL_FILE="/var/lib/foreman/vex-latest.tar.zst"
+MANUAL_FILE="/Users/pfreybur/work/workbench/vex/vex-latest.tar.zst"
+CHECKSUM_FILE="${OUTPUT_FILENAME}.checksum"
 
-mkdir -p "$OUTPUT_DIR"
+if [[ -f "$MANUAL_FILE" ]]; then
+    echo "Offline mode: Using manual file from $MANUAL_FILE"
 
-curl -sf $URL$ARCHIVE_DOWNLOAD_NAME_CONTENT -o $OUTPUT_DIR$OUTPUT_FILENAME
+    CURRENT_CHECKSUM=$(sha256sum "$MANUAL_FILE" | cut -d' ' -f1)
+    STORED_CHECKSUM=""
 
-RET=$?
+    if [[ -f "$CHECKSUM_FILE" ]]; then
+        STORED_CHECKSUM=$(cat "$CHECKSUM_FILENAME")
+    fi
 
-if [ "$RET" -ne 0 ]; then
-    echo "Error: Downloading of tarball failed. Curl failed with code $RET" >&2
-    exit 2
-fi
+    if [[ "$CURRENT_CHECKSUM" != "$STORED_CHECKSUM" ]]; then
+        echo "Copying updated manual file"
+        cp -Z "$MANUAL_FILE" "${OUTPUT_DIR}${OUTPUT_FILENAME}" && echo "$CURRENT_CHECKSUM" > "$CHECKSUM_FILE"
+        chmod 644 "${OUTPUT_DIR}${OUTPUT_FILENAME}"
+        FILE_UPDATED=true
+    else
+        echo "Manual file unchanged, skipping"
+    fi
+else
+    echo "Online mode: Checking for updates from $URL"
+    ARCHIVE_DOWNLOAD_NAME_CONTENT=$(curl -sf "${URL}${FILENAME_LATEST}")
 
-curl -sf $URL$ARCHIVE_DOWNLOAD_NAME_CONTENT".asc" -o $OUTPUT_DIR$OUTPUT_FILENAME".asc"
+    if [ "${?}" -ne 0 ]; then
+        echo "Error: The tarball's name wasn't downloaded" >&2
+        exit 1
+    fi
 
-RET=$?
+    curl -sf "${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}" -o "/tmp/${OUTPUT_FILENAME}"
 
-if [ "$RET" -ne 0 ]; then
-    echo "Error: Downloading of tarball's signature failed. Curl failed with code $RET" >&2
-    exit 3
+    RET=${?}
+
+    if [ "${RET}" -ne 0 ]; then
+        echo "Error: Downloading of tarball failed. Curl failed with code ${RET}" >&2
+        exit 2
+    fi
+
+    curl -sf "${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}.asc" -o "/tmp/${OUTPUT_FILENAME}.asc"
+
+    RET=${?}
+
+    if [ "${RET}" -ne 0 ]; then
+        echo "Error: Downloading of tarball's signature failed. Curl failed with code ${RET}" >&2
+        exit 3
+    fi
+
+    mv "/tmp/${OUTPUT_FILENAME}" "${OUTPUT_DIR}${OUTPUT_FILENAME}"
+    mv "/tmp/${OUTPUT_FILENAME}.asc" "${OUTPUT_DIR}${OUTPUT_FILENAME}.asc"
 fi
