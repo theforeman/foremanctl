@@ -5,9 +5,9 @@
   IncludeOptional "/etc/httpd/conf.d/05-foreman.d/*.conf"
 
   ## Logging
-  ErrorLog "/var/log/httpd/{{ 'foreman_error' if httpd_with_foreman else 'mirror_error' }}.log"
+  ErrorLog "|/usr/bin/systemd-cat -t {{ 'httpd-error' if httpd_with_foreman else 'mirror-error' }} -p err"
   ServerSignature Off
-  CustomLog "/var/log/httpd/{{ 'foreman_access' if httpd_with_foreman else 'mirror_access' }}.log" combined
+  CustomLog "|/usr/bin/systemd-cat -t {{ 'httpd-access' if httpd_with_foreman else 'mirror-access' }}" combined
 
   ## Request header rules
   ## as per http://httpd.apache.org/docs/2.4/mod/mod_headers.html#requestheader

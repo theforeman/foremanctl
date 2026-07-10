@@ -147,6 +147,42 @@ def test_httpd_headers_use_dashes(server):
     assert cmd.stdout.strip() == '', f"HTTP header names should use dashes, not underscores:\n{cmd.stdout}"
 
 
+@pytest.mark.feature('foreman')
+def test_httpd_vhost_custom_logs_in_journal(server, server_fqdn, curl_request):
+    http_marker = 'httpd-journal-http-access-test'
+    ssl_marker = 'httpd-journal-ssl-access-test'
+
+    server.run(f"{CURL_CMD} http://{server_fqdn}/{http_marker}")
+    curl_request(ssl_marker)
+
+    http_access = server.run("journalctl -t httpd-access --since '2 min ago' --no-pager").stdout
+    ssl_access = server.run("journalctl -t httpd-ssl-access --since '2 min ago' --no-pager").stdout
+
+    assert http_marker in http_access
+    assert http_marker not in ssl_access
+    assert ssl_marker in ssl_access
+    assert ssl_marker not in http_access
+
+
+@pytest.mark.feature('foreman')
+def test_httpd_vhost_error_logs_in_journal(server):
+    server.run(
+        "printf 'GET /http-error-test HTTP/1.0\\r\\n\\r\\n' | nc -w 2 127.0.0.1 80 >/dev/null 2>&1 || true"
+    )
+    server.run(
+        "(echo -e 'GET /ssl-error-test HTTP/1.0\\r\\n\\r\\n'; sleep 1) | "
+        "openssl s_client -connect 127.0.0.1:443 -quiet >/dev/null 2>&1 || true"
+    )
+
+    http_error = server.run("journalctl -t httpd-error --since '2 min ago' --no-pager").stdout
+    ssl_error = server.run("journalctl -t httpd-ssl-error --since '2 min ago' --no-pager").stdout
+
+    assert 'http-error-test' in http_error
+    assert 'http-error-test' not in ssl_error
+    assert 'ssl-error-test' in ssl_error
+    assert 'ssl-error-test' not in http_error
+
+
 def test_httpd_foreman_target_config(server):
     drop_in = server.file("/etc/systemd/system/httpd.service.d/foreman-target.conf")
     assert drop_in.exists
