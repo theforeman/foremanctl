@@ -15,5 +15,3 @@
   ansible.builtin.unarchive:
     src: "{{ certificates_bundle }}"
     dest: "{{ certificates_ca_directory }}"
-    extra_opts:
-      - --strip-components=1

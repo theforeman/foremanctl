@@ -169,14 +169,13 @@ The tarball uses the same directory structure as `/var/lib/foremanctl/certs/`:
 
 ```
 certs/
-├── certs/
-│   ├── ca.crt                      # Internal CA certificate
-│   ├── server-ca.crt               # CA that signed the server certificate
-│   ├── <hostname>.crt              # Server certificate
-│   └── <hostname>-client.crt       # Client certificate
-└── private/
-    ├── <hostname>.key              # Server private key
-    └── <hostname>-client.key       # Client private key
+├── ca.crt                      # Internal CA certificate
+├── server-ca.crt               # CA that signed the server certificate
+├── <hostname>.crt              # Server certificate
+└── <hostname>-client.crt       # Client certificate
+private/
+├── <hostname>.key              # Server private key
+└── <hostname>-client.key       # Client private key
 ```
 
 When using the internal CA only, `server-ca.crt` and `ca.crt` are identical. When custom server certificates are provided, `server-ca.crt` contains the custom CA and `ca.crt` contains the internal CA.
