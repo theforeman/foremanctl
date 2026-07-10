@@ -4,6 +4,7 @@
     path: "{{ certificates_bundle }}"
   register: _certificates_tar_file_path
   delegate_to: localhost
+  become: false
 
 - name: Fail if path to certificate tar file does not exist
   ansible.builtin.fail:
