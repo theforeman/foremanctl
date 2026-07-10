@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
+# set -euo pipefail
 
 FILENAME_LATEST="archive_latest.txt"
 OUTPUT_FILENAME="vex-latest.tar.zst"
@@ -42,7 +42,10 @@ if [[ -f "$MANUAL_FILE" ]]; then
     fi
 else
     echo "Online mode: Checking for updates from $URL"
-    ARCHIVE_DOWNLOAD_NAME_CONTENT=$(curl -sf "${URL}${FILENAME_LATEST}")
+    ARCHIVE_DOWNLOAD_NAME_CONTENT=$(curl --silent \
+        --fail \
+        --location \
+         "${URL}${FILENAME_LATEST}")
 
     TEMP_FILE_ARCH=$(mktemp -t "iop-vex-download.XXXXXX")
     TEMP_FILE_ASC=$(mktemp -t "iop-vex-download.asc.XXXXXX")
@@ -52,7 +55,11 @@ else
         exit 1
     fi
 
-    curl -sf "${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}" -o ${TEMP_FILE_ARCH}
+    curl --silent \
+        --fail \
+        --location \
+        "${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}" \
+        --output ${TEMP_FILE_ARCH}
 
     RET=${?}
 
@@ -61,7 +68,12 @@ else
         exit 2
     fi
 
-    curl -sf "${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}.asc" -o ${TEMP_FILE_ASC}
+    curl --silent \
+        --fail \
+        --location \
+        "${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}.asc" \
+        --output ${TEMP_FILE_ASC}
+
     RET=${?}
 
     if [ "${RET}" -ne 0 ]; then
