@@ -104,17 +104,20 @@ jobs:
         run: ./setup-environment
       - name: Start VMs
         run: |
-          ./forge vms start --vms "quadlet client ${{ matrix.database == 'external' && 'database' || '' }}"
+          ./forge vms start --vms "quadlet client named ${{ matrix.database == 'external' && 'database' || '' }}"
       - name: Downgrade openssl
         if: matrix.box == 'centos/stream9'
         run: |
-          for vm in quadlet client ${{ matrix.database == 'external' && 'database' || '' }}; do
+          for vm in quadlet client named ${{ matrix.database == 'external' && 'database' || '' }}; do
             vagrant ssh "$vm" -- sudo dnf downgrade -y openssl openssl-libs
           done
       - name: Configure remote-database
         if: matrix.database == 'external'
         run: |
           ./forge remote-database
+      - name: Configure remote-named
+        run: |
+          ./forge remote-named
       - name: Configure repositories
         run: |
           ./forge setup-repositories
@@ -158,6 +161,8 @@ jobs:
             --add-feature google \
             --add-feature remote-execution \
             --add-feature bmc \
+            --add-feature dns \
+            --dns-provider nsupdate --dns-server named.example.com --dns-nsupdate-keyfile $(pwd)/.var/lib/foremanctl/rndc.key \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |

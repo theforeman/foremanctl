@@ -10,3 +10,21 @@ variables:
     parameter: --bmc-redfish-verify-ssl
     help: Verify SSL certificates for Redfish BMC connections.
     type: Boolean
+  foreman_proxy_dns_provider:
+    parameter: --dns-provider
+    help: DNS provider to use.
+    choices:
+      - nsupdate
+  foreman_proxy_dns_nsupdate_keyfile:
+    parameter: --dns-nsupdate-keyfile
+    help: Key file to be used to authenticate with the DNS server
+    type: AbsolutePath
+  foreman_proxy_dns_server:
+    parameter: --dns-server
+    help: Hostname of the DNS server to communicate with
+    type: FQDN
+
+constraints:
+  required_in_list:
+    - [[[features, dns]], [foreman_proxy_dns_provider]]
+    - [[[features, dns], [foreman_proxy_dns_provider, nsupdate]], [foreman_proxy_dns_nsupdate_keyfile, foreman_proxy_dns_server]]
