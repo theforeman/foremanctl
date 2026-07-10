@@ -1,7 +1,7 @@
 ---
 - name: Set backup timestamp
   ansible.builtin.set_fact:
-    backup_timestamp: "{{ ansible_date_time.iso8601_basic_short }}"
+    backup_timestamp: "{{ ansible_facts['date_time']['iso8601_basic_short'] }}"
 
 - name: Set full backup directory path
   ansible.builtin.set_fact:
@@ -49,7 +49,7 @@
       ansible.builtin.systemd:
         name: postgresql.service
       register: backup_postgres_status
-      until: backup_postgres_status.status.ActiveState == 'inactive'
+      until: backup_postgres_status.status.ActiveState in ['inactive', 'failed']
       retries: "{{ backup_postgresql_stop_retries }}"
       delay: "{{ backup_postgresql_stop_delay }}"
       when: backup_database_mode == 'internal'
@@ -86,18 +86,33 @@
 
     - name: Build database names list for display
       ansible.builtin.set_fact:
-        backup_databases_to_backup: "{{ backup_databases | map(attribute='database') | list }}"
+        backup_databases_to_backup: "{{ backup_databases | map(attribute='name') | list }}"
 
     - name: Dump databases
       ansible.builtin.include_tasks:
         file: database_dumps.yaml
 
-    - name: Backup foremanctl state directory
+    - name: Archive foremanctl state on controller
       community.general.archive:
         path: "{{ obsah_state_path }}"
-        dest: "{{ backup_dir_full }}/foremanctl-state.tar.gz"
+        dest: "{{ obsah_state_path }}/foremanctl-state.tar.gz"
         format: gz
         mode: '0644'
+      delegate_to: localhost
+      become: false
+
+    - name: Copy foremanctl state archive to target
+      ansible.builtin.copy:
+        src: "{{ obsah_state_path }}/foremanctl-state.tar.gz"
+        dest: "{{ backup_dir_full }}/foremanctl-state.tar.gz"
+        mode: '0644'
+
+    - name: Clean up foremanctl state archive on controller
+      ansible.builtin.file:
+        path: "{{ obsah_state_path }}/foremanctl-state.tar.gz"
+        state: absent
+      delegate_to: localhost
+      become: false
 
     - name: Backup pulp content
       ansible.builtin.include_tasks:
