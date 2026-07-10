@@ -1,7 +1,7 @@
 ---
 - name: Check if amcheck extension is installed
   community.postgresql.postgresql_query:
-    db: "{{ check_database_index_database }}"
+    login_db: "{{ check_database_index_database }}"
     login_host: "{{ database_host }}"
     login_port: "{{ database_port }}"
     login_user: postgres
@@ -18,7 +18,7 @@
   block:
     - name: Execute amcheck integrity check
       community.postgresql.postgresql_query:
-        db: "{{ check_database_index_database }}"
+        login_db: "{{ check_database_index_database }}"
         login_host: "{{ database_host }}"
         login_port: "{{ database_port }}"
         login_user: postgres

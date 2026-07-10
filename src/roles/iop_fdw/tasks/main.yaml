@@ -7,13 +7,13 @@
 - name: Enable postgres_fdw extension on target database
   community.postgresql.postgresql_ext:
     name: postgres_fdw
-    db: "{{ iop_fdw_database_name }}"
+    login_db: "{{ iop_fdw_database_name }}"
     login_user: postgres
     login_host: "{{ iop_fdw_database_host }}"
 
 - name: Check if foreign server exists
   community.postgresql.postgresql_query:
-    db: "{{ iop_fdw_database_name }}"
+    login_db: "{{ iop_fdw_database_name }}"
     login_user: postgres
     login_host: "{{ iop_fdw_database_host }}"
     query: "SELECT srvname FROM pg_foreign_server WHERE srvname = %s"
@@ -24,7 +24,7 @@
 
 - name: Create foreign server for target database
   community.postgresql.postgresql_query:
-    db: "{{ iop_fdw_database_name }}"
+    login_db: "{{ iop_fdw_database_name }}"
     login_user: postgres
     login_host: "{{ iop_fdw_database_host }}"
     query: |
@@ -39,7 +39,7 @@
 
 - name: Check if user mapping exists for service user
   community.postgresql.postgresql_query:
-    db: "{{ iop_fdw_database_name }}"
+    login_db: "{{ iop_fdw_database_name }}"
     login_user: postgres
     login_host: "{{ iop_fdw_database_host }}"
     query: "SELECT umuser FROM pg_user_mappings WHERE srvname = %s AND usename = %s"
@@ -51,7 +51,7 @@
 
 - name: Create user mapping for service user
   community.postgresql.postgresql_query:
-    db: "{{ iop_fdw_database_name }}"
+    login_db: "{{ iop_fdw_database_name }}"
     login_user: postgres
     login_host: "{{ iop_fdw_database_host }}"
     query: |
@@ -65,7 +65,7 @@
 
 - name: Check if user mapping exists for postgres user
   community.postgresql.postgresql_query:
-    db: "{{ iop_fdw_database_name }}"
+    login_db: "{{ iop_fdw_database_name }}"
     login_user: postgres
     login_host: "{{ iop_fdw_database_host }}"
     query: "SELECT umuser FROM pg_user_mappings WHERE srvname = %s AND usename = 'postgres'"
@@ -76,7 +76,7 @@
 
 - name: Create user mapping for postgres user
   community.postgresql.postgresql_query:
-    db: "{{ iop_fdw_database_name }}"
+    login_db: "{{ iop_fdw_database_name }}"
     login_user: postgres
     login_host: "{{ iop_fdw_database_host }}"
     query: |
@@ -90,14 +90,14 @@
 
 - name: Grant usage on foreign server
   community.postgresql.postgresql_query:
-    db: "{{ iop_fdw_database_name }}"
+    login_db: "{{ iop_fdw_database_name }}"
     login_user: postgres
     login_host: "{{ iop_fdw_database_host }}"
     query: "GRANT USAGE ON FOREIGN SERVER {{ iop_fdw_foreign_server_name }} TO {{ iop_fdw_database_user }}"
 
 - name: Create local view schema
   community.postgresql.postgresql_schema:
-    db: "{{ iop_fdw_database_name }}"
+    login_db: "{{ iop_fdw_database_name }}"
     name: "{{ iop_fdw_local_view_schema }}"
     owner: "{{ iop_fdw_database_user }}"
     login_user: postgres
@@ -105,7 +105,7 @@
 
 - name: Create local schema for foreign tables
   community.postgresql.postgresql_schema:
-    db: "{{ iop_fdw_database_name }}"
+    login_db: "{{ iop_fdw_database_name }}"
     name: "{{ iop_fdw_local_source_schema }}"
     owner: "{{ iop_fdw_database_user }}"
     login_user: postgres
@@ -113,7 +113,7 @@
 
 - name: Check if foreign table exists
   community.postgresql.postgresql_query:
-    db: "{{ iop_fdw_database_name }}"
+    login_db: "{{ iop_fdw_database_name }}"
     login_user: postgres
     login_host: "{{ iop_fdw_database_host }}"
     query: "SELECT foreign_table_name FROM information_schema.foreign_tables WHERE foreign_table_schema = %s AND foreign_table_name = %s"
@@ -125,7 +125,7 @@
 
 - name: Import foreign schema
   community.postgresql.postgresql_query:
-    db: "{{ iop_fdw_database_name }}"
+    login_db: "{{ iop_fdw_database_name }}"
     login_user: postgres
     login_host: "{{ iop_fdw_database_host }}"
     query: |
@@ -137,7 +137,7 @@
 
 - name: Create local view pointing to foreign table
   community.postgresql.postgresql_query:
-    db: "{{ iop_fdw_database_name }}"
+    login_db: "{{ iop_fdw_database_name }}"
     login_user: postgres
     login_host: "{{ iop_fdw_database_host }}"
     query: |
@@ -146,7 +146,7 @@
 
 - name: Grant select on foreign table to service user
   community.postgresql.postgresql_query:
-    db: "{{ iop_fdw_database_name }}"
+    login_db: "{{ iop_fdw_database_name }}"
     login_user: postgres
     login_host: "{{ iop_fdw_database_host }}"
     query: |
@@ -157,7 +157,7 @@
 
 - name: Grant permissions on remote database view to remote user
   community.postgresql.postgresql_query:
-    db: "{{ iop_fdw_remote_database_name }}"
+    login_db: "{{ iop_fdw_remote_database_name }}"
     login_user: postgres
     login_host: "{{ iop_fdw_database_host }}"
     query: |
