@@ -21,7 +21,6 @@ OUTPUT_DIR="${OUTPUT_DIR%/}/"
 mkdir -p "${OUTPUT_DIR}"
 
 MANUAL_FILE="/var/lib/foreman/vex-latest.tar.zst"
-MANUAL_FILE="/Users/pfreybur/work/workbench/vex/vex-latest.tar.zst"
 CHECKSUM_FILE="${OUTPUT_FILENAME}.checksum"
 
 if [[ -f "$MANUAL_FILE" ]]; then
@@ -38,7 +37,6 @@ if [[ -f "$MANUAL_FILE" ]]; then
         echo "Copying updated manual file"
         cp -Z "$MANUAL_FILE" "${OUTPUT_DIR}${OUTPUT_FILENAME}" && echo "$CURRENT_CHECKSUM" > "$CHECKSUM_FILE"
         chmod 644 "${OUTPUT_DIR}${OUTPUT_FILENAME}"
-        FILE_UPDATED=true
     else
         echo "Manual file unchanged, skipping"
     fi
@@ -46,12 +44,15 @@ else
     echo "Online mode: Checking for updates from $URL"
     ARCHIVE_DOWNLOAD_NAME_CONTENT=$(curl -sf "${URL}${FILENAME_LATEST}")
 
+    TEMP_FILE_ARCH=$(mktemp -t "iop-vex-download.XXXXXX")
+    TEMP_FILE_ASC=$(mktemp -t "iop-vex-download.asc.XXXXXX")
+
     if [ "${?}" -ne 0 ]; then
         echo "Error: The tarball's name wasn't downloaded" >&2
         exit 1
     fi
 
-    curl -sf "${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}" -o "/tmp/${OUTPUT_FILENAME}"
+    curl -sf "${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}" -o ${TEMP_FILE_ARCH}
 
     RET=${?}
 
@@ -60,8 +61,7 @@ else
         exit 2
     fi
 
-    curl -sf "${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}.asc" -o "/tmp/${OUTPUT_FILENAME}.asc"
-
+    curl -sf "${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}.asc" -o ${TEMP_FILE_ASC}
     RET=${?}
 
     if [ "${RET}" -ne 0 ]; then
@@ -69,6 +69,9 @@ else
         exit 3
     fi
 
-    mv "/tmp/${OUTPUT_FILENAME}" "${OUTPUT_DIR}${OUTPUT_FILENAME}"
-    mv "/tmp/${OUTPUT_FILENAME}.asc" "${OUTPUT_DIR}${OUTPUT_FILENAME}.asc"
+    mv -Z ${TEMP_FILE_ARCH} "${OUTPUT_DIR}${OUTPUT_FILENAME}"
+    mv -Z ${TEMP_FILE_ASC} "${OUTPUT_DIR}${OUTPUT_FILENAME}.asc"
+
+    chmod 644 "${OUTPUT_DIR}${OUTPUT_FILENAME}"
+    chmod 644 "${OUTPUT_DIR}${OUTPUT_FILENAME}.asc"
 fi
