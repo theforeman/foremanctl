@@ -18,3 +18,4 @@ variables:
 include:
   - _flavor_features
   - _flavors/katello
+  - _vendor_override
