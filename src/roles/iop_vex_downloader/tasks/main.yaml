@@ -20,9 +20,7 @@
       Type=oneshot
       ExecStart=/usr/local/bin/iop-vex-downloader.sh \
         '{{ iop_vex_downloader_base_url }}' \
-        '{{ iop_vex_downloader_latest_filename }}' \
-        '{{ iop_vex_downloader_output_dir }}' \
-        '{{ iop_vex_downloader_output_filename }}'
+        '{{ iop_vex_downloader_output_dir }}'
       User=root
       Group=root
     mode: '0644'
