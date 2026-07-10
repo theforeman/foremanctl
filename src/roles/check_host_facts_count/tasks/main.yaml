@@ -1,7 +1,7 @@
 ---
 - name: Query hosts for facts count
   community.postgresql.postgresql_query:
-    db: "{{ foreman_database_name }}"
+    login_db: "{{ foreman_database_name }}"
     login_user: "{{ foreman_database_user }}"
     login_password: "{{ foreman_database_password }}"
     login_host: "{{ foreman_database_host }}"

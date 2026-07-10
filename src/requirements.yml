@@ -1,5 +1,6 @@
 collections:
-  - community.postgresql
+  - name: community.postgresql
+    version: ">=4.0.0"
   - community.crypto
   - community.general
   - ansible.posix
