@@ -79,7 +79,7 @@
 
     - name: Create tarball
       community.general.archive:
-        path: "{{ certificate_bundle_build_directory.path }}/certs"
+        path: "{{ certificate_bundle_build_directory.path }}/certs/*"
         dest: "{{ certificate_bundle_output_directory }}/{{ certificate_bundle_hostname }}.tar.gz"
         format: gz
         mode: '0640'

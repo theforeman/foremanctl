@@ -9,19 +9,19 @@ HOSTNAME = 'proxy.example.com'
 TARBALL = f'/var/lib/foremanctl/certs/bundles/{HOSTNAME}.tar.gz'
 
 EXPECTED_CA_FILES = [
-    'certs/certs/ca.crt',
-    'certs/certs/server-ca.crt',
-    'certs/certs/ca-bundle.crt',
+    'certs/ca.crt',
+    'certs/server-ca.crt',
+    'certs/ca-bundle.crt',
 ]
 
 EXPECTED_SERVER_FILES = [
-    f'certs/certs/{HOSTNAME}.crt',
-    f'certs/private/{HOSTNAME}.key',
+    f'certs/{HOSTNAME}.crt',
+    f'private/{HOSTNAME}.key',
 ]
 
 EXPECTED_CLIENT_FILES = [
-    f'certs/certs/{HOSTNAME}-client.crt',
-    f'certs/private/{HOSTNAME}-client.key',
+    f'certs/{HOSTNAME}-client.crt',
+    f'private/{HOSTNAME}-client.key',
 ]
 
 
@@ -87,17 +87,17 @@ def test_proxy_certs_stored_in_hosts_subdirectory(server, generate_bundle):
 
 def test_server_ca_and_default_ca_identical_for_default_deployment(server, generate_bundle, default_certificates):
     """For default (non-custom) deployments, server-ca.crt and ca.crt should be identical."""
-    server_ca = server.run(f'tar xzf {TARBALL} -O certs/certs/server-ca.crt')
+    server_ca = server.run(f'tar xzf {TARBALL} -O certs/server-ca.crt')
     assert server_ca.succeeded
-    default_ca = server.run(f'tar xzf {TARBALL} -O certs/certs/ca.crt')
+    default_ca = server.run(f'tar xzf {TARBALL} -O certs/ca.crt')
     assert default_ca.succeeded
     assert server_ca.stdout == default_ca.stdout
 
 
 def test_server_ca_and_default_ca_differ_for_custom_deployment(server, generate_bundle, custom_certificates):
     """For custom server cert deployments, server-ca.crt (custom) differs from ca.crt (internal)."""
-    server_ca = server.run(f'tar xzf {TARBALL} -O certs/certs/server-ca.crt')
+    server_ca = server.run(f'tar xzf {TARBALL} -O certs/server-ca.crt')
     assert server_ca.succeeded
-    default_ca = server.run(f'tar xzf {TARBALL} -O certs/certs/ca.crt')
+    default_ca = server.run(f'tar xzf {TARBALL} -O certs/ca.crt')
     assert default_ca.succeeded
     assert server_ca.stdout != default_ca.stdout
