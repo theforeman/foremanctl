@@ -18,8 +18,8 @@ def expected_databases(enabled_features, flavor):
     """
     databases = []
 
-    # Katello flavor has foreman, candlepin, and pulp
-    if flavor == 'katello':
+    # Katello and Satellite flavors have foreman, candlepin, and pulp
+    if flavor in ('katello', 'satellite'):
         databases = ['foreman', 'candlepin', 'pulp']
 
     # Foreman-proxy-content flavor only has pulp

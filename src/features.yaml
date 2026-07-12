@@ -92,5 +92,6 @@ registration:
     - templates
 theme-satellite:
   description: Satellite theme for Foreman
+  internal: true
   foreman:
     plugin_name: foreman_theme_satellite
