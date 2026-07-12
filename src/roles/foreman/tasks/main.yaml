@@ -109,7 +109,7 @@
 
 - name: Deploy Foreman Container
   containers.podman.podman_container:
-    name: "foreman"
+    name: "{{ foreman_container_name }}"
     image: foreman.image
     state: quadlet
     sdnotify: true
@@ -149,6 +149,14 @@
         Requires=foreman-db-migrate.service
         After=foreman-db-migrate.service
   notify: Restart foreman
+
+- name: Install foreman-rake wrapper
+  ansible.builtin.template:
+    src: foreman-rake.j2
+    dest: /usr/sbin/foreman-rake
+    owner: root
+    group: root
+    mode: '0755'
 
 - name: Deploy Dynflow Container
   containers.podman.podman_container:
