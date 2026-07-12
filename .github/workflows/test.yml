@@ -455,6 +455,81 @@ jobs:
           limit-access-to-actor: true
           wait-timeout-minutes: 5
 
+  satellite-tests:
+    runs-on: ubuntu-24.04
+    name: "Tests Satellite Deployment"
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Setup libvirt for Vagrant
+        uses: voxpupuli/setup-vagrant@v0
+        with:
+          configure_dns: true
+      - name: Install Ansible
+        run: pip install --upgrade ansible-core
+      - name: Setup environment
+        run: ./setup-environment
+      - name: Start VMs
+        run: |
+          ./forge vms start --vms "quadlet client"
+      - name: Downgrade openssl
+        run: |
+          for vm in quadlet client; do
+            vagrant ssh "$vm" -- sudo dnf downgrade -y openssl openssl-libs
+          done
+      - name: Configure repositories
+        run: |
+          ./forge setup-repositories
+      - name: Run image pull
+        run: |
+          ./foremanctl pull-images
+      - name: Run deployment
+        run: |
+          ./foremanctl deploy \
+            --flavor satellite \
+            --initial-admin-password=changeme \
+            --initial-organization "Foreman CI" \
+            --initial-location "Internet" \
+            --tuning development
+      - name: Deploy features
+        run: |
+          ./foremanctl deploy \
+            --add-feature hammer \
+            --add-feature foreman-proxy \
+            --add-feature azure-rm \
+            --add-feature google \
+            --add-feature bmc
+      - name: Run tests
+        run: |
+          ./forge test
+      - name: Run smoker
+        run: |
+          ./forge smoker
+      - name: Archive smoker report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoker-satellite
+          path: "/home/runner/smoker/report/"
+      - name: Generate sos reports
+        if: ${{ always() }}
+        run: ./forge sos
+      - name: Archive sos reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: sosreport-satellite
+          path: sos/
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: owenthereal/action-upterm@v1
+        with:
+          limit-access-to-actor: true
+          wait-timeout-minutes: 5
+
   # A dummy job that you can mark as a required check instead of each individual test
   test-suite:
     if: always()
@@ -464,6 +539,7 @@ jobs:
       - upgrade
       - migration
       - foreman-proxy-content-tests
+      - satellite-tests
       - ansible-lint
       - python-lint
     runs-on: ubuntu-latest
