@@ -50,6 +50,8 @@ else
     TEMP_FILE_ARCH=$(mktemp -t "iop-vex-download.XXXXXX")
     TEMP_FILE_ASC=$(mktemp -t "iop-vex-download.asc.XXXXXX")
 
+    trap "rm -f ${TEMP_FILE_ARCH} ${TEMP_FILE_ASC}" EXIT
+
     if [ "${?}" -ne 0 ]; then
         echo "Error: The tarball's name wasn't downloaded" >&2
         exit 1
