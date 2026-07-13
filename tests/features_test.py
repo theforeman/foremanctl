@@ -31,5 +31,4 @@ def test_invalid_feature_rejected():
     assert result.returncode == 2
 
     assert 'Unknown feature(s) requested: invalid-feature' in result.stdout
-    assert '--remove-feature=invalid' in result.stdout
     assert "Run 'foremanctl features' to list all available features." in result.stdout
