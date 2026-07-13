@@ -44,8 +44,8 @@ def test_vex_download_path_unit(server):
     assert unit.is_file
 
     content = unit.content_string
-    assert "PathChanged=/var/lib/foreman/vex.xml" in content
-    assert "PathModified=/var/lib/foreman/vex.xml" in content
+    assert "PathChanged=/var/lib/foreman/vex-latest.tar.zst" in content
+    assert "PathModified=/var/lib/foreman/vex-latest.tar.zst" in content
     assert "WantedBy=multi-user.target" in content
 
 
