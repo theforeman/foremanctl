@@ -110,6 +110,7 @@ There are multiple use cases from the users perspective that dictate what parame
 | Parameter | Description | foreman-installer Parameters |
 | --------- | ----------- | ---------------------------- |
 | `--add-feature bmc` | Enable BMC feature | `--foreman-proxy-bmc` |
+| `--add-feature content/ostree` | Enable OSTree content type | `--foreman-proxy-content-enable-ostree` |
 | `--bmc-ipmi-implementation` | IPMI implementation to use for BMC | `--foreman-proxy-bmc-default-provider` |
 | `--bmc-redfish-verify-ssl` | Verify SSL certificates for Redfish BMC connections | `--foreman-proxy-bmc-redfish-verify-ssl` |
 
@@ -162,7 +163,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-proxy-plugin-remote-execution-script-mode` | | foreman_proxy::plugin::remote_execution_script | mode |
 | `--foreman-proxy-plugin-openscap-ansible-module` | | foreman_proxy::plugin::openscap | ansible_module |
 | `--foreman-proxy-plugin-openscap-puppet-module` | | foreman_proxy::plugin::openscap | puppet_module |
-| `--foreman-proxy-content-enable-ostree` | | | |
 | `--foreman-proxy-http` | | | |
 | `--foreman-proxy-log` | | | |
 | `--foreman-proxy-log-level` | | | |
