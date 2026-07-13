@@ -77,16 +77,16 @@
     network: host
     hostname: "{{ ansible_facts['hostname'] }}.local"
     secrets:
-      - 'candlepin-ca-cert,target=/etc/candlepin/certs/candlepin-ca.crt,mode=0440,type=mount'
-      - 'candlepin-ca-key,target=/etc/candlepin/certs/candlepin-ca.key,mode=0440,type=mount'
-      - 'candlepin-tomcat-cert,target=/etc/candlepin/certs/tomcat.crt,mode=0440,type=mount'
-      - 'candlepin-tomcat-key,target=/etc/candlepin/certs/tomcat.key,mode=0440,type=mount'
-      - 'candlepin-candlepin-conf,target=/etc/candlepin/candlepin.conf,mode=0440,type=mount'
-      - 'candlepin-tomcat-server-xml,target=/etc/tomcat/server.xml,mode=0440,type=mount'
-      - 'candlepin-tomcat-conf,target=/etc/tomcat/tomcat.conf,mode=0440,type=mount'
-      - 'candlepin-tomcat-logging-properties,target=/etc/tomcat/logging.properties,mode=0440,type=mount'
-      - 'candlepin-logback-xml,target=/var/lib/tomcat/webapps/candlepin/WEB-INF/classes/logback.xml,mode=0440,type=mount'
-      - 'candlepin-db-ca,target={{ candlepin_database_ssl_ca_path }},mode=0440,type=mount'
+      - 'candlepin-ca-cert,target=/etc/candlepin/certs/candlepin-ca.crt,{{ candlepin_secret_mount_opts }}'
+      - 'candlepin-ca-key,target=/etc/candlepin/certs/candlepin-ca.key,{{ candlepin_secret_mount_opts }}'
+      - 'candlepin-tomcat-cert,target=/etc/candlepin/certs/tomcat.crt,{{ candlepin_secret_mount_opts }}'
+      - 'candlepin-tomcat-key,target=/etc/candlepin/certs/tomcat.key,{{ candlepin_secret_mount_opts }}'
+      - 'candlepin-candlepin-conf,target=/etc/candlepin/candlepin.conf,{{ candlepin_secret_mount_opts }}'
+      - 'candlepin-tomcat-server-xml,target=/etc/tomcat/server.xml,{{ candlepin_secret_mount_opts }}'
+      - 'candlepin-tomcat-conf,target=/etc/tomcat/tomcat.conf,{{ candlepin_secret_mount_opts }}'
+      - 'candlepin-tomcat-logging-properties,target=/etc/tomcat/logging.properties,{{ candlepin_secret_mount_opts }}'
+      - 'candlepin-logback-xml,target=/var/lib/tomcat/webapps/candlepin/WEB-INF/classes/logback.xml,{{ candlepin_secret_mount_opts }}'
+      - 'candlepin-db-ca,target={{ candlepin_database_ssl_ca_path }},{{ candlepin_secret_mount_opts }}'
     quadlet_options:
       - |
         [Install]
