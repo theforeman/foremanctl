@@ -4,7 +4,7 @@ pytestmark = pytest.mark.feature("iop")
 
 
 def test_vex_download_script(server):
-    script = server.file("/usr/local/bin/iop-vex-download.sh")
+    script = server.file("/usr/local/bin/iop-vex-downloader.sh")
     assert script.exists
     assert script.is_file
     assert script.mode == 0o755
@@ -17,7 +17,7 @@ def test_vex_download_service_unit(server):
 
     content = unit.content_string
     assert "Type=oneshot" in content
-    assert "iop-vex-download.sh" in content
+    assert "iop-vex-downloader.sh" in content
     assert "iop-core-gateway.service" in content
 
 
