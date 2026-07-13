@@ -11,6 +11,7 @@ candlepin_ciphers:
   - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
 candlepin_container_image: quay.io/foreman/candlepin
 candlepin_container_tag: "4.4.14"
+candlepin_secret_mount_opts: "mode=0440,uid=0,gid=53,type=mount"
 
 candlepin_database_host: localhost
 candlepin_database_port: 5432

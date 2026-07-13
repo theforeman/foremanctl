@@ -9,6 +9,23 @@ def test_candlepin_service(server):
     assert candlepin.is_running
 
 
+def test_candlepin_runs_as_tomcat(server):
+    assert server.run("podman exec candlepin id -un").stdout.strip() == 'tomcat'
+    assert server.run("podman exec candlepin id -u").stdout.strip() != '0'
+
+    groups = server.run("podman exec candlepin id -Gn").stdout.split()
+    assert 'tomcat' in groups
+    assert 'root' not in groups
+
+    assert server.run("podman exec candlepin test -r /etc/candlepin/certs/tomcat.key").succeeded
+    assert server.run("podman exec candlepin test -r /etc/tomcat/tomcat.conf").succeeded
+
+    secret_ownership = server.run(
+        "podman exec candlepin stat -c '%U:%G %a' /etc/candlepin/certs/tomcat.key"
+    ).stdout.strip()
+    assert secret_ownership == 'root:tomcat 440'
+
+
 def test_candlepin_port(server):
     candlepin = server.addr("localhost")
     assert candlepin.port("23443").is_reachable
