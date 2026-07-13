@@ -3,10 +3,3 @@ log_level: info
 
 foreman_log_level: "{{ log_level }}"
 foreman_proxy_log_level: "{{ log_level }}"
-
-_foreman_proxy_log_level_map:
-  debug: DEBUG
-  info: INFO
-  warn: WARN
-  error: ERROR
-  fatal: FATAL
