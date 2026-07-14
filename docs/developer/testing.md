@@ -66,6 +66,12 @@ pytest tests/postgresql_test.py
 pytest tests/foreman_test.py::test_foreman_service
 ```
 
+You can also run tests with [markers](#markers). To skip all tests marked as slow:
+
+```bash
+pytest -m "not slow"
+```
+
 > [!NOTE]
 > Running `pytest` directly requires `.tmp/ssh-config` to exist. Run `./forge test` at least once to generate it.
 
@@ -145,6 +151,19 @@ def test_service_running(server):
 def test_service_port(server):
     assert server.addr("localhost").port(6379).is_reachable
 ```
+
+### Markers
+
+Pytest's [markers](https://docs.pytest.org/en/stable/how-to/mark.html) are powerful tools. Especially when using the [custom markers](https://docs.pytest.org/en/stable/example/markers.html#mark-examples).
+
+List all available markers:
+```bash
+pytest --markers
+```
+
+The `slow` mark can be used to mark tests that take a non-trivial amount of time. While slow is always subjective, it can mean more than a few seconds to some. Certainly more than a minute.
+
+A more advanced use is [feature guarding](#feature-guarding).
 
 ### Feature guarding
 
