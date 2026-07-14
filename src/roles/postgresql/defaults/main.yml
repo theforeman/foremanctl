@@ -1,5 +1,5 @@
 ---
-postgresql_container_image: quay.io/sclorg/postgresql-13-c9s
+postgresql_container_image: quay.io/sclorg/postgresql-16-c10s
 postgresql_container_tag: "latest"
 postgresql_container_name: postgresql
 postgresql_network: host
@@ -12,3 +12,5 @@ postgresql_admin_password: "{{ undef(hint='Set a secure database password') }}"
 postgresql_max_connections: 500
 postgresql_shared_buffers: 512MB
 postgresql_effective_cache_size: 1GB
+
+postgresql_upgrade: "hardlink"
