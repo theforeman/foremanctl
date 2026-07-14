@@ -1,2 +1,6 @@
 [pytest]
 addopts = ["--import-mode=importlib"]
+
+markers = [
+  "slow: mark test as slow.",
+]
