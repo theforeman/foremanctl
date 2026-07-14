@@ -52,13 +52,14 @@
         privatekey_passphrase: "{{ certificates_ca_password }}"
         provider: selfsigned
         selfsigned_not_after: "+{{ certificates_ca_validity_days }}d"
+        force: "{{ certificates_renew_ca | bool }}"
 
     - name: 'Copy CA as server CA certificate'
       ansible.builtin.copy:
         src: "{{ certificates_ca_directory_certs }}/ca.crt"
         dest: "{{ certificates_ca_directory_certs }}/server-ca.crt"
         remote_src: true
-        force: false
+        force: "{{ certificates_renew_ca | bool }}"
         mode: '0444'
 
     - name: 'Create CA bundle'
@@ -66,5 +67,5 @@
         src: "{{ certificates_ca_directory_certs }}/ca.crt"
         dest: "{{ certificates_ca_directory_certs }}/ca-bundle.crt"
         remote_src: true
-        force: false
+        force: "{{ certificates_renew_ca | bool }}"
         mode: '0444'
