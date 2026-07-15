@@ -1,11 +1,32 @@
+import base64
 import json
 import os
+import textwrap
 
 import pytest
 import yaml
 
 PULP_API_SOCKET = '/run/httpd.pulp-api.sock'
 PULP_CONTENT_SOCKET = '/run/httpd.pulp-content.sock'
+
+# Run both check --deploy and settings inspection in a single Django startup.
+# Encoded as base64 and decoded at runtime to avoid shell quoting issues with
+# multi-line Python passed to pulpcore-manager shell -c.
+_PULP_MANAGER_SCRIPT = textwrap.dedent("""\
+    import json
+    from django.conf import settings
+    from django.core.management import call_command
+    check_ok = True
+    try:
+        call_command('check', '--deploy', verbosity=0)
+    except Exception:
+        check_ok = False
+    print(json.dumps({
+        'check_ok': check_ok,
+        'import': sorted(settings.ALLOWED_IMPORT_PATHS),
+        'export': sorted(settings.ALLOWED_EXPORT_PATHS),
+    }))
+""")
 
 
 def load_pulp_paths_from_parameters():
@@ -35,6 +56,14 @@ def pulp_status(pulp_status_curl):
 @pytest.fixture(scope="module")
 def pulp_import_export_paths():
     return load_pulp_paths_from_parameters()
+
+
+@pytest.fixture(scope="module")
+def pulp_manager_info(server):
+    encoded = base64.b64encode(_PULP_MANAGER_SCRIPT.encode()).decode()
+    result = server.run(f"podman exec pulp-api pulpcore-manager shell -c \"$(echo '{encoded}' | base64 -d)\"")
+    assert result.succeeded
+    return json.loads(result.stdout)
 
 
 def test_pulp_api_service(server):
@@ -100,21 +129,16 @@ def test_pulp_worker_target(server):
     assert pulp_worker_target.is_enabled
 
 
-def test_pulp_manager_check(server):
-    result = server.run("podman exec -ti pulp-api pulpcore-manager check --deploy")
-    assert result.succeeded
+def test_pulp_manager_check(pulp_manager_info):
+    assert pulp_manager_info['check_ok']
 
 
-def test_pulp_import_export_settings(server, pulp_import_export_paths):
+def test_pulp_import_export_settings(pulp_manager_info, pulp_import_export_paths):
     expected_import_paths, expected_export_paths = pulp_import_export_paths
-    py = 'from django.conf import settings; import json; print(json.dumps({"import": list(settings.ALLOWED_IMPORT_PATHS), "export": list(settings.ALLOWED_EXPORT_PATHS)}))'
-    result = server.run(f"podman exec pulp-api pulpcore-manager shell -c '{py}'")
-    assert result.succeeded
-    data = json.loads(result.stdout)
     for path in expected_import_paths:
-        assert path in data['import'], f"expected {path} in Pulp ALLOWED_IMPORT_PATHS"
+        assert path in pulp_manager_info['import'], f"expected {path} in Pulp ALLOWED_IMPORT_PATHS"
     for path in expected_export_paths:
-        assert path in data['export'], f"expected {path} in Pulp ALLOWED_EXPORT_PATHS"
+        assert path in pulp_manager_info['export'], f"expected {path} in Pulp ALLOWED_EXPORT_PATHS"
 
 
 def test_pulp_import_directories(server, pulp_import_export_paths):

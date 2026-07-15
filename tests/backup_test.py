@@ -4,6 +4,8 @@ import subprocess
 import pytest
 import yaml
 
+pytestmark = pytest.mark.slow
+
 BACKUP_DIR = "/tmp/foremanctl-backup-test"
 
 

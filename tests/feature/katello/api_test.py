@@ -30,13 +30,8 @@ def test_foreman_content_view(content_view, yum_repository, foremanapi):
     assert content_view
     foremanapi.update('content_views', {'id': content_view['id'], 'repository_ids': [yum_repository['id']]})
     foremanapi.resource_action('content_views', 'publish', {'id': content_view['id']})
-    # do something with the published view
     versions = foremanapi.list('content_view_versions', params={'content_view_id': content_view['id']})
-    for version in versions:
-        current_environment_ids = {environment['id'] for environment in version['environments']}
-        for environment_id in current_environment_ids:
-            foremanapi.resource_action('content_views', 'remove_from_environment', params={'id': content_view['id'], 'environment_id': environment_id})
-        foremanapi.delete('content_view_versions', version)
+    assert versions
 
 
 def test_foreman_manifest(organization, foremanapi, fixture_dir):
