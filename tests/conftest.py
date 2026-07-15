@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import uuid
@@ -17,6 +18,7 @@ from requests.adapters import HTTPAdapter
 
 SSH_CONFIG = './.tmp/ssh-config'
 OBSAH_STATE = os.environ.get('OBSAH_STATE', '.var/lib/foremanctl')
+OBSAH_INVENTORY = os.environ.get('OBSAH_INVENTORY', 'inventories/')
 PARAMETERS_FILE = os.path.join(OBSAH_STATE, 'parameters.yaml')
 FLAVOR_TESTS_DIR = py.path.local(__file__).dirpath() / 'flavor'
 FLAVOR_TESTS_DIR_OVERRIDES = {
@@ -87,6 +89,39 @@ def user_enabled_features(pytestconfig):
 @pytest.fixture(scope="module")
 def available_features(pytestconfig):
     return pytestconfig.user_parameters.available_features
+
+
+@pytest.fixture(scope="session", autouse=True)
+def generate_ssh_config():
+    if not os.path.exists(OBSAH_INVENTORY):
+        return
+    try:
+        result = subprocess.run(
+            ['ansible-inventory', '--list', '--inventory', OBSAH_INVENTORY],
+            capture_output=True, text=True, check=True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return
+    inv = json.loads(result.stdout)
+    hostvars = inv.get('_meta', {}).get('hostvars', {})
+    if not hostvars:
+        return
+    os.makedirs(os.path.dirname(SSH_CONFIG), exist_ok=True)
+    with open(SSH_CONFIG, 'w') as f:
+        for host, vars in hostvars.items():
+            if vars.get('ansible_connection') == 'local':
+                continue
+            f.write(f"Host {host}\n")
+            f.write(f"  HostName {vars.get('ansible_host', host)}\n")
+            f.write(f"  User {vars.get('ansible_user', 'vagrant')}\n")
+            f.write(f"  Port {vars.get('ansible_port', 22)}\n")
+            f.write("  UserKnownHostsFile /dev/null\n")
+            f.write("  StrictHostKeyChecking no\n")
+            f.write("  PasswordAuthentication no\n")
+            if key := vars.get('ansible_ssh_private_key_file'):
+                f.write(f"  IdentityFile {key}\n")
+            f.write("  IdentitiesOnly yes\n")
+            f.write("  LogLevel FATAL\n\n")
 
 
 @pytest.fixture(scope="module")
