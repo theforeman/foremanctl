@@ -4,4 +4,5 @@
     - quadlet
   become: true
   roles:
+    - pre_install
     - mock_foreman_installer
