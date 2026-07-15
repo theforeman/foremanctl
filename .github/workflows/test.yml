@@ -105,12 +105,6 @@ jobs:
       - name: Start VMs
         run: |
           ./forge vms start --vms "quadlet client ${{ matrix.database == 'external' && 'database' || '' }}"
-      - name: Downgrade openssl
-        if: matrix.box == 'centos/stream9'
-        run: |
-          for vm in quadlet client ${{ matrix.database == 'external' && 'database' || '' }}; do
-            vagrant ssh "$vm" -- sudo dnf downgrade -y openssl openssl-libs
-          done
       - name: Configure remote-database
         if: matrix.database == 'external'
         run: |
@@ -210,9 +204,6 @@ jobs:
       - name: Start VMs
         run: |
           ./forge vms start
-      - name: Downgrade openssl
-        run: |
-          vagrant ssh quadlet -- sudo dnf downgrade -y openssl openssl-libs
       - name: Configure repositories
         run: |
           ./forge setup-repositories
@@ -255,9 +246,6 @@ jobs:
       - name: Start VMs
         run: |
           ./forge vms start
-      - name: Downgrade openssl
-        run: |
-          vagrant ssh quadlet -- sudo dnf downgrade -y openssl openssl-libs
       - name: Configure repositories
         run: |
           ./forge setup-repositories
@@ -337,11 +325,6 @@ jobs:
       - name: Start VMs
         run: |
           ./forge vms start --vms "quadlet client"
-      - name: Downgrade openssl
-        run: |
-          for vm in quadlet client; do
-            vagrant ssh "$vm" -- sudo dnf downgrade -y openssl openssl-libs
-          done
       - name: Configure repositories
         run: |
           ./forge setup-repositories
@@ -421,11 +404,6 @@ jobs:
       - name: Start VMs
         run: |
           ./forge vms start --vms "quadlet proxy"
-      - name: Downgrade openssl
-        run: |
-          for vm in quadlet proxy; do
-            vagrant ssh "$vm" -- sudo dnf downgrade -y openssl openssl-libs
-          done
       - name: Run image pull
         run: |
           ./foremanctl pull-images
