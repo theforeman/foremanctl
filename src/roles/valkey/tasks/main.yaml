@@ -9,8 +9,6 @@
   ansible.builtin.file:
     path: /var/lib/valkey
     state: directory
-    owner: 1001
-    group: 1001
     mode: '0755'
 
 - name: Run Valkey as a container
@@ -21,8 +19,10 @@
     network: host
     sdnotify: true
     command: ["run-valkey", "--supervised", "systemd"]
+    userns: "auto"
     volumes:
-      - /var/lib/valkey:/data:rw,Z
+      # :U chowns host path to the remapped container UID (required with userns=auto)
+      - /var/lib/valkey:/data:rw,Z,U
     quadlet_options:
       - |
         [Install]

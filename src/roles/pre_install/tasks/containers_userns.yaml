@@ -1,0 +1,40 @@
+---
+- name: Ensure containers user exists
+  ansible.builtin.user:
+    name: containers
+    system: true
+    create_home: false
+    shell: /usr/sbin/nologin
+    comment: Podman rootful userns=auto ID pool
+
+- name: Check /etc/subuid for containers entry
+  ansible.builtin.command: grep "^containers:" /etc/subuid
+  register: pre_install_containers_subuid
+  failed_when: false
+  changed_when: false
+
+- name: Reserve containers subordinate UID range
+  ansible.builtin.lineinfile:
+    path: /etc/subuid
+    line: "containers:{{ pre_install_containers_subid_start }}:{{ pre_install_containers_subid_count }}"
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  when: pre_install_containers_subuid.rc != 0
+
+- name: Check /etc/subgid for containers entry
+  ansible.builtin.command: grep "^containers:" /etc/subgid
+  register: pre_install_containers_subgid
+  failed_when: false
+  changed_when: false
+
+- name: Reserve containers subordinate GID range
+  ansible.builtin.lineinfile:
+    path: /etc/subgid
+    line: "containers:{{ pre_install_containers_subid_start }}:{{ pre_install_containers_subid_count }}"
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  when: pre_install_containers_subgid.rc != 0
