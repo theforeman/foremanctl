@@ -9,7 +9,8 @@
     state: quadlet
     env:
       INGRESS_VALID_UPLOAD_TYPES: "advisor,compliance,qpc,rhv,tower,leapp-reporting,xavier,playbook,playbook-sat,malware-detection,tasks"
-      INGRESS_KAFKA_BROKERS: "iop-core-kafka:9092"
+      INGRESS_KAFKABROKERS: "iop-core-kafka:9092"
+      INGRESS_AUTH: "false"
       BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
       INGRESS_STAGERIMPLEMENTATION: "filebased"
       INGRESS_STORAGEFILESYSTEMPATH: "/var/tmp"
