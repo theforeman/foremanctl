@@ -58,6 +58,7 @@ def test_foreman_webhooks(foreman_plugins):
     assert "foreman_webhooks" in foreman_plugins
 
 
+@pytest.mark.slow
 def test_webhook_fires_on_domain_create(foremanapi, webhook, webhook_listener, server):
     domain_name = f"{uuid.uuid4()}.example.com"
     domain = foremanapi.create("domains", {"name": domain_name})
