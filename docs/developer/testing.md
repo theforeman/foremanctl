@@ -139,9 +139,7 @@ These fixtures create a resource before the test and delete it afterward:
 
 ### Service test
 
-Check that a systemd unit is running and its port is reachable:
-
-For example:
+Check that a systemd unit is running and its port is reachable using testinfra's [service](https://testinfra.readthedocs.io/en/latest/modules.html#testinfra.modules.service.Service) and [addr](https://testinfra.readthedocs.io/en/latest/modules.html#testinfra.modules.addr.Addr) modules:
 
 ```python
 def test_service_running(server):
