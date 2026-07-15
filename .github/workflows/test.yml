@@ -155,7 +155,7 @@ jobs:
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
-          ./forge test
+          make test
       - name: Run smoker
         run: |
           ./forge smoker
@@ -285,7 +285,7 @@ jobs:
           ./foremanctl health
       - name: Run tests
         run: |
-          ./forge test
+          make test
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
@@ -352,7 +352,7 @@ jobs:
             --add-feature remote-execution
       - name: Run tests
         run: |
-          ./forge test
+          make test
       - name: Run smoker
         run: |
           ./forge smoker
@@ -438,7 +438,7 @@ jobs:
             --foreman-fqdn quadlet.example.com
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--server-hostname=proxy"
+          make test PYTEST_ARGS="--server-hostname=proxy"
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
