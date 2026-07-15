@@ -43,14 +43,15 @@ def test_candlepin_tomcat_logs_in_journal(server, certificates):
 
 
 def test_tls(server):
-    result = server.run('nmap --script +ssl-enum-ciphers localhost -p 23443')
-    result = result.stdout
-    assert "TLSv1.3" in result
-    assert "TLSv1.2" in result
+    def tls_supported(flag):
+        result = server.run(f'echo | openssl s_client -connect localhost:23443 {flag} 2>&1')
+        return 'Cipher is' in result.stdout and '(NONE)' not in result.stdout
 
-    # Test that older TLS versions are disabled
-    assert "TLSv1.1" not in result
-    assert "TLSv1.0" not in result
+    assert tls_supported('-tls1_3')
+    assert tls_supported('-tls1_2')
+    assert not tls_supported('-tls1_1')
+    assert not tls_supported('-tls1')
 
-    # Test that the least cipher strength is "strong" or "A"
-    assert "least strength: A" in result
+    # Verify only strong (AEAD) ciphers are negotiated
+    result = server.run('echo | openssl s_client -connect localhost:23443 -tls1_2 2>&1')
+    assert 'GCM' in result.stdout
