@@ -48,6 +48,8 @@
     env:
       REDIS_ENABLED: "false"
       RBAC_ENFORCE: "false"
+      KESSEL_ENABLED: "false"
+      FEATURE_FLAGS_ENABLED: "false"
       CONTENT_SERVER_HOST: "http://iop-service-advisor-backend-api:8000"
       ADVISOR_HOST: "http://iop-service-advisor-backend-api:8000"
       INVENTORY_HOST: "http://iop-core-host-inventory-api:8081"
