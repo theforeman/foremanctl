@@ -97,7 +97,7 @@
         After=valkey.service postgresql.service
         [Service]
         TimeoutStartSec=300
-    healthcheck: curl --fail --insecure https://localhost:23443/candlepin/status
+    healthcheck: curl --fail --insecure --noproxy localhost https://localhost:23443/candlepin/status
     sdnotify: healthy
 
 - name: Run daemon reload to make Quadlet create the service files
