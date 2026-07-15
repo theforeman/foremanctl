@@ -1,46 +1,9 @@
 ---
-- name: Install test dependencies
-  hosts:
-    - quadlet
-  become: true
-  tasks:
-    - name: Install testing dependencies
-      ansible.builtin.package:
-        name:
-          - nmap
-
 - name: Execute tests
   gather_facts: false
   hosts:
     - localhost
   tasks:
-    - name: Ensure .tmp directory exists
-      ansible.builtin.file:
-        path: "{{ inventory_dir }}/../.tmp"
-        state: directory
-        mode: "0755"
-
-    - name: Generate ssh_config from ansible inventory
-      ansible.builtin.copy:
-        dest: "{{ inventory_dir }}/../.tmp/ssh-config"
-        content: |
-          {% for host in groups['all'] %}
-          Host {{ host }}
-            HostName {{ hostvars[host]['ansible_host'] | default(host) }}
-            User {{ hostvars[host]['ansible_user'] | default('vagrant') }}
-            Port {{ hostvars[host]['ansible_port'] | default('22') }}
-            UserKnownHostsFile /dev/null
-            StrictHostKeyChecking no
-            PasswordAuthentication no
-          {% if hostvars[host]['ansible_ssh_private_key_file'] is defined %}
-            IdentityFile {{ hostvars[host]['ansible_ssh_private_key_file'] }}
-          {% endif %}
-            IdentitiesOnly yes
-            LogLevel FATAL
-
-          {% endfor %}
-        mode: "0644"
-
     - name: Run pytest
       ansible.builtin.command:
         cmd: "python -m pytest --durations=10 -vv {{ pytest_args | default() }}"
