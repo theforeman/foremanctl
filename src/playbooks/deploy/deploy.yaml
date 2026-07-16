@@ -31,9 +31,15 @@
         - database_mode == 'internal'
     - role: valkey
     - role: candlepin
+      when:
+        - "enabled_features | has_feature('candlepin')"
     - role: httpd
     - role: foreman
+      when:
+        - "enabled_features | has_feature('foreman')"
     - role: pulp
+      when:
+        - "enabled_features | has_feature('pulp')"
     - role: systemd_target
     - role: iop_core
       when:
