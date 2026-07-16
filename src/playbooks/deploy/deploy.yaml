@@ -30,7 +30,10 @@
       when:
         - database_mode == 'internal'
     - valkey
-    - candlepin
+    - role: candlepin
+      when:
+        - "'foreman' in enabled_features"
+        - "'katello' in enabled_features"
     - httpd
     - foreman
     - pulp
