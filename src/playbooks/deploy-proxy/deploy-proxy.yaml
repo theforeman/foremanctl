@@ -32,8 +32,12 @@
     - role: valkey
     - role: httpd
     - role: pulp
+      when:
+        - "enabled_features | has_feature('pulp')"
     - role: systemd_target
     - role: foreman_proxy
+      when:
+        - "enabled_features | has_feature('foreman-proxy')"
     - role: post_install
       vars:
         post_install_foreman_ca_path: "{{ foreman_proxy_foreman_ca_certificate | default(omit) }}"
