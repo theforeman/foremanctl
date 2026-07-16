@@ -15,6 +15,12 @@
     - "../../../src/vars/foreman.yml"
     - "../../../src/vars/base.yaml"
   pre_tasks:
+    - name: Stop foreman target
+      ansible.builtin.systemd:
+        name: foreman.target
+        state: stopped
+      failed_when: false
+
     - name: Set development postgresql databases
       ansible.builtin.set_fact:
         postgresql_databases: >-
