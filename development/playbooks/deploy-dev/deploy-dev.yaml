@@ -54,6 +54,7 @@
     - role: candlepin
     - role: httpd
     - role: pulp
+    - role: systemd_target
     - role: foreman_development
       vars:
         foreman_development_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
