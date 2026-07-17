@@ -20,9 +20,12 @@ def test_foreman_proxy_features(curl_request, proxy_base_url, enabled_features):
     assert "logs" in features
     if 'remote-execution' in enabled_features:
         assert "script" in features
-        assert "dynflow" in features
     else:
         assert "script" not in features
+    if "dynflow" in enabled_features:
+        assert "dynflow" in features
+    else:
+        assert "dynflow" not in features
     if 'bmc' in enabled_features:
         assert "bmc" in features
     else:

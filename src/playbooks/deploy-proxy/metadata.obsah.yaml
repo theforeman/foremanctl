@@ -6,6 +6,7 @@ variables:
   flavor:
     help: Base flavor to use in this deployment.
     choices:
+      - foreman-proxy
       - foreman-proxy-content
   certificates_bundle:
     help: Path to the certificate bundle tar file.

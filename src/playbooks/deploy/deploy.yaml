@@ -29,11 +29,23 @@
     - role: postgresql
       when:
         - database_mode == 'internal'
-    - valkey
-    - candlepin
-    - httpd
-    - foreman
-    - pulp
+        - postgresql_databases | length > 0
+    - role: valkey
+      when:
+        - "'valkey' in enabled_features"
+    - role: candlepin
+      when:
+        - "'foreman' in enabled_features"
+        - "'katello' in enabled_features"
+    - role: httpd
+      when:
+        - "'httpd' in enabled_features"
+    - role: foreman
+      when:
+        - "'foreman' in enabled_features"
+    - role: pulp
+      when:
+        - "'katello' in enabled_features"
     - role: systemd_target
     - role: iop_core
       when:
