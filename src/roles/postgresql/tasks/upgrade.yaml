@@ -25,7 +25,6 @@
       ansible.builtin.systemd:
         name: foreman.target
         state: stopped
-      failed_when: false
 
     - name: Wait for port 5432 to be completely freed by Podman
       ansible.builtin.wait_for:
