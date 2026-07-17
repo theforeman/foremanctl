@@ -25,8 +25,8 @@ google:
   hammer: foreman_google
   foreman:
     plugin_name: foreman_google
-azure-rm:
-  description: Azure Resource Manager plugin for Foreman
+azure:
+  description: Microsoft Azure plugin for Foreman
   hammer: foreman_azure_rm
   foreman:
     plugin_name: foreman_azure_rm
