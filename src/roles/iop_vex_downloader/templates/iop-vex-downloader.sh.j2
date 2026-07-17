@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# set -euo pipefail
+set -euo pipefail
 
 FILENAME_LATEST="archive_latest.txt"
 OUTPUT_FILENAME="vex-latest.tar.zst"
@@ -21,17 +21,12 @@ OUTPUT_DIR="${OUTPUT_DIR%/}/"
 mkdir -p "${OUTPUT_DIR}"
 
 MANUAL_FILE="/var/lib/foreman/vex-latest.tar.zst"
-CHECKSUM_FILE="${OUTPUT_FILENAME}.checksum"
 
 if [[ -f "$MANUAL_FILE" ]]; then
     echo "Offline mode: Using manual file from $MANUAL_FILE"
 
-    CURRENT_CHECKSUM=$(sha256sum "$MANUAL_FILE" | cut -d' ' -f1)
-    STORED_CHECKSUM=""
-
-    if [[ -f "$CHECKSUM_FILE" ]]; then
-        STORED_CHECKSUM=$(cat "$CHECKSUM_FILENAME")
-    fi
+    CURRENT_CHECKSUM=$(sha256sum "${MANUAL_FILE}" | cut -d' ' -f1)
+    STORED_CHECKSUM=$(sha256sum "${OUTPUT_DIR}${OUTPUT_FILENAME}" | cut -d' ' -f1)
 
     if [[ "$CURRENT_CHECKSUM" != "$STORED_CHECKSUM" ]]; then
         echo "Copying updated manual file"
