@@ -153,7 +153,6 @@ jobs:
             --add-feature remote-execution \
             --add-feature bmc \
             --add-feature registration \
-            --registration-url https://quadlet.example.com:8443 \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
