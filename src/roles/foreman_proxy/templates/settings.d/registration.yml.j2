@@ -1,0 +1,5 @@
+---
+:enabled: https
+{% if foreman_proxy_registration_url is defined %}
+:registration_url: {{ foreman_proxy_registration_url }}
+{% endif %}

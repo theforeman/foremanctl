@@ -27,6 +27,10 @@ def test_foreman_proxy_features(curl_request, proxy_base_url, enabled_features):
         assert "bmc" in features
     else:
         assert "bmc" not in features
+    if 'registration' in enabled_features:
+        assert "registration" in features
+    else:
+        assert "registration" not in features
 
 
 def test_foreman_proxy_service(server):
@@ -65,3 +69,10 @@ def test_bmc_capabilities(proxy_v2_features):
 def test_bmc_default_provider(proxy_v2_features):
     settings = proxy_v2_features['bmc'].get('settings', {})
     assert settings.get('bmc_default_provider') == 'ipmitool'
+
+
+@pytest.mark.feature('registration')
+def test_registration_url(proxy_v2_features):
+    settings = proxy_v2_features['registration'].get('settings', {})
+    registration_url = settings.get('registration_url')
+    assert registration_url == 'https://quadlet.example.com:8443'
