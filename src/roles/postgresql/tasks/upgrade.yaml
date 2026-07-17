@@ -40,7 +40,7 @@
         state: quadlet
         sdnotify: false
         volumes:
-          - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:rw,z"
+          - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:rw,Z"
         secrets:
           - 'postgresql-admin-password,target=POSTGRESQL_ADMIN_PASSWORD,type=env'
         env:
