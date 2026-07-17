@@ -2,11 +2,11 @@ import time
 
 import pytest
 
+pytestmark = pytest.mark.slow
+
 TARGET_ACTIVE_RETRIES = 90
 TARGET_ACTIVE_DELAY = 10
 CURL_CMD = "curl --silent --output /dev/null"
-
-pytestmark = pytest.mark.slow
 
 
 def _wait_for_target_active(server, target="foreman.target"):
