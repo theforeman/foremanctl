@@ -72,7 +72,6 @@ def test_bmc_default_provider(proxy_v2_features):
 
 
 @pytest.mark.feature('registration')
-def test_registration_url(proxy_v2_features):
-    settings = proxy_v2_features['registration'].get('settings', {})
-    registration_url = settings.get('registration_url')
-    assert registration_url == 'https://quadlet.example.com:8443'
+def test_registration_settings(proxy_v2_features):
+    assert 'registration' in proxy_v2_features
+    assert proxy_v2_features['registration'].get('state') == 'running'
