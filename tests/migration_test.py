@@ -33,10 +33,12 @@ def test_certificate_directories(server, migrated_environment, subdir):
     assert d.mode == 0o755
 
 
-def test_ca_password_file(server, migrated_environment):
-    f = server.file("/var/lib/foremanctl/certs/private/ca.pwd")
-    assert f.exists
-    assert f.mode == 0o600
+def test_ca_key_unencrypted(server, migrated_environment):
+    assert not server.file("/var/lib/foremanctl/certs/private/ca.pwd").exists
+    key = server.file("/var/lib/foremanctl/certs/private/ca.key")
+    assert key.exists
+    assert key.mode == 0o600
+    assert "ENCRYPTED" not in key.content_string
 
 
 def test_ca_password_persisted(migrated_environment, obsah_state_path):
