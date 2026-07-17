@@ -8,7 +8,6 @@ certificates_ca_password: "{{ lookup('ansible.builtin.password', certificates_ca
 candlepin_oauth_secret_file: "{{ obsah_state_path }}/candlepin-oauth-secret"
 candlepin_oauth_secret: "{{ lookup('ansible.builtin.password', candlepin_oauth_secret_file, chars=['ascii_letters', 'digits'], length=32) }}"
 
-candlepin_ca_key_password: "{{ ca_key_password }}"
 candlepin_ca_key: "{{ ca_key }}"
 candlepin_ca_certificate: "{{ ca_certificate }}"
 candlepin_tomcat_key: "{{ localhost_key }}"

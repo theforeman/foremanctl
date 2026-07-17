@@ -189,10 +189,6 @@ def test_foremanctl_state_archive_contents(server, backup_result):
 
     assert len(file_list) > 0, "Archive should contain at least one file"
 
-    # Check for certificates-ca-password which should be present in all deployments
-    assert 'certificates-ca-password' in archive_contents, \
-        "Archive should contain certificates-ca-password (generated during deployment)"
-
 
 def test_pulp_content_archived(server, backup_result):
     backup_dir = backup_result['backup_dir']

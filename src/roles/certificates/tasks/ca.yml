@@ -4,25 +4,45 @@
     path: "{{ certificates_ca_directory_certs }}/ca.crt"
   register: _certificates_ca_cert
 
+- name: 'Check for an existing CA key'
+  ansible.builtin.stat:
+    path: "{{ certificates_ca_directory_keys }}/ca.key"
+  register: _certificates_existing_ca_key
+
+- name: 'Detect whether the existing CA key is password-encrypted'
+  ansible.builtin.command:
+    cmd: "grep -q ENCRYPTED {{ certificates_ca_directory_keys }}/ca.key"
+  register: _certificates_ca_key_encrypted
+  changed_when: false
+  failed_when: false
+  when: _certificates_existing_ca_key.stat.exists
+
+- name: 'Decrypt a legacy password-encrypted CA key in place'
+  community.crypto.openssl_privatekey_convert:
+    src_path: "{{ certificates_ca_directory_keys }}/ca.key"
+    src_passphrase: "{{ certificates_ca_password }}"
+    dest_path: "{{ certificates_ca_directory_keys }}/ca.key"
+    format: pkcs8
+    mode: '0600'
+  when:
+    - _certificates_existing_ca_key.stat.exists
+    - (_certificates_ca_key_encrypted.rc | default(1)) == 0
+  no_log: true
+
+- name: 'Remove the obsolete CA key password file'
+  ansible.builtin.file:
+    path: "{{ certificates_ca_directory_keys }}/ca.pwd"
+    state: absent
+
 - name: 'Generate CA'
   when:
     - (not _certificates_ca_cert.stat.exists or certificates_ca_renew)
   block:
-    - name: 'Create CA key password file'
-      ansible.builtin.copy:
-        content: "{{ certificates_ca_password }}"
-        dest: "{{ certificates_ca_directory_keys }}/ca.pwd"
-        owner: root
-        group: root
-        mode: '0600'
-      no_log: true
-
     - name: 'Create CA private key'
       community.crypto.openssl_privatekey:
         path: "{{ certificates_ca_directory_keys }}/ca.key"
         type: "{{ certificates_algorithm_type }}"
         size: "{{ certificates_algorithm_size }}"
-        passphrase: "{{ certificates_ca_password }}"
         owner: root
         group: root
         mode: '0600'
@@ -31,7 +51,6 @@
       community.crypto.openssl_csr:
         path: "{{ certificates_ca_directory_requests }}/ca.csr"
         privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
-        privatekey_passphrase: "{{ certificates_ca_password }}"
         common_name: "{{ certificates_ca_subject }}"
         use_common_name_for_san: false
         basic_constraints:
@@ -49,7 +68,6 @@
         path: "{{ certificates_ca_directory_certs }}/ca.crt"
         csr_path: "{{ certificates_ca_directory_requests }}/ca.csr"
         privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
-        privatekey_passphrase: "{{ certificates_ca_password }}"
         provider: selfsigned
         selfsigned_not_after: "+{{ certificates_ca_validity_days }}d"
         force: "{{ certificates_ca_renew | bool }}"
