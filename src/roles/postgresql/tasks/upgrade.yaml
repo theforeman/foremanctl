@@ -27,12 +27,6 @@
         state: stopped
       failed_when: false
 
-    - name: Stop postgresql service
-      ansible.builtin.systemd:
-        name: "{{ postgresql_container_name }}"
-        state: stopped
-      failed_when: false
-
     - name: Wait for port 5432 to be completely freed by Podman
       ansible.builtin.wait_for:
         port: 5432
