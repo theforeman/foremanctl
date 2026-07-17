@@ -1,4 +1,13 @@
 ---
+- name: 'Switch to postgresql:16 module if needed'
+  ansible.builtin.command: dnf module switch-to -y postgresql:16
+  register: foreman_development_postgresql_module_result
+  changed_when: "'Nothing to do' not in foreman_development_postgresql_module_result.stdout"
+  failed_when: false
+  when:
+    - ansible_facts['os_family'] == 'RedHat'
+    - ansible_facts['distribution_major_version'] == '9'
+
 - name: Enable nodejs module stream
   ansible.builtin.command:
     cmd: dnf module enable -y nodejs:{{ foreman_development_nodejs_stream | default('22') }}
