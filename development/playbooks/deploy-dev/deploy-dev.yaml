@@ -15,6 +15,15 @@
     - "../../../src/vars/foreman.yml"
     - "../../../src/vars/base.yaml"
   pre_tasks:
+    - name: 'Switch to postgresql:16 module if needed'
+      ansible.builtin.command: dnf module switch-to -y postgresql:16
+      register: module_switch
+      changed_when: "'Nothing to do' not in module_switch.stdout"
+      failed_when: false
+      when:
+        - ansible_facts['os_family'] == 'RedHat'
+        - ansible_facts['distribution_major_version'] == '9'
+
     - name: Set development postgresql databases
       ansible.builtin.set_fact:
         postgresql_databases: >-
