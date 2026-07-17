@@ -6,7 +6,7 @@
 
 - name: 'Generate CA'
   when:
-    - (not _certificates_ca_cert.stat.exists or certificates_renew_ca)
+    - (not _certificates_ca_cert.stat.exists or certificates_ca_renew)
   block:
     - name: 'Create CA key password file'
       ansible.builtin.copy:
@@ -52,14 +52,14 @@
         privatekey_passphrase: "{{ certificates_ca_password }}"
         provider: selfsigned
         selfsigned_not_after: "+{{ certificates_ca_validity_days }}d"
-        force: "{{ certificates_renew_ca | bool }}"
+        force: "{{ certificates_ca_renew | bool }}"
 
     - name: 'Copy CA as server CA certificate'
       ansible.builtin.copy:
         src: "{{ certificates_ca_directory_certs }}/ca.crt"
         dest: "{{ certificates_ca_directory_certs }}/server-ca.crt"
         remote_src: true
-        force: "{{ certificates_renew_ca | bool }}"
+        force: "{{ certificates_ca_renew | bool }}"
         mode: '0444'
 
     - name: 'Create CA bundle'
@@ -67,5 +67,5 @@
         src: "{{ certificates_ca_directory_certs }}/ca.crt"
         dest: "{{ certificates_ca_directory_certs }}/ca-bundle.crt"
         remote_src: true
-        force: "{{ certificates_renew_ca | bool }}"
+        force: "{{ certificates_ca_renew | bool }}"
         mode: '0444'
