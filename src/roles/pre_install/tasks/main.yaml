@@ -3,32 +3,16 @@
   ansible.builtin.include_role:
     name: debug_tools
 
-- name: 'Check current postgresql module stream'
-  ansible.builtin.slurp:
-    src: /etc/dnf/modules.d/postgresql.module
-  register: postgresql_module_file
-  failed_when: false
-  when:
-    - ansible_facts['os_family'] == 'RedHat'
-    - ansible_facts['distribution_major_version'] == '9'
-
 - name: 'Enable postgresql:16 module'
   ansible.builtin.command: dnf module enable -y postgresql:16
-  changed_when: true
+  # can't use the `dnf` module for modules without a default stream
+  # https://github.com/ansible/ansible/issues/56504
+  # https://github.com/ansible/ansible/issues/64852
+  args:
+    creates: /etc/dnf/modules.d/postgresql.module
   when:
     - ansible_facts['os_family'] == 'RedHat'
     - ansible_facts['distribution_major_version'] == '9'
-    - postgresql_module_file is failed or postgresql_module_file.content is not defined
-
-- name: 'Switch to postgresql:16 module'
-  ansible.builtin.command: dnf module switch-to -y postgresql:16
-  changed_when: true
-  when:
-    - ansible_facts['os_family'] == 'RedHat'
-    - ansible_facts['distribution_major_version'] == '9'
-    - postgresql_module_file is succeeded
-    - postgresql_module_file.content is defined
-    - "'stream=16' not in (postgresql_module_file.content | b64decode)"
 
 - name: Install podman and utilities
   ansible.builtin.package:
