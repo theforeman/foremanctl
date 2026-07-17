@@ -420,16 +420,20 @@ jobs:
             --initial-admin-password=changeme \
             --tuning development \
             --add-feature foreman-proxy
-      - name: Remove old parameters.yaml
-        run: rm -f .var/lib/foremanctl/parameters.yaml
       - name: Generate certificates bundle on quadlet
         run: |
           ./foremanctl certificate-bundle proxy.example.com \
-            --certificate-source=${{ matrix.certificate_source }} \
             ${{ matrix.certificate_source == 'custom_server' && '--certificate-server-certificate /root/custom-certificates/certs/proxy.example.com.crt --certificate-server-key /root/custom-certificates/private/proxy.example.com.key' || '' }}
+      - name: Refresh internal CA to ensure it doesn't break the bundle
+        if: matrix.certificate_source != 'custom_server'
+        run: |
+          ./foremanctl deploy --certificate-ca-renew
       - name: Fetch certificates bundle from quadlet
         run: |
           ./forge fetch-bundle proxy.example.com
+      - name: Remove old parameters, but keep certificates_source for tests
+        run: |
+          echo "certificates_source: ${{ matrix.certificate_source }}" > .var/lib/foremanctl/parameters.yaml
       - name: Deploy content proxy
         run: |
           ./foremanctl deploy-proxy \
