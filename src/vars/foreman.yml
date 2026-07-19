@@ -12,4 +12,4 @@ foreman_oauth_consumer_secret: "{{ lookup('ansible.builtin.password', foreman_oa
 foreman_encryption_key_file: "{{ obsah_state_path }}/foreman-encryption-key"
 foreman_encryption_key: "{{ lookup('ansible.builtin.password', foreman_encryption_key_file, chars=['digits', 'abcdef'], length=32) }}"
 
-foreman_aliases: "{{ certificates_cnames }}"
+foreman_aliases: "{{ server_aliases | default([]) }}"

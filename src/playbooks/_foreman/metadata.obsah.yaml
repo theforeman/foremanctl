@@ -14,3 +14,8 @@ variables:
     parameter: --initial-location
   foreman_puma_workers:
     help: Number of workers for Puma.
+  server_aliases:
+    help: Server alias. Used for Subject Alternative Names in generated certificates and accepted server names. Can be specified multiple times.
+    action: append_unique
+    type: FQDN
+    parameter: --server-alias
