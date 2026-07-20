@@ -1,0 +1,6 @@
+---
+variables:
+  flavor:
+    help: Base flavor to use in this deployment.
+    choices:
+      - satellite
