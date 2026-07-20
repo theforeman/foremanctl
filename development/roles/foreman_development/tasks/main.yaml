@@ -106,6 +106,12 @@
     git_repository_secondary_remote_owner: "{{ foreman_development_github_username }}"
   when: foreman_development_manage_repos | default(true)
 
+- name: Symlink foreman-test to PATH
+  ansible.builtin.file:
+    state: link
+    src: "{{ foreman_development_foreman_dir }}/script/foreman-test"
+    dest: /usr/local/bin/foreman-test
+
 - name: Create database configuration
   ansible.builtin.template:
     src: database.yml.j2
