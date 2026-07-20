@@ -1,0 +1,26 @@
+---
+- name: Setup OpenVox repositories
+  ansible.builtin.include_role:
+    name: theforeman.operations.openvox_repositories
+  vars:
+    foreman_openvox_repositories_version: "8"
+  when:
+    - ansible_distribution_major_version == '9'
+
+- name: Setup Foreman repositories
+  ansible.builtin.include_role:
+    name: theforeman.operations.foreman_repositories
+  vars:
+    foreman_repositories_version: nightly
+    foreman_repositories_katello_version: nightly
+  when:
+    - ansible_distribution_major_version == '9'
+
+- name: Enable hammer-el10 copr
+  community.general.copr:
+    host: copr.fedorainfracloud.org
+    state: enabled
+    name: evgeni/hammer-el10
+    chroot: rhel-10-x86_64
+  when:
+    - ansible_distribution_major_version == '10'

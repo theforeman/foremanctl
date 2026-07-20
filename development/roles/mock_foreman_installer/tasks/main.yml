@@ -1,16 +1,36 @@
 ---
-- name: Enable foreman-installer PR 935 Copr repo
-  community.general.copr:
-    host: copr.fedorainfracloud.org
-    state: enabled
-    name: packit/theforeman-foreman-installer-935
-    chroot: rhel-9-x86_64
-
 - name: Install foreman-installer package
   ansible.builtin.package:
     name: foreman-installer-katello
 
-# utilize https://github.com/theforeman/foreman-installer/pull/935
+- name: Create foreman-certs scenarios directory
+  ansible.builtin.file:
+    path: /usr/share/foreman-installer/foreman-certs/scenarios.d
+    state: directory
+    mode: '0755'
+
+- name: Deploy foreman-certs binary
+  ansible.builtin.copy:
+    src: foreman-certs
+    dest: /usr/sbin/foreman-certs
+    mode: '0755'
+
+- name: Deploy foreman-certs scenario config
+  ansible.builtin.copy:
+    src: foreman-certs.yaml
+    dest: /usr/share/foreman-installer/foreman-certs/scenarios.d/foreman-certs.yaml
+    mode: '0644'
+
+- name: Deploy foreman-certs answers file
+  ansible.builtin.copy:
+    src: foreman-certs-answers.yaml
+    dest: /usr/share/foreman-installer/foreman-certs/scenarios.d/foreman-certs-answers.yaml
+    mode: '0644'
+
+- name: Install openvox-strings gem
+  ansible.builtin.command: /opt/puppetlabs/puppet/bin/gem install openvox-strings
+  changed_when: false
+
 - name: Generate certs
   ansible.builtin.command: foreman-certs --apache true --foreman true --candlepin true --iop true
   changed_when: false
