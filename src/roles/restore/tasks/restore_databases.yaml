@@ -27,7 +27,7 @@
       dump_file: "{{ restore_backup_metadata.database_mapping[item.name] }}.dump"
       database: "{{ item.database }}"
       user: "{{ item.user }}"
-  loop: "{{ databases }}"
+  loop: "{{ databases | selectattr('name', 'in', restore_backup_metadata.databases) | list }}"
   loop_control:
     label: "{{ item.name }}"
 

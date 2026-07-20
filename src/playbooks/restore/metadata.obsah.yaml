@@ -17,6 +17,10 @@ variables:
     action: store_true
     persist: false
 
+  target_host:
+    help: Target host to restore (defaults to quadlet)
+    persist: false
+
   force:
     help: Force restore on existing system (bypasses safety check)
     action: store_true
