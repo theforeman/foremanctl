@@ -79,6 +79,8 @@
         remote_src: true
         force: "{{ certificates_ca_renew | bool }}"
         mode: '0444'
+      when:
+        - certificates_source == 'default'
 
     - name: 'Create CA bundle'
       ansible.builtin.copy:
