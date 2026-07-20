@@ -16,7 +16,7 @@ def test_https_pulp_api_with_client_cert(curl_request):
 def test_https_rhsm_proxy(curl_request):
     cmd = curl_request("rhsm")
     assert cmd.succeeded
-    assert cmd.stdout not in ('404', '502', '503')
+    assert cmd.stdout == '200'
 
 
 def test_https_pulp_content_proxy(curl_request):
