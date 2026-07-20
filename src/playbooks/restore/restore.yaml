@@ -1,6 +1,6 @@
 ---
 - name: Restore from a backup
-  hosts: quadlet
+  hosts: "{{ target_host | default('quadlet') }}"
   become: true
   gather_facts: true
   vars_files:
@@ -10,6 +10,49 @@
   roles:
     - restore
 
-- name: Deploy services after restore
+- name: Load restored parameters for deploy
+  hosts: "{{ target_host | default('quadlet') }}"
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Read restored parameters
+      ansible.builtin.slurp:
+        path: "{{ obsah_state_path }}/parameters.yaml"
+      register: restore_params_raw
+      failed_when: false
+      when: not validate | default(false)
+
+    - name: Parse restored parameters
+      ansible.builtin.set_fact:
+        restore_params: "{{ restore_params_raw.content | b64decode | from_yaml }}"
+      when:
+        - not validate | default(false)
+        - restore_params_raw is succeeded
+
+    - name: Set restored features
+      ansible.builtin.set_fact:
+        restore_enabled_features: "{{ restore_backup_metadata.enabled_features | default([]) }}"
+      when: restore_backup_metadata is defined
+
+    - name: Set proxy deploy parameters
+      ansible.builtin.set_fact:
+        foreman_name: "{{ restore_params.foreman_name }}"
+        foreman_proxy_oauth_consumer_key: "{{ restore_params.foreman_proxy_oauth_consumer_key }}"
+        foreman_proxy_oauth_consumer_secret: "{{ restore_params.foreman_proxy_oauth_consumer_secret }}"
+      when:
+        - restore_params is defined
+        - restore_enabled_features | default([]) | has_feature('foreman-proxy')
+        - not (restore_enabled_features | default([]) | has_feature('foreman'))
+
+- name: Deploy services after restore (foreman-proxy)
+  import_playbook: ../deploy-proxy/deploy-proxy.yaml
+  when:
+    - not validate | default(false)
+    - restore_enabled_features | default([]) | has_feature('foreman-proxy')
+    - not (restore_enabled_features | default([]) | has_feature('foreman'))
+
+- name: Deploy services after restore (server)
   import_playbook: ../deploy/deploy.yaml
-  when: not validate | default(false)
+  when:
+    - not validate | default(false)
+    - restore_enabled_features | default([]) | has_feature('foreman')
