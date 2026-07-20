@@ -15,11 +15,16 @@ def pulp_settings(server):
     py = (
         'from django.conf import settings; import json; '
         'print(json.dumps({"import": list(settings.ALLOWED_IMPORT_PATHS), '
-        '"export": list(settings.ALLOWED_EXPORT_PATHS)}))'
+        '"export": list(settings.ALLOWED_EXPORT_PATHS), '
+        '"rhsm_url": settings.SMART_PROXY_RHSM_URL}))'
     )
     result = server.run(f"podman exec pulp-api pulpcore-manager shell -c '{py}'")
     assert result.succeeded, f"Failed to read Pulp settings: {result.stderr}"
     return json.loads(result.stdout)
+
+
+def test_pulp_rhsm_url_set_on_content_proxy(pulp_settings, server_fqdn):
+    assert pulp_settings['rhsm_url'] == f'https://{server_fqdn}/rhsm'
 
 
 def test_import_paths_restricted(pulp_settings):
