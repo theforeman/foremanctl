@@ -30,10 +30,15 @@
       when:
         - database_mode == 'internal'
     - valkey
-    - candlepin
+    - role: candlepin
+      when:
+        - "'foreman' in enabled_features"
+        - "'katello' in enabled_features"
     - httpd
     - foreman
-    - pulp
+    - role: pulp
+      when:
+        - "'katello' in enabled_features"
     - role: systemd_target
     - role: iop_core
       when:
