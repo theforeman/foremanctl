@@ -55,7 +55,6 @@
         mode: '0444'
       when:
         - certificates_source == 'custom_server'
-        - certificates_custom_server_certificate is defined
 
 - name: 'Consume certs'
   when:
