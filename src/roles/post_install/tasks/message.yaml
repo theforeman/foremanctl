@@ -1,6 +1,6 @@
 ---
 - name: Post install message
-  when: flavor in ['katello']
+  when: flavor in ['katello', 'satellite']
   ansible.builtin.debug:
     msg:
       - "{{ _post_install_url_msg }}"
