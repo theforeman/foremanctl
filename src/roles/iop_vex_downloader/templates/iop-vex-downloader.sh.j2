@@ -42,21 +42,23 @@ else
         --location \
          "${URL}${FILENAME_LATEST}")
 
-    TEMP_FILE_ARCH=$(mktemp -t "iop-vex-download.XXXXXX")
-    TEMP_FILE_ASC=$(mktemp -t "iop-vex-download.asc.XXXXXX")
+    RET=${?}
 
-    trap "rm -f ${TEMP_FILE_ARCH} ${TEMP_FILE_ASC}" EXIT
-
-    if [ "${?}" -ne 0 ]; then
+    if [ "${RET}" -ne 0 ]; then
         echo "Error: The tarball's name wasn't downloaded" >&2
         exit 1
     fi
+
+    TEMP_FILE_ARCH=$(mktemp -t "iop-vex-download.XXXXXX")
+    TEMP_FILE_ASC=$(mktemp -t "iop-vex-download.asc.XXXXXX")
+
+    trap 'rm -f ${TEMP_FILE_ARCH} ${TEMP_FILE_ASC}' EXIT
 
     curl --silent \
         --fail \
         --location \
         "${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}" \
-        --output ${TEMP_FILE_ARCH}
+        --output "${TEMP_FILE_ARCH}"
 
     RET=${?}
 
@@ -69,7 +71,7 @@ else
         --fail \
         --location \
         "${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}.asc" \
-        --output ${TEMP_FILE_ASC}
+        --output "${TEMP_FILE_ASC}"
 
     RET=${?}
 
@@ -78,8 +80,8 @@ else
         exit 3
     fi
 
-    mv -Z ${TEMP_FILE_ARCH} "${OUTPUT_DIR}${OUTPUT_FILENAME}"
-    mv -Z ${TEMP_FILE_ASC} "${OUTPUT_DIR}${OUTPUT_FILENAME}.asc"
+    mv -Z "${TEMP_FILE_ARCH}" "${OUTPUT_DIR}${OUTPUT_FILENAME}"
+    mv -Z "${TEMP_FILE_ASC}" "${OUTPUT_DIR}${OUTPUT_FILENAME}.asc"
 
     chmod 644 "${OUTPUT_DIR}${OUTPUT_FILENAME}"
     chmod 644 "${OUTPUT_DIR}${OUTPUT_FILENAME}.asc"
