@@ -37,6 +37,15 @@ def pulp_import_export_paths():
     return load_pulp_paths_from_parameters()
 
 
+@pytest.fixture(scope="module")
+def pulp_smart_proxy_settings(server):
+    py = (
+        'from django.conf import settings; import json; '
+        'print(json.dumps({"rhsm_url": settings.SMART_PROXY_RHSM_URL}))'
+    )
+    return json.loads(server.check_output(f"podman exec pulp-api pulpcore-manager shell -c '{py}'"))
+
+
 def test_pulp_api_service(server):
     pulp_api = server.service("pulp-api")
     assert pulp_api.is_running
@@ -140,3 +149,10 @@ def test_pulp_import_export_volume_mounts(server, container, pulp_import_export_
     for path in import_paths + export_paths:
         mounted = path in destinations or any(path.startswith(d + '/') for d in destinations)
         assert mounted, f"expected {path} to be mounted as a volume in {container}"
+
+
+def test_pulp_rhsm_url_empty_on_server(pulp_smart_proxy_settings, obsah_params):
+    if obsah_params.get('flavor') == 'foreman-proxy-content':
+        pytest.skip("content proxy deployments set PULP_SMART_PROXY_RHSM_URL")
+
+    assert pulp_smart_proxy_settings["rhsm_url"] == ""
