@@ -27,7 +27,7 @@
     dest: /usr/share/foreman-installer/foreman-certs/scenarios.d/foreman-certs-answers.yaml
     mode: '0644'
 
-- name: Install puppet-strings gem
+- name: Install openvox-strings gem
   ansible.builtin.command: /opt/puppetlabs/puppet/bin/gem install openvox-strings
   changed_when: false
 

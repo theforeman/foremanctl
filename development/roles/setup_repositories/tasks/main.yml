@@ -1,5 +1,5 @@
 ---
-- name: Setup Puppet repositories
+- name: Setup OpenVox repositories
   ansible.builtin.include_role:
     name: theforeman.operations.openvox_repositories
   vars:
