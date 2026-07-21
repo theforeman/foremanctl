@@ -130,7 +130,7 @@ foremanctl deploy --certificate-renew
 To regenerate the CA certificate itself, use:
 
 ```bash
-foremanctl deploy --certificate-renew-ca
+foremanctl deploy --certificate-ca-renew
 ```
 
 > [!WARNING]
