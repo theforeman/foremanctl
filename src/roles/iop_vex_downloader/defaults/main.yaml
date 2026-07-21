@@ -1,4 +1,4 @@
 ---
 iop_vex_downloader_base_url: "https://security.access.redhat.com/data/csaf/v2/vex/"
 iop_vex_downloader_output_dir: "/var/www/html/pub/iop/data/csaf/v2/vex/"
-iop_vex_downloader_timer_interval: "7d"
+iop_vex_downloader_timer_interval: "1d"

@@ -46,6 +46,12 @@
 - name: Flush handlers
   ansible.builtin.meta: flush_handlers
 
+- name: Create directory vex download directory
+  ansible.builtin.file:
+    path: '{{ iop_vex_downloader_output_dir }}'
+    state: directory
+    mode: "0755"
+
 - name: Enable and start vex download timer
   ansible.builtin.systemd:
     name: iop-vex-download.timer
