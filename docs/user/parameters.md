@@ -87,6 +87,12 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-log-level` | Log level for Foreman. Overrides `--log-level` for Foreman only. | `--foreman-logging-level` |
 | `--foreman-proxy-log-level` | Log level for Foreman Proxy. Overrides `--log-level` for Foreman Proxy only. | `--foreman-proxy-log-level` |
 
+##### New
+
+| Parameter | Description |
+| ----------| ----------- |
+| `--pulp-log-level` | Log level for Pulp. Overrides `--log-level` for Pulp only. Accepted values: `debug`, `info`, `warning`, `error` & `critical` |
+
 #### Undetermined
 
 | foreman-installer Parameter | Description | Module | Puppet Parameter | Keep |

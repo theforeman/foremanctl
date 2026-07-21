@@ -3,3 +3,5 @@ log_level: info
 
 foreman_log_level: "{{ log_level }}"
 foreman_proxy_log_level: "{{ log_level }}"
+# Mapping of log_level values to pulp log level values
+pulp_log_level: "{{ {'debug': 'debug', 'info': 'info', 'warn': 'warning', 'error': 'error', 'fatal': 'critical'}[log_level] }}"

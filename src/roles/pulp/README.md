@@ -28,5 +28,6 @@ Usage Inside foremanctl
 -----------------------
 When used as part of `foremanctl`, the variables are setup as the following
 - `pulp_worker_count`: `--pulp-worker-count`
+- `pulp_log_level`: `--pulp-log-level`
 - `pulp_import_paths`: `--content-import-path` (may be specified multiple times)
 - `pulp_export_paths`: `--content-export-path` (may be specified multiple times)
