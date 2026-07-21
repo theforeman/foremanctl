@@ -61,15 +61,15 @@
   ProxyPass /pulp_ansible/galaxy/ {{ httpd_pulp_api_backend }}/pulp_ansible/galaxy/
   ProxyPassReverse /pulp_ansible/galaxy/ {{ httpd_pulp_api_backend }}/pulp_ansible/galaxy/
 
-  <Location "/pulpcore_registry/v2/">
+  <Location "/pulpcore_registry">
     RequestHeader unset REMOTE_USER
     RequestHeader unset REMOTE-USER
     RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ ansible_facts['fqdn'] }}'"
     {% for httpd_pulp_trusted_host in httpd_pulp_trusted_hosts %}
     RequestHeader set REMOTE-USER "admin" "expr=%{SSL_CLIENT_S_DN_CN} == '{{ httpd_pulp_trusted_host }}'"
     {% endfor %}
-    ProxyPass {{ httpd_pulp_api_backend }}/v2/
-    ProxyPassReverse {{ httpd_pulp_api_backend }}/v2/
+    ProxyPass {{ httpd_pulp_api_backend }}
+    ProxyPassReverse {{ httpd_pulp_api_backend }}
   </Location>
 
   ProxyPass /pulp/container/ {{ httpd_pulp_content_backend }}/pulp/container/
