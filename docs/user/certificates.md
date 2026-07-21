@@ -33,6 +33,11 @@ foremanctl deploy --certificate-source=default
 
 #### Using Custom Server Certificates
 
+> **Note:** Custom server certificates and CA bundles must contain only
+> `-----BEGIN CERTIFICATE-----` / `-----END CERTIFICATE-----` blocks
+> (blank lines between blocks are fine). Do not include comments or other
+> text outside those blocks.
+
 ```bash
 # First deployment with custom certificates
 foremanctl deploy \
@@ -267,7 +272,7 @@ In `src/playbooks/deploy/deploy.yaml`:
 
 The `certificate_checks` role uses `foreman-certificate-check` binary to validate:
 - Certificate file existence and readability
-- PEM format validation
+- PEM format validation (certificate and CA bundle files must contain only PEM CERTIFICATE blocks)
 - Private key and certificate pairing
 - Certificate chain integrity
 
