@@ -1,0 +1,5 @@
+---
+- name: Restart valkey
+  ansible.builtin.systemd:
+    name: valkey
+    state: restarted
