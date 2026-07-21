@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 OBSAH_NAME=forge
 OBSAH_BASE=$(dirname $(readlink -f $0))

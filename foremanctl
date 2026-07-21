@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 OBSAH_NAME=foremanctl
 OBSAH_BASE=$(dirname $(readlink -f $0))
