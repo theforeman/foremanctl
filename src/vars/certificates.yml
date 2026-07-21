@@ -1,5 +1,6 @@
 ---
 certificates_ca_directory: /var/lib/foremanctl/certs
+certificates_server_aliases: "{{ server_aliases | default([]) }}"
 ca_key_password: "{{ certificates_ca_directory }}/private/ca.pwd"
 ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
 ca_key: "{{ certificates_ca_directory }}/private/ca.key"

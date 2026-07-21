@@ -65,7 +65,7 @@ There are multiple use cases from the users perspective that dictate what parame
 
 | Parameter | Description | foreman-installer Parameter |
 | ----------| ----------- | --------------------------- |
-| `--certificate-cname` | Allows defining CNAME for default certificates | --certs-cname |
+| `--server-alias` | Allows defining additional DNS names (SANs) for default certificates | --certs-cname |
 
 ##### Unmapped
 

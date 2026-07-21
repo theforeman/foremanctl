@@ -77,7 +77,7 @@ Each key becomes an Ansible variable passed to the playbook. Obsah auto-converts
 | Property    | Description                                                                                                                                          | Example                                         |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | `help`      | Description shown in `--help`. Required.                                                                                                             | `"Initial password for the admin user."`        |
-| `parameter` | Override the auto-generated CLI flag name                                                                                                            | `--certificate-cname`, `vm_action` (positional) |
+| `parameter` | Override the auto-generated CLI flag name                                                                                                            | `--server-alias`, `vm_action` (positional) |
 | `action`    | How the CLI handles the value. See actions table below.                                                                                              | `store`, `append_unique`, `store_true etc.`     |
 | `choices`   | Restrict accepted values to a fixed list of options.                                                                                                 | `[internal, external]`                          |
 | `type`      | Value type validation provided by Obsah (see `obsah.types` for available types).                                                                     | `FQDN`, `AbsolutePath`                          |
@@ -158,11 +158,11 @@ variables:
     help: Initial password for the admin user.
   foreman_puma_workers:
     help: Number of workers for Puma.
-  certificates_cnames:
-    help: Additional DNS name for Subject Alternative Names. Can be specified multiple times.
+  server_aliases:
+    help: Server alias. Used for Subject Alternative Names in generated certificates and accepted server names. Can be specified multiple times.
     action: append_unique
     type: FQDN
-    parameter: --certificate-cname
+    parameter: --server-alias
 
 include:
   - _certificate_source
