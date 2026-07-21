@@ -18,8 +18,6 @@ fi
 URL="${URL%/}/"
 OUTPUT_DIR="${OUTPUT_DIR%/}/"
 
-mkdir -p "${OUTPUT_DIR}"
-
 MANUAL_FILE="/var/lib/foreman/vex-latest.tar.zst"
 
 if [[ -f "$MANUAL_FILE" ]]; then
@@ -37,9 +35,20 @@ if [[ -f "$MANUAL_FILE" ]]; then
     fi
 else
     echo "Online mode: Checking for updates from $URL"
-    ARCHIVE_DOWNLOAD_NAME_CONTENT=$(curl --silent \
+
+    FILE_MODTIME="Thu, 01 Jan 1970 00:00:00 +0000"
+
+    if [[ -f "${OUTPUT_DIR}${OUTPUT_FILENAME}" ]]; then
+        FILE_MODTIME=$(date -u -R -r "${OUTPUT_DIR}${OUTPUT_FILENAME}")
+    fi
+
+    # 
+      #     \
+    ARCHIVE_DOWNLOAD_NAME_CONTENT=$(curl \
+        --silent \
         --fail \
         --location \
+        -H "If-Modified-Since: ${FILE_MODTIME}"\
          "${URL}${FILENAME_LATEST}")
 
     RET=${?}
@@ -49,10 +58,15 @@ else
         exit 1
     fi
 
+    if [ -z "${ARCHIVE_DOWNLOAD_NAME_CONTENT}" ]; then
+        echo "The file wasn't updated."
+        exit 0
+    fi
+
     TEMP_FILE_ARCH=$(mktemp -t "iop-vex-download.XXXXXX")
     TEMP_FILE_ASC=$(mktemp -t "iop-vex-download.asc.XXXXXX")
 
-    trap 'rm -f ${TEMP_FILE_ARCH} ${TEMP_FILE_ASC}' EXIT
+    trap 'rm -f "${TEMP_FILE_ARCH}" "${TEMP_FILE_ASC}"' EXIT
 
     curl --silent \
         --fail \
