@@ -54,6 +54,12 @@ def test_vex_download_path_enabled(server):
     assert path.is_enabled
     assert path.is_running
 
-
-def test_vex_download_folder_exist(server):
+def test_vex_download_folder_exists(server):
     assert server.file("/var/www/html/pub/iop/data/csaf/v2/vex/").is_directory
+
+def test_vex_download_archive_latest_exists(server):
+    file = server.file("/var/www/html/pub/iop/data/csaf/v2/vex/archive_latest.txt")
+    content = file.content_string
+
+    assert file.exists
+    assert "vex-latest.tar.zst" in content
