@@ -59,7 +59,7 @@ else
     fi
 
     if [ -z "${ARCHIVE_DOWNLOAD_NAME_CONTENT}" ]; then
-        echo "The file wasn't updated."
+        echo "The file wasn't updated because the source hadn't changed."
         exit 0
     fi
 
