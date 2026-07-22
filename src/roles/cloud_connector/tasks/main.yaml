@@ -50,7 +50,7 @@
       CONFIG_FILE="{{ cloud_connector_config_file }}" exec /usr/libexec/yggdrasil-worker-forwarder
     owner: root
     group: root
-    mode: '0750'
+    mode: '0755'
 
 - name: Ensure rhcd started and enabled
   ansible.builtin.service:
@@ -104,8 +104,14 @@
         state: absent
       notify: Restart rhcd
 
+    - name: Check if systemd drop-in directory is empty
+      ansible.builtin.find:
+        paths: /etc/systemd/system/rhcd.service.d
+        file_type: any
+      register: cloud_connector_dropin_contents
+
     - name: Remove systemd drop-in directory if empty
       ansible.builtin.file:
         path: /etc/systemd/system/rhcd.service.d
         state: absent
-      notify: Restart rhcd
+      when: cloud_connector_dropin_contents.matched == 0
