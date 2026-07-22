@@ -72,7 +72,6 @@ def test_bmc_default_provider(proxy_v2_features):
 
 
 @pytest.mark.feature('templates')
-def test_templates_template_url(proxy_v2_features):
-    settings = proxy_v2_features['templates'].get('settings', {})
-    template_url = settings.get('template_url')
-    assert template_url == 'http://quadlet.example.com:8000'
+def test_templates_template_url(obsah_params, server_fqdn):
+    template_url = obsah_params.get('foreman_proxy_templates_url')
+    assert template_url == f'http://{server_fqdn}:8000'

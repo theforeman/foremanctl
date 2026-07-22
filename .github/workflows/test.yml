@@ -153,9 +153,6 @@ jobs:
             --add-feature remote-execution \
             --add-feature bmc \
             --add-feature webhooks \
-            --add-feature templates \
-            --templates-listen-on http \
-            --templates-url http://quadlet.example.com:8000 \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
@@ -446,7 +443,9 @@ jobs:
             --certificate-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
             --foreman-fqdn quadlet.example.com \
             --oauth-consumer-key $(cat .var/lib/foremanctl/foreman-oauth-consumer-key) \
-            --oauth-consumer-secret $(cat .var/lib/foremanctl/foreman-oauth-consumer-secret)
+            --oauth-consumer-secret $(cat .var/lib/foremanctl/foreman-oauth-consumer-secret) \
+            --templates-listen-on http \
+            --templates-url http://proxy.example.com:8000
       - name: Run tests
         run: |
           ./forge test --pytest-args="--server-hostname=proxy"
