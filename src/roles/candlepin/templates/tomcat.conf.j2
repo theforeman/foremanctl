@@ -28,7 +28,7 @@ CATALINA_HOME="/usr/share/tomcat"
 CATALINA_TMPDIR="/var/cache/tomcat/temp"
 
 # You can pass some parameters to java here if you wish to
-JAVA_OPTS="-Xms1024m -Xmx4096m -Dcom.redhat.fips=false --enable-native-access=ALL-UNNAMED"
+JAVA_OPTS="-Xms{{ candlepin_xms }} -Xmx{{ candlepin_xmx }} -Dcom.redhat.fips=false --enable-native-access=ALL-UNNAMED"
 
 # You can change your tomcat locale here
 

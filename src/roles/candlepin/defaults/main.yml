@@ -19,3 +19,6 @@ candlepin_database_ssl: false
 candlepin_database_ssl_mode: disable
 candlepin_database_ssl_ca: # noqa: no-empty-defaults
 candlepin_database_ssl_ca_path: /etc/candlepin/certs/db-ca.crt
+
+candlepin_xms: 1g
+candlepin_xmx: 4g
