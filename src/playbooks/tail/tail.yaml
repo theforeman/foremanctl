@@ -1,0 +1,49 @@
+---
+- name: Show recent Foreman service logs
+  hosts: quadlet
+  become: true
+  gather_facts: true
+  tags:
+    - foremanctl_suppress_default_output
+  vars:
+    services: []
+    lines: 50
+    all_services:
+      - foreman
+      - dynflow-sidekiq@orchestrator
+      - dynflow-sidekiq@worker
+      - dynflow-sidekiq@worker-hosts-queue
+      - pulp-api
+      - pulp-content
+      - candlepin
+      - httpd
+      - redis
+      - postgresql
+  tasks:
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Determine active services
+      ansible.builtin.set_fact:
+        target_services: >-
+          {{
+            (services if services | length > 0 else all_services)
+            | select('in', ansible_facts.services | map('regex_replace', '\.service$', '') | list)
+            | list
+          }}
+
+    - name: Fetch recent logs
+      ansible.builtin.command:
+        cmd: >-
+          journalctl --no-pager -n {{ lines }} -u {{ item }}
+      loop: "{{ target_services }}"
+      register: log_results
+      changed_when: false
+
+    - name: Display logs
+      ansible.builtin.debug:
+        msg: "{{ item.stdout_lines }}"
+      loop: "{{ log_results.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      when: item.stdout_lines | length > 0
