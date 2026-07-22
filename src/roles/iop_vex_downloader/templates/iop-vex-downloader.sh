@@ -42,8 +42,6 @@ else
         FILE_MODTIME=$(date -u -R -r "${OUTPUT_DIR}${OUTPUT_FILENAME}")
     fi
 
-    # 
-      #     \
     ARCHIVE_DOWNLOAD_NAME_CONTENT=$(curl \
         --silent \
         --fail \
