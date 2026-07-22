@@ -11,4 +11,5 @@ variables:
     action: store_true
     persist: false
 include:
+  - _target_host
   - _database_mode

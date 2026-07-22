@@ -3,5 +3,6 @@ help: |
   Pull necessary container images
 
 include:
+  - _target_host
   - _database_mode
   - _flavor_features

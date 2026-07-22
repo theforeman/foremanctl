@@ -7,6 +7,12 @@ This document covers installation parameters as presented to users, and includes
 * Using a single parameter when there are multiple variables that should have the same value
 * Aim for minimal configuration values for the user
 
+## Global Parameters
+
+| Parameter | Description | Applies to |
+| ----------| ----------- | ---------- |
+| `--target-host` | Target hostname or IP address for deployment. Defaults to `quadlet`. This value is persisted between runs. For remote hosts, the specified host must be present in the Ansible inventory. | All commands except `deploy-proxy` |
+
 ## Mapping
 
 Parameters are split into either mapped or unmapped groupings per category.

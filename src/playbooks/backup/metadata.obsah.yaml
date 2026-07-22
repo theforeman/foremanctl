@@ -23,3 +23,6 @@ variables:
     help: Wait for running tasks to complete instead of failing immediately
     action: store_true
     persist: false
+
+include:
+  - _target_host

@@ -27,3 +27,6 @@ variables:
   output:
     help: Path where the migrated configuration should be written. If not specified and --apply is used, writes to the foremanctl configuration.
     persist: false
+
+include:
+  - _target_host

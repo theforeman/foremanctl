@@ -1,0 +1,5 @@
+---
+variables:
+  target_host:
+    help: Target hostname or IP address for deployment
+    action: store
