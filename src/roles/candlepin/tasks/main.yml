@@ -32,7 +32,7 @@
   containers.podman.podman_secret:
     state: present
     name: candlepin-tomcat-conf
-    data: "{{ lookup('ansible.builtin.template', 'tomcat.conf') }}"
+    data: "{{ lookup('ansible.builtin.template', 'tomcat.conf.j2') }}"
     labels:
       filename: tomcat.conf
       app: tomcat
