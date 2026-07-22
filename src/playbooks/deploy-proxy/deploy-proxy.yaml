@@ -1,7 +1,6 @@
 ---
 - name: Setup proxy machine
-  hosts:
-    - proxy
+  hosts: "{{ target_host | default('proxy') }}"
   become: true
   vars:
     flavor: foreman-proxy-content

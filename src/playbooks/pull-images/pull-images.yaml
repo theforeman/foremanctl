@@ -1,7 +1,6 @@
 ---
 - name: Pull images
-  hosts:
-    - quadlet
+  hosts: "{{ target_host | default('quadlet') }}"
   vars:
     flavor: katello
   vars_files:
