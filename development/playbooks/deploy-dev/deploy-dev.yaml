@@ -4,7 +4,6 @@
   become: true
   vars:
     flavor: katello
-    httpd_foreman_backend: "http://localhost:3000"
     pulp_register_foreman_proxy: false
   vars_files:
     - "../../../src/vars/defaults.yml"
@@ -15,6 +14,7 @@
     - "../../../src/vars/foreman.yml"
     - "../../../src/vars/logging.yml"
     - "../../../src/vars/base.yaml"
+    - "../../vars/devel.yaml"
   pre_tasks:
     - name: Set development postgresql databases
       ansible.builtin.set_fact:
