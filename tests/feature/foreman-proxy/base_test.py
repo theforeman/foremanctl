@@ -72,7 +72,9 @@ def test_bmc_default_provider(proxy_v2_features):
 
 
 @pytest.mark.feature('templates')
-def test_templates_template_url(proxy_v2_features):
+def test_templates_template_url(proxy_v2_features, server_hostname):
+    if server_hostname != 'proxy':
+        pytest.skip('Only applicable to proxy deployments')
     settings = proxy_v2_features['templates'].get('settings', {})
     template_url = settings.get('template_url')
-    assert template_url == 'http://quadlet.example.com:8000'
+    assert template_url == 'http://proxy.example.com:8000'

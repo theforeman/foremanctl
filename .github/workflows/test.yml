@@ -152,9 +152,6 @@ jobs:
             --add-feature google \
             --add-feature remote-execution \
             --add-feature bmc \
-            --add-feature templates \
-            --templates-listen-on http \
-            --templates-url http://quadlet.example.com:8000 \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
@@ -442,7 +439,9 @@ jobs:
           ./foremanctl deploy-proxy \
             --flavor foreman-proxy-content \
             --certificate-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
-            --foreman-fqdn quadlet.example.com
+            --foreman-fqdn quadlet.example.com \
+            --templates-listen-on http \
+            --templates-url http://proxy.example.com:8000
       - name: Run tests
         run: |
           ./forge test --pytest-args="--server-hostname=proxy"
