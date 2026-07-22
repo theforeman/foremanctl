@@ -27,7 +27,7 @@ if [[ -f "$MANUAL_FILE" ]]; then
     STORED_CHECKSUM=$(sha256sum "${OUTPUT_DIR}${OUTPUT_FILENAME}" | cut -d' ' -f1)
 
     if [[ "$CURRENT_CHECKSUM" != "$STORED_CHECKSUM" ]]; then
-        echo "Copying updated manual file"
+        echo "Copying updated manual file from ${MANUAL_FILE}"
         cp -Z "$MANUAL_FILE" "${OUTPUT_DIR}${OUTPUT_FILENAME}" && echo "$CURRENT_CHECKSUM" > "$CHECKSUM_FILE"
         chmod 644 "${OUTPUT_DIR}${OUTPUT_FILENAME}"
     else
@@ -42,7 +42,7 @@ else
         FILE_MODTIME=$(date -u -R -r "${OUTPUT_DIR}${OUTPUT_FILENAME}")
     fi
 
-    echo "Downloading tarball's name"
+    echo "Downloading tarball's name from ${URL}${FILENAME_LATEST}"
     ARCHIVE_DOWNLOAD_NAME_CONTENT=$(curl \
         --silent \
         --fail \
@@ -53,12 +53,12 @@ else
     RET=${?}
 
     if [ "${RET}" -ne 0 ]; then
-        echo "Error: The tarball's name wasn't downloaded" >&2
+        echo "Error: The tarball's name from ${URL}${FILENAME_LATEST} wasn't downloaded" >&2
         exit 1
     fi
 
     if [ -z "${ARCHIVE_DOWNLOAD_NAME_CONTENT}" ]; then
-        echo "Skipping downloading of tarball because the source file hadn't changed."
+        echo "Skipping downloading of tarball's name from ${URL}${FILENAME_LATEST} because the source file hadn't changed."
         exit 0
     fi
 
@@ -69,7 +69,7 @@ else
 
     trap 'rm -f "${TEMP_FILE_ARCH}" "${TEMP_FILE_ASC}"' EXIT
 
-    echo "Downloading tarball"
+    echo "Downloading tarball from ${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}"
     curl --silent \
         --fail \
         --location \
@@ -79,11 +79,11 @@ else
     RET=${?}
 
     if [ "${RET}" -ne 0 ]; then
-        echo "Error: Downloading of tarball failed. Curl failed with code ${RET}" >&2
+        echo "Error: Downloading of tarball from ${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT} failed. Curl failed with code ${RET}" >&2
         exit 2
     fi
 
-    echo "Downloading tarball's signature"
+    echo "Downloading tarball's signature from ${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}.asc"
     curl --silent \
         --fail \
         --location \
@@ -93,7 +93,7 @@ else
     RET=${?}
 
     if [ "${RET}" -ne 0 ]; then
-        echo "Error: Downloading of tarball's signature failed. Curl failed with code ${RET}" >&2
+        echo "Error: Downloading of tarball's signature from ${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}.asc failed. Curl failed with code ${RET}" >&2
         exit 3
     fi
 
