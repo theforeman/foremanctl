@@ -42,6 +42,7 @@ else
         FILE_MODTIME=$(date -u -R -r "${OUTPUT_DIR}${OUTPUT_FILENAME}")
     fi
 
+    echo "Downloading tarball's name"
     ARCHIVE_DOWNLOAD_NAME_CONTENT=$(curl \
         --silent \
         --fail \
@@ -66,6 +67,7 @@ else
 
     trap 'rm -f "${TEMP_FILE_ARCH}" "${TEMP_FILE_ASC}"' EXIT
 
+    echo "Downloading tarball"
     curl --silent \
         --fail \
         --location \
@@ -79,6 +81,7 @@ else
         exit 2
     fi
 
+    echo "Downloading tarball's signature"
     curl --silent \
         --fail \
         --location \
