@@ -28,7 +28,7 @@ def test_vex_download_timer_unit(server):
 
     content = unit.content_string
     assert "OnActiveSec=0" in content
-    assert "OnUnitActiveSec=7d" in content
+    assert "OnUnitActiveSec=1d" in content
     assert "WantedBy=timers.target" in content
 
 
@@ -53,3 +53,6 @@ def test_vex_download_path_enabled(server):
     path = server.service("iop-vex-download.path")
     assert path.is_enabled
     assert path.is_running
+
+def test_vex_download_folder_exist(server):
+    assert server.file("/var/www/html/pub/iop/data/csaf/v2/vex/").is_directory
