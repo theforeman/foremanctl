@@ -18,9 +18,10 @@ variables:
       - error
       - fatal
   valkey_log_level:
-    help: Log level for Valkey. Defaults to the global log level (mapped to Valkey's native levels).
+    help: Log level for Valkey.
     choices:
       - debug
       - verbose
       - notice
       - warning
+      - nothing
