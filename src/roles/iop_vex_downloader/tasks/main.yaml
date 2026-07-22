@@ -1,6 +1,6 @@
 ---
 - name: Install vex download script
-  ansible.builtin.template:
+  ansible.builtin.copy:
     src: iop-vex-downloader.sh
     dest: /usr/local/bin/iop-vex-downloader.sh
     owner: root

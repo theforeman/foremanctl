@@ -58,9 +58,11 @@ else
     fi
 
     if [ -z "${ARCHIVE_DOWNLOAD_NAME_CONTENT}" ]; then
-        echo "The file wasn't updated because the source hadn't changed."
+        echo "Skipping downloading of tarball because the source file hadn't changed."
         exit 0
     fi
+
+    echo "The source file changed."
 
     TEMP_FILE_ARCH=$(mktemp -t "iop-vex-download.XXXXXX")
     TEMP_FILE_ASC=$(mktemp -t "iop-vex-download.asc.XXXXXX")
