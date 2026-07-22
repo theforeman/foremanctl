@@ -74,6 +74,7 @@
     src: event.conf.j2
     dest: /etc/httpd/conf.modules.d/event.conf
     mode: "0644"
+    setype: httpd_config_t
   notify:
     - Restart httpd
 
@@ -95,6 +96,7 @@
     src: foreman-vhost.conf.j2
     dest: /etc/httpd/conf.d/{{ 'foreman' if httpd_with_foreman else 'pulpcore' }}.conf
     mode: "0644"
+    setype: httpd_config_t
   notify:
     - Restart httpd
 
@@ -103,6 +105,7 @@
     src: foreman-ssl-vhost.conf.j2
     dest: /etc/httpd/conf.d/{{ 'foreman-ssl' if httpd_with_foreman else 'pulpcore-ssl' }}.conf
     mode: "0644"
+    setype: httpd_config_t
   notify:
     - Restart httpd
 

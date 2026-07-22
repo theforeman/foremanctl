@@ -136,6 +136,13 @@ def test_httpd_event_conf_contains_threads_per_child(server):
     assert event_conf.contains("ThreadsPerChild")
 
 
+def test_httpd_selinux_context(server):
+    cmd = server.run("ls -1Z /etc/httpd/*.d/*.conf")
+    assert cmd.succeeded
+    incorrect = [line for line in cmd.stdout.splitlines() if line and ":httpd_config_t:" not in line]
+    assert not incorrect, "Incorrect SELinux context (expected httpd_config_t):\n" + "\n".join(incorrect)
+
+
 def test_httpd_config_syntax(server):
     cmd = server.run("httpd -t")
     assert cmd.succeeded
