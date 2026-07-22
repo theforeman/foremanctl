@@ -52,6 +52,13 @@
     state: directory
     mode: "0755"
 
+- name: Create vex download archive_latest.txt file
+  ansible.builtin.copy:
+    dest: '{{ iop_vex_downloader_output_dir }}archive_latest.txt'
+    content: |
+      vex-latest.tar.zst
+    mode: '0644'
+
 - name: Enable and start vex download timer
   ansible.builtin.systemd:
     name: iop-vex-download.timer
