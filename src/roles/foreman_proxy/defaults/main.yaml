@@ -20,11 +20,10 @@ foreman_proxy_foreman_server_url: "https://{{ ansible_facts['fqdn'] }}"
 
 # Container gateway settings
 foreman_proxy_container_gateway_pulp_endpoint: "https://{{ ansible_facts['fqdn'] }}"
-foreman_proxy_container_gateway_db_host: "{{ container_gateway_database_host }}"
-foreman_proxy_container_gateway_db_port: "{{ container_gateway_database_port }}"
-foreman_proxy_container_gateway_db_user: "{{ container_gateway_database_user }}"
-foreman_proxy_container_gateway_db_password: "{{ container_gateway_database_password }}"
-foreman_proxy_container_gateway_db_name: "{{ container_gateway_database_name }}"
+foreman_proxy_container_gateway_db_host: localhost
+foreman_proxy_container_gateway_db_port: 5432
+foreman_proxy_container_gateway_db_user: container_gateway
+foreman_proxy_container_gateway_db_name: container_gateway
 foreman_proxy_container_gateway_db_connection_string: >-
   postgresql://{{ foreman_proxy_container_gateway_db_user }}:{{
   foreman_proxy_container_gateway_db_password }}@{{
