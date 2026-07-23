@@ -12,8 +12,8 @@ Run project code checks.
 
 - [AGENTS.md](../../../AGENTS.md) — common lint commands
 - [Playbooks and Roles](../../../docs/developer/playbooks-and-roles.md) — secrets, OAuth, naming
-- Custom rules: `.ansible-lint-rules/` (source of truth for enforceable constraints)
-- Config: `.ansible-lint`
+- Custom rules: `../../../.ansible-lint-rules/` (source of truth for enforceable constraints)
+- Config: `../../../.ansible-lint`
 
 ## Workflow
 
@@ -24,6 +24,7 @@ Run project code checks.
 ### Set up virtual environment
 
 ```shell
+# (in project root dir)
 ./setup-environment
 source .venv/bin/activate
 ```
@@ -31,6 +32,7 @@ source .venv/bin/activate
 ### Ansible lint
 
 ```shell
+# (in project root dir)
 cd src && ansible-lint
 cd development && ansible-lint
 ```
@@ -40,6 +42,7 @@ Fix all findings. Do not ignore any findings.
 ### Ruff
 
 ```shell
+# (in project root dir)
 ruff check tests/ src/ development/scripts/ inventories/
 ```
 
