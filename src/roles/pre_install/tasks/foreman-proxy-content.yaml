@@ -1,0 +1,19 @@
+---
+- name: Read OAuth consumer key from file
+  ansible.builtin.slurp:
+    src: "{{ obsah_state_path }}/foreman-oauth-consumer-key"
+  register: _oauth_key_file
+
+- name: Set OAuth consumer key
+  ansible.builtin.set_fact:
+    foreman_proxy_oauth_consumer_key: "{{ _oauth_key_file.content | b64decode | trim }}"
+
+- name: Read OAuth consumer secret from file
+  ansible.builtin.slurp:
+    src: "{{ obsah_state_path }}/foreman-oauth-consumer-secret"
+  register: _oauth_secret_file
+
+- name: Set OAuth consumer secret
+  ansible.builtin.set_fact:
+    foreman_proxy_oauth_consumer_secret: "{{ _oauth_secret_file.content | b64decode | trim }}"
+

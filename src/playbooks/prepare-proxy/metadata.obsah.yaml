@@ -1,0 +1,8 @@
+---
+help: |
+  Prepare a proxy host for deployment.
+
+variables:
+  hostname:
+    parameter: hostname
+    help: FQDN of the proxy host to prepare.

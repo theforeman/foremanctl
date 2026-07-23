@@ -1,0 +1,67 @@
+---
+- name: Validate and fetch proxy prerequisites
+  hosts: quadlet
+  become: true
+  vars_files:
+    - "../../vars/certificates.yml"
+    - "../../vars/foreman.yml"
+  tasks:
+    - name: Check certificate bundle exists
+      ansible.builtin.stat:
+        path: "{{ certificates_ca_directory }}/bundles/{{ hostname }}.tar.gz"
+      register: _bundle_stat
+
+    - name: Fail if certificate bundle does not exist
+      ansible.builtin.fail:
+        msg: >-
+          Certificate bundle for {{ hostname }} not found at
+          {{ certificates_ca_directory }}/bundles/{{ hostname }}.tar.gz.
+          Run 'foremanctl certificate-bundle --hostname {{ hostname }}' first.
+      when: not _bundle_stat.stat.exists
+
+    - name: Fetch certificate bundle to controller
+      ansible.builtin.fetch:
+        src: "{{ certificates_ca_directory }}/bundles/{{ hostname }}.tar.gz"
+        dest: "{{ obsah_state_path }}/{{ hostname }}.tar.gz"
+        flat: true
+
+    - name: Add proxy host to inventory
+      ansible.builtin.add_host:
+        name: "{{ hostname }}"
+        groups: proxy
+        ansible_connection: ssh
+        ansible_host: "{{ hostname }}"
+        inventory_dir: "{{ inventory_dir }}"
+
+- name: Transfer proxy certificate bundle and oauth credentials to proxy host
+  hosts: proxy
+  become: true
+  vars_files:
+    - "../../vars/foreman.yml"
+  tasks:
+    - name: Check SSH connectivity and authentication to proxy
+      ansible.builtin.ping:
+
+    - name: Copy certificate bundle to proxy
+      ansible.builtin.copy:
+        src: "{{ obsah_state_path }}/{{ hostname }}.tar.gz"
+        dest: "{{ obsah_state_path }}/{{ hostname }}.tar.gz"
+        mode: "0600"
+        owner: root
+        group: root
+
+    - name: Copy OAuth consumer key to proxy
+      ansible.builtin.copy:
+        src: "{{ foreman_oauth_consumer_key_file }}"
+        dest: "{{ obsah_state_path }}/foreman-oauth-consumer-key"
+        mode: "0600"
+        owner: root
+        group: root
+
+    - name: Copy OAuth consumer secret to proxy
+      ansible.builtin.copy:
+        src: "{{ foreman_oauth_consumer_secret_file }}"
+        dest: "{{ obsah_state_path }}/foreman-oauth-consumer-secret"
+        mode: "0600"
+        owner: root
+        group: root

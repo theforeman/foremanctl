@@ -15,9 +15,9 @@ Deploys a Foreman server. This is the primary deployment type and the default en
 
 ### Proxy
 
-Deploys a Foreman Proxy node that connects to a Foreman server.
+Deploys a Foreman Proxy server that connects to a Foreman server.
 
-Before running the proxy deployment, a certificate bundle must be generated on the Foreman server and copied to the proxy VM:
+Before running the proxy deployment, a certificate bundle must be generated on the Foreman server:
 
 1. On the **Foreman server**, generate a certificate bundle for the proxy hostname:
 
@@ -27,18 +27,25 @@ Before running the proxy deployment, a certificate bundle must be generated on t
 
    This produces a tar archive at a path like `/var/lib/foremanctl/certs/bundles/<hostname>.tar.gz`.
 
-2. Copy the bundle to the **proxy VM**:
 
-   ```bash
-   scp /var/lib/foremanctl/certs/bundles/proxy.example.com.tar.gz root@proxy.example.com:/root/proxy.example.com.tar.gz
+2. On the **Foreman server**, run following command to prepare proxy server for deployment.
+
+  ```bash
+   ./foremanctl prepare-proxy proxy.example.com
    ```
+
+  This transfers generated certificate bundle and oauth credentials on proxy server.
+
+> [!NOTE]
+> `prepare-proxy` connects to the proxy server over SSH. Ensure key-based SSH access from the Foreman server to the proxy server is working before proceeding (e.g. `ssh root@proxy.example.com)
+
 
 3. On the **proxy VM**, run the deployment:
 
    ```bash
    ./foremanctl deploy-proxy \
      --flavor foreman-proxy-content \
-     --certificate-bundle /root/proxy.example.com.tar.gz \
+     --certificate-bundle /var/lib/foremanctl/proxy.example.com.tar.gz \
      --foreman-fqdn quadlet.example.com
    ```
 
