@@ -77,6 +77,20 @@
         remote_src: true
         mode: '0440'
 
+    - name: Copy OAuth consumer key
+      ansible.builtin.copy:
+        src: "{{ certificate_bundle_oauth_consumer_key_file }}"
+        dest: "{{ certificate_bundle_build_directory.path }}/certs/foreman-oauth-consumer-key"
+        mode: '0440'
+      when: certificate_bundle_oauth_consumer_key_file is exists
+
+    - name: Copy OAuth consumer secret
+      ansible.builtin.copy:
+        src: "{{ certificate_bundle_oauth_consumer_secret_file }}"
+        dest: "{{ certificate_bundle_build_directory.path }}/certs/foreman-oauth-consumer-secret"
+        mode: '0440'
+      when: certificate_bundle_oauth_consumer_secret_file is exists
+
     - name: Create tarball
       community.general.archive:
         path: "{{ certificate_bundle_build_directory.path }}/certs/*"

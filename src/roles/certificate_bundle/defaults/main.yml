@@ -1,3 +1,5 @@
 ---
 certificate_bundle_output_directory: "{{ certificates_ca_directory }}/bundles"
 certificate_bundle_server_ca_certificate: "{{ certificate_bundle_ca_certificate }}"
+certificate_bundle_oauth_consumer_key_file: # noqa: no-empty-defaults
+certificate_bundle_oauth_consumer_secret_file: # noqa: no-empty-defaults
