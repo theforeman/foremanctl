@@ -12,7 +12,6 @@
     - "../../vars/images.yml"
     - "../../vars/tuning/{{ tuning }}.yml"
     - "../../vars/database.yml"
-    - "../../vars/foreman.yml"
     - "../../vars/logging.yml"
     - "../../vars/base.yaml"
   roles:
