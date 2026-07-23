@@ -20,7 +20,7 @@ This final deploy command will pull new images and run all upgrade jobs required
 
 ## Upgrading foremanctl from disconnected RPM install
 
-All below steps must be run as root user.
+All below steps must be run as root user. We also recommend that a `foremanctl health` check is run before these steps.
 
 1. Stage the foremanctl RPM package
     - The foremanctl RPM must be available in a repository accessible to your disconnected Foreman server. Please transfer the RPM to your disconnected system via an available transport mechanism (USB drive, rsync over a bastion, etc.).
