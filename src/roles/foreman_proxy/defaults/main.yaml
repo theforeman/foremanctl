@@ -18,6 +18,19 @@ foreman_proxy_disabled_features: "{{ foreman_proxy_available_features | differen
 
 foreman_proxy_foreman_server_url: "https://{{ ansible_facts['fqdn'] }}"
 
+# Container gateway settings
+foreman_proxy_container_gateway_pulp_endpoint: "https://{{ ansible_facts['fqdn'] }}"
+foreman_proxy_container_gateway_db_host: localhost
+foreman_proxy_container_gateway_db_port: 5432
+foreman_proxy_container_gateway_db_user: container_gateway
+foreman_proxy_container_gateway_db_name: container_gateway
+foreman_proxy_container_gateway_db_connection_string: >-
+  postgresql://{{ foreman_proxy_container_gateway_db_user }}:{{
+  foreman_proxy_container_gateway_db_password }}@{{
+  foreman_proxy_container_gateway_db_host }}:{{
+  foreman_proxy_container_gateway_db_port }}/{{
+  foreman_proxy_container_gateway_db_name }}
+
 # BMC settings
 foreman_proxy_bmc_ipmi_implementation: ipmitool
 foreman_proxy_bmc_redfish_verify_ssl: true

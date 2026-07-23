@@ -17,6 +17,11 @@ pulp_database_user: pulp
 pulp_database_password_file: "{{ obsah_state_path }}/pulp-db-password"
 pulp_database_password: "{{ lookup('ansible.builtin.password', pulp_database_password_file, chars=['ascii_letters', 'digits']) }}"
 
+foreman_proxy_container_gateway_db_host: "{{ database_host }}"
+foreman_proxy_container_gateway_db_port: "{{ database_port }}"
+foreman_proxy_container_gateway_db_password_file: "{{ obsah_state_path }}/container-gateway-db-password"
+foreman_proxy_container_gateway_db_password: "{{ lookup('ansible.builtin.password', foreman_proxy_container_gateway_db_password_file, chars=['ascii_letters', 'digits']) }}"
+
 postgresql_admin_password_file: "{{ obsah_state_path }}/postgresql-admin-password"
 postgresql_admin_password: "{{ lookup('ansible.builtin.password', postgresql_admin_password_file, chars=['ascii_letters', 'digits']) }}"
 
@@ -101,6 +106,13 @@ databases:
     ssl_mode: "{{ pulp_database_ssl_mode }}"
     ssl_ca: "{{ pulp_database_ssl_ca }}"
     feature: pulp
+  - name: container_gateway
+    database: "{{ foreman_proxy_container_gateway_db_name }}"
+    host: "{{ foreman_proxy_container_gateway_db_host }}"
+    port: "{{ foreman_proxy_container_gateway_db_port }}"
+    user: "{{ foreman_proxy_container_gateway_db_user }}"
+    password: "{{ foreman_proxy_container_gateway_db_password }}"
+    feature: container-gateway
   - name: iop_advisor
     database: "{{ iop_advisor_database_name }}"
     host: "{{ iop_advisor_database_host }}"
