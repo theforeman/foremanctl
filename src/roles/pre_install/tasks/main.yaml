@@ -20,6 +20,9 @@
       - podman
       - skopeo
 
+- name: Reserve subordinate UID/GID pool for rootful userns=auto
+  ansible.builtin.include_tasks: containers_userns.yaml
+
 - name: Install other dependencies
   ansible.builtin.package:
     name:

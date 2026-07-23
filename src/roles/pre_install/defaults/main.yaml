@@ -1,0 +1,5 @@
+---
+# Podman-documented example range for rootful --userns=auto (name:start:count).
+# Only applied when no containers: entry exists yet; existing ranges are left alone.
+pre_install_containers_subid_start: 100000
+pre_install_containers_subid_count: 100000
