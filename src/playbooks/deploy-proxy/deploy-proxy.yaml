@@ -25,6 +25,7 @@
         certificate_checks_certificate: "{{ server_certificate }}"
         certificate_checks_key: "{{ server_key }}"
         certificate_checks_ca: "{{ server_ca_certificate }}"
+    - role: oauth_from_bundle
     - role: postgresql
       when:
         - database_mode == 'internal'
