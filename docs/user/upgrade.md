@@ -23,6 +23,7 @@ This final deploy command will pull new images and run all upgrade jobs required
 All below steps must be run as root user. We also recommend that a `foremanctl health` check is run before these steps.
 
 1. Stage the foremanctl RPM package
+    - The Foreman repository is needed for dependencies related to the foremanctl RPM.
     - The foremanctl RPM must be available in a repository accessible to your disconnected Foreman server. Please transfer the RPM to your disconnected system via an available transport mechanism (USB drive, rsync over a bastion, etc.).
     - The foremanctl RPM can be downloaded from TODO: TBD
     - Once staged, `dnf info foremanctl` will resolve as in a connected environment.
