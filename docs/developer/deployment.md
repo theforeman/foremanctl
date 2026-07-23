@@ -27,6 +27,9 @@ Before running the proxy deployment, a certificate bundle must be generated on t
 
    This produces a tar archive at a path like `/var/lib/foremanctl/certs/bundles/<hostname>.tar.gz`.
 
+> [!NOTE]
+> The bundle includes the proxy's certificates and OAuth credentials needed for the proxy to communicate with the Foreman server.
+
 2. Copy the bundle to the **proxy VM**:
 
    ```bash
