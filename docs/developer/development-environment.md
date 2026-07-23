@@ -132,7 +132,7 @@ Specific versions of foremanctl always map to the same version of Foreman, regar
 - 2.0.z+ -> Foreman 3.18
 - 2.2.z+ -> Foreman 3.19
 
-All steps must be run as the root user. These steps assume that foremanctl is being ran from the same machine that the Foreman was deployed on.
+All steps must be run as the root user. These steps assume that foremanctl is being ran from the same machine that Foreman was deployed on.
 
 1. Please take a moment to determine your preferred Foreman version / git branch, we only support sequential updates.
 2. We recommend a full foremanctl backup before all upgrade operations. Run `foremanctl backup <filepath for backup>`. Please see [Backup](backup.md) for more information on this process.
