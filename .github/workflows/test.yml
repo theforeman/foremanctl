@@ -152,6 +152,7 @@ jobs:
             --add-feature google \
             --add-feature remote-execution \
             --add-feature bmc \
+            --add-feature registration \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |

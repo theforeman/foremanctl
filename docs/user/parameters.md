@@ -127,6 +127,8 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--add-feature content/ostree` | Enable OSTree content type | `--foreman-proxy-content-enable-ostree` |
 | `--bmc-ipmi-implementation` | IPMI implementation to use for BMC | `--foreman-proxy-bmc-default-provider` |
 | `--bmc-redfish-verify-ssl` | Verify SSL certificates for Redfish BMC connections | `--foreman-proxy-bmc-redfish-verify-ssl` |
+| `--add-feature registration` | Enable Registration feature | `--foreman-proxy-registration` |
+| `--registration-url` | URL that hosts use to reach the registration endpoint | `--foreman-proxy-registration-url` |
 
 ### Undetermined
 
@@ -197,8 +199,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-proxy-realm-keytab` | | | |
 | `--foreman-proxy-realm-principal` | | | |
 | `--foreman-proxy-realm-provider` | | | |
-| `--foreman-proxy-registration` | | | |
-| `--foreman-proxy-registration-url` | | | |
 | `--foreman-proxy-templates` | | | |
 | `--foreman-proxy-template-url` | | | |
 | `--puppet-server` | | puppet | server |

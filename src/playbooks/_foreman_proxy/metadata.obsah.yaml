@@ -10,3 +10,6 @@ variables:
     parameter: --bmc-redfish-verify-ssl
     help: Verify SSL certificates for Redfish BMC connections.
     type: Boolean
+  foreman_proxy_registration_url:
+    parameter: --registration-url
+    help: URL that hosts use to reach the registration endpoint (e.g. https://loadbalancer.example.com).
