@@ -318,6 +318,7 @@
   ansible.builtin.uri:
     url: '{{ foreman_url }}/api/v2/ping'
     ca_path: '{{ foreman_ca_certificate }}'
+    timeout: 120
   until: foreman_status.status == 200
   retries: 60
   delay: 5
@@ -337,6 +338,7 @@
   ansible.builtin.uri:
     url: '{{ foreman_url }}/api/v2/ping'
     ca_path: '{{ foreman_ca_certificate }}'
+    timeout: 120
   until:
     - foreman_tasks_status.status == 200
     - foreman_tasks_status.json['results']['katello']['services']['foreman_tasks']['status'] == 'ok'
