@@ -25,8 +25,8 @@ EXPECTED_CLIENT_FILES = [
 ]
 
 EXPECTED_OAUTH_FILES = [
-    'foreman-oauth-consumer-key',
-    'foreman-oauth-consumer-secret',
+    'oauth/foreman-oauth-consumer-key',
+    'oauth/foreman-oauth-consumer-secret',
 ]
 
 
