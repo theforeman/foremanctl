@@ -1,7 +1,6 @@
 ---
 - name: Setup machine
-  hosts:
-    - quadlet
+  hosts: "{{ target_host | default('quadlet') }}"
   become: true
   vars:
     flavor: katello

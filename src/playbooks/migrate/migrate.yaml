@@ -1,7 +1,6 @@
 ---
 - name: Migrate from foreman-installer to foremanctl
-  hosts:
-    - quadlet
+  hosts: "{{ target_host | default('quadlet') }}"
   gather_facts: true
   become: true
   vars_files:

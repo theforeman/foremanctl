@@ -1,0 +1,114 @@
+#!/bin/bash
+
+OBSAH_NAME=anvil
+OBSAH_BASE=$(dirname $(readlink -f $0))
+OBSAH_INVENTORY=${OBSAH_BASE}/inventories
+OBSAH_PERSIST_PARAMS=true
+
+ANSIBLE_COLLECTIONS_PATH=${OBSAH_BASE}/build/collections/foremanctl:${OBSAH_BASE}/build/collections/forge
+ANSIBLE_COLLECTIONS_SCAN_SYS_PATH=false
+
+obsah_help() {
+    OBSAH_NAME=anvil OBSAH_DATA="${OBSAH_BASE}/$1" OBSAH_INVENTORY="${OBSAH_INVENTORY}" \
+        OBSAH_STATE="${OBSAH_BASE}/.var/lib/anvil" obsah --help 2>&1
+}
+
+extract_commands() {
+    sed -n '/^    [a-z]/p'
+}
+
+show_help() {
+    cat <<EOF
+Usage: anvil [--target <host>] <command> [options]
+
+Options:
+  --target <host>     Target host for deployment and state isolation
+                      (scopes parameters, secrets, and .installed per host)
+
+Server and proxy commands:
+$(obsah_help src | extract_commands)
+
+Development commands:
+$(obsah_help development | extract_commands)
+
+Run 'anvil <command> --help' for command-specific options.
+EOF
+}
+
+# Extract --target before obsah sees the arguments
+TARGET=""
+ARGS=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --target=*)
+            TARGET="${1#--target=}"
+            shift
+            ;;
+        --target)
+            if [[ -z "$2" || "$2" == -* ]]; then
+                echo "Error: --target requires a hostname argument" >&2
+                exit 1
+            fi
+            TARGET="$2"
+            shift 2
+            ;;
+        *)
+            ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+set -- "${ARGS[@]}"
+
+if [[ -z "$1" || "$1" == "--help" || "$1" == "-h" ]]; then
+    show_help
+    exit 0
+fi
+
+case "$1" in
+    deploy|backup|health|checks|features|migrate|certificate-bundle|pull-images)
+        OBSAH_DATA=${OBSAH_BASE}/src
+        if [[ -n "$TARGET" ]]; then
+            OBSAH_STATE=${OBSAH_BASE}/.var/lib/anvil/server/${TARGET}
+        else
+            OBSAH_STATE=${OBSAH_BASE}/.var/lib/anvil/server
+        fi
+        ANSIBLE_LOG_PATH=${OBSAH_STATE}/anvil.log
+        export ANSIBLE_LOG_PATH
+        unset http_proxy HTTP_PROXY https_proxy HTTPS_PROXY
+        ;;
+    deploy-proxy)
+        OBSAH_DATA=${OBSAH_BASE}/src
+        if [[ -n "$TARGET" ]]; then
+            OBSAH_STATE=${OBSAH_BASE}/.var/lib/anvil/proxy/${TARGET}
+        else
+            OBSAH_STATE=${OBSAH_BASE}/.var/lib/anvil/proxy
+        fi
+        ANSIBLE_LOG_PATH=${OBSAH_STATE}/anvil.log
+        export ANSIBLE_LOG_PATH
+        unset http_proxy HTTP_PROXY https_proxy HTTPS_PROXY
+        ;;
+    deploy-dev|vms|test|smoker|custom-certs|fetch-bundle|security|sos|lock)
+        OBSAH_DATA=${OBSAH_BASE}/development
+        if [[ -n "$TARGET" ]]; then
+            OBSAH_STATE=${OBSAH_BASE}/.var/lib/anvil/dev/${TARGET}
+        else
+            OBSAH_STATE=${OBSAH_BASE}/.var/lib/anvil/dev
+        fi
+        ;;
+    *)
+        OBSAH_DATA=${OBSAH_BASE}/development
+        OBSAH_STATE=${OBSAH_BASE}/.var/lib/anvil/dev
+        ;;
+esac
+
+mkdir -p "${OBSAH_STATE}"
+
+export OBSAH_NAME OBSAH_DATA OBSAH_INVENTORY OBSAH_STATE OBSAH_PERSIST_PARAMS
+export ANSIBLE_COLLECTIONS_PATH ANSIBLE_COLLECTIONS_SCAN_SYS_PATH
+
+if [[ -n "$TARGET" ]]; then
+    exec obsah "$@" -e "target_host=${TARGET}"
+else
+    exec obsah "$@"
+fi
