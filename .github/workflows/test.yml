@@ -152,6 +152,7 @@ jobs:
             --add-feature google \
             --add-feature remote-execution \
             --add-feature bmc \
+            --add-feature webhooks \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
@@ -349,7 +350,8 @@ jobs:
             --add-feature foreman-proxy \
             --add-feature azure-rm \
             --add-feature google \
-            --add-feature remote-execution
+            --add-feature remote-execution \
+            --add-feature webhooks
       - name: Run tests
         run: |
           ./forge test
