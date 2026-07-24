@@ -17,3 +17,11 @@ variables:
       - warn
       - error
       - fatal
+  valkey_log_level:
+    help: Log level for Valkey.
+    choices:
+      - debug
+      - verbose
+      - notice
+      - warning
+      - nothing
