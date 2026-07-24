@@ -3,28 +3,30 @@ content/rpm:
   description: RPM content type for Pulp
   internal: true
   dependencies:
-    - pulp
+    - name: pulp
 content/deb:
   description: Debian content type for Pulp
   internal: true
   dependencies:
-    - pulp
+    - name: pulp
 content/container:
   description: Container content type for Pulp
   internal: true
   dependencies:
-    - pulp
+    - name: pulp
+    - name: container-gateway
+      unless: [foreman]
 content/ansible:
   description: Ansible content type for Pulp
   internal: true
   dependencies:
-    - pulp
+    - name: pulp
 content/python:
   description: Python content type for Pulp
   internal: true
   dependencies:
-    - pulp
+    - name: pulp
 content/ostree:
   description: OSTree content type for Pulp
   dependencies:
-    - pulp
+    - name: pulp

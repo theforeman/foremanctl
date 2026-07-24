@@ -19,8 +19,11 @@ pulp_database_password: "{{ lookup('ansible.builtin.password', pulp_database_pas
 
 foreman_proxy_container_gateway_db_host: "{{ database_host }}"
 foreman_proxy_container_gateway_db_port: "{{ database_port }}"
+foreman_proxy_container_gateway_db_name: container_gateway
+foreman_proxy_container_gateway_db_user: container_gateway
 foreman_proxy_container_gateway_db_password_file: "{{ obsah_state_path }}/container-gateway-db-password"
-foreman_proxy_container_gateway_db_password: "{{ lookup('ansible.builtin.password', foreman_proxy_container_gateway_db_password_file, chars=['ascii_letters', 'digits']) }}"
+foreman_proxy_container_gateway_db_password: >-
+  {{ lookup('ansible.builtin.password', foreman_proxy_container_gateway_db_password_file, chars=['ascii_letters', 'digits']) }}
 
 postgresql_admin_password_file: "{{ obsah_state_path }}/postgresql-admin-password"
 postgresql_admin_password: "{{ lookup('ansible.builtin.password', postgresql_admin_password_file, chars=['ascii_letters', 'digits']) }}"
