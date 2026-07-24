@@ -439,9 +439,7 @@ jobs:
           ./foremanctl deploy-proxy \
             --flavor foreman-proxy-content \
             --certificate-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
-            --foreman-fqdn quadlet.example.com \
-            --oauth-consumer-key $(cat .var/lib/foremanctl/foreman-oauth-consumer-key) \
-            --oauth-consumer-secret $(cat .var/lib/foremanctl/foreman-oauth-consumer-secret)
+            --foreman-fqdn quadlet.example.com
       - name: Run tests
         run: |
           ./forge test --pytest-args="--server-hostname=proxy"

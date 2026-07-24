@@ -1,0 +1,8 @@
+---
+- name: Load OAuth credentials from certificate bundle
+  ansible.builtin.include_tasks: credential.yml
+  loop:
+    - key
+    - secret
+  loop_control:
+    loop_var: oauth_from_bundle_credential

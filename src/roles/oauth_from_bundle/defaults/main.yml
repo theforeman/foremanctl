@@ -1,0 +1,2 @@
+---
+oauth_from_bundle_directory: "{{ certificates_oauth_directory }}"

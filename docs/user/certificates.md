@@ -176,6 +176,9 @@ certs/
 private/
 ├── <hostname>.key              # Server private key
 └── <hostname>-client.key       # Client private key
+oauth/
+├── foreman-oauth-consumer-key      # OAuth consumer key for Foreman API auth
+└── foreman-oauth-consumer-secret   # OAuth consumer secret for Foreman API auth
 ```
 
 When using the internal CA only, `server-ca.crt` and `ca.crt` are identical. When custom server certificates are provided, `server-ca.crt` contains the custom CA and `ca.crt` contains the internal CA.

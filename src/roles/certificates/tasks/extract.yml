@@ -11,7 +11,20 @@
     msg: "Path to certificate tar file not found: {{ certificates_bundle }}"
   when: not _certificates_tar_file_path.stat.exists
 
-- name: Extract certificate bundle
+- name: Extract certificates from bundle
   ansible.builtin.unarchive:
     src: "{{ certificates_bundle }}"
     dest: "{{ certificates_ca_directory }}"
+    exclude:
+      - oauth
+      - oauth/*
+
+- name: Extract OAuth credentials from bundle
+  ansible.builtin.unarchive:
+    src: "{{ certificates_bundle }}"
+    dest: "{{ certificates_oauth_directory | dirname }}"
+    exclude:
+      - certs
+      - certs/*
+      - private
+      - private/*

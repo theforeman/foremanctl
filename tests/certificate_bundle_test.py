@@ -24,6 +24,11 @@ EXPECTED_CLIENT_FILES = [
     f'private/{HOSTNAME}-client.key',
 ]
 
+EXPECTED_OAUTH_FILES = [
+    'oauth/foreman-oauth-consumer-key',
+    'oauth/foreman-oauth-consumer-secret',
+]
+
 
 @pytest.fixture(scope="module")
 def generate_custom_proxy_certs(server, certificate_source):
@@ -74,6 +79,11 @@ def test_tarball_contains_server_certificate(tarball_members, expected_file):
 
 @pytest.mark.parametrize("expected_file", EXPECTED_CLIENT_FILES)
 def test_tarball_contains_client_certificate(tarball_members, expected_file):
+    assert expected_file in tarball_members
+
+
+@pytest.mark.parametrize("expected_file", EXPECTED_OAUTH_FILES)
+def test_tarball_contains_oauth_credentials(tarball_members, expected_file):
     assert expected_file in tarball_members
 
 
