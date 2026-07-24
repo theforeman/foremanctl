@@ -443,7 +443,8 @@ jobs:
             --auth-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
             --foreman-fqdn quadlet.example.com \
             --templates-listen-on http \
-            --templates-url http://proxy.example.com:8000
+            --templates-url http://proxy.example.com:8000 \
+            --add-feature bmc
       - name: Run tests
         run: |
           ./forge test --pytest-args="--server-hostname=proxy"
