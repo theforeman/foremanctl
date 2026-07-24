@@ -1,2 +1,2 @@
 ---
-oauth_from_bundle_directory: "{{ certificates_ca_directory }}/oauth"
+oauth_from_bundle_directory: "{{ certificates_oauth_directory }}"
