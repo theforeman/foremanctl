@@ -17,3 +17,12 @@ variables:
       - warn
       - error
       - fatal
+  pulp_log_level:
+    help: Log level for Pulp. Defaults to the global log level.
+    parameter: --pulp-log-level
+    choices:
+      - debug
+      - info
+      - warning
+      - error
+      - critical
