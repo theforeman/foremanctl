@@ -135,20 +135,24 @@ def database_mode(obsah_params):
     return obsah_params.get('database_mode', 'internal')
 
 
+def get_paramiko_host(hostname):
+    return testinfra.get_host(f'paramiko://{hostname}', sudo=True, ssh_config=SSH_CONFIG)
+
+
 @pytest.fixture(scope="module")
 def server(server_hostname):
-    yield testinfra.get_host(f'paramiko://{server_hostname}', sudo=True, ssh_config=SSH_CONFIG)
+    yield get_paramiko_host(server_hostname)
 
 
 @pytest.fixture(scope="module")
 def client(client_hostname):
-    yield testinfra.get_host(f'paramiko://{client_hostname}', sudo=True, ssh_config=SSH_CONFIG)
+    yield get_paramiko_host(client_hostname)
 
 
 @pytest.fixture(scope="module")
 def database(database_mode, server):
     if database_mode == 'external':
-        yield testinfra.get_host('paramiko://database', sudo=True, ssh_config=SSH_CONFIG)
+        yield get_paramiko_host('database')
     else:
         yield server
 
