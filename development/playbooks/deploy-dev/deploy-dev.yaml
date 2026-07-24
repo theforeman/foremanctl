@@ -4,7 +4,6 @@
   become: true
   vars:
     flavor: katello
-    httpd_foreman_backend: "http://localhost:3000"
     pulp_register_foreman_proxy: false
   vars_files:
     - "../../../src/vars/defaults.yml"
@@ -48,6 +47,10 @@
     - role: valkey
     - role: candlepin
     - role: httpd
+      vars:
+        httpd_foreman_backend: "http://localhost:3000"
+        httpd_pulp_api_backend: "http://localhost:24817"
+        httpd_pulp_content_backend: "http://localhost:24816"
     - role: pulp
     - role: foreman_development
       vars:
