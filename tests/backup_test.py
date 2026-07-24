@@ -22,9 +22,9 @@ def expected_databases(enabled_features, flavor):
     if flavor == 'katello':
         databases = ['foreman', 'candlepin', 'pulp']
 
-    # Foreman-proxy-content flavor only has pulp
+    # Foreman-proxy-content flavor has pulp and container_gateway
     elif flavor == 'foreman-proxy-content':
-        databases = ['pulp']
+        databases = ['pulp', 'container_gateway']
 
     # Add IOP databases if IOP feature is enabled
     if 'iop' in enabled_features:

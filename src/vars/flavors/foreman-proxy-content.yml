@@ -1,6 +1,5 @@
 flavor_features:
   - foreman-proxy
-  - container-gateway
   - content/rpm
   - content/deb
   - content/container
