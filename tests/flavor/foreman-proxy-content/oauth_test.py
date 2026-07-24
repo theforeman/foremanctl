@@ -5,7 +5,7 @@ OAUTH_FILES = [
     'foreman-oauth-consumer-secret',
 ]
 
-OAUTH_DIR = '/var/lib/foremanctl/certs/oauth'
+OAUTH_DIR = '/var/lib/foremanctl/oauth'
 
 
 @pytest.mark.parametrize("oauth_file", OAUTH_FILES)

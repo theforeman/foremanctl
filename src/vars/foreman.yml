@@ -5,9 +5,9 @@ foreman_initial_admin_password: "{{ lookup('ansible.builtin.password', foreman_a
 foreman_initial_organization: "Default Organization"
 foreman_initial_location: "Default Location"
 
-foreman_oauth_consumer_key_file: "{{ obsah_state_path }}/foreman-oauth-consumer-key"
+foreman_oauth_consumer_key_file: "{{ oauth_directory }}/foreman-oauth-consumer-key"
 foreman_oauth_consumer_key: "{{ lookup('ansible.builtin.password', foreman_oauth_consumer_key_file, chars=['ascii_letters', 'digits'], length=32) }}"
-foreman_oauth_consumer_secret_file: "{{ obsah_state_path }}/foreman-oauth-consumer-secret"
+foreman_oauth_consumer_secret_file: "{{ oauth_directory }}/foreman-oauth-consumer-secret"
 foreman_oauth_consumer_secret: "{{ lookup('ansible.builtin.password', foreman_oauth_consumer_secret_file, chars=['ascii_letters', 'digits'], length=32) }}"
 foreman_encryption_key_file: "{{ obsah_state_path }}/foreman-encryption-key"
 foreman_encryption_key: "{{ lookup('ansible.builtin.password', foreman_encryption_key_file, chars=['digits', 'abcdef'], length=32) }}"
