@@ -8,3 +8,5 @@ httpd_max_request_workers: 1024
 postgresql_max_connections: 1000
 postgresql_shared_buffers: 16GB
 postgresql_effective_cache_size: 32GB
+
+candlepin_xmx: 8g
