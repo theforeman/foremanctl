@@ -45,6 +45,9 @@
     - role: hammer
       when:
         - "enabled_features | has_feature('hammer')"
+    - role: cloud_connector
+      when:
+        - enabled_features | has_feature('cloud-connector')
     - role: post_install
       vars:
         post_install_foreman_ca_path: "{{ foreman_ca_certificate }}"
