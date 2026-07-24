@@ -1,0 +1,15 @@
+---
+- name: Restore from a backup
+  hosts: quadlet
+  become: true
+  gather_facts: true
+  vars_files:
+    - "../../vars/defaults.yml"
+    - "../../vars/database.yml"
+    - "../../vars/base.yaml"
+  roles:
+    - restore
+
+- name: Deploy services after restore
+  import_playbook: ../deploy/deploy.yaml
+  when: not validate | default(false)

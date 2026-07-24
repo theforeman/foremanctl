@@ -1,0 +1,107 @@
+---
+- name: Create Podman secret for PostgreSQL admin password
+  containers.podman.podman_secret:
+    name: postgresql-admin-password
+    data: "{{ postgresql_admin_password }}"
+    force: true
+
+- name: Start PostgreSQL for restore
+  ansible.builtin.systemd:
+    name: postgresql.service
+    state: started
+
+- name: Wait for PostgreSQL readiness
+  ansible.builtin.command:
+    cmd: pg_isready --host={{ database_host }} --port={{ database_port }}
+  register: restore_pg_ready
+  retries: "{{ restore_postgresql_ready_retries }}"
+  delay: "{{ restore_postgresql_ready_delay }}"
+  until: restore_pg_ready.rc == 0
+  changed_when: false
+
+- name: Build database restore configuration
+  ansible.builtin.set_fact:
+    restore_databases_config: "{{ restore_databases_config | default([]) + [db_entry] }}"
+  vars:
+    db_entry:
+      name: "{{ item.name }}"
+      dump_file: "{{ restore_backup_metadata.database_mapping[item.name] }}.dump"
+      database: "{{ item.database }}"
+      user: "{{ item.user }}"
+  loop: "{{ databases }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Filter databases that exist in backup
+  ansible.builtin.set_fact:
+    restore_databases_to_restore: >-
+      {{
+        restore_databases_config |
+        selectattr('name', 'in', restore_backup_metadata.databases) |
+        list
+      }}
+
+- name: Verify dump files exist
+  ansible.builtin.stat:
+    path: "{{ backup_dir }}/{{ item.dump_file }}"
+  register: restore_dump_files_check
+  failed_when: not restore_dump_files_check.stat.exists
+  loop: "{{ restore_databases_to_restore }}"
+  loop_control:
+    label: "{{ item.dump_file }}"
+
+- name: Drop existing databases
+  community.postgresql.postgresql_db:
+    name: "{{ item.database }}"
+    state: absent
+    login_host: "{{ database_host }}"
+    login_port: "{{ database_port }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+  loop: "{{ restore_databases_to_restore }}"
+  loop_control:
+    label: "{{ item.database }}"
+
+- name: Create empty databases
+  community.postgresql.postgresql_db:
+    name: "{{ item.database }}"
+    state: present
+    owner: "{{ item.user }}"
+    login_host: "{{ database_host }}"
+    login_port: "{{ database_port }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+  loop: "{{ restore_databases_to_restore }}"
+  loop_control:
+    label: "{{ item.database }}"
+
+- name: Enable postgres_fdw extension for IOP databases
+  community.postgresql.postgresql_ext:
+    name: postgres_fdw
+    db: "{{ item.database }}"
+    login_host: "{{ database_host }}"
+    login_port: "{{ database_port }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+  loop: "{{ restore_databases_to_restore }}"
+  loop_control:
+    label: "{{ item.database }}"
+  when: item.name in ['iop_advisor', 'iop_inventory', 'iop_vulnerability']
+
+- name: Restore databases from dump files
+  ansible.builtin.command:
+    cmd: >
+      pg_restore
+      --host={{ database_host }}
+      --port={{ database_port }}
+      --username=postgres
+      --dbname={{ item.database }}
+      {{ backup_dir }}/{{ item.dump_file }}
+  environment:
+    PGPASSWORD: "{{ postgresql_admin_password }}"
+  loop: "{{ restore_databases_to_restore }}"
+  loop_control:
+    label: "{{ item.dump_file }} -> {{ item.database }}"
+  changed_when: true
+  register: restore_pg_restore_result
+  failed_when: restore_pg_restore_result.rc != 0 and 'WARNING' not in restore_pg_restore_result.stderr

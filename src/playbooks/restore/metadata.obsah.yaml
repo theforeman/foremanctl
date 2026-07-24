@@ -1,0 +1,23 @@
+---
+help: |
+  Restore from a backup
+
+  Validates backup contents, extracts configuration files, restores databases,
+  restores content, and redeploys the system.
+
+variables:
+  backup_dir:
+    parameter: backup_dir
+    help: Directory containing the backup files
+    type: AbsolutePath
+    persist: false
+
+  validate:
+    help: Validate backup without making any changes
+    action: store_true
+    persist: false
+
+  force:
+    help: Force restore on existing system (bypasses safety check)
+    action: store_true
+    persist: false

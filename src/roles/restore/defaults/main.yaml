@@ -1,0 +1,5 @@
+---
+restore_postgresql_ready_retries: 10
+restore_postgresql_ready_delay: 2
+restore_postgresql_stop_retries: 30
+restore_postgresql_stop_delay: 1
