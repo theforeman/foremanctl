@@ -151,6 +151,7 @@ jobs:
             --add-feature azure-rm \
             --add-feature google \
             --add-feature remote-execution \
+            --add-feature ansible \
             --add-feature bmc \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
@@ -266,7 +267,8 @@ jobs:
             --add-feature foreman-proxy \
             --add-feature azure-rm \
             --add-feature google \
-            --add-feature remote-execution
+            --add-feature remote-execution \
+            --add-feature ansible
       - name: Stop services
         run:
           vagrant ssh quadlet -- sudo systemctl stop foreman.target
