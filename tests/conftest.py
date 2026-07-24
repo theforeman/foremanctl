@@ -269,16 +269,25 @@ def pytest_configure(config):
     config.user_parameters = UserParameters(config)
 
 
+FLAVOR_TEST_DIRS = {
+    'katello': ['katello', 'satellite'],
+    'foreman-proxy-content': ['foreman-proxy-content', 'capsule'],
+}
+
+
 def pytest_collection_modifyitems(config, items):
     active_flavor = config.user_parameters.flavor
-    active_flavor_dir = FLAVOR_TESTS_DIR / active_flavor
+    allowed_dirs = set()
+    for test_dir, flavors in FLAVOR_TEST_DIRS.items():
+        if active_flavor in flavors:
+            allowed_dirs.add(test_dir)
 
     deselected = []
     selected = []
     for item in items:
         test_path = py.path.local(item.fspath)
         if test_path.relto(FLAVOR_TESTS_DIR):
-            if not test_path.relto(active_flavor_dir):
+            if not any(test_path.relto(FLAVOR_TESTS_DIR / d) for d in allowed_dirs):
                 deselected.append(item)
                 continue
         selected.append(item)
