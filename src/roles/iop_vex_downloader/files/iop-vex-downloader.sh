@@ -1,0 +1,105 @@
+#!/bin/bash
+
+set -euo pipefail
+
+FILENAME_LATEST="archive_latest.txt"
+OUTPUT_FILENAME="vex-latest.tar.zst"
+
+URL="${1:-}"
+OUTPUT_DIR="${2:-}"
+
+
+if [[ -z "${URL}" || -z "${OUTPUT_DIR}" ]]; then
+    echo "Usage: ${0} URL OUTPUT_DIR" >&2
+    echo "Example: ${0} https://security.access.redhat.com/data/csaf/v2/vex/ /root/download/" >&2
+    exit 1
+fi
+
+URL="${URL%/}/"
+OUTPUT_DIR="${OUTPUT_DIR%/}/"
+
+MANUAL_FILE="/var/lib/foreman/vex-latest.tar.zst"
+
+if [[ -f "$MANUAL_FILE" ]]; then
+    echo "Offline mode: Using manual file from $MANUAL_FILE"
+
+    CURRENT_CHECKSUM=$(sha256sum "${MANUAL_FILE}" | cut -d' ' -f1)
+    STORED_CHECKSUM=$(sha256sum "${OUTPUT_DIR}${OUTPUT_FILENAME}" | cut -d' ' -f1)
+
+    if [[ "$CURRENT_CHECKSUM" != "$STORED_CHECKSUM" ]]; then
+        echo "Copying updated manual file from ${MANUAL_FILE}"
+        cp -Z "$MANUAL_FILE" "${OUTPUT_DIR}${OUTPUT_FILENAME}" && echo "$CURRENT_CHECKSUM" > "$CHECKSUM_FILE"
+        chmod 644 "${OUTPUT_DIR}${OUTPUT_FILENAME}"
+    else
+        echo "Manual file unchanged, skipping"
+    fi
+else
+    echo "Online mode: Checking for updates from $URL"
+
+    FILE_MODTIME="Thu, 01 Jan 1970 00:00:00 +0000"
+
+    if [[ -f "${OUTPUT_DIR}${OUTPUT_FILENAME}" ]]; then
+        FILE_MODTIME=$(date -u -R -r "${OUTPUT_DIR}${OUTPUT_FILENAME}")
+    fi
+
+    echo "Downloading tarball's name from ${URL}${FILENAME_LATEST}"
+    ARCHIVE_DOWNLOAD_NAME_CONTENT=$(curl \
+        --silent \
+        --fail \
+        --location \
+        -H "If-Modified-Since: ${FILE_MODTIME}"\
+         "${URL}${FILENAME_LATEST}")
+
+    RET=${?}
+
+    if [ "${RET}" -ne 0 ]; then
+        echo "Error: The tarball's name from ${URL}${FILENAME_LATEST} wasn't downloaded" >&2
+        exit 1
+    fi
+
+    if [ -z "${ARCHIVE_DOWNLOAD_NAME_CONTENT}" ]; then
+        echo "Skipping downloading of tarball's name from ${URL}${FILENAME_LATEST} because the source file hadn't changed."
+        exit 0
+    fi
+
+    echo "The source file changed."
+
+    TEMP_FILE_ARCH=$(mktemp -t "iop-vex-download.XXXXXX")
+    TEMP_FILE_ASC=$(mktemp -t "iop-vex-download.asc.XXXXXX")
+
+    trap 'rm -f "${TEMP_FILE_ARCH}" "${TEMP_FILE_ASC}"' EXIT
+
+    echo "Downloading tarball from ${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}"
+    curl --silent \
+        --fail \
+        --location \
+        "${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}" \
+        --output "${TEMP_FILE_ARCH}"
+
+    RET=${?}
+
+    if [ "${RET}" -ne 0 ]; then
+        echo "Error: Downloading of tarball from ${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT} failed. Curl failed with code ${RET}" >&2
+        exit 2
+    fi
+
+    echo "Downloading tarball's signature from ${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}.asc"
+    curl --silent \
+        --fail \
+        --location \
+        "${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}.asc" \
+        --output "${TEMP_FILE_ASC}"
+
+    RET=${?}
+
+    if [ "${RET}" -ne 0 ]; then
+        echo "Error: Downloading of tarball's signature from ${URL}${ARCHIVE_DOWNLOAD_NAME_CONTENT}.asc failed. Curl failed with code ${RET}" >&2
+        exit 3
+    fi
+
+    mv -Z "${TEMP_FILE_ARCH}" "${OUTPUT_DIR}${OUTPUT_FILENAME}"
+    mv -Z "${TEMP_FILE_ASC}" "${OUTPUT_DIR}${OUTPUT_FILENAME}.asc"
+
+    chmod 644 "${OUTPUT_DIR}${OUTPUT_FILENAME}"
+    chmod 644 "${OUTPUT_DIR}${OUTPUT_FILENAME}.asc"
+fi

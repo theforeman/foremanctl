@@ -1,0 +1,10 @@
+---
+- name: Restart vex download timer
+  ansible.builtin.systemd:
+    name: iop-vex-download.timer
+    state: restarted
+
+- name: Restart vex download path
+  ansible.builtin.systemd:
+    name: iop-vex-download.path
+    state: restarted
