@@ -1,0 +1,126 @@
+---
+- name: Check if foremanctl is already deployed
+  ansible.builtin.stat:
+    path: "{{ obsah_state_path }}"
+  register: restore_existing_deployment
+
+- name: Fail if restoring over existing system without --force
+  ansible.builtin.fail:
+    msg: |
+      DESTRUCTIVE OPERATION WARNING:
+
+      An existing deployment was detected on this system.
+      Restore will PERMANENTLY DELETE all current data including:
+      - All databases (Foreman, Candlepin, Pulp, etc.)
+      - All Pulp content
+      - All configuration
+
+      There is NO UNDO operation.
+
+      If you are certain you want to proceed, re-run with --force:
+        foremanctl restore {{ backup_dir }} --force
+  when:
+    - restore_existing_deployment.stat.exists
+    - not force | default(false)
+    - not validate | default(false)
+
+- name: Check if backup directory exists
+  ansible.builtin.stat:
+    path: "{{ backup_dir }}"
+  register: restore_backup_dir_stat
+
+- name: Fail if backup directory does not exist
+  ansible.builtin.fail:
+    msg: "Backup directory does not exist: {{ backup_dir }}"
+  when: not restore_backup_dir_stat.stat.exists
+
+- name: Check for metadata.yml
+  ansible.builtin.stat:
+    path: "{{ backup_dir }}/metadata.yml"
+  register: restore_metadata_stat
+
+- name: Fail if metadata.yml is missing
+  ansible.builtin.fail:
+    msg: "Backup metadata file not found: {{ backup_dir }}/metadata.yml"
+  when: not restore_metadata_stat.stat.exists
+
+- name: Read backup metadata
+  ansible.builtin.slurp:
+    path: "{{ backup_dir }}/metadata.yml"
+  register: restore_metadata_content
+
+- name: Parse backup metadata
+  ansible.builtin.set_fact:
+    restore_backup_metadata: "{{ restore_metadata_content['content'] | b64decode | from_yaml }}"
+
+- name: Set database mode from backup metadata
+  ansible.builtin.set_fact:
+    restore_database_mode: "{{ restore_backup_metadata.database_mode | default('internal') }}"
+
+- name: Validate database backup
+  when:
+    - restore_database_mode == 'internal'
+    - "'databases' in restore_backup_metadata.backed_up_components | default(['databases'])"
+  block:
+    - name: Verify database dump files exist
+      ansible.builtin.stat:
+        path: "{{ backup_dir }}/{{ restore_backup_metadata.database_mapping[item] }}.dump"
+      register: restore_dump_files_check
+      failed_when: not restore_dump_files_check.stat.exists
+      loop: "{{ restore_backup_metadata.databases }}"
+
+    - name: Check available disk space for PostgreSQL
+      ansible.builtin.shell:
+        cmd: set -o pipefail && df -BG /var/lib/pgsql | awk 'NR==2 {print $4}' | sed 's/G//'
+        executable: /bin/bash
+      register: restore_pgsql_space
+      changed_when: false
+
+    - name: Get total size of database dumps
+      ansible.builtin.shell:
+        cmd: set -o pipefail && du -sB1 {{ backup_dir }}/*.dump 2>/dev/null | awk '{sum+=$1} END {print int(sum/1024/1024/1024)+1}'
+        executable: /bin/bash
+      register: restore_dumps_size
+      changed_when: false
+      failed_when: false
+
+    - name: Fail if insufficient PostgreSQL disk space
+      ansible.builtin.fail:
+        msg: >-
+          Insufficient disk space for database restore:
+          {{ restore_pgsql_space.stdout }}GB available,
+          {{ restore_dumps_size.stdout }}GB required at /var/lib/pgsql
+      when:
+        - restore_dumps_size.stdout | int > 0
+        - restore_pgsql_space.stdout | int < restore_dumps_size.stdout | int
+
+- name: Verify foremanctl state archive exists
+  ansible.builtin.stat:
+    path: "{{ backup_dir }}/foremanctl-state.tar.gz"
+  register: restore_state_archive
+  failed_when: not restore_state_archive.stat.exists
+  when: "'foremanctl_state' in restore_backup_metadata.backed_up_components | default(['foremanctl_state'])"
+
+- name: Check available disk space for Pulp content
+  ansible.builtin.shell:
+    cmd: set -o pipefail && df -BG /var/lib/pulp | awk 'NR==2 {print $4}' | sed 's/G//'
+    executable: /bin/bash
+  register: restore_pulp_space
+  changed_when: false
+
+- name: Get Pulp content archive size
+  ansible.builtin.stat:
+    path: "{{ backup_dir }}/pulp-content.tar.gz"
+  register: restore_pulp_archive
+  when: restore_pulp_archive is defined
+
+- name: Fail if insufficient Pulp disk space
+  ansible.builtin.fail:
+    msg: >-
+      Insufficient disk space for Pulp content restore:
+      {{ restore_pulp_space.stdout }}GB available,
+      {{ (restore_pulp_archive.stat.size / 1024 / 1024 / 1024) | int + 1 }}GB required
+      at /var/lib/pulp
+  when:
+    - restore_pulp_archive.stat.exists | default(false)
+    - restore_pulp_space.stdout | int < (restore_pulp_archive.stat.size / 1024 / 1024 / 1024) | int + 1
