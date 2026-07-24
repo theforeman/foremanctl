@@ -131,6 +131,17 @@ def default_certificates(certificate_source):
 
 
 @pytest.fixture(scope="module")
+def quadlet_client_certificate():
+    # this intentionally uses get_paramiko_host directly, as we want the cert of the quadlet box
+    # not the one "server" points at, as that can be the proxy
+    quadlet = get_paramiko_host('quadlet')
+    hostname = quadlet.run("hostname -f").stdout.strip()
+    cert = quadlet.file(f"/var/lib/foremanctl/certs/certs/{hostname}-client.crt").content_string
+    key = quadlet.file(f"/var/lib/foremanctl/certs/private/{hostname}-client.key").content_string
+    return (cert, key)
+
+
+@pytest.fixture(scope="module")
 def database_mode(obsah_params):
     return obsah_params.get('database_mode', 'internal')
 
@@ -344,13 +355,17 @@ def proxy_base_url(server_fqdn):
 
 
 @pytest.fixture(scope="module")
-def curl_request(server, certificates, server_fqdn):
+def curl_request(server, certificates, quadlet_client_certificate, server_fqdn):
+    cert, key = quadlet_client_certificate
+    server.run(f"echo '{cert}' > /tmp/quadlet.crt")
+    server.run(f"echo '{key}' > /tmp/quadlet.key")
+
     def _request(path, base_url=None, method=None, data=None, headers=None, return_body=False):
         url = f"{base_url or f'https://{server_fqdn}'}/{path}"
         curl_opts = (
             f"--cacert {certificates['server_ca_certificate']} "
-            f"--cert {certificates['client_certificate']} "
-            f"--key {certificates['client_key']} "
+            f"--cert /tmp/quadlet.crt "
+            f"--key /tmp/quadlet.key "
             f"--silent "
         )
         if not return_body:
