@@ -20,7 +20,7 @@
     state: quadlet
     network: host
     sdnotify: true
-    command: ["run-valkey", "--supervised", "systemd"]
+    command: ["run-valkey", "--supervised", "systemd", "--loglevel", "{{ valkey_log_level }}"]
     volumes:
       - /var/lib/valkey:/data:rw,Z
     quadlet_options:
@@ -29,6 +29,7 @@
         WantedBy=default.target foreman.target
         [Unit]
         PartOf=foreman.target
+  notify: Restart valkey
 
 - name: Run daemon reload
   ansible.builtin.systemd:

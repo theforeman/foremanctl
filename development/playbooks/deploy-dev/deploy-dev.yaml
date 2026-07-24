@@ -13,6 +13,7 @@
     - "../../../src/vars/images.yml"
     - "../../../src/vars/database.yml"
     - "../../../src/vars/foreman.yml"
+    - "../../../src/vars/logging.yml"
     - "../../../src/vars/base.yaml"
   pre_tasks:
     - name: Set development postgresql databases

@@ -3,3 +3,6 @@ log_level: info
 
 foreman_log_level: "{{ log_level }}"
 foreman_proxy_log_level: "{{ log_level }}"
+# Valkey log level is a bit different, we need to map the log-level to the valkey-log-level
+# https://github.com/valkey-io/valkey/blob/8.1/valkey.conf#L390-L397
+valkey_log_level: "{{ {'debug': 'debug', 'info': 'notice', 'warn': 'warning', 'error': 'warning', 'fatal': 'warning'}[log_level] }}"
