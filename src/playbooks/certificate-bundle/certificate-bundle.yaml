@@ -1,7 +1,6 @@
 ---
 - name: Generate a certificate bundle for a hostname
-  hosts:
-    - quadlet
+  hosts: "{{ target_host | default('quadlet') }}"
   become: true
   vars_files:
     - "../../vars/base.yaml"

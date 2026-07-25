@@ -1,6 +1,6 @@
 ---
 - name: Run preflight checks
-  hosts: quadlet
+  hosts: "{{ target_host | default('quadlet') }}"
   gather_facts: true
   vars:
     flavor: katello
