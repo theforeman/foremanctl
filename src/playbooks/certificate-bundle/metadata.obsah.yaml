@@ -31,4 +31,5 @@ constraints:
     - ['certificates_source', 'default', ['certificates_custom_server_certificate', 'certificates_custom_server_key']]
 
 include:
+  - _target_host
   - _certificate_source

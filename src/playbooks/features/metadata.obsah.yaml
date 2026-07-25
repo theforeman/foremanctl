@@ -7,3 +7,6 @@ variables:
     help: List only enabled features
     action: store_true
     persist: false
+
+include:
+  - _target_host
