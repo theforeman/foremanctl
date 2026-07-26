@@ -1,0 +1,72 @@
+---
+- name: Pull images
+  hosts: "{{ target_host if target_host is defined and target_host != '' else 'quadlet' }}"
+  vars_files:
+    - "../../../src/vars/defaults.yml"
+    - "../../../src/vars/flavors/{{ flavor }}.yml"
+    - "../../../src/vars/images.yml"
+    - "../../../src/vars/base.yaml"
+  become: true
+  roles:
+    - role: pre_install
+  post_tasks:
+    - name: Deploy Foreman image units
+      ansible.builtin.include_role:
+        name: foreman
+        tasks_from: image.yaml
+      when: enabled_features | has_feature('foreman')
+
+    - name: Deploy Candlepin image units
+      ansible.builtin.include_role:
+        name: candlepin
+        tasks_from: image.yaml
+      when: enabled_features | has_feature('candlepin')
+
+    - name: Deploy Pulp image units
+      ansible.builtin.include_role:
+        name: pulp
+        tasks_from: image.yaml
+      when: enabled_features | has_feature('pulp')
+
+    - name: Deploy Valkey image units
+      ansible.builtin.include_role:
+        name: valkey
+        tasks_from: image.yaml
+
+    - name: Deploy database image units
+      ansible.builtin.include_role:
+        name: postgresql
+        tasks_from: image.yaml
+      when: database_mode == 'internal'
+
+    - name: Deploy proxy image units
+      ansible.builtin.include_role:
+        name: foreman_proxy
+        tasks_from: image.yaml
+      when: enabled_features | has_feature('foreman-proxy')
+
+    - name: Deploy IOP image units
+      ansible.builtin.include_role:
+        name: "{{ item }}"
+        tasks_from: image.yaml
+      loop:
+        - iop_kafka
+        - iop_ingress
+        - iop_puptoo
+        - iop_yuptoo
+        - iop_engine
+        - iop_gateway
+        - iop_inventory
+        - iop_advisor
+        - iop_remediation
+        - iop_vmaas
+        - iop_vulnerability
+        - iop_advisor_frontend
+        - iop_inventory_frontend
+        - iop_vulnerability_frontend
+      when: enabled_features | has_feature('iop')
+
+    - name: Pull images
+      ansible.builtin.include_role:
+        name: images
+        tasks_from: pull.yaml
