@@ -8,17 +8,12 @@ For nearly all install situations, upgrading your Foreman server should be appro
 
 All steps must be run as root user. We also recommend that a `foremanctl health` check is run before these steps.
 
-1. We recommend setting up a dnf versionlock for foremanctl if control over Foreman versioning is critical to your use case. If applicable, please take a moment to review your current versionlock configuration:
-    - `dnf versionlock list` - View the current versionlock configuration
-    - `dnf versionlock add 'foremanctl-X.*'` - Lock upgrades to a certain X-stream (replace with exact X version).
-    - `dnf versionlock add 'foremanctl-X.Y.*'` - Lock upgrades to a certain Y-stream (replace with exact X.Y version).
-    - `dnf versionlock delete foremanctl` - Remove any foremanctl versionlock.
-2. Update the Foreman repository to the target version:
+1. Update the Foreman repository to the target version:
     - `dnf install https://yum.theforeman.org/releases/<target-version>/el9/x86_64/foreman-release.rpm`
-3. Upgrade the foremanctl package:
+2. Upgrade the foremanctl package:
     - `dnf upgrade foremanctl`
-4. We recommend a full foremanctl backup before running an upgrade. Run `foremanctl backup <filepath for backup>`.  Please see [Backup](backup.md) for more information on this process.
-5. Run upgrade tasks by re-deploying: `foremanctl deploy`. Please see [Parameters](parameters.md) for additional deploy options.
+3. We recommend a full foremanctl backup before running an upgrade. Run `foremanctl backup <filepath for backup>`.  Please see [Backup](backup.md) for more information on this process.
+4. Run upgrade tasks by re-deploying: `foremanctl deploy`. Please see [Parameters](parameters.md) for additional deploy options.
 
 This final deploy command will pull new images and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
 
