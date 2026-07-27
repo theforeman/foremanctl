@@ -2,15 +2,12 @@
 
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING, Any
 
 from ansiblelint.rules import AnsibleLintRule
 
 if TYPE_CHECKING:
     from ansiblelint.file_utils import Lintable
-
-_VOLUME_PATTERN = re.compile(r'^[^:]+:[^:]+:(rw|ro)(?:,[zZ])?$')
 
 
 class ExplicitVolumeModeRule(AnsibleLintRule):
@@ -50,4 +47,9 @@ class ExplicitVolumeModeRule(AnsibleLintRule):
 def _is_valid(spec: str) -> bool:
     if "{{" in spec:
         return True
-    return bool(_VOLUME_PATTERN.match(spec.strip().strip("'\"")))
+    parts = spec.strip().strip("'\"").split(":")
+    if len(parts) != 3:
+        return False
+    source, dest, optionstr = parts
+    options = optionstr.split(",")
+    return "rw" in options or "ro" in options

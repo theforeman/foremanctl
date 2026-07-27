@@ -1,4 +1,18 @@
 ---
+- name: Container with rw and Z and U
+  containers.podman.podman_container:
+    name: test-rw-z
+    image: example.com/test:latest
+    volumes:
+      - /var/log/test:/var/log/test:rw,Z,U
+
+- name: Container with Z and rw and U
+  containers.podman.podman_container:
+    name: test-rw-z
+    image: example.com/test:latest
+    volumes:
+      - /var/log/test:/var/log/test:Z,rw,U
+
 - name: Container with rw and Z
   containers.podman.podman_container:
     name: test-rw-z
