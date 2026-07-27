@@ -7,6 +7,22 @@
     group: root
     mode: '0755'
 
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Create directory vex download directory
+  ansible.builtin.file:
+    path: '{{ iop_vex_downloader_output_dir }}'
+    state: directory
+    mode: "0755"
+
+- name: Create vex download archive_latest.txt file
+  ansible.builtin.copy:
+    dest: '{{ iop_vex_downloader_output_dir }}archive_latest.txt'
+    content: |
+      vex-latest.tar.zst
+    mode: '0644'
+
 - name: Create vex download service unit
   ansible.builtin.copy:
     dest: /etc/systemd/system/iop-vex-download.service
@@ -43,21 +59,6 @@
   ansible.builtin.systemd:
     daemon_reload: true
 
-- name: Flush handlers
-  ansible.builtin.meta: flush_handlers
-
-- name: Create directory vex download directory
-  ansible.builtin.file:
-    path: '{{ iop_vex_downloader_output_dir }}'
-    state: directory
-    mode: "0755"
-
-- name: Create vex download archive_latest.txt file
-  ansible.builtin.copy:
-    dest: '{{ iop_vex_downloader_output_dir }}archive_latest.txt'
-    content: |
-      vex-latest.tar.zst
-    mode: '0644'
 
 - name: Enable and start vex download timer
   ansible.builtin.systemd:

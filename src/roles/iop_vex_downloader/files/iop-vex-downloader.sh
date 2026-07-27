@@ -28,7 +28,7 @@ if [[ -f "$MANUAL_FILE" ]]; then
 
     if [[ "$CURRENT_CHECKSUM" != "$STORED_CHECKSUM" ]]; then
         echo "Copying updated manual file from ${MANUAL_FILE}"
-        cp -Z "$MANUAL_FILE" "${OUTPUT_DIR}${OUTPUT_FILENAME}" && echo "$CURRENT_CHECKSUM" > "$CHECKSUM_FILE"
+        cp -Z "$MANUAL_FILE" "${OUTPUT_DIR}${OUTPUT_FILENAME}"
         chmod 644 "${OUTPUT_DIR}${OUTPUT_FILENAME}"
     else
         echo "Manual file unchanged, skipping"
