@@ -13,8 +13,12 @@ All steps must be run as root user. We also recommend that a `foremanctl health`
     - `dnf versionlock add 'foremanctl-X.*'` - Lock upgrades to a certain X-stream (replace with exact X version).
     - `dnf versionlock add 'foremanctl-X.Y.*'` - Lock upgrades to a certain Y-stream (replace with exact X.Y version).
     - `dnf versionlock delete foremanctl` - Remove any foremanctl versionlock.
-2. We recommend a full foremanctl backup before all upgrade operations. Run `foremanctl backup <filepath for backup>`.  Please see [Backup](backup.md) for more information on this process.
-3. Run upgrade tasks by re-deploying foremanctl with the deploy command: `foremanctl deploy [...]`. Please see [Parameters](parameters.md) for additional deploy options.
+2. Update the Foreman repository to the target version:
+    - `dnf install https://yum.theforeman.org/releases/<target-version>/el9/x86_64/foreman-release.rpm`
+3. Upgrade the foremanctl package:
+    - `dnf upgrade foremanctl`
+4. We recommend a full foremanctl backup before running an upgrade. Run `foremanctl backup <filepath for backup>`.  Please see [Backup](backup.md) for more information on this process.
+5. Run upgrade tasks by re-deploying: `foremanctl deploy`. Please see [Parameters](parameters.md) for additional deploy options.
 
 This final deploy command will pull new images and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
 
@@ -25,7 +29,7 @@ All below steps must be run as root user. We also recommend that a `foremanctl h
 1. Stage the foremanctl RPM package
     - The Foreman repository is needed for dependencies related to the foremanctl RPM.
     - The foremanctl RPM must be available in a repository accessible to your disconnected Foreman server. Please transfer the RPM to your disconnected system via an available transport mechanism (USB drive, rsync over a bastion, etc.).
-    - The foremanctl RPM can be downloaded from TODO: TBD
+    - The foremanctl RPM can be downloaded from `https://yum.theforeman.org`
     - Once staged, `dnf info foremanctl` will resolve as in a connected environment.
 2. Stage the required container images
     - On a connected machine, pull all required images with `foremanctl pull-images`.
@@ -33,7 +37,7 @@ All below steps must be run as root user. We also recommend that a `foremanctl h
     - On the connected environment, run `podman save $(podman images --format "{{.Repository}}:{{.Tag}}" | tr '\n' ' ') -o <filename>.tar` to export all downloaded images as a tarball.
     - Transfer the tar file to your disconnected environment via an available transport mechanism.
     - Run `podman load -i <filename>.tar` to stage the required images.
-3. Complete the [Upgrading foremanctl from RPM install](#upgrading-foremanctl-from-rpm-install) section above to install from locally staged packages and images.
+3. Complete the [Upgrading foremanctl from RPM install](#upgrading-foremanctl-from-rpm-install) section above starting from step 3 to install from locally staged packages and images.
 
 ## Recovering from a failed upgrade
 
