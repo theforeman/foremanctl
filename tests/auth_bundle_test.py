@@ -44,7 +44,7 @@ def generate_custom_proxy_certs(server, certificate_source):
 
 @pytest.fixture(scope="module")
 def generate_bundle(server, certificate_source, generate_custom_proxy_certs):
-    command = ['./foremanctl', 'certificate-bundle']
+    command = ['./foremanctl', 'auth-bundle']
     if certificate_source == 'custom_server':
         command.extend([
             '--certificate-server-certificate', f'/root/custom-certificates/certs/{HOSTNAME}.crt',
@@ -53,7 +53,7 @@ def generate_bundle(server, certificate_source, generate_custom_proxy_certs):
     command.append(HOSTNAME)
 
     result = subprocess.run(command, capture_output=True, text=True)
-    assert result.returncode == 0, f'certificate-bundle failed: {result.stdout}\n{result.stderr}'
+    assert result.returncode == 0, f'auth-bundle failed: {result.stdout}\n{result.stderr}'
 
 
 @pytest.fixture(scope="module")

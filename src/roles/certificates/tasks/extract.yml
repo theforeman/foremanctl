@@ -1,19 +1,19 @@
 ---
-- name: Check path to certificate tar file exists
+- name: Check path to auth bundle tar file exists
   ansible.builtin.stat:
-    path: "{{ certificates_bundle }}"
+    path: "{{ auth_bundle }}"
   register: _certificates_tar_file_path
   delegate_to: localhost
   become: false
 
-- name: Fail if path to certificate tar file does not exist
+- name: Fail if path to auth bundle tar file does not exist
   ansible.builtin.fail:
-    msg: "Path to certificate tar file not found: {{ certificates_bundle }}"
+    msg: "Path to auth bundle tar file not found: {{ auth_bundle }}"
   when: not _certificates_tar_file_path.stat.exists
 
 - name: Extract certificates from bundle
   ansible.builtin.unarchive:
-    src: "{{ certificates_bundle }}"
+    src: "{{ auth_bundle }}"
     dest: "{{ certificates_ca_directory }}"
     exclude:
       - oauth
@@ -21,7 +21,7 @@
 
 - name: Extract OAuth credentials from bundle
   ansible.builtin.unarchive:
-    src: "{{ certificates_bundle }}"
+    src: "{{ auth_bundle }}"
     dest: "{{ certificates_oauth_directory | dirname }}"
     exclude:
       - certs

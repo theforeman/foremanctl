@@ -1,0 +1,107 @@
+---
+- name: Create output directory
+  ansible.builtin.file:
+    path: "{{ auth_bundle_output_directory }}"
+    state: directory
+    mode: '0755'
+
+- name: Check for existing auth bundle
+  ansible.builtin.stat:
+    path: "{{ auth_bundle_output_directory }}/{{ auth_bundle_hostname }}.tar.gz"
+  register: _auth_bundle_tarball
+
+- name: Build auth bundle
+  when: not _auth_bundle_tarball.stat.exists or (certificates_renew | default(false) | bool)
+  block:
+    - name: Create temporary directory
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: auth-bundle-build
+      register: auth_bundle_build_directory
+
+    - name: Create directory structure
+      ansible.builtin.file:
+        state: directory
+        path: "{{ auth_bundle_build_directory.path }}/certs/{{ item }}"
+        mode: '0755'
+      loop:
+        - certs
+        - private
+        - oauth
+
+    - name: Copy default CA certificate
+      ansible.builtin.copy:
+        src: "{{ auth_bundle_ca_certificate }}"
+        dest: "{{ auth_bundle_build_directory.path }}/certs/certs/ca.crt"
+        remote_src: true
+        mode: '0444'
+
+    - name: Copy server CA certificate
+      ansible.builtin.copy:
+        src: "{{ auth_bundle_server_ca_certificate }}"
+        dest: "{{ auth_bundle_build_directory.path }}/certs/certs/server-ca.crt"
+        remote_src: true
+        mode: '0444'
+
+    - name: Copy CA bundle
+      ansible.builtin.copy:
+        src: "{{ auth_bundle_ca_bundle }}"
+        dest: "{{ auth_bundle_build_directory.path }}/certs/certs/ca-bundle.crt"
+        remote_src: true
+        mode: '0444'
+
+    - name: Copy server certificate
+      ansible.builtin.copy:
+        src: "{{ auth_bundle_server_certificate }}"
+        dest: "{{ auth_bundle_build_directory.path }}/certs/certs/{{ auth_bundle_hostname }}.crt"
+        remote_src: true
+        mode: '0444'
+
+    - name: Copy server key
+      ansible.builtin.copy:
+        src: "{{ auth_bundle_server_key }}"
+        dest: "{{ auth_bundle_build_directory.path }}/certs/private/{{ auth_bundle_hostname }}.key"
+        remote_src: true
+        mode: '0440'
+
+    - name: Copy client certificate
+      ansible.builtin.copy:
+        src: "{{ auth_bundle_client_certificate }}"
+        dest: "{{ auth_bundle_build_directory.path }}/certs/certs/{{ auth_bundle_hostname }}-client.crt"
+        remote_src: true
+        mode: '0444'
+
+    - name: Copy client key
+      ansible.builtin.copy:
+        src: "{{ auth_bundle_client_key }}"
+        dest: "{{ auth_bundle_build_directory.path }}/certs/private/{{ auth_bundle_hostname }}-client.key"
+        remote_src: true
+        mode: '0440'
+
+    - name: Copy OAuth consumer key
+      ansible.builtin.copy:
+        src: "{{ auth_bundle_oauth_consumer_key_file }}"
+        dest: "{{ auth_bundle_build_directory.path }}/certs/oauth/foreman-oauth-consumer-key"
+        mode: '0440'
+
+    - name: Copy OAuth consumer secret
+      ansible.builtin.copy:
+        src: "{{ auth_bundle_oauth_consumer_secret_file }}"
+        dest: "{{ auth_bundle_build_directory.path }}/certs/oauth/foreman-oauth-consumer-secret"
+        mode: '0440'
+
+    - name: Create tarball
+      community.general.archive:
+        path: "{{ auth_bundle_build_directory.path }}/certs/*"
+        dest: "{{ auth_bundle_output_directory }}/{{ auth_bundle_hostname }}.tar.gz"
+        format: gz
+        mode: '0640'
+
+    - name: Remove temporary directory
+      ansible.builtin.file:
+        path: "{{ auth_bundle_build_directory.path }}"
+        state: absent
+
+- name: Report auth bundle location
+  ansible.builtin.debug:
+    msg: "Auth bundle created: {{ auth_bundle_output_directory }}/{{ auth_bundle_hostname }}.tar.gz"

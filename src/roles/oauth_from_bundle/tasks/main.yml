@@ -1,5 +1,5 @@
 ---
-- name: Load OAuth credentials from certificate bundle
+- name: Load OAuth credentials from auth bundle
   ansible.builtin.include_tasks: credential.yml
   loop:
     - key

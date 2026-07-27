@@ -7,10 +7,10 @@ variables:
     help: Base flavor to use in this deployment.
     choices:
       - foreman-proxy-content
-  certificates_bundle:
-    help: Path to the certificate bundle tar file.
+  auth_bundle:
+    help: Path to the auth bundle tar file.
     type: AbsolutePath
-    parameter: --certificate-bundle
+    parameter: --auth-bundle
     persist: false
   foreman_name:
     parameter: --foreman-fqdn

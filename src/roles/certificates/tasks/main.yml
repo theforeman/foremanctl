@@ -37,7 +37,7 @@
 
 - name: 'Generate certificates'
   when:
-    - certificates_bundle is not defined
+    - auth_bundle is not defined
     - certificates_generate
   block:
     - name: 'Generate CA certificate'
@@ -65,8 +65,8 @@
 
 - name: 'Consume certs'
   when:
-    - certificates_bundle is defined
+    - auth_bundle is defined
     - not certificates_generate
   block:
-    - name: Extract proxy certificate bundle
+    - name: Extract proxy auth bundle
       ansible.builtin.include_tasks: extract.yml

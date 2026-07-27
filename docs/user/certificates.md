@@ -84,7 +84,7 @@ After deployment, certificates are available at:
 - Certificates from `foreman-installer` are normalized into the same paths as the Default Source above
 - Original directory is backed up to `/root/ssl-build.bak/`
 
-**Proxy/Secondary System Certificates (from certificate-bundle):**
+**Proxy/Secondary System Certificates (from auth-bundle):**
 - Generated in per-host subdirectories: `/var/lib/foremanctl/certs/hosts/<hostname>/`
 - Packaged tarball: `/var/lib/foremanctl/certs/bundles/<hostname>.tar.gz`
 
@@ -138,20 +138,20 @@ foremanctl deploy --certificate-ca-renew
 
 Both flags are **not persisted** in foremanctl’s answers file (one-shot).
 
-### Certificate Bundle for Secondary Systems
+### Auth Bundle for Secondary Systems
 
-The `certificate-bundle` command generates a certificate tarball for a secondary system such as a foreman-proxy host. This is the foremanctl equivalent of `foreman-proxy-certs-generate`.
+The `auth-bundle` command generates a certificate and OAuth credential tarball for a secondary system such as a foreman-proxy host. This is the foremanctl equivalent of `foreman-proxy-certs-generate`.
 
 The internal CA must already exist from a prior `foremanctl deploy`.
 
 #### Usage
 
 ```bash
-# Generate a certificate bundle using the internal CA
-foremanctl certificate-bundle proxy.example.com
+# Generate an auth bundle using the internal CA
+foremanctl auth-bundle proxy.example.com
 
-# Generate a certificate bundle with custom server certificates for the proxy
-foremanctl certificate-bundle \
+# Generate an auth bundle with custom server certificates for the proxy
+foremanctl auth-bundle \
   --certificate-server-certificate /path/to/proxy.example.com.crt \
   --certificate-server-key /path/to/proxy.example.com.key \
   proxy.example.com
@@ -165,7 +165,7 @@ If the Foreman server was deployed with custom server certificates, each proxy m
 
 #### Tarball Contents
 
-The tarball uses the same directory structure as `/var/lib/foremanctl/certs/`:
+The tarball mirrors the on-disk layout under `/var/lib/foremanctl/`:
 
 ```
 certs/
@@ -180,6 +180,8 @@ oauth/
 ├── foreman-oauth-consumer-key      # OAuth consumer key for Foreman API auth
 └── foreman-oauth-consumer-secret   # OAuth consumer secret for Foreman API auth
 ```
+
+On extract, `certs/` and `private/` are installed under `/var/lib/foremanctl/certs/`, and `oauth/` is installed under `/var/lib/foremanctl/oauth/`.
 
 When using the internal CA only, `server-ca.crt` and `ca.crt` are identical. When custom server certificates are provided, `server-ca.crt` contains the custom CA and `ca.crt` contains the internal CA.
 
@@ -206,7 +208,7 @@ src/roles/certificates/
 │   └── custom.yml             # Applies user-provided custom server certs
 └── defaults/main.yml          # Default configuration variables
 
-src/roles/certificate_bundle/
+src/roles/auth_bundle/
 ├── tasks/main.yml             # Packages certificates into a tarball
 └── defaults/main.yml          # Output directory configuration
 ```
@@ -233,11 +235,11 @@ For `certificate_source: custom_server`:
 2. **Custom Server Certificates**: Copy the custom server cert, key, and CA bundle from user-provided paths to `/var/lib/foremanctl/certs/` (only when certificate paths are provided)
 3. **Host Certificate Issuance**: Generate client certificate and localhost certificate signed by the internal CA (server cert for FQDN is skipped)
 
-#### Certificate Bundle Generation
+#### Auth Bundle Generation
 
-The `certificate-bundle` playbook reuses the `certificates` role to generate proxy certificates in a per-host subdirectory (`certificates_ca_directory/hosts/<hostname>/`). It overrides `certificates_ca_directory_certs`, `certificates_ca_directory_keys`, and `certificates_ca_directory_requests` to point to the subdirectory while keeping `certificates_ca_directory` unchanged so the CA can still be found for signing. It sets `certificates_ca: false` (the CA already exists from a prior deploy) and passes the proxy hostname via `certificates_hostnames`. The `certificate_bundle` role then packages the generated certificates along with the CA into a tarball under `certificates_ca_directory/bundles/`.
+The `auth-bundle` playbook reuses the `certificates` role to generate proxy certificates in a per-host subdirectory (`certificates_ca_directory/hosts/<hostname>/`). It overrides `certificates_ca_directory_certs`, `certificates_ca_directory_keys`, and `certificates_ca_directory_requests` to point to the subdirectory while keeping `certificates_ca_directory` unchanged so the CA can still be found for signing. It sets `certificates_ca: false` (the CA already exists from a prior deploy) and passes the proxy hostname via `certificates_hostnames`. The `auth_bundle` role then packages the generated certificates along with the CA into a tarball under `certificates_ca_directory/bundles/`.
 
-When custom server certificates are provided for the proxy, `certificates_source` is set to `custom_server` so only client certificates are generated by the internal CA. The custom server certificate, key, and CA are validated by the `certificate_checks` role and then packaged directly into the tarball by the `certificate_bundle` role.
+When custom server certificates are provided for the proxy, `certificates_source` is set to `custom_server` so only client certificates are generated by the internal CA. The custom server certificate, key, and CA are validated by the `certificate_checks` role and then packaged directly into the tarball by the `auth_bundle` role.
 
 #### Migration from foreman-installer
 
