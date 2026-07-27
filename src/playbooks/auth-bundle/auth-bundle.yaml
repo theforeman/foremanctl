@@ -1,0 +1,34 @@
+---
+- name: Generate an auth bundle for a hostname
+  hosts:
+    - quadlet
+  become: true
+  vars_files:
+    - "../../vars/base.yaml"
+    - "../../vars/certificates.yml"
+    - "../../vars/foreman.yml"
+  roles:
+    - role: certificate_checks
+      when: certificates_source == 'custom_server'
+      vars:
+        certificate_checks_certificate: "{{ certificates_custom_server_certificate }}"
+        certificate_checks_key: "{{ certificates_custom_server_key }}"
+        certificate_checks_ca: "{{ server_ca_certificate }}"
+    - role: certificates
+      vars:
+        certificates_ca: false
+        certificates_output_directory: "{{ certificates_ca_directory }}/hosts/{{ hostname }}"
+        certificates_hostnames:
+          - "{{ hostname }}"
+    - role: auth_bundle
+      vars:
+        auth_bundle_hostname: "{{ hostname }}"
+        auth_bundle_ca_bundle: "{{ ca_bundle }}"
+        auth_bundle_ca_certificate: "{{ ca_certificate }}"
+        auth_bundle_server_ca_certificate: "{{ server_ca_certificate }}"
+        auth_bundle_server_certificate: "{{ certificates_ca_directory }}/hosts/{{ hostname }}/certs/{{ hostname }}.crt"
+        auth_bundle_server_key: "{{ certificates_ca_directory }}/hosts/{{ hostname }}/private/{{ hostname }}.key"
+        auth_bundle_client_certificate: "{{ certificates_ca_directory }}/hosts/{{ hostname }}/certs/{{ hostname }}-client.crt"
+        auth_bundle_client_key: "{{ certificates_ca_directory }}/hosts/{{ hostname }}/private/{{ hostname }}-client.key"
+        auth_bundle_oauth_consumer_key_file: "{{ foreman_oauth_consumer_key_file }}"
+        auth_bundle_oauth_consumer_secret_file: "{{ foreman_oauth_consumer_secret_file }}"

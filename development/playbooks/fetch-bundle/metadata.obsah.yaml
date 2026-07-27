@@ -1,8 +1,8 @@
 ---
 help: |
-  Fetch a certificate bundle
+  Fetch an auth bundle
 
 variables:
   hostname:
     parameter: hostname
-    help: Hostname to fetch the certificate bundle for.
+    help: Hostname to fetch the auth bundle for.

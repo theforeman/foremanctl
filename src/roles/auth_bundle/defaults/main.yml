@@ -1,0 +1,3 @@
+---
+auth_bundle_output_directory: "{{ certificates_ca_directory }}/bundles"
+auth_bundle_server_ca_certificate: "{{ auth_bundle_ca_certificate }}"
