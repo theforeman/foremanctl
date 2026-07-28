@@ -1,5 +1,3 @@
-import uuid
-
 import pytest
 
 ROLE_NAME = "theforeman.foremanctltest"
@@ -45,29 +43,10 @@ def test_import_ansible_role(ansible_role, server):
     assert ansible_role in role_list.stdout
 
 
-@pytest.fixture(scope="module")
-def ansible_organization(foremanapi):
-    org = foremanapi.create('organizations', {'name': str(uuid.uuid4())})
-    yield org
-    foremanapi.delete('organizations', org)
-
-
-@pytest.fixture(scope="module")
-def ansible_activation_key(ansible_organization, foremanapi):
-    ak = foremanapi.create('activation_keys', {'name': str(uuid.uuid4()), 'organization_id': ansible_organization['id']})
-    yield ak
-    foremanapi.delete('activation_keys', ak)
-
-
-@pytest.fixture(scope="module")
-def registered_client(foremanapi, ansible_organization, ansible_activation_key, client, client_fqdn):
+@pytest.fixture
+def registered_client(client_environment, activation_key, organization, foremanapi, client, client_fqdn):
     client.run('dnf install -y subscription-manager')
-    rcmd = foremanapi.create('registration_commands', {
-        'organization_id': ansible_organization['id'],
-        'insecure': True,
-        'activation_keys': [ansible_activation_key['name']],
-        'force': True,
-    })
+    rcmd = foremanapi.create('registration_commands', {'organization_id': organization['id'], 'insecure': True, 'activation_keys': [activation_key['name']], 'force': True})
     client.run_test(rcmd['registration_command'])
     yield client_fqdn
     try:
@@ -76,8 +55,8 @@ def registered_client(foremanapi, ansible_organization, ansible_activation_key, 
         pass
 
 
-def test_run_ansible_role(ansible_role, ansible_organization, registered_client, foremanapi, server):
-    org_id = ansible_organization['id']
+def test_run_ansible_role(ansible_role, organization, registered_client, foremanapi, server):
+    org_id = organization['id']
 
     assign = server.run(f"hammer host ansible-roles assign --organization-id {org_id} --name {registered_client} --ansible-roles {ansible_role}")
     assert assign.succeeded
