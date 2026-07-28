@@ -138,6 +138,13 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--templates-listen-on` | Templates proxy to listen on https, http, or both | `--foreman-proxy-templates-listen-on` |
 | `--templates-url` | URL that hosts will use to contact the proxy for provisioning templates | `--foreman-proxy-templates-url` |
 
+### Unmapped
+
+| foreman-installer Parameter | Description | Reason |
+| --------------------------- | ----------- | ------ |
+| `--foreman-proxy-oauth-consumer-key` | OAuth consumer key for Smart Proxy | Not required(Managed automatically via auth bundle) |
+| `--foreman-proxy-oauth-consumer-secret` | OAuth consumer secret for Smart Proxy | Not required(Managed automatically via auth bundle) |
+
 ### Undetermined
 
 | Installer Parameter | Description | Module | Puppet Parameter |
@@ -145,8 +152,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-proxy-cname` | Enables DHCP feature in smart-proxy | foreman_proxy | cname |
 | `--foreman-proxy-fqdn` | Enables DHCP feature in smart-proxy | foreman_proxy | fqdn |
 | `--foreman-proxy-foreman-base-url` | | foreman_proxy | foreman_base_url |
-| `--foreman-proxy-oauth-consumer-key` | | foreman_proxy | oauth_consumer_key |
-| `--foreman-proxy-oauth-consumer-secret` | | foreman_proxy | oauth_consumer_secret |
 | `--foreman-proxy-register-in-foreman` | | foreman_proxy | register_in_foreman |
 | `--foreman-proxy-trusted-hosts` | | foreman_proxy | trusted_hosts |
 | `--foreman-proxy-dhcp` | Enables DHCP feature in smart-proxy | foreman_proxy | dhcp |
