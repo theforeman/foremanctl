@@ -1,9 +1,6 @@
-import json
 import uuid
 
 import pytest
-
-from tests.conftest import FOREMAN_PROXY_PORT
 
 ROLE_NAME = "theforeman.foremanctltest"
 
@@ -11,13 +8,6 @@ ROLE_NAME = "theforeman.foremanctltest"
 def test_foreman_ansible_plugin_installed(foremanapi):
     plugins = [plugin['name'] for plugin in foremanapi.list('plugins')]
     assert 'foreman_ansible' in plugins
-
-
-def test_foreman_proxy_ansible_feature(server, certificates, server_fqdn):
-    cmd = server.run(f"curl --cacert {certificates['ca_certificate']} --silent https://{server_fqdn}:{FOREMAN_PROXY_PORT}/features")
-    assert cmd.succeeded
-    features = json.loads(cmd.stdout)
-    assert "ansible" in features
 
 
 @pytest.fixture(scope="module")
