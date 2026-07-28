@@ -1,0 +1,4 @@
+---
+:enabled: {% if foreman_proxy_templates_listen_on | default('both') == 'both' %}true{% else %}{{ foreman_proxy_templates_listen_on }}{% endif %}
+
+:template_url: {{ foreman_proxy_templates_url }}

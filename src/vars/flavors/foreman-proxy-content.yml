@@ -5,6 +5,7 @@ flavor_features:
   - content/container
   - content/ansible
   - content/python
+  - templates
 
 pulp_mirror: true
 pulp_rhsm_url: "https://{{ ansible_facts['fqdn'] }}/rhsm"
