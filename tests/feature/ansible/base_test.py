@@ -55,12 +55,15 @@ def registered_client(client_environment, activation_key, organization, foremana
         pass
 
 
-def test_run_ansible_role(ansible_role, organization, registered_client, foremanapi, server):
+def test_run_ansible_role(ansible_role, ansible_proxy_id, organization, registered_client, foremanapi, server):
     org_id = organization['id']
 
     assign = server.run(f"hammer host ansible-roles assign --organization-id {org_id} --name {registered_client} --ansible-roles {ansible_role}")
     assert assign.succeeded
     assert 'Ansible roles were assigned to the host' in assign.stdout
+
+    proxy_update = server.run(f"hammer proxy update --id {ansible_proxy_id} --organization-ids {org_id}")
+    assert proxy_update.succeeded
 
     play = server.run(f"hammer host ansible-roles play --organization-id {org_id} --name {registered_client}")
     assert play.succeeded
