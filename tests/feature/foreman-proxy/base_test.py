@@ -72,6 +72,17 @@ def test_bmc_default_provider(proxy_v2_features):
 
 
 @pytest.mark.feature('templates')
-def test_templates_template_url(obsah_params, server_fqdn):
-    template_url = obsah_params.get('foreman_proxy_templates_url')
-    assert template_url == f'http://{server_fqdn}:8000'
+def test_templates_fetch_template_url(proxy_v2_features, obsah_params):
+    assert 'templates' in proxy_v2_features
+    settings = proxy_v2_features['templates'].get('settings', {})
+    assert settings.get('template_url') == obsah_params.get('foreman_proxy_templates_url')
+
+
+@pytest.mark.feature('templates')
+def test_templates_endpoint_responds(curl_request, proxy_base_url, server_fqdn):
+    """Fetch templateServer data from the templates proxy endpoint"""
+    cmd = curl_request("unattended/templateServer", base_url=proxy_base_url, return_body=True)
+    assert cmd.succeeded, f"Failed to query /unattended/templateServer: {cmd.stderr}"
+    data = json.loads(cmd.stdout)
+    assert 'templateServer' in data
+    assert server_fqdn in data['templateServer']
