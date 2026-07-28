@@ -145,12 +145,6 @@ After deployment, the environment includes:
 
 In a source install, git branches control versioning instead of RPM packages. Stable branches (e.g. `2.y-stable`) track a specific Foreman Y-stream, while the `master` branch tracks nightly changes (most recent).
 
-Specific versions of foremanctl always map to the same version of Foreman, regardless of parameter configuration:
-
-- 1.2.z+ -> Foreman 3.17
-- 2.0.z+ -> Foreman 3.18
-- 2.2.z+ -> Foreman 3.19
-
 All steps must be run as the root user. These steps assume that foremanctl is being ran from the same machine that Foreman was deployed on.
 
 1. Please take a moment to determine your preferred Foreman version / git branch, we only support sequential updates.
