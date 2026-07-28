@@ -442,7 +442,6 @@ jobs:
             --flavor foreman-proxy-content \
             --auth-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
             --foreman-fqdn quadlet.example.com \
-            --templates-listen-on http \
             --templates-url http://proxy.example.com:8000 \
             --add-feature bmc
       - name: Run tests

@@ -135,7 +135,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--bmc-ipmi-implementation` | IPMI implementation to use for BMC | `--foreman-proxy-bmc-default-provider` |
 | `--bmc-redfish-verify-ssl` | Verify SSL certificates for Redfish BMC connections | `--foreman-proxy-bmc-redfish-verify-ssl` |
 | `--add-feature templates` | Enable Templates feature on Smart Proxy | `--foreman-proxy-templates` |
-| `--templates-listen-on` | Templates proxy to listen on https, http, or both | `--foreman-proxy-templates-listen-on` |
 | `--templates-url` | URL that hosts will use to contact the proxy for provisioning templates | `--foreman-proxy-templates-url` |
 
 ### Unmapped
@@ -144,6 +143,7 @@ There are multiple use cases from the users perspective that dictate what parame
 | --------------------------- | ----------- | ------ |
 | `--foreman-proxy-oauth-consumer-key` | OAuth consumer key for Smart Proxy | Not required(Managed automatically via auth bundle) |
 | `--foreman-proxy-oauth-consumer-secret` | OAuth consumer secret for Smart Proxy | Not required(Managed automatically via auth bundle) |
+| `--foreman-proxy-templates-listen-on` | Templates proxy to listen on https, http, or both | No longer supported |
 
 ### Undetermined
 
