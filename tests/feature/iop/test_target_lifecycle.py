@@ -8,13 +8,10 @@ def test_iop_services_part_of_foreman_target(server):
     assert services, "No IOP services found"
 
     missing = []
-    for service in services:
-        # Skip timer-triggered services (cleanup, vmaas-sync)
-        triggered_by = server.run(f"systemctl show {service} -p TriggeredBy --value")
-        if triggered_by.stdout.strip():
+    for service_name in services:
+        service = server.service(service_name)
+        if service.systemd_properties.get("TriggeredBy"):
             continue
-        result = server.run(f"systemctl show {service} -p PartOf --value")
-        if "foreman.target" not in result.stdout:
-            missing.append(service)
+        assert "foreman.target" in service.systemd_properties.get("PartOf")
 
     assert not missing, f"IOP services not PartOf foreman.target: {missing}"
