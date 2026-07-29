@@ -268,8 +268,7 @@ jobs:
             --add-feature foreman-proxy \
             --add-feature azure-rm \
             --add-feature google \
-            --add-feature remote-execution \
-            --add-feature ansible
+            --add-feature remote-execution
       - name: Stop services
         run:
           vagrant ssh quadlet -- sudo systemctl stop foreman.target
