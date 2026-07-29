@@ -167,3 +167,6 @@ foreman_development_packages:
   - rubygem-bundler
   - rubygem-irb
   - postgresql
+  - libxcb
+  - nss
+  - nspr
