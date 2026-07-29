@@ -20,6 +20,8 @@ This final deploy command will pull new images and run all upgrade jobs required
 
 All below steps must be run as root user. We also recommend that a `foremanctl health` check is run before these steps.
 
+Disconnected users should also create a local repository mirror of foreman, an example of this from Red Hat is linked here https://access.redhat.com/solutions/7019225.
+
 1. Stage the foremanctl RPM package
     - The Foreman repository is needed for dependencies related to the foremanctl RPM.
     - The foremanctl RPM must be available in a repository accessible to your disconnected Foreman server. Please transfer the RPM to your disconnected system via an available transport mechanism (USB drive, rsync over a bastion, etc.).
