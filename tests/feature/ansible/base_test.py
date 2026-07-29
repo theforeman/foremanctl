@@ -25,11 +25,9 @@ def ansible_role(server, foremanapi, ansible_proxy_id):
     write = server.run(f"podman exec foreman-proxy bash -c \"echo '- command: uptime' > /etc/ansible/roles/{ROLE_NAME}/tasks/main.yml\"")
     assert write.succeeded
 
-    fetch = server.run(f"hammer ansible roles fetch --proxy-id {ansible_proxy_id}")
-    assert fetch.succeeded
+    assert foremanapi.resource_action('ansible_roles', 'fetch', params={'proxy_id': ansible_proxy_id})
 
-    sync = server.run(f"hammer ansible roles sync --proxy-id {ansible_proxy_id} --role-names {ROLE_NAME}")
-    assert sync.succeeded
+    assert foremanapi.resource_action('ansible_roles', 'sync', params={'proxy_id': ansible_proxy_id, 'role_names': [ROLE_NAME]})
 
     for task in foremanapi.list('foreman_tasks', search='label ~ SyncRolesAndVariables and state != stopped'):
         foremanapi.wait_for_task(task)
@@ -37,10 +35,8 @@ def ansible_role(server, foremanapi, ansible_proxy_id):
     yield ROLE_NAME
 
 
-def test_import_ansible_role(ansible_role, server):
-    role_list = server.run(f"hammer --output csv --no-headers ansible roles list --search='name={ansible_role}'")
-    assert role_list.succeeded
-    assert ansible_role in role_list.stdout
+def test_import_ansible_role(ansible_role, foremanapi):
+    assert foremanapi.list('ansible_roles', search=f'name={ansible_role}')
 
 
 @pytest.fixture
@@ -58,25 +54,18 @@ def registered_client(client_environment, activation_key, organization, foremana
 def test_run_ansible_role(ansible_role, ansible_proxy_id, organization, registered_client, foremanapi, server):
     org_id = organization['id']
 
-    assign = server.run(f"hammer host ansible-roles assign --organization-id {org_id} --name {registered_client} --ansible-roles {ansible_role}")
-    assert assign.succeeded
-    assert 'Ansible roles were assigned to the host' in assign.stdout
+    roles = foremanapi.list('ansible_roles', search=f'name={ansible_role}')
+    assert foremanapi.resource_action('hosts', 'assign_ansible_roles', params={'organization_id': org_id, 'id': registered_client, 'ansible_role_ids': [roles[0]['id']]})
 
-    proxy_update = server.run(f"hammer proxy update --id {ansible_proxy_id} --organization-ids {org_id}")
-    assert proxy_update.succeeded
+    assert foremanapi.update('smart_proxies', {'id': ansible_proxy_id, 'organization_ids': [org_id]})
 
-    play = server.run(f"hammer host ansible-roles play --organization-id {org_id} --name {registered_client}")
-    assert play.succeeded
-    assert 'Ansible roles are being played.' in play.stdout
+    assert foremanapi.resource_action('hosts', 'play_roles', params={'organization_id': org_id, 'id': registered_client})
 
     tasks = foremanapi.list('foreman_tasks', search='label = Actions::RemoteExecution::RunHostsJob')
     for task in tasks:
         foremanapi.wait_for_task(task)
 
-    report = server.run(f"hammer --output csv --no-headers config-report list --search 'host={registered_client} origin=Ansible'")
-    assert report.succeeded
-    assert registered_client in report.stdout
-    assert 'Ansible' in report.stdout
+    assert foremanapi.list('config_reports', search=f'host={registered_client} origin=Ansible')
 
 
 def test_run_command_via_ansible(registered_client, foremanapi):
