@@ -19,10 +19,10 @@ def ansible_proxy_id(foremanapi):
 
 @pytest.fixture(scope="module")
 def ansible_role(server, foremanapi, ansible_proxy_id):
-    setup = server.run(f"podman exec foreman-proxy mkdir -p /etc/ansible/roles/{ROLE_NAME}/tasks")
+    setup = server.run(f"mkdir -p /var/lib/foreman-proxy/ansible/roles/{ROLE_NAME}/tasks")
     assert setup.succeeded
 
-    write = server.run(f"podman exec foreman-proxy bash -c \"echo '- command: uptime' > /etc/ansible/roles/{ROLE_NAME}/tasks/main.yml\"")
+    write = server.run(f"echo '- command: uptime' > /var/lib/foreman-proxy/ansible/roles/{ROLE_NAME}/tasks/main.yml")
     assert write.succeeded
 
     assert foremanapi.resource_action('ansible_roles', 'fetch', params={'proxy_id': ansible_proxy_id})
