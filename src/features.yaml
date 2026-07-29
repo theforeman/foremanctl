@@ -55,7 +55,7 @@ ansible:
     plugin_name: ansible
   hammer: foreman_ansible
   dependencies:
-    - tasks
+    - remote-execution
 dynflow:
   internal: true
   foreman_proxy:
