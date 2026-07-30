@@ -4,7 +4,6 @@ jinja2
 paramiko
 passlib
 ruff
-pytest-subtests
 pytest-testinfra
 pytest-durations
 python-dateutil

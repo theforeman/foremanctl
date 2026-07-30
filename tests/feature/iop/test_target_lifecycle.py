@@ -1,4 +1,4 @@
-def test_iop_services_part_of_foreman_target(server, subtests):
+def test_iop_services_part_of_foreman_target(server):
     result = server.run(
         "systemctl list-units 'iop-core-*' 'iop-service-*'"
         " --type=service --no-legend --all --plain"
@@ -11,5 +11,4 @@ def test_iop_services_part_of_foreman_target(server, subtests):
         service = server.service(service_name)
         if service.systemd_properties.get("TriggeredBy"):
             continue
-        with subtests.test(service_name):
-            assert "foreman.target" in service.systemd_properties.get("PartOf")
+        assert "foreman.target" in service.systemd_properties.get("PartOf")
