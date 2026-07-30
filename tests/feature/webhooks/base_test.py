@@ -47,7 +47,11 @@ def webhook(foremanapi, server_fqdn, webhook_listener, webhook_template):
     foremanapi.delete('webhooks', hook)
 
 
-@pytest.mark.feature('webhooks')
+def test_foreman_webhooks(foremanapi):
+    plugins = [plugin['name'] for plugin in foremanapi.list('plugins')]
+    assert "foreman_webhooks" in plugins
+
+
 def test_webhook_fires_on_domain_create(foremanapi, webhook, webhook_listener, server):
     domain_name = f"{uuid.uuid4()}.example.com"
     domain = foremanapi.create('domains', {'name': domain_name})
