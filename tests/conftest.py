@@ -360,3 +360,8 @@ def curl_request(server, certificates, server_fqdn):
                 curl_opts += f"--header '{key}: {value}' "
         return server.run(f"curl {curl_opts}{url}")
     return _request
+
+
+@pytest.fixture
+def foreman_plugins(foremanapi):
+    return [plugin['name'] for plugin in foremanapi.list('plugins')]

@@ -53,9 +53,8 @@ def webhook(foremanapi, server_fqdn, webhook_listener, webhook_template):
     foremanapi.delete("webhooks", hook)
 
 
-def test_foreman_webhooks(foremanapi):
-    plugins = [plugin["name"] for plugin in foremanapi.list("plugins")]
-    assert "foreman_webhooks" in plugins
+def test_foreman_webhooks(foreman_plugins):
+    assert "foreman_webhooks" in foreman_plugins
 
 
 def test_webhook_fires_on_domain_create(foremanapi, webhook, webhook_listener, server):
