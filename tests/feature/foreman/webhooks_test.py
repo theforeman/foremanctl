@@ -8,25 +8,14 @@ LISTENER_PORT = 9999
 
 @pytest.fixture
 def webhook_listener(server):
-    """Start a netcat listener on the server that accepts one HTTP request and saves it to a file."""
+    """Start a netcat listener that captures one request."""
     output_file = f"/tmp/webhook-test-{uuid.uuid4()}"
-    # Start a one-shot netcat listener that:
-    # 1. Accepts a single connection
-    # 2. Sends back a minimal HTTP 200 response (so Foreman considers the webhook delivered)
-    # 3. Saves the received request to output_file
-    # We run it in the background via nohup + shell
-    server.run(
-        f"nohup bash -c '"
-        f'printf "HTTP/1.1 200 OK\\r\\nContent-Length: 0\\r\\n\\r\\n" '
-        f"| nc -l {LISTENER_PORT} > {output_file} 2>&1 &' "
-        f">/dev/null 2>&1"
-    )
-    # Give netcat a moment to start listening
+    # Just listen and dump to file - no HTTP response needed
+    server.run(f"nohup nc -l {LISTENER_PORT} > {output_file} 2>&1 &")
     time.sleep(1)
 
     yield output_file
 
-    # Cleanup: kill any lingering nc on that port, remove the output file
     server.run(f"fuser -k {LISTENER_PORT}/tcp 2>/dev/null || true")
     server.run(f"rm -f {output_file}")
 
