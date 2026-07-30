@@ -3,9 +3,8 @@ import pytest
 ROLE_NAME = "theforeman.foremanctltest"
 
 
-def test_foreman_ansible_plugin_installed(foremanapi):
-    plugins = [plugin['name'] for plugin in foremanapi.list('plugins')]
-    assert 'foreman_ansible' in plugins
+def test_foreman_ansible_plugin_installed(foreman_plugins):
+    assert 'foreman_ansible' in foreman_plugins
 
 
 @pytest.fixture(scope="module")
