@@ -23,38 +23,44 @@ def webhook_listener(server):
 @pytest.fixture
 def webhook_template(foremanapi):
     """Create a webhook template that includes event object details."""
-    template = foremanapi.create('webhook_templates', {
-        'name': f'Test Payload {uuid.uuid4()}',
-        'template': '{"id": <%= @object.id %>, "name": "<%= @object.name %>"}',
-    })
+    template = foremanapi.create(
+        "webhook_templates",
+        {
+            "name": f"Test Payload {uuid.uuid4()}",
+            "template": '{"id": <%= @object.id %>, "name": "<%= @object.name %>"}',
+        },
+    )
     yield template
-    foremanapi.delete('webhook_templates', template)
+    foremanapi.delete("webhook_templates", template)
 
 
 @pytest.fixture
 def webhook(foremanapi, server_fqdn, webhook_listener, webhook_template):
-    hook = foremanapi.create('webhooks', {
-        'name': str(uuid.uuid4()),
-        'target_url': f'http://localhost:{LISTENER_PORT}',
-        'http_method': 'POST',
-        'event': 'domain_created.event.foreman',
-        'http_content_type': 'application/json',
-        'webhook_template_id': webhook_template['id'],
-        'enabled': True,
-        'ssl_verification': False,
-    })
+    hook = foremanapi.create(
+        "webhooks",
+        {
+            "name": str(uuid.uuid4()),
+            "target_url": f"http://localhost:{LISTENER_PORT}",
+            "http_method": "POST",
+            "event": "domain_created.event.foreman",
+            "http_content_type": "application/json",
+            "webhook_template_id": webhook_template["id"],
+            "enabled": True,
+            "ssl_verification": False,
+        },
+    )
     yield hook
-    foremanapi.delete('webhooks', hook)
+    foremanapi.delete("webhooks", hook)
 
 
 def test_foreman_webhooks(foremanapi):
-    plugins = [plugin['name'] for plugin in foremanapi.list('plugins')]
+    plugins = [plugin["name"] for plugin in foremanapi.list("plugins")]
     assert "foreman_webhooks" in plugins
 
 
 def test_webhook_fires_on_domain_create(foremanapi, webhook, webhook_listener, server):
     domain_name = f"{uuid.uuid4()}.example.com"
-    domain = foremanapi.create('domains', {'name': domain_name})
+    domain = foremanapi.create("domains", {"name": domain_name})
 
     try:
         # Wait for the webhook to be delivered (async via dynflow)
@@ -64,12 +70,9 @@ def test_webhook_fires_on_domain_create(foremanapi, webhook, webhook_listener, s
                 break
             time.sleep(1)
         else:
-            pytest.fail(
-                f"Webhook was not received within 30 seconds. "
-                f"Listener output: {result.stdout!r}"
-            )
+            pytest.fail(f"Webhook was not received within 30 seconds. Listener output: {result.stdout!r}")
 
-        assert 'POST' in result.stdout
+        assert "POST" in result.stdout
         assert domain_name in result.stdout
     finally:
-        foremanapi.delete('domains', domain)
+        foremanapi.delete("domains", domain)
