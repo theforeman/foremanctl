@@ -1,25 +1,9 @@
 import json
-import os
 
 import pytest
-import yaml
 
 PULP_API_SOCKET = '/run/httpd.pulp-api.sock'
 PULP_CONTENT_SOCKET = '/run/httpd.pulp-content.sock'
-
-
-def load_pulp_paths_from_parameters():
-    test_dir = os.path.dirname(os.path.abspath(__file__))
-    foremanctl_dir = os.path.dirname(test_dir)
-    params_file = os.path.join(foremanctl_dir, '.var', 'lib', 'foremanctl', 'parameters.yaml')
-
-    if os.path.exists(params_file):
-        with open(params_file, 'r') as f:
-            params = yaml.safe_load(f)
-            import_paths = params.get('pulp_import_paths', [])
-            export_paths = params.get('pulp_export_paths', [])
-
-    return import_paths, export_paths
 
 
 @pytest.fixture(scope="module")
@@ -33,8 +17,8 @@ def pulp_status(pulp_status_curl):
 
 
 @pytest.fixture(scope="module")
-def pulp_import_export_paths():
-    return load_pulp_paths_from_parameters()
+def pulp_import_export_paths(obsah_params):
+    return obsah_params.get('pulp_import_paths', []),  obsah_params.get('pulp_export_paths', [])
 
 
 @pytest.fixture(scope="module")
