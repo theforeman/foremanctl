@@ -447,7 +447,7 @@ jobs:
             --add-feature bmc
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--server-hostname=proxy"
+          ./forge test --pytest-args="--test-target=proxy"
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
