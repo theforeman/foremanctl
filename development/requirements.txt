@@ -4,6 +4,7 @@ jinja2
 paramiko
 passlib
 ruff
+pytest>=9.0
 pytest-testinfra
 pytest-durations
 python-dateutil

@@ -1,5 +1,4 @@
-import shlex
-
+# These still need to be fixed
 EXPECTED_ROOT_IMAGES = {
     "quay.io/foreman/pulp:foreman-nightly",
     "quay.io/iop/puptoo:foreman-3.18",
@@ -7,46 +6,15 @@ EXPECTED_ROOT_IMAGES = {
 }
 
 
-def test_root_containers_match_expected(server):
+def test_root_containers_match_expected(server, subtests):
     """Verify that root containers match the temporary known-broken baseline."""
-    result = server.run("podman ps --format '{{.Names}}'")
-    assert result.succeeded, result.stderr
+    containers = server.podman.get_containers(status="running")
+    assert containers, "No running containers found"
 
-    container_names = result.stdout.split()
-    assert container_names, "No running containers found"
-
-    expected_root_containers = []
-    root_containers = []
-
-    for container_name in container_names:
-        result = server.run(
-            f"podman inspect {shlex.quote(container_name)} "
-            "--format '{{.ImageName}}|{{.Config.User}}'"
-        )
-        assert result.succeeded, (
-            f"Failed to inspect container {container_name}: {result.stderr}"
-        )
-
-        image_name, configured_user = result.stdout.strip().split("|", maxsplit=1)
-        user = configured_user.split(":", maxsplit=1)[0].lower()
-
-        container_details = (
-            f"{container_name} "
-            f"(image={image_name}, "
-            f"Config.User={configured_user or '<empty>'})"
-        )
-
-        if image_name in EXPECTED_ROOT_IMAGES:
-            expected_root_containers.append(container_details)
-
-        if user in {"", "0", "root"}:
-            root_containers.append(container_details)
-
-    expected_output = "\n".join(sorted(expected_root_containers)) or "<none>"
-    actual_output = "\n".join(sorted(root_containers)) or "<none>"
-
-    assert sorted(expected_root_containers) == sorted(root_containers), (
-        "Root containers differ from the expected temporary baseline:\n"
-        f"Expected:\n{expected_output}\n"
-        f"Actual:\n{actual_output}"
-    )
+    for container in containers:
+        with subtests.test(container.name):
+            config = container.inspect()['Config']
+            if config['Image'] in EXPECTED_ROOT_IMAGES:
+                assert config['User'] in {"", "0", "root"}
+            else:
+                assert config['User'] not in {"", "0", "root"}
