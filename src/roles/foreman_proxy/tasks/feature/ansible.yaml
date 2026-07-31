@@ -38,8 +38,8 @@
     dest: /etc/containers/systemd/foreman-proxy.container.d/ansible-volumes.conf
     content: |
       [Container]
-      Volume=/var/lib/foreman-proxy/ansible/roles:/etc/ansible/roles:rw,Z,U
-      Volume=/var/lib/foreman-proxy/ansible/collections:/etc/ansible/collections:rw,Z,U
+      Volume=/var/lib/foreman-proxy/ansible/roles:/etc/ansible/roles:ro,Z,U
+      Volume=/var/lib/foreman-proxy/ansible/collections:/etc/ansible/collections:ro,Z,U
     mode: '0644'
     owner: root
     group: root
