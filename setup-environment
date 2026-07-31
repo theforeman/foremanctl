@@ -7,7 +7,7 @@ REQUIRED_PYTHON=python3.12
 if [[ -z "${GITHUB_ACTIONS:-}" ]] && [[ -z "${VIRTUAL_ENV:-}" ]]; then
   if ! command -v "${REQUIRED_PYTHON}" >/dev/null 2>&1; then
     echo "Error: ${REQUIRED_PYTHON} is required (see pyproject.toml's requires-python)," >&2
-    echo "but was not found on PATH. Install python3.12 and re-run this script." >&2
+    echo "but was not found on PATH. Install ${REQUIRED_PYTHON} and re-run this script." >&2
     exit 1
   fi
   "${REQUIRED_PYTHON}" -m venv .venv
