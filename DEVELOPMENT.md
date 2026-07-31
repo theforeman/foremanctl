@@ -12,7 +12,7 @@ This guide helps you set up foremanctl development enviornment.
 
 ### Requirements
 
-- Python - 3.12
+- Python - 3.12+
 - Vagrant - 2.2+
 - Ansible - 2.14+
 - [Vagrant Libvirt provider plugin](https://github.com/vagrant-libvirt/vagrant-libvirt)
