@@ -8,8 +8,8 @@ For nearly all install situations, upgrading your Foreman server should be appro
 
 All steps must be run as root user. We also recommend that a `foremanctl health` check is run before these steps.
 
-1. Update the Foreman repository to the target version for the X or Y stream upgrades:
-    - `dnf upgrade https://yum.theforeman.org/releases/<target-version>/el9/x86_64/foreman-release.rpm`
+1. Update the Foreman repository to the next X or Y release:
+    - `dnf upgrade https://yum.theforeman.org/releases/<next-version>/el9/x86_64/foreman-release.rpm`
 2. Upgrade the foremanctl package:
     - `dnf upgrade foremanctl`
 3. Run upgrade tasks by re-deploying: `foremanctl deploy`. Please see [Parameters](parameters.md) for additional deploy options.
