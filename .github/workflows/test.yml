@@ -151,6 +151,7 @@ jobs:
             --add-feature azure-rm \
             --add-feature google \
             --add-feature remote-execution \
+            --add-feature ansible \
             --add-feature bmc \
             --add-feature webhooks \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
