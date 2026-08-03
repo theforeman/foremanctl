@@ -29,11 +29,11 @@
     - role: postgresql
       when:
         - database_mode == 'internal'
-    - valkey
-    - httpd
-    - pulp
-    - systemd_target
-    - foreman_proxy
+    - role: valkey
+    - role: httpd
+    - role: pulp
+    - role: systemd_target
+    - role: foreman_proxy
     - role: post_install
       vars:
         post_install_foreman_ca_path: "{{ foreman_proxy_foreman_ca_certificate | default(omit) }}"
