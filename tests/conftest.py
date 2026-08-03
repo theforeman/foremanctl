@@ -17,6 +17,7 @@ from requests.adapters import HTTPAdapter
 
 SSH_CONFIG = './.tmp/ssh-config'
 OBSAH_STATE = os.environ.get('OBSAH_STATE', '.var/lib/foremanctl')
+OBSAH_INVENTORY = os.environ.get('OBSAH_INVENTORY', 'inventories/local_vagrant')
 PARAMETERS_FILE = os.path.join(OBSAH_STATE, 'parameters.yaml')
 FLAVOR_TESTS_DIR = py.path.local(__file__).dirpath() / 'flavor'
 FOREMAN_PROXY_PORT = 8443
@@ -69,6 +70,31 @@ def enabled_features(pytestconfig):
 @pytest.fixture(scope="module")
 def available_features(pytestconfig):
     return pytestconfig.user_parameters.available_features
+
+
+@pytest.fixture(scope="session", autouse=True)
+def generate_ssh_config():
+    if not os.path.isfile(OBSAH_INVENTORY):
+        return
+    with open(OBSAH_INVENTORY) as f:
+        inv = yaml.safe_load(f)
+    if not isinstance(inv, dict) or 'all' not in inv:
+        return
+    os.makedirs(os.path.dirname(SSH_CONFIG), exist_ok=True)
+    with open(SSH_CONFIG, 'w') as f:
+        for host, hostvars in inv.get('all', {}).get('hosts', {}).items():
+            hostvars = hostvars or {}
+            f.write(f"Host {host}\n")
+            f.write(f"  HostName {hostvars.get('ansible_host', host)}\n")
+            f.write(f"  User {hostvars.get('ansible_user', 'vagrant')}\n")
+            f.write(f"  Port {hostvars.get('ansible_port', 22)}\n")
+            f.write("  UserKnownHostsFile /dev/null\n")
+            f.write("  StrictHostKeyChecking no\n")
+            f.write("  PasswordAuthentication no\n")
+            if key := hostvars.get('ansible_ssh_private_key_file'):
+                f.write(f"  IdentityFile {key}\n")
+            f.write("  IdentitiesOnly yes\n")
+            f.write("  LogLevel FATAL\n\n")
 
 
 @pytest.fixture(scope="module")

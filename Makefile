@@ -17,3 +17,9 @@ build/collections/forge: development/requirements.yml
 
 clean-var:
 	rm -rf .var
+
+test:
+	.venv/bin/python -m pytest --durations=10 -vv $(PYTEST_ARGS)
+
+test-unit:
+	.venv/bin/python -m pytest tests/unit/ -v
