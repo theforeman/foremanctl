@@ -4,17 +4,17 @@ import os
 import pytest
 import yaml
 
+from tests.conftest import PARAMETERS_FILE
+
 PULP_API_SOCKET = '/run/httpd.pulp-api.sock'
 PULP_CONTENT_SOCKET = '/run/httpd.pulp-content.sock'
 
 
 def load_pulp_paths_from_parameters():
-    test_dir = os.path.dirname(os.path.abspath(__file__))
-    foremanctl_dir = os.path.dirname(test_dir)
-    params_file = os.path.join(foremanctl_dir, '.var', 'lib', 'foremanctl', 'parameters.yaml')
+    import_paths = export_paths = None
 
-    if os.path.exists(params_file):
-        with open(params_file, 'r') as f:
+    if os.path.exists(PARAMETERS_FILE):
+        with open(PARAMETERS_FILE, 'r') as f:
             params = yaml.safe_load(f)
             import_paths = params.get('pulp_import_paths', [])
             export_paths = params.get('pulp_export_paths', [])
