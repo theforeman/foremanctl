@@ -13,3 +13,6 @@ variables:
   foreman_proxy_templates_url:
     parameter: --templates-url
     help: URL that hosts will use to contact the proxy for provisioning templates.
+  foreman_proxy_registration_url:
+    parameter: --registration-url
+    help: URL that hosts use to reach the registration endpoint (e.g. https://loadbalancer.example.com).
