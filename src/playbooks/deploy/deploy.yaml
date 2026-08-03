@@ -29,11 +29,11 @@
     - role: postgresql
       when:
         - database_mode == 'internal'
-    - valkey
-    - candlepin
-    - httpd
-    - foreman
-    - pulp
+    - role: valkey
+    - role: candlepin
+    - role: httpd
+    - role: foreman
+    - role: pulp
     - role: systemd_target
     - role: iop_core
       when:
