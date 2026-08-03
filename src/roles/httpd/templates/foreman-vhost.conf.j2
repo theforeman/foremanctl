@@ -1,5 +1,8 @@
 <VirtualHost *:80>
   ServerName {{ ansible_facts['fqdn'] }}
+{% for httpd_alias in httpd_aliases %}
+  ServerAlias {{ httpd_alias }}
+{% endfor %}
 
   ## Load additional static includes
   IncludeOptional "/etc/httpd/conf.d/05-foreman.d/*.conf"
