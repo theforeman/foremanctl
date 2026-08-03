@@ -57,6 +57,7 @@ ansible:
   dependencies:
     - remote-execution
 dynflow:
+  description: dynFlow workflow engine
   internal: true
   foreman_proxy:
     plugin_name: dynflow
