@@ -136,6 +136,8 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--bmc-redfish-verify-ssl` | Verify SSL certificates for Redfish BMC connections | `--foreman-proxy-bmc-redfish-verify-ssl` |
 | `--add-feature templates` | Enable Templates feature on Smart Proxy | `--foreman-proxy-templates` |
 | `--templates-url` | URL that hosts will use to contact the proxy for provisioning templates | `--foreman-proxy-templates-url` |
+| `--add-feature registration` | Enable Registration feature | `--foreman-proxy-registration` |
+| `--registration-url` | URL that hosts use to reach the registration endpoint | `--foreman-proxy-registration-url` |
 
 ### Unmapped
 
@@ -212,8 +214,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-proxy-realm-keytab` | | | |
 | `--foreman-proxy-realm-principal` | | | |
 | `--foreman-proxy-realm-provider` | | | |
-| `--foreman-proxy-registration` | | | |
-| `--foreman-proxy-registration-url` | | | |
 | `--puppet-server` | | puppet | server |
 | `--puppet-server-ca` | | puppet | server_ca |
 | `--puppet-dns-alt-names` | | puppet | dns_alt_names |

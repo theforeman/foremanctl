@@ -35,6 +35,11 @@ def test_foreman_proxy_features(curl_request, proxy_base_url, enabled_features):
         assert "ansible" in features
     else:
         assert "ansible" not in features
+    if 'registration' in enabled_features:
+        assert "registration" in features
+        assert "templates" in features
+    else:
+        assert "registration" not in features
 
 
 def test_foreman_proxy_service(server):
@@ -90,3 +95,15 @@ def test_templates_endpoint_responds(curl_request, proxy_base_url, server_fqdn):
     data = json.loads(cmd.stdout)
     assert 'templateServer' in data
     assert server_fqdn in data['templateServer']
+
+
+@pytest.mark.feature('registration')
+def test_registration_url(obsah_params):
+    registration_url = obsah_params.get('foreman_proxy_registration_url')
+    assert registration_url == 'https://loadbalancer.example.com:8443'
+
+
+@pytest.mark.feature('registration')
+def test_registration_endpoint(proxy_v2_features):
+    assert 'registration' in proxy_v2_features
+    assert proxy_v2_features['registration'].get('state') == 'running'
