@@ -53,7 +53,8 @@ class UserParameters:
 
 
 def pytest_addoption(parser):
-    parser.addoption("--server-hostname", action="store", default="quadlet", help="Hostname of the server VM to test against")
+    parser.addoption("--test-target", action="store", default="quadlet", help="Hostname of the system to test against")
+    parser.addoption("--server-hostname", action="store", default="quadlet", help="Hostname of the Foreman server")
 
 
 @pytest.fixture(scope="module")
@@ -74,6 +75,11 @@ def available_features(pytestconfig):
 @pytest.fixture(scope="module")
 def fixture_dir():
     return py.path.local(__file__).realpath() / '..' / 'fixtures'
+
+
+@pytest.fixture(scope="module")
+def test_target(pytestconfig):
+    return pytestconfig.getoption("test_target")
 
 
 @pytest.fixture(scope="module")
@@ -131,10 +137,10 @@ def default_certificates(certificate_source):
 
 
 @pytest.fixture(scope="module")
-def quadlet_client_certificate():
-    # this intentionally uses get_paramiko_host directly, as we want the cert of the quadlet box
-    # not the one "server" points at, as that can be the proxy
-    quadlet = get_paramiko_host('quadlet')
+def quadlet_client_certificate(server_hostname):
+    # this intentionally uses get_paramiko_host directly, as we want the cert of the real server box
+    # not the one the "server" fixture points at, as that can be the proxy
+    quadlet = get_paramiko_host(server_hostname)
     hostname = quadlet.run("hostname -f").stdout.strip()
     cert = quadlet.file(f"/var/lib/foremanctl/certs/certs/{hostname}-client.crt").content_string
     key = quadlet.file(f"/var/lib/foremanctl/certs/private/{hostname}-client.key").content_string
@@ -151,8 +157,8 @@ def get_paramiko_host(hostname):
 
 
 @pytest.fixture(scope="module")
-def server(server_hostname):
-    yield get_paramiko_host(server_hostname)
+def server(test_target):
+    yield get_paramiko_host(test_target)
 
 
 @pytest.fixture(scope="module")
