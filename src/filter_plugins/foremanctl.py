@@ -43,29 +43,24 @@ def filter_features(items):
     return items
 
 
-def get_dependencies_for_feature(feature, all_features):
+def get_dependencies_for_feature(feature):
     dependencies = set()
-    for dep_entry in FEATURE_MAP.get(feature, {}).get('dependencies', []):
-        dep_name = dep_entry['name']
-        unless = dep_entry.get('unless', [])
-        if any(excluded in all_features for excluded in unless):
-            continue
-        if dep_name not in dependencies:
-            dependencies.update(get_dependencies_for_feature(dep_name, all_features))
-        dependencies.add(dep_name)
+    for dependency in FEATURE_MAP.get(feature, {}).get('dependencies', []):
+        if dependency not in dependencies:
+            dependencies.update(get_dependencies_for_feature(dependency))
+        dependencies.add(dependency)
     return dependencies
 
 
 def get_dependencies(features):
-    all_features = set(features)
     dependencies = set()
     for feature in features:
-        dependencies.update(get_dependencies_for_feature(feature, all_features))
+        dependencies.update(get_dependencies_for_feature(feature))
     return dependencies
 
 
 def foreman_plugins(value):
-    dependencies = list(get_dependencies(value))
+    dependencies = list(get_dependencies(filter_features(value)))
     plugins = [FEATURE_MAP.get(feature, {}).get('foreman', {}).get('plugin_name') for feature in filter_features(value + dependencies)]
     return compact_list(plugins)
 
@@ -117,13 +112,13 @@ def conflicting_features(features):
 
 
 def hammer_plugins(value):
-    dependencies = list(get_dependencies(value))
+    dependencies = list(get_dependencies(filter_features(value)))
     plugins = [FEATURE_MAP.get(feature, {}).get('hammer') for feature in filter_features(value + dependencies)]
     return compact_list(plugins)
 
 
 def foreman_proxy_plugins(value):
-    dependencies = list(get_dependencies(value))
+    dependencies = list(get_dependencies(filter_features(value)))
     plugins = [FEATURE_MAP.get(feature, {}).get('foreman_proxy', {}).get('plugin_name') for feature in filter_features(value + dependencies)]
     return compact_list(plugins)
 

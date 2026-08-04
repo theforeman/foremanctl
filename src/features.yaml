@@ -17,9 +17,9 @@ katello:
     plugin_name: katello
   hammer: katello
   dependencies:
-    - name: tasks
-    - name: pulp
-    - name: candlepin
+    - tasks
+    - pulp
+    - candlepin
 google:
   description: Google Compute Engine plugin for Foreman
   hammer: foreman_google
@@ -37,7 +37,7 @@ tasks:
   hammer: foreman_tasks
   internal: true
   dependencies:
-    - name: dynflow
+    - dynflow
 remote-execution:
   description: Remote Execution plugin for Foreman
   foreman:
@@ -46,7 +46,7 @@ remote-execution:
     plugin_name: remote_execution_ssh
   hammer: foreman_remote_execution
   dependencies:
-    - name: tasks
+    - tasks
 ansible:
   description: Ansible plugin for Foreman
   foreman:
@@ -55,7 +55,7 @@ ansible:
     plugin_name: ansible
   hammer: foreman_ansible
   dependencies:
-    - name: remote-execution
+    - remote-execution
 dynflow:
   description: dynflow
   internal: true
@@ -67,11 +67,11 @@ rh-cloud:
     plugin_name: foreman_rh_cloud
   hammer: foreman_rh_cloud
   dependencies:
-    - name: katello
+    - katello
 iop:
   description: iop services
   dependencies:
-    - name: rh-cloud
+    - rh-cloud
 container-gateway:
   description: Container registry gateway for smart proxy
   internal: true
