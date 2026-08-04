@@ -5,10 +5,7 @@ candlepin_tls_versions:
   - "TLSv1.2"
   - "TLSv1.3"
 candlepin_ciphers:
-  - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-  - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-  - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-  - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+  - "PROFILE=SYSTEM"
 candlepin_container_image: quay.io/foreman/candlepin
 candlepin_container_tag: "4.4.14"
 candlepin_secret_mount_opts: "mode=0440,uid=0,gid=53,type=mount"
