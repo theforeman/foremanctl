@@ -1,0 +1,98 @@
+---
+- name: Restore from a backup
+  hosts: "{{ target_host | default('quadlet') }}"
+  become: true
+  gather_facts: true
+  vars_files:
+    - "../../vars/defaults.yml"
+    - "../../vars/database.yml"
+    - "../../vars/base.yaml"
+  roles:
+    - restore
+
+- name: Load restored parameters for deploy
+  hosts: "{{ target_host | default('quadlet') }}"
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Read restored parameters
+      ansible.builtin.slurp:
+        path: "{{ obsah_state_path }}/parameters.yaml"
+      register: restore_params_raw
+      failed_when: false
+      when: not validate | default(false)
+
+    - name: Parse restored parameters
+      ansible.builtin.set_fact:
+        restore_params: "{{ restore_params_raw.content | b64decode | from_yaml }}"
+      when:
+        - not validate | default(false)
+        - restore_params_raw is succeeded
+
+    - name: Set restore flavor
+      ansible.builtin.set_fact:
+        restore_flavor: "{{ restore_params.flavor | default('katello') }}"
+      when: restore_params is defined
+
+    - name: Set proxy deploy parameters
+      ansible.builtin.set_fact:
+        foreman_name: "{{ restore_params.foreman_name }}"
+        foreman_proxy_oauth_consumer_key: "{{ restore_params.foreman_proxy_oauth_consumer_key }}"
+        foreman_proxy_oauth_consumer_secret: "{{ restore_params.foreman_proxy_oauth_consumer_secret }}"
+      when:
+        - restore_params is defined
+        - restore_flavor | default('') is match('foreman-proxy.*')
+
+- name: Deploy services after restore (foreman-proxy)
+  import_playbook: ../deploy-proxy/deploy-proxy.yaml
+  when:
+    - not validate | default(false)
+    - restore_flavor | default('') is match('foreman-proxy.*')
+
+- name: Deploy services after restore (server)
+  import_playbook: ../deploy/deploy.yaml
+  when:
+    - not validate | default(false)
+    - restore_flavor | default('') == 'katello'
+
+- name: Verify restore completion
+  hosts: "{{ target_host | default('quadlet') }}"
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Verify services after restore
+      when: not validate | default(false)
+      block:
+        - name: Wait for services to stabilize
+          ansible.builtin.pause:
+            seconds: 30
+
+        - name: Check foreman.target status
+          ansible.builtin.systemd:
+            name: foreman.target
+          register: restore_target_status
+          failed_when: restore_target_status.status.ActiveState != 'active'
+          when: not (restore_flavor | default('') is match('foreman-proxy.*'))
+
+        - name: Wait for Foreman API to respond
+          ansible.builtin.uri:
+            url: "https://{{ ansible_fqdn }}/api/status"
+            method: GET
+            validate_certs: false
+            status_code: [200, 401]
+          register: restore_api_check
+          until: restore_api_check.status in [200, 401]
+          retries: 30
+          delay: 10
+          changed_when: false
+          when: not (restore_flavor | default('') is match('foreman-proxy.*'))
+
+        - name: Check foreman-proxy services
+          ansible.builtin.systemd:
+            name: "{{ item }}"
+          register: restore_proxy_status
+          failed_when: restore_proxy_status.status.ActiveState != 'active'
+          loop:
+            - foreman-proxy.service
+            - httpd.service
+          when: restore_flavor | default('') is match('foreman-proxy.*')

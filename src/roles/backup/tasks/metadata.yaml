@@ -43,6 +43,7 @@
       incremental: false
       timestamp: "{{ backup_timestamp }}"
       databases: "{{ backup_databases_to_backup }}"
+      database_mapping: "{{ backup_databases_config | items2dict(key_name='name', value_name='database') }}"
       enabled_features: "{{ enabled_features | default([]) }}"
       database_mode: "{{ backup_database_mode }}"
       container_images: "{{ backup_container_images_detailed | default([]) }}"

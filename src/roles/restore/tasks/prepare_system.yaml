@@ -1,0 +1,16 @@
+---
+- name: Stop Foreman services
+  ansible.builtin.systemd:
+    name: foreman.target
+    state: stopped
+  failed_when: false
+
+- name: Wait for PostgreSQL to fully stop
+  ansible.builtin.systemd:
+    name: postgresql.service
+  register: restore_postgres_status
+  until: restore_postgres_status.status.ActiveState in ['inactive', 'failed']
+  retries: "{{ restore_postgresql_stop_retries }}"
+  delay: "{{ restore_postgresql_stop_delay }}"
+  when: restore_database_mode == 'internal'
+  changed_when: false
