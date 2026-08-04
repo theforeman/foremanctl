@@ -23,11 +23,19 @@
     name: nodejs
     state: present
 
-- name: Enable CodeReady Builder repository
+- name: Ensure the crb repository is enabled
   community.general.rhsm_repository:
-    name: "codeready-builder-for-rhel-{{ ansible_distribution_major_version }}-{{ ansible_architecture }}-rpms"
+    name: crb
     state: enabled
-  when: ansible_distribution == 'RedHat'
+  when:
+    - ansible_facts['distribution'] != "RedHat"
+
+- name: Ensure the crb repository is enabled
+  community.general.rhsm_repository:
+    name: "codeready-builder-for-rhel-{{ ansible_facts['distribution_major_version'] }}-{{ ansible_facts['architecture'] }}-rpms"
+    state: enabled
+  when:
+    - ansible_facts['distribution'] == "RedHat"
 
 - name: Install development packages
   ansible.builtin.package:
