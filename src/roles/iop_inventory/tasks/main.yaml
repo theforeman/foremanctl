@@ -73,12 +73,7 @@
       KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
       USE_SUBMAN_ID: "true"
       INVENTORY_DB_SSL_MODE: "disable"
-      CONVENTIONAL_TIME_TO_STALE_SECONDS: "99999999999"
-      CONVENTIONAL_TIME_TO_STALE_WARNING_SECONDS: "99999999999"
-      CONVENTIONAL_TIME_TO_DELETE_SECONDS: "99999999999"
-      IMMUTABLE_TIME_TO_STALE_SECONDS: "99999999999"
-      IMMUTABLE_TIME_TO_STALE_WARNING_SECONDS: "99999999999"
-      IMMUTABLE_TIME_TO_DELETE_SECONDS: "99999999999"
+      DISABLE_HOST_CULLING: "true"
     secrets:
       - 'iop-core-host-inventory-database-username,type=env,target=INVENTORY_DB_USER'
       - 'iop-core-host-inventory-database-password,type=env,target=INVENTORY_DB_PASS'
@@ -111,6 +106,7 @@
       BYPASS_RBAC: "true"
       USE_SUBMAN_ID: "true"
       INVENTORY_DB_SSL_MODE: "disable"
+      DISABLE_HOST_CULLING: "true"
     secrets:
       - 'iop-core-host-inventory-database-username,type=env,target=INVENTORY_DB_USER'
       - 'iop-core-host-inventory-database-password,type=env,target=INVENTORY_DB_PASS'
