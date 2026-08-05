@@ -10,6 +10,8 @@ flavor_features:
   - rh-cloud
   - theme-satellite
   - webhooks
+  - hammer
+  - foreman-proxy
 
 checks_to_execute:
   - check_features
