@@ -35,7 +35,8 @@ class UserParameters:
         # FEATURE                   STATE               DESCRIPTION
         # $feature                  enabled/available   $description
         output = subprocess.check_output(['./foremanctl', 'features'], cwd=self._config.rootdir,
-                                         universal_newlines=True)
+                                         universal_newlines=True,
+                                         env=os.environ | {'FOREMANCTL_FEATURES_LIST_INTERNAL': 'true'})
         lines = output.splitlines(keepends=False)
         # feature, status, description
         return [line.split(None, 2) for line in lines[1:]]
