@@ -245,7 +245,7 @@
         h.last_check_in + INTERVAL '7 days' AS stale_warning_timestamp,
         h.last_check_in + INTERVAL '30 days' AS culled_timestamp,
         h.tags_alt as tags,
-        jsonb_build_object('operating_system', sps.operating_system, 'host_type', sps.host_type, 'owner_id', sps.owner_id) as system_profile,
+        h.system_profile_facts as system_profile,
         h.insights_id,
         h.reporter,
         h.per_reporter_staleness,
