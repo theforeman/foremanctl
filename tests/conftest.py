@@ -19,6 +19,9 @@ SSH_CONFIG = './.tmp/ssh-config'
 OBSAH_STATE = os.environ.get('OBSAH_STATE', '.var/lib/foremanctl')
 PARAMETERS_FILE = os.path.join(OBSAH_STATE, 'parameters.yaml')
 FLAVOR_TESTS_DIR = py.path.local(__file__).dirpath() / 'flavor'
+FLAVOR_TESTS_DIR_OVERRIDES = {
+    'satellite': 'katello',
+}
 FOREMAN_PROXY_PORT = 8443
 
 
@@ -284,25 +287,17 @@ def pytest_configure(config):
     config.user_parameters = UserParameters(config)
 
 
-FLAVOR_TEST_DIRS = {
-    'katello': ['katello', 'satellite'],
-    'foreman-proxy-content': ['foreman-proxy-content', 'capsule'],
-}
-
-
 def pytest_collection_modifyitems(config, items):
     active_flavor = config.user_parameters.flavor
-    allowed_dirs = set()
-    for test_dir, flavors in FLAVOR_TEST_DIRS.items():
-        if active_flavor in flavors:
-            allowed_dirs.add(test_dir)
+    # if there is an override, use that, otherwise use the flavor verbatim
+    active_flavor_dir = FLAVOR_TESTS_DIR / FLAVOR_TESTS_DIR_OVERRIDES.get(active_flavor, active_flavor)
 
     deselected = []
     selected = []
     for item in items:
         test_path = py.path.local(item.fspath)
         if test_path.relto(FLAVOR_TESTS_DIR):
-            if not any(test_path.relto(FLAVOR_TESTS_DIR / d) for d in allowed_dirs):
+            if not test_path.relto(active_flavor_dir):
                 deselected.append(item)
                 continue
         selected.append(item)
