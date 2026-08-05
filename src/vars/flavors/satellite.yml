@@ -2,6 +2,8 @@
 flavor_features:
   - foreman
   - katello
+  - pulp
+  - candlepin
   - content/ansible
   - content/container
   - content/rpm
