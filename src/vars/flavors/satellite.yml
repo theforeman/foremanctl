@@ -26,3 +26,5 @@ health_checks_to_execute:
   - check_foreman_tasks
   - check_host_facts_count
   - check_duplicate_permissions
+
+post_install_message_enabled: true
