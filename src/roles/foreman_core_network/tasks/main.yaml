@@ -1,0 +1,8 @@
+---
+- name: Create foreman-core-network
+  containers.podman.podman_network:
+    name: "{{ foreman_core_network_name }}"
+    state: present
+    driver: "{{ foreman_core_network_driver }}"
+    subnet: "{{ foreman_core_network_subnet }}"
+    gateway: "{{ foreman_core_network_gateway }}"

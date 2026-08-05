@@ -21,9 +21,9 @@ foreman_proxy_foreman_server_url: "https://{{ ansible_facts['fqdn'] }}"
 # Templates settings
 foreman_proxy_templates_url: "http://{{ foreman_proxy_name }}:8000"
 
-# Container gateway settings
+# Container gateway settings (deploy playbooks override via database.yml)
 foreman_proxy_container_gateway_pulp_endpoint: "https://{{ foreman_proxy_name }}"
-foreman_proxy_container_gateway_db_host: localhost
+foreman_proxy_container_gateway_db_host: "127.0.0.1"
 foreman_proxy_container_gateway_db_port: 5432
 foreman_proxy_container_gateway_db_user: container_gateway
 foreman_proxy_container_gateway_db_name: container_gateway

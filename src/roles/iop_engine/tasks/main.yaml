@@ -20,7 +20,7 @@
     etc_hosts:
       console.redhat.com: "127.0.0.1"
     network:
-      - iop-core-network
+      - foreman-core-network
     quadlet_options:
       - |
         [Unit]

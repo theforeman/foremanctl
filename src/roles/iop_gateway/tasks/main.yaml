@@ -57,7 +57,7 @@
     image: iop-gateway.image
     state: quadlet
     network:
-      - iop-core-network
+      - foreman-core-network
     publish:
       - "127.0.0.1:24443:8443"
     secrets:

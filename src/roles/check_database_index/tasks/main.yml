@@ -2,7 +2,7 @@
 - name: Check if amcheck extension is installed
   community.postgresql.postgresql_query:
     login_db: "{{ check_database_index_database }}"
-    login_host: "{{ database_host }}"
+    login_host: "{{ database_management_host }}"
     login_port: "{{ database_port }}"
     login_user: postgres
     login_password: "{{ postgresql_admin_password }}"
@@ -19,7 +19,7 @@
     - name: Execute amcheck integrity check
       community.postgresql.postgresql_query:
         login_db: "{{ check_database_index_database }}"
-        login_host: "{{ database_host }}"
+        login_host: "{{ database_management_host }}"
         login_port: "{{ database_port }}"
         login_user: postgres
         login_password: "{{ postgresql_admin_password }}"

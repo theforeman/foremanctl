@@ -22,7 +22,7 @@ def test_inventory_service_dependencies(server):
 
 
 def test_inventory_api_endpoint(server, iop_image):
-    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-inventory')} curl --fail -s -o /dev/null http://iop-core-host-inventory-api:8081/health")
+    result = server.run(f"podman run --network=foreman-core-network --rm {iop_image('iop-inventory')} curl --fail -s -o /dev/null http://iop-core-host-inventory-api:8081/health")
     assert result.succeeded
 
 

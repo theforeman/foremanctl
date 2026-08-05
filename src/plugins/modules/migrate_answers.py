@@ -152,6 +152,11 @@ def apply_mappings(old_config):
                     param_name = str(old_key)
                 unmappable.append(param_name)
 
+    if result.get('database_mode', 'internal') == 'internal':
+        db_host = flat_config.get(('foreman', 'db_host'))
+        if db_host in ('localhost', '127.0.0.1'):
+            result.pop('database_host', None)
+            
     return {
         'mapped': result,
         'unmappable': unmappable

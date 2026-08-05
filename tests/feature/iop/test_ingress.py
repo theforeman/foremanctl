@@ -5,5 +5,5 @@ def test_ingress_service(server):
 
 
 def test_ingress_http_endpoint(server, iop_image):
-    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-ingress')} curl --fail -s -o /dev/null http://iop-core-ingress:8080/")
+    result = server.run(f"podman run --network=foreman-core-network --rm {iop_image('iop-ingress')} curl --fail -s -o /dev/null http://iop-core-ingress:8080/")
     assert result.succeeded
