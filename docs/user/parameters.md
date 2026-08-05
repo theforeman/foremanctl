@@ -33,7 +33,7 @@ There are multiple use cases from the users perspective that dictate what parame
 | Parameter | Description | foreman-installer Parameters |
 | ----------| ----------- | ---------------------------- |
 | `--database-mode` | Denotes if the database is internally or externally managed | `--foreman-db-manage`<br/> `--katello-candlepin-db-manage`<br/> `--foreman-proxy-content-pulpcore-manage-postgresql` |
-| `--database-host` | Location to connect to the database | `--foreman-db-host`<br/> `--katello-candlepin-db-host`<br/> `--foreman-proxy-content-pulpcore-postgresql-host` |
+| `--database-host` | Hostname application containers use to reach PostgreSQL (`postgresql` internal; remote host external) | `--foreman-db-host`<br/> `--katello-candlepin-db-host`<br/> `--foreman-proxy-content-pulpcore-postgresql-host` |
 | `--database-port` | Port to connect to the database | `--foreman-db-port`<br/> `--katello-candlepin-db-port`<br/> `--foreman-proxy-content-pulpcore-postgresql-port` |
 | `--database-ssl-mode` | SSL verification mode to use | `--foreman-db-sslmode` <br/> `--katello-candlepin-db-ssl-verify` <br/> `--katello-candlepin-db-ssl` <br/> `--foreman-proxy-content-pulpcore-postgresql-ssl`|
 | `--database-ssl-ca` | Path to the database CA certificate | `--foreman-db-root-cert` <br/> `--katello-candlepin-db-ssl-ca` <br/> `--foreman-proxy-content-pulpcore-db-ssl-root-ca` |

@@ -2,6 +2,13 @@
 certificates_hostnames:
   - "{{ ansible_facts['fqdn'] }}"
   - localhost
+  - candlepin
+  - iop-core-gateway
+certificates_hostname_extra_sans:
+  candlepin:
+    - localhost
+  iop-core-gateway:
+    - localhost
 
 oauth_directory: "{{ obsah_state_path }}/oauth"
 
@@ -13,8 +20,6 @@ certificates_oauth_directory: /var/lib/foremanctl/oauth
 
 candlepin_ca_key: "{{ ca_key }}"
 candlepin_ca_certificate: "{{ ca_certificate }}"
-candlepin_tomcat_key: "{{ localhost_key }}"
-candlepin_tomcat_certificate: "{{ localhost_certificate }}"
 candlepin_client_key: "{{ client_key }}"
 candlepin_client_certificate: "{{ client_certificate }}"
 

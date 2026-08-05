@@ -10,36 +10,14 @@ The `iop` feature depends on `rh-cloud`, which installs the `foreman_rh_cloud` p
 
 ## Architecture
 
-IOP runs as a set of containerized services managed via podman quadlets on the `iop-core-network` (bridge, `10.130.0.0/24`). The gateway is registered as a Foreman smart proxy at `https://localhost:24443`.
+IOP runs as a set of containerized services managed via podman quadlets on the shared `foreman-core-network` (bridge, `10.130.0.0/24`), alongside Foreman, Postgres, and other co-located services. See [Network Architecture](network.md) for the host/bridge split, unix sockets, and published ports.
+
+The subnet matches the former `iop-core-network` so the gateway image nginx resolver (`10.130.0.1`) can resolve upstream service names. The gateway is registered as a Foreman smart proxy at `https://iop-core-gateway:8443` (host publish remains `127.0.0.1:24443` for host-side tools and tests).
 
 ```mermaid
 graph TB
     subgraph Host["Host System"]
-        Foreman["Foreman<br/>(foreman_rh_cloud)"]
         Apache["Apache httpd"]
-        PG[(PostgreSQL)]
-
-        subgraph Network["iop-core-network (10.130.0.0/24)"]
-            Kafka[Kafka]
-
-            subgraph Core["Core Pipeline"]
-                Ingress[Ingress]
-                Puptoo[Puptoo]
-                Yuptoo[Yuptoo]
-                Engine[Engine]
-            end
-
-            Gateway["Gateway<br/>:24443"]
-
-            subgraph Services["Application Services"]
-                Inventory["Inventory API<br/>:8081"]
-                Advisor["Advisor API<br/>:8000"]
-                Remediation["Remediation API<br/>:3000"]
-                VMAAS["VMAAS<br/>(reposcan + webapp)"]
-                Vuln["Vulnerability<br/>(8 containers)"]
-            end
-        end
-
         subgraph Frontends["Frontend Assets (/var/www/iop)"]
             InventoryFE[Inventory Frontend]
             AdvisorFE[Advisor Frontend]
@@ -47,6 +25,29 @@ graph TB
         end
 
         CVEMap["CVE Map Downloader<br/>(systemd timer + path watcher)"]
+    end
+
+    subgraph Network["foreman-core-network (10.130.0.0/24)"]
+        Foreman["Foreman<br/>(foreman_rh_cloud)"]
+        PG[(PostgreSQL)]
+        Kafka[Kafka]
+
+        subgraph Core["Core Pipeline"]
+            Ingress[Ingress]
+            Puptoo[Puptoo]
+            Yuptoo[Yuptoo]
+            Engine[Engine]
+        end
+
+        Gateway["Gateway<br/>:24443"]
+
+        subgraph Services["Application Services"]
+            Inventory["Inventory API<br/>:8081"]
+            Advisor["Advisor API<br/>:8000"]
+            Remediation["Remediation API<br/>:3000"]
+            VMAAS["VMAAS<br/>(reposcan + webapp)"]
+            Vuln["Vulnerability<br/>(8 containers)"]
+        end
     end
 
     Foreman -- "smart proxy<br/>relay" --> Gateway
@@ -113,7 +114,7 @@ Key Kafka topics:
 | gateway | `iop-core-gateway` | 127.0.0.1:24443 | nginx proxy, smart proxy relay to Foreman |
 | inventory | `iop-core-host-inventory-migrate` (oneshot), `iop-core-host-inventory`, `iop-core-host-inventory-api`, `iop-core-host-inventory-cleanup` (timer) | 8081 (internal) | Host inventory with DB migration, MQ consumer, REST API, and periodic cleanup |
 | advisor | `iop-service-advisor-backend-api`, `iop-service-advisor-backend-service` | 8000 (internal) | Advisor recommendations |
-| remediation | `iop-service-remediations-api` | 3000 (host network) | Remediation playbook generation |
+| remediation | `iop-service-remediations-api` | 3000 (internal) | Remediation playbook generation |
 | vmaas | `iop-service-vmaas-reposcan`, `iop-service-vmaas-webapp-go` | - | Vulnerability metadata and advisory sync |
 | vulnerability | 8 containers (see below) | 8443 (internal) | Vulnerability assessment pipeline |
 
@@ -132,11 +133,7 @@ Key Kafka topics:
 
 ### Network
 
-All IOP containers join the `iop-core-network` bridge network (`10.130.0.0/24`, gateway `10.130.0.1`). Containers communicate with each other by container name within this network.
-
-Database connectivity uses `host.containers.internal:5432` to reach the host's PostgreSQL instance. SSL is disabled for these internal connections.
-
-The gateway binds only to `127.0.0.1:24443` so it is not externally accessible.
+All IOP containers join `foreman-core-network` and reach Postgres at `postgresql:5432`. The gateway is published on host loopback as `127.0.0.1:24443` (container port `8443`) so it is not externally accessible; the Foreman container talks to it as `https://iop-core-gateway:8443`. The gateway relays to Foreman via `https://host.containers.internal` (Apache on the host). See [Network Architecture](network.md).
 
 ### Smart Proxy Registration
 
@@ -164,7 +161,8 @@ Timers:
 
 ## Databases
 
-IOP creates five PostgreSQL databases, all accessible to containers via `host.containers.internal:5432`:
+IOP creates five PostgreSQL databases, all accessible to containers via the
+`postgresql` container on `foreman-core-network` (`postgresql:5432`):
 
 | Database | User |
 |----------|------|
@@ -179,6 +177,8 @@ Passwords are auto-generated using Ansible's `password` lookup and stored as pod
 ### Foreign Data Wrappers
 
 Advisor and vulnerability services use PostgreSQL foreign data wrappers (FDW) to query the inventory database directly, avoiding REST API overhead for bulk data access.
+
+IOP app containers still connect as `postgresql:5432` on the bridge. FDW is different: Ansible sets up the foreign server from the host (`login_host: 127.0.0.1`, the published IPv4 port), and `CREATE SERVER` stores `host=127.0.0.1`, which Postgres interprets inside its own container so advisor/vuln stay on-box instead of hairpinning through the bridge. See [PostgreSQL from three vantage points](network.md#postgresql-from-three-vantage-points).
 
 The reusable `iop_fdw` role sets up each FDW connection:
 
@@ -272,8 +272,8 @@ Gateway and service certificates use the default foremanctl CA infrastructure at
 
 | Certificate | Path |
 |-------------|------|
-| Gateway server cert | `certs/localhost.crt` |
-| Gateway server key | `private/localhost.key` |
+| Gateway server cert | `certs/iop-core-gateway.crt` |
+| Gateway server key | `private/iop-core-gateway.key` |
 | Gateway client cert | `certs/localhost-client.crt` |
 | Gateway client key | `private/localhost-client.key` |
 | CA | `certs/ca.crt` |

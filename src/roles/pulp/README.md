@@ -18,7 +18,7 @@ Variables
 - `pulp_plugins`: Additional Pulp plugins to enable (default: `[pulp_container, pulp_rpm]`)
 - `pulp_database_name`: Name of the Pulp database (default: `pulp`)
 - `pulp_database_user`: Database user (default: `pulp`)
-- `pulp_database_host`: Database host (default: `localhost`)
+- `pulp_database_host`: Database host (default: `postgresql` on `foreman-core-network`; overridden by `database_host` in deploy playbooks)
 - `pulp_database_port`: Database port (default: `5432`)
 - `pulp_database_password`: Database password (required, no default)
 - `pulp_database_ssl_mode`: Database SSL mode (default: `disabled`)
