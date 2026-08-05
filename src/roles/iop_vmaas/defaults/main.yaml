@@ -1,5 +1,5 @@
 ---
-iop_vmaas_container_image: "quay.io/redhat-services-prod/insights-management-tenant/insights-vulnerability/vmaas"
+iop_vmaas_container_image: "quay.io/iop/vmaas"
 iop_vmaas_container_tag: "latest"
 
 iop_vmaas_database_name: vmaas_db
