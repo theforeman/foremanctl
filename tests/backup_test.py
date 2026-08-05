@@ -24,7 +24,7 @@ def expected_databases(enabled_features):
     if 'candlepin' in enabled_features:
         databases.append('candlepin')
 
-    if any([feature.startswith('content/') for feature in enabled_features]):
+    if 'pulp' in enabled_features:
         databases.append('pulp')
 
     # Add IOP databases if IOP feature is enabled
