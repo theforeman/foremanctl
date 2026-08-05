@@ -35,7 +35,7 @@ def test_gateway_relay_reaches_foreman(server, iop_image):
     # convenient real-world path that is relayed through the gateway and
     # only succeeds once the Host header matches Foreman's allowed hosts.
     result = server.run(
-        f"podman run --network=iop-core-network --rm {iop_image('iop-inventory')} "
+        f"podman run --network=foreman-core-network --rm {iop_image('iop-inventory')} "
         "curl --silent --output /dev/null --write-out '%{http_code}' "
         "http://iop-core-gateway:9090/katello/api/v2/organizations"
     )

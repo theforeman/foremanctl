@@ -12,7 +12,7 @@
       DISABLE_REDIS: "True"
       DISABLE_S3_UPLOAD: "True"
     network:
-      - iop-core-network
+      - foreman-core-network
     quadlet_options:
       - |
         [Unit]

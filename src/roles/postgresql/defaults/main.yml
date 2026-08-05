@@ -2,7 +2,6 @@
 postgresql_container_image: quay.io/sclorg/postgresql-16-c10s
 postgresql_container_tag: "latest"
 postgresql_container_name: postgresql
-postgresql_network: host
 postgresql_restart_policy: always
 
 postgresql_data_dir: /var/lib/pgsql/data
@@ -13,4 +12,8 @@ postgresql_max_connections: 500
 postgresql_shared_buffers: 512MB
 postgresql_effective_cache_size: 1GB
 
+postgresql_networks:
+  - foreman-core-network
+postgresql_publish:
+  - "127.0.0.1:5432:5432"
 postgresql_upgrade: "hardlink"

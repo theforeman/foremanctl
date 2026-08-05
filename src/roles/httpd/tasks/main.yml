@@ -6,6 +6,15 @@
       - mod_ssl
     state: present
 
+- name: Set httpd_can_network_connect so Apache can reverse proxy to TCP backends
+  ansible.posix.seboolean:
+    name: httpd_can_network_connect
+    state: true
+    persistent: true
+  when:
+    - ansible_facts['selinux']['status'] == "enabled"
+    - httpd_foreman_backend is match('^https?://')
+
 - name: Set daemons_enable_cluster_mode so Apache can connect to unix sockets
   ansible.posix.seboolean:
     name: daemons_enable_cluster_mode

@@ -39,7 +39,7 @@
     state: quadlet
     command: make upgrade_db
     network:
-      - iop-core-network
+      - foreman-core-network
     env:
       KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
       USE_SUBMAN_ID: "true"
@@ -70,7 +70,7 @@
     state: quadlet
     command: make run_inv_mq_service
     network:
-      - iop-core-network
+      - foreman-core-network
     env:
       KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
       USE_SUBMAN_ID: "true"
@@ -101,7 +101,7 @@
     state: quadlet
     command: python run_gunicorn.py
     network:
-      - iop-core-network
+      - foreman-core-network
     env:
       KAFKA_BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
       LISTEN_PORT: "8081"
@@ -134,7 +134,7 @@
     state: quadlet
     command: make run_host_delete_access_tags
     network:
-      - iop-core-network
+      - foreman-core-network
     env:
       KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
       USE_SUBMAN_ID: "true"
@@ -219,7 +219,7 @@
     login_db: "{{ iop_inventory_database_name }}"
     login_user: postgres
     login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_host: "{{ database_management_host }}"
 
 - name: Create inventory schema in inventory database
   community.postgresql.postgresql_schema:
@@ -228,14 +228,14 @@
     owner: "{{ iop_inventory_database_user }}"
     login_user: postgres
     login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_host: "{{ database_management_host }}"
 
 - name: Create inventory.hosts view in inventory database
   community.postgresql.postgresql_query:
     login_db: "{{ iop_inventory_database_name }}"
     login_user: postgres
     login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_host: "{{ database_management_host }}"
     # TODO(RHINENG-26911): remove this view once Cyndi decommission completes
     # across all IoP services.
     # Per-org custom staleness from hbi.staleness is not supported.
