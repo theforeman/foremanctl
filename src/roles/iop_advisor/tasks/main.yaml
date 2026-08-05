@@ -39,7 +39,7 @@
     state: quadlet
     command: sh -c "./container_init.sh && api/app.sh"
     network:
-      - iop-core-network
+      - foreman-core-network
     env:
       DJANGO_SESSION_KEY: "UNUSED"
       BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
@@ -83,7 +83,7 @@
     state: quadlet
     command: pipenv run python service/service.py
     network:
-      - iop-core-network
+      - foreman-core-network
     env:
       BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
       ADVISOR_DB_SSL_MODE: "disable"

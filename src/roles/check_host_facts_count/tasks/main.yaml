@@ -4,7 +4,7 @@
     login_db: "{{ foreman_database_name }}"
     login_user: "{{ foreman_database_user }}"
     login_password: "{{ foreman_database_password }}"
-    login_host: "{{ foreman_database_host }}"
+    login_host: "{{ database_host }}"
     query: |
       SELECT fact_values.host_id, count(fact_values.id) as count
       FROM fact_values

@@ -14,6 +14,11 @@
     - "../../vars/database.yml"
     - "../../vars/logging.yml"
     - "../../vars/base.yaml"
+  pre_tasks:
+    - name: Set external database hosts
+      ansible.builtin.set_fact:
+        pulp_database_host: "{{ database_host }}"
+      when: database_mode == 'external'
   roles:
     - role: pre_install
     - role: checks
@@ -26,6 +31,7 @@
         certificate_checks_key: "{{ server_key }}"
         certificate_checks_ca: "{{ server_ca_certificate }}"
     - role: oauth_from_bundle
+    - role: foreman_core_network
     - role: postgresql
       when:
         - database_mode == 'internal'

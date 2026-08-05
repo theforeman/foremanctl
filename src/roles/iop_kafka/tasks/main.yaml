@@ -35,7 +35,7 @@
     state: quadlet
     command: sh bin/init-start.sh
     network:
-      - iop-core-network
+      - foreman-core-network
     env:
       LOG_DIR: /tmp/kafka-logs
       KAFKA_NODE_ID: "1"

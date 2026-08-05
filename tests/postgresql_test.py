@@ -13,6 +13,19 @@ def test_postgresql_port(database):
     assert postgresql.port("5432").is_reachable
 
 
+def test_postgresql_not_listening_on_all_interfaces(database, database_mode):
+    if database_mode == 'external':
+        pytest.skip("Remote DB host must accept connections from application hosts")
+
+    ports = database.run("podman port postgresql")
+    assert '127.0.0.1:5432' in ports.stdout
+    assert '0.0.0.0:5432' not in ports.stdout
+
+    ss = database.run("ss -ltn '( sport = :5432 )'")
+    assert '0.0.0.0:5432' not in ss.stdout
+    assert '[::]:5432' not in ss.stdout
+
+
 def test_postgresql_password_encryption(database):
     result = database.run("podman exec postgresql psql -U postgres -c 'SHOW password_encryption'")
     assert "scram-sha-256" in result.stdout

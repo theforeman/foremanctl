@@ -38,7 +38,7 @@
     image: iop-vmaas.image
     state: quadlet
     quadlet_dir: /etc/containers/systemd
-    network: iop-core-network
+    network: foreman-core-network
     volumes:
       - iop-service-vmaas-data:/data:rw
     command: "/vmaas/entrypoint.sh database-upgrade reposcan"
@@ -82,7 +82,7 @@
     image: iop-vmaas.image
     state: quadlet
     quadlet_dir: /etc/containers/systemd
-    network: iop-core-network
+    network: foreman-core-network
     command: "/vmaas/entrypoint.sh webapp-go"
     env:
       REPOSCAN_PUBLIC_URL: "http://iop-service-vmaas-reposcan:8000"

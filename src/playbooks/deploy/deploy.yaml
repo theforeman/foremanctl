@@ -15,6 +15,13 @@
     - "../../vars/foreman.yml"
     - "../../vars/logging.yml"
     - "../../vars/base.yaml"
+  pre_tasks:
+    - name: Set external database hosts
+      ansible.builtin.set_fact:
+        foreman_database_host: "{{ database_host }}"
+        candlepin_database_host: "{{ database_host }}"
+        pulp_database_host: "{{ database_host }}"
+      when: database_mode == 'external'
   roles:
     - role: pre_install
     - role: checks
@@ -26,6 +33,7 @@
         certificate_checks_certificate: "{{ server_certificate }}"
         certificate_checks_key: "{{ server_key }}"
         certificate_checks_ca: "{{ server_ca_certificate }}"
+    - role: foreman_core_network
     - role: postgresql
       when:
         - database_mode == 'internal'
