@@ -29,11 +29,15 @@ foreman_development_rails_command: "puma -w 2 -p {{ foreman_development_rails_po
 
 foreman_development_url: "http://{{ ansible_facts['fqdn'] }}:{{ foreman_development_rails_port }}"
 
-foreman_development_database_host: "localhost"
+# Prefer 127.0.0.1 over localhost: Postgres is published on IPv4 only, and
+# "localhost" often tries ::1 first (connection refused).
+foreman_development_database_host: "127.0.0.1"
 foreman_development_database_port: 5432
 foreman_development_database_name: "foreman_development"
 foreman_development_database_user: "foreman"
-foreman_development_database_password: "foreman" # noqa: no-static-secrets
+# Must match the DB role password set by the postgresql role (random from state file).
+# With bridge+publish, only TCP auth is available — a hardcoded password no longer works.
+foreman_development_database_password: "{{ foreman_database_password }}"
 
 foreman_development_nodejs_stream: "22"
 

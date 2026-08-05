@@ -26,6 +26,11 @@
         certificate_checks_certificate: "{{ server_certificate }}"
         certificate_checks_key: "{{ server_key }}"
         certificate_checks_ca: "{{ server_ca_certificate }}"
+    # IOP network must exist before Postgres joins it when IOP is enabled.
+    - role: iop_network
+      when:
+        - "enabled_features | has_feature('iop')"
+        - database_mode == 'internal'
     - role: postgresql
       when:
         - database_mode == 'internal'

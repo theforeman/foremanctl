@@ -96,7 +96,8 @@ Advisor and vulnerability frontend assets are extracted from container images an
 
 ### Databases
 
-IOP creates five PostgreSQL databases, all accessible to containers via `host.containers.internal:5432`:
+IOP creates five PostgreSQL databases, all accessible to containers via the
+`postgresql` container on `iop-core-network` (`postgresql:5432`):
 
 | Database | User |
 |----------|------|

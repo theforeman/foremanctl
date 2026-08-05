@@ -45,6 +45,9 @@
     - role: pre_install
     - role: systemd_target
     - role: certificates
+    - role: iop_network
+      when:
+        - "enabled_features | has_feature('iop')"
     - role: postgresql
     - role: valkey
     - role: candlepin
@@ -55,6 +58,8 @@
         foreman_development_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
         foreman_development_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
         foreman_development_candlepin_oauth_secret: "{{ candlepin_oauth_secret }}"
+        foreman_development_database_password: "{{ foreman_database_password }}"
+
     - role: iop_core
       when:
         - "enabled_features | has_feature('iop')"

@@ -213,7 +213,7 @@
     login_db: "{{ iop_inventory_database_name }}"
     login_user: postgres
     login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_host: 127.0.0.1
 
 - name: Create inventory schema in inventory database
   community.postgresql.postgresql_schema:
@@ -222,14 +222,14 @@
     owner: "{{ iop_inventory_database_user }}"
     login_user: postgres
     login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_host: 127.0.0.1
 
 - name: Create inventory.hosts view in inventory database
   community.postgresql.postgresql_query:
     login_db: "{{ iop_inventory_database_name }}"
     login_user: postgres
     login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_host: 127.0.0.1
     # TODO(RHINENG-26911): remove this view once Cyndi decommission completes
     # across all IoP services.
     # Staleness intervals are hardcoded HBI defaults (29h, 7d, 30d).
