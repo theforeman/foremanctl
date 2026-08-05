@@ -20,7 +20,7 @@
     state: quadlet
     network: host
     sdnotify: true
-    command: ["run-valkey", "--supervised", "systemd", "--loglevel", "{{ valkey_log_level }}"]
+    command: ["run-valkey", "--supervised", "systemd", "--loglevel", "{{ valkey_log_level }}", "--bind", "127.0.0.1", "-::1"]
     volumes:
       - /var/lib/valkey:/data:rw,Z
     quadlet_options:
