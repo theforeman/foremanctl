@@ -38,16 +38,20 @@ class UserParameters:
                                          universal_newlines=True,
                                          env=os.environ | {'FOREMANCTL_FEATURES_LIST_INTERNAL': 'true'})
         lines = output.splitlines(keepends=False)
-        # feature, status, description
-        return [line.split(None, 2) for line in lines[1:]]
+        # feature, status, internal, description
+        return [line.split(None, 3) for line in lines[1:]]
 
     @cached_property
     def available_features(self):
-        return set(feature for feature, _status, _desc in self.features)
+        return set(feature for feature, _status, internal, _desc in self.features if internal == '0')
 
     @cached_property
     def enabled_features(self):
-        return set(feature for feature, status, _desc in self.features if status == 'enabled')
+        return set(feature for feature, status, internal, _desc in self.features if status == 'enabled')
+
+    @cached_property
+    def user_enabled_features(self):
+        return set(feature for feature, status, internal, _desc in self.features if status == 'enabled' and internal == '0')
 
     @cached_property
     def flavor(self):
@@ -68,6 +72,11 @@ def flavor(pytestconfig):
 @pytest.fixture(scope="module")
 def enabled_features(pytestconfig):
     return pytestconfig.user_parameters.enabled_features
+
+
+@pytest.fixture(scope="module")
+def user_enabled_features(pytestconfig):
+    return pytestconfig.user_parameters.user_enabled_features
 
 
 @pytest.fixture(scope="module")

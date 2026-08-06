@@ -73,18 +73,25 @@ def available_foreman_plugins(_value):
 def list_all_features(enabled_features, only_enabled=False):
     enabled_list = []
     available_list = []
+    list_internal = os.environ.get('FOREMANCTL_FEATURES_LIST_INTERNAL', '') == 'true'
     for name, meta in FEATURE_MAP.items():
-        if meta.get('internal', False) and not os.environ.get('FOREMANCTL_FEATURES_LIST_INTERNAL', '') == 'true':
+        internal = meta.get('internal', False)
+        if internal and not list_internal:
             continue
         description = meta.get('description', '')
         if name in enabled_features:
-            enabled_list.append((name, 'enabled', description))
+            enabled_list.append((name, 'enabled', internal, description))
         elif not only_enabled:
-            available_list.append((name, 'available', description))
+            available_list.append((name, 'available', internal, description))
 
-    output = [f"{'FEATURE':<25} {'STATE':<12} DESCRIPTION"]
-    for name, state, description in enabled_list + available_list:
-        output.append(f"{name:<25} {state:<12} {description}")
+    if not list_internal:
+        output = [f"{'FEATURE':<25} {'STATE':<12} DESCRIPTION"]
+        for name, state, _internal, description in enabled_list + available_list:
+            output.append(f"{name:<25} {state:<12} {description}")
+    else:
+        output = [f"{'FEATURE':<25} {'STATE':<12} {'INTERNAL':<8} DESCRIPTION"]
+        for name, state, internal, description in enabled_list + available_list:
+            output.append(f"{name:<25} {state:<12} {internal:<8} {description}")
 
     return "\n".join(output)
 
