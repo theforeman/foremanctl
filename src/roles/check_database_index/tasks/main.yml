@@ -2,10 +2,10 @@
 - name: Check if amcheck extension is installed
   community.postgresql.postgresql_query:
     login_db: "{{ check_database_index_database }}"
-    login_host: "{{ database_host }}"
-    login_port: "{{ database_port }}"
+    login_host: "{{ check_database_index_database_host }}"
+    login_port: "{{ check_database_index_database_port }}"
     login_user: postgres
-    login_password: "{{ postgresql_admin_password }}"
+    login_password: "{{ check_database_index_admin_password }}"
     query: SELECT COUNT(*) as count FROM pg_extension WHERE extname = 'amcheck'
   register: check_database_index_amcheck_installed
   failed_when: false
@@ -19,10 +19,10 @@
     - name: Execute amcheck integrity check
       community.postgresql.postgresql_query:
         login_db: "{{ check_database_index_database }}"
-        login_host: "{{ database_host }}"
-        login_port: "{{ database_port }}"
+        login_host: "{{ check_database_index_database_host }}"
+        login_port: "{{ check_database_index_database_port }}"
         login_user: postgres
-        login_password: "{{ postgresql_admin_password }}"
+        login_password: "{{ check_database_index_admin_password }}"
         query: |
           SELECT bt_index_check(index => c.oid, heapallindexed => i.indisunique),
                  c.relname,

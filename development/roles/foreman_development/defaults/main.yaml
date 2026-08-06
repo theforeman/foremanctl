@@ -37,6 +37,7 @@ foreman_development_database_password: "foreman" # noqa: no-static-secrets
 
 foreman_development_nodejs_stream: "22"
 
+
 foreman_development_plugin_registry:
   katello:
     name: "katello/katello"

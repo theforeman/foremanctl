@@ -1,6 +1,6 @@
 ---
 - name: Backup pulp content
-  when: not skip_pulp_content | default(false)
+  when: not backup_skip_pulp_content
   block:
     - name: Backup pulp content directory with encryption keys  # noqa: command-instead-of-module
       ansible.builtin.command:
