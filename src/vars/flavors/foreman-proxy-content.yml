@@ -1,5 +1,6 @@
 flavor_features:
   - foreman-proxy
+  - pulp
   - content/rpm
   - content/deb
   - content/container

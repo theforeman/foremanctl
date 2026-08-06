@@ -57,6 +57,7 @@ ansible:
   dependencies:
     - remote-execution
 dynflow:
+  description: dynflow
   internal: true
   foreman_proxy:
     plugin_name: dynflow
@@ -90,3 +91,8 @@ registration:
     plugin_name: registration
   dependencies:
     - templates
+theme-satellite:
+  description: Satellite theme for Foreman
+  internal: true
+  foreman:
+    plugin_name: foreman_theme_satellite

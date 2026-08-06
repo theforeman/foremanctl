@@ -8,9 +8,9 @@ BACKUP_DIR = "/tmp/foremanctl-backup-test"
 
 
 @pytest.fixture(scope="module")
-def expected_databases(enabled_features, flavor):
+def expected_databases(enabled_features):
     """
-    Determine expected databases based on flavor and enabled features.
+    Determine expected databases based on enabled features.
 
     Note: These are the logical 'name' values from database.yml
     (e.g., 'foreman', 'iop_advisor'). Dump filenames use the actual
@@ -18,13 +18,14 @@ def expected_databases(enabled_features, flavor):
     """
     databases = []
 
-    # Katello flavor has foreman, candlepin, and pulp
-    if flavor == 'katello':
-        databases = ['foreman', 'candlepin', 'pulp']
+    if 'foreman' in enabled_features:
+        databases.append('foreman')
 
-    # Foreman-proxy-content flavor only has pulp
-    elif flavor == 'foreman-proxy-content':
-        databases = ['pulp']
+    if 'candlepin' in enabled_features:
+        databases.append('candlepin')
+
+    if 'pulp' in enabled_features:
+        databases.append('pulp')
 
     # Add IOP databases if IOP feature is enabled
     if 'iop' in enabled_features:

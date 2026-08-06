@@ -19,6 +19,9 @@ SSH_CONFIG = './.tmp/ssh-config'
 OBSAH_STATE = os.environ.get('OBSAH_STATE', '.var/lib/foremanctl')
 PARAMETERS_FILE = os.path.join(OBSAH_STATE, 'parameters.yaml')
 FLAVOR_TESTS_DIR = py.path.local(__file__).dirpath() / 'flavor'
+FLAVOR_TESTS_DIR_OVERRIDES = {
+    'satellite': 'katello',
+}
 FOREMAN_PROXY_PORT = 8443
 
 
@@ -32,18 +35,27 @@ class UserParameters:
         # FEATURE                   STATE               DESCRIPTION
         # $feature                  enabled/available   $description
         output = subprocess.check_output(['./foremanctl', 'features'], cwd=self._config.rootdir,
-                                         universal_newlines=True)
+                                         universal_newlines=True,
+                                         env=os.environ | {'FOREMANCTL_FEATURES_LIST_INTERNAL': 'true'})
         lines = output.splitlines(keepends=False)
-        # feature, status, description
-        return [line.split(None, 2) for line in lines[1:]]
+        # feature, status, internal, description
+        return [line.split(None, 3) for line in lines[1:]]
+
+    @cached_property
+    def all_available_features(self):
+        return set(feature for feature, _status, _internal, _desc in self.features)
 
     @cached_property
     def available_features(self):
-        return set(feature for feature, _status, _desc in self.features)
+        return set(feature for feature, _status, internal, _desc in self.features if internal == '0')
 
     @cached_property
     def enabled_features(self):
-        return set(feature for feature, status, _desc in self.features if status == 'enabled')
+        return set(feature for feature, status, internal, _desc in self.features if status == 'enabled')
+
+    @cached_property
+    def user_enabled_features(self):
+        return set(feature for feature, status, internal, _desc in self.features if status == 'enabled' and internal == '0')
 
     @cached_property
     def flavor(self):
@@ -64,6 +76,11 @@ def flavor(pytestconfig):
 @pytest.fixture(scope="module")
 def enabled_features(pytestconfig):
     return pytestconfig.user_parameters.enabled_features
+
+
+@pytest.fixture(scope="module")
+def user_enabled_features(pytestconfig):
+    return pytestconfig.user_parameters.user_enabled_features
 
 
 @pytest.fixture(scope="module")
@@ -286,7 +303,8 @@ def pytest_configure(config):
 
 def pytest_collection_modifyitems(config, items):
     active_flavor = config.user_parameters.flavor
-    active_flavor_dir = FLAVOR_TESTS_DIR / active_flavor
+    # if there is an override, use that, otherwise use the flavor verbatim
+    active_flavor_dir = FLAVOR_TESTS_DIR / FLAVOR_TESTS_DIR_OVERRIDES.get(active_flavor, active_flavor)
 
     deselected = []
     selected = []
@@ -317,7 +335,7 @@ def pytest_collection_modifyitems(config, items):
 def pytest_runtest_setup(item):
     feature_markers = set(mark.args[0] for mark in item.iter_markers(name="feature"))
     if feature_markers:
-        invalid_features = feature_markers - item.config.user_parameters.available_features
+        invalid_features = feature_markers - item.config.user_parameters.all_available_features
         if invalid_features:
             raise pytest.PytestConfigWarning(f"Invalid feature(s) {invalid_features!r} on {item}")
         missing = feature_markers - item.config.user_parameters.enabled_features

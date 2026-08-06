@@ -4,6 +4,7 @@ from __future__ import print_function
 
 __metaclass__ = type
 
+import os
 import pathlib
 
 import yaml
@@ -15,7 +16,7 @@ features_yaml = _SRC_ROOT / 'features.yaml'
 with features_yaml.open() as features_file:
     FEATURE_MAP = yaml.safe_load(features_file)
 
-# load additional feature files under features.d  
+# load additional feature files under features.d
 _features_d = _SRC_ROOT / 'features.d'
 if _features_d.is_dir():
     for _overlay in sorted(_features_d.glob('*.yaml')):
@@ -72,18 +73,25 @@ def available_foreman_plugins(_value):
 def list_all_features(enabled_features, only_enabled=False):
     enabled_list = []
     available_list = []
+    list_internal = os.environ.get('FOREMANCTL_FEATURES_LIST_INTERNAL', '') == 'true'
     for name, meta in FEATURE_MAP.items():
-        if meta.get('internal', False):
+        internal = meta.get('internal', False)
+        if internal and not list_internal:
             continue
         description = meta.get('description', '')
         if name in enabled_features:
-            enabled_list.append((name, 'enabled', description))
+            enabled_list.append((name, 'enabled', internal, description))
         elif not only_enabled:
-            available_list.append((name, 'available', description))
+            available_list.append((name, 'available', internal, description))
 
-    output = [f"{'FEATURE':<25} {'STATE':<12} DESCRIPTION"]
-    for name, state, description in enabled_list + available_list:
-        output.append(f"{name:<25} {state:<12} {description}")
+    if not list_internal:
+        output = [f"{'FEATURE':<25} {'STATE':<12} DESCRIPTION"]
+        for name, state, _internal, description in enabled_list + available_list:
+            output.append(f"{name:<25} {state:<12} {description}")
+    else:
+        output = [f"{'FEATURE':<25} {'STATE':<12} {'INTERNAL':<8} DESCRIPTION"]
+        for name, state, internal, description in enabled_list + available_list:
+            output.append(f"{name:<25} {state:<12} {internal:<8} {description}")
 
     return "\n".join(output)
 

@@ -6,9 +6,16 @@ flavor_features:
   - candlepin
   - content/ansible
   - content/container
-  - content/deb
-  - content/python
   - content/rpm
+  - ansible
+  - azure-rm
+  - google
+  - remote-execution
+  - rh-cloud
+  - theme-satellite
+  - webhooks
+  - hammer
+  - foreman-proxy
 
 checks_to_execute:
   - check_features
