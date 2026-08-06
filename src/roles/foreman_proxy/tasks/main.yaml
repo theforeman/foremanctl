@@ -43,18 +43,18 @@
 - name: Configure features
   ansible.builtin.include_tasks: feature.yaml
   vars:
-    feature_enabled: "true"
+    _feature_enabled: "true"
   loop: "{{ foreman_proxy_features }}"
   loop_control:
-    loop_var: feature_name
+    loop_var: _feature_name
 
 - name: Disable features
   ansible.builtin.include_tasks: feature.yaml
   vars:
-    feature_enabled: "false"
+    _feature_enabled: "false"
   loop: "{{ foreman_proxy_disabled_features }}"
   loop_control:
-    loop_var: feature_name
+    loop_var: _feature_name
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:

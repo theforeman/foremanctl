@@ -20,6 +20,10 @@
     - role: checks
       vars:
         checks_databases: "{{ all_databases }}"
+        checks_database_mode: "{{ database_mode }}"
+        checks_database_host: "{{ database_host }}"
+        checks_database_port: "{{ database_port }}"
+        checks_postgresql_admin_password: "{{ postgresql_admin_password }}"
     - role: certificates
     - role: certificate_checks
       vars:
@@ -36,10 +40,22 @@
     - pulp
     - role: systemd_target
     - role: iop_core
+      vars:
+        iop_core_postgresql_admin_password: "{{ postgresql_admin_password }}"
+        iop_core_inventory_database_name: "{{ iop_inventory_database_name }}"
+        iop_core_inventory_database_user: "{{ iop_inventory_database_user }}"
+        iop_core_inventory_database_password: "{{ iop_inventory_database_password }}"
       when:
         - "enabled_features | has_feature('iop')"
         - database_mode == 'internal'
     - role: foreman_proxy
+      vars:
+        foreman_proxy_ca_certificate: "{{ ca_certificate }}"
+        foreman_proxy_server_certificate: "{{ server_certificate }}"
+        foreman_proxy_server_key: "{{ server_key }}"
+        foreman_proxy_server_ca_certificate: "{{ server_ca_certificate }}"
+        foreman_proxy_client_certificate: "{{ client_certificate }}"
+        foreman_proxy_client_key: "{{ client_key }}"
       when:
         - "enabled_features | has_feature('foreman-proxy')"
     - role: hammer
@@ -47,6 +63,7 @@
         - "enabled_features | has_feature('hammer')"
     - role: post_install
       vars:
+        post_install_flavor: "{{ flavor }}"
         post_install_foreman_ca_path: "{{ foreman_ca_certificate }}"
         post_install_foreman_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
         post_install_foreman_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"

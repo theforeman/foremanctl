@@ -21,5 +21,12 @@
     - role: backup
       vars:
         backup_database_mode: "{{ database_mode }}"
+        backup_database_host: "{{ database_host }}"
+        backup_database_port: "{{ database_port }}"
         backup_databases: "{{ all_databases }}"
         backup_pulp_storage_path: "{{ pulp_storage_path }}"
+        backup_enabled_features: "{{ enabled_features }}"
+        backup_skip_pulp_content: "{{ skip_pulp_content | default(false) }}"
+        backup_wait_for_tasks: "{{ wait_for_tasks | default(false) }}"
+        backup_task_wait_timeout: "{{ task_wait_timeout | default(3600) }}"
+        backup_postgresql_admin_password: "{{ postgresql_admin_password }}"

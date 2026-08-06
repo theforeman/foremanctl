@@ -23,10 +23,10 @@
     oauth1_consumer_secret: "{{ backup_foreman_oauth_consumer_secret }}"
     ca_path: "{{ backup_foreman_ca_certificate }}"
     task: "{{ item }}"
-    timeout: "{{ task_wait_timeout | default(3600) }}"
+    timeout: "{{ backup_task_wait_timeout }}"
   loop: "{{ backup_foreman_tasks_check.resources | map(attribute='id') | list }}"
   when:
-    - wait_for_tasks | default(false)
+    - backup_wait_for_tasks
     - backup_foreman_running_tasks | int > 0
   changed_when: false
   no_log: true
@@ -37,7 +37,7 @@
       There are {{ backup_foreman_running_tasks }} running Foreman task(s).
       Please wait for these to complete or use --wait-for-tasks flag.
   when:
-    - not (wait_for_tasks | default(false))
+    - not (backup_wait_for_tasks)
     - backup_foreman_running_tasks | int > 0
 
 - name: Check for running Pulp tasks
@@ -73,7 +73,7 @@
   retries: "{{ backup_task_wait_retries }}"
   delay: "{{ backup_task_wait_delay }}"
   when:
-    - wait_for_tasks | default(false)
+    - backup_wait_for_tasks
     - backup_pulp_running_tasks | default(0) | int > 0
   changed_when: false
   no_log: true
@@ -84,7 +84,7 @@
       There are {{ backup_pulp_running_tasks }} running Pulp task(s).
       Please wait for these to complete or use --wait-for-tasks flag.
   when:
-    - not wait_for_tasks | default(false)
+    - not backup_wait_for_tasks
     - backup_pulp_running_tasks | default(0) | int > 0
 
 - name: Run database index integrity checks
@@ -92,6 +92,9 @@
     name: check_database_index
   vars:
     check_database_index_database: "{{ item.database }}"
+    check_database_index_database_host: "{{ backup_database_host }}"
+    check_database_index_database_port: "{{ backup_database_port }}"
+    check_database_index_admin_password: "{{ backup_postgresql_admin_password }}"
   loop: "{{ backup_databases }}"
   no_log: true
   when: backup_database_mode == 'internal'

@@ -24,11 +24,11 @@
     mode: "0640"
     owner: "{{ foreman_development_user }}"
   loop:
-    - src: "{{ httpd_server_ca_certificate }}"
+    - src: "{{ foreman_development_httpd_server_ca_certificate }}"
       dest: "ca.crt"
-    - src: "{{ httpd_server_certificate }}"
+    - src: "{{ foreman_development_httpd_server_certificate }}"
       dest: "proxy.crt"
-    - src: "{{ httpd_server_key }}"
+    - src: "{{ foreman_development_httpd_server_key }}"
       dest: "proxy.key"
 
 - name: Create smart-proxy settings.d file from template
