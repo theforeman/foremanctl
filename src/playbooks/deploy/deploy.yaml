@@ -29,11 +29,21 @@
     - role: postgresql
       when:
         - database_mode == 'internal'
-    - valkey
-    - candlepin
-    - httpd
-    - foreman
-    - pulp
+    - role: valkey
+      when:
+        - "enabled_features | has_feature('valkey')"
+    - role: candlepin
+      when:
+        - "enabled_features | has_feature('candlepin')"
+    - role: httpd
+      when:
+        - "enabled_features | has_feature('httpd')"
+    - role: foreman
+      when:
+        - "enabled_features | has_feature('foreman')"
+    - role: pulp
+      when:
+        - "enabled_features | has_feature('pulp')"
     - role: systemd_target
     - role: iop_core
       when:

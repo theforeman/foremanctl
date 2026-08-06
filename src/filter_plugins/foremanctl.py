@@ -4,6 +4,7 @@ from __future__ import print_function
 
 __metaclass__ = type
 
+import os
 import pathlib
 
 import yaml
@@ -70,10 +71,12 @@ def available_foreman_plugins(_value):
 
 
 def list_all_features(enabled_features, only_enabled=False):
+    # This intended to remain private, but helps tests to get the complete picture
+    list_internal = os.environ.get('FOREMANCTL_LIST_INTERNAL_FEATURES')
     enabled_list = []
     available_list = []
     for name, meta in FEATURE_MAP.items():
-        if meta.get('internal', False):
+        if not list_internal and meta.get('internal', False):
             continue
         description = meta.get('description', '')
         if name in enabled_features:

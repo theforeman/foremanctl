@@ -28,11 +28,12 @@ class UserParameters:
 
     @cached_property
     def features(self):
+        env = os.environ | {'FOREMANCTL_LIST_INTERNAL_FEATURES': 'yes'}
         # foremanctl outputs
         # FEATURE                   STATE               DESCRIPTION
         # $feature                  enabled/available   $description
         output = subprocess.check_output(['./foremanctl', 'features'], cwd=self._config.rootdir,
-                                         universal_newlines=True)
+                                         env=env, universal_newlines=True)
         lines = output.splitlines(keepends=False)
         # feature, status, description
         return [line.split(None, 2) for line in lines[1:]]

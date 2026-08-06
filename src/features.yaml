@@ -1,6 +1,9 @@
 ---
 foreman:
   description: Base Foreman Server
+  dependencies:
+    - httpd
+    - valkey
 foreman-proxy:
   description: Base Foreman Proxy
 hammer:
@@ -11,6 +14,12 @@ pulp:
 candlepin:
   description: Candlepin subscription management service
   internal: true
+httpd:
+  description: Apache webserver
+  internal: true
+valkey:
+  description: Valkey key/value store
+  internal: true
 katello:
   description: Content and Subscription Management plugin for Foreman
   foreman:
@@ -20,6 +29,8 @@ katello:
     - tasks
     - pulp
     - candlepin
+    - httpd
+    - valkey
 google:
   description: Google Compute Engine plugin for Foreman
   hammer: foreman_google
@@ -57,6 +68,7 @@ ansible:
   dependencies:
     - remote-execution
 dynflow:
+  description: dynFlow workflow engine
   internal: true
   foreman_proxy:
     plugin_name: dynflow
