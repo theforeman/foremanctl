@@ -73,6 +73,7 @@
       KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
       USE_SUBMAN_ID: "true"
       INVENTORY_DB_SSL_MODE: "disable"
+      DISABLE_HOST_CULLING: "true"
     secrets:
       - 'iop-core-host-inventory-database-username,type=env,target=INVENTORY_DB_USER'
       - 'iop-core-host-inventory-database-password,type=env,target=INVENTORY_DB_PASS'
@@ -105,6 +106,7 @@
       BYPASS_RBAC: "true"
       USE_SUBMAN_ID: "true"
       INVENTORY_DB_SSL_MODE: "disable"
+      DISABLE_HOST_CULLING: "true"
     secrets:
       - 'iop-core-host-inventory-database-username,type=env,target=INVENTORY_DB_USER'
       - 'iop-core-host-inventory-database-password,type=env,target=INVENTORY_DB_PASS'
@@ -241,9 +243,9 @@
         h.display_name,
         h.created_on as created,
         h.modified_on as updated,
-        h.last_check_in + INTERVAL '29 hours' AS stale_timestamp,
-        h.last_check_in + INTERVAL '7 days' AS stale_warning_timestamp,
-        h.last_check_in + INTERVAL '30 days' AS culled_timestamp,
+        h.stale_timestamp AS stale_timestamp,
+        h.stale_warning_timestamp AS stale_warning_timestamp,
+        h.deletion_timestamp AS culled_timestamp,
         h.tags_alt as tags,
         jsonb_build_object('operating_system', sps.operating_system, 'host_type', sps.host_type, 'owner_id', sps.owner_id) as system_profile,
         h.insights_id,
