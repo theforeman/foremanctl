@@ -84,6 +84,41 @@ By default `hammer` feature will set up `hammer-cli` and `hammer-cli-foreman`, `
 
 All the projects set up as part of the feature are deployed as git checkouts.
 
+## Custom Container Images
+
+### Using Official Pulp Containers
+
+The Foreman development environment uses official Pulp containers from [pulp-oci-images](https://github.com/theforeman/pulp-oci-images) which include all necessary plugins including `pulp-smart-proxy` by default.
+
+The official containers provide:
+- All Katello-supported Pulp plugins (ansible, container, deb, ostree, rpm, python, smart_proxy)
+- Proper service wrapper scripts and configuration
+
+### Building Custom Pulp Containers
+
+For development scenarios requiring specific Pulp plugin versions or compatibility fixes, you can build custom Pulp container images using the [`pulp-development` project](https://github.com/theforeman/pulp-oci-images/tree/main/images/pulp-development) in pulp-oci-images.
+
+To pin specific versions, edit `images/pulp-development/requirements.txt` in the cloned repository (see the [pulp-oci-images README](https://github.com/theforeman/pulp-oci-images#development) for details):
+
+```bash
+git clone https://github.com/theforeman/pulp-oci-images.git
+cd pulp-oci-images
+
+# Optionally pin versions in images/pulp-development/requirements.txt
+# e.g., change "pulpcore" to "pulpcore==3.105.1"
+
+PROJECT=pulp-development make build
+```
+
+Deploy using the custom Pulp container image:
+
+```bash
+./forge deploy-dev \
+    --target-host=my-dev-box \
+    --extra-vars pulp_container_image="quay.io/foreman/pulp-development" \
+    --extra-vars pulp_container_tag="latest" \
+    --add-feature=foreman-proxy
+```
 ## Plugin Management
 
 ### Enabled Plugins (Default)
