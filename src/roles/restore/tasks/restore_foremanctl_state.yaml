@@ -1,0 +1,11 @@
+---
+- name: Remove existing foremanctl state directory
+  ansible.builtin.file:
+    path: "{{ obsah_state_path }}"
+    state: absent
+
+- name: Extract foremanctl state archive
+  ansible.builtin.unarchive:
+    src: "{{ backup_dir }}/foremanctl-state.tar.gz"
+    dest: "{{ obsah_state_path | dirname }}"
+    remote_src: true
