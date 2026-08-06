@@ -8,6 +8,8 @@ flavor_features:
   - content/container
   - content/rpm
   - ansible
+  - azure-rm
+  - google
   - remote-execution
   - rh-cloud
   - theme-satellite

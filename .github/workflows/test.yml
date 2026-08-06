@@ -502,8 +502,6 @@ jobs:
       - name: Deploy features
         run: |
           ./foremanctl deploy \
-            --add-feature azure-rm \
-            --add-feature google \
             --add-feature bmc
       - name: Run tests
         run: |
