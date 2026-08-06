@@ -42,6 +42,10 @@ class UserParameters:
         return [line.split(None, 3) for line in lines[1:]]
 
     @cached_property
+    def all_available_features(self):
+        return set(feature for feature, _status, _internal, _desc in self.features)
+
+    @cached_property
     def available_features(self):
         return set(feature for feature, _status, internal, _desc in self.features if internal == '0')
 
@@ -331,7 +335,7 @@ def pytest_collection_modifyitems(config, items):
 def pytest_runtest_setup(item):
     feature_markers = set(mark.args[0] for mark in item.iter_markers(name="feature"))
     if feature_markers:
-        invalid_features = feature_markers - item.config.user_parameters.available_features
+        invalid_features = feature_markers - item.config.user_parameters.all_available_features
         if invalid_features:
             raise pytest.PytestConfigWarning(f"Invalid feature(s) {invalid_features!r} on {item}")
         missing = feature_markers - item.config.user_parameters.enabled_features
