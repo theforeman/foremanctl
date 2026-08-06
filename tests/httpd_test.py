@@ -67,6 +67,7 @@ def test_https_pulp_auth(curl_request):
     assert cmd.stdout == '200'
 
 
+@pytest.mark.feature('content/python')
 def test_https_pypi_endpoint(curl_request):
     cmd = curl_request("pypi/test/", return_body=True)
     assert cmd.succeeded
