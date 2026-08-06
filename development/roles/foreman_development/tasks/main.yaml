@@ -24,13 +24,13 @@
     state: present
 
 - name: Ensure the crb repository is enabled
-  community.general.rhsm_repository:
+  community.general.dnf_config_manager:
     name: crb
     state: enabled
   when:
     - ansible_facts['distribution'] != "RedHat"
 
-- name: Ensure the crb repository is enabled
+- name: Ensure the CodeReady Builder repository is enabled
   community.general.rhsm_repository:
     name: "codeready-builder-for-rhel-{{ ansible_facts['distribution_major_version'] }}-{{ ansible_facts['architecture'] }}-rpms"
     state: enabled
