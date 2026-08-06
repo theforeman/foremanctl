@@ -241,17 +241,15 @@
         h.display_name,
         h.created_on as created,
         h.modified_on as updated,
-        h.last_check_in + INTERVAL '29 hours' AS stale_timestamp,
-        h.last_check_in + INTERVAL '7 days' AS stale_warning_timestamp,
-        h.last_check_in + INTERVAL '30 days' AS culled_timestamp,
+        h.stale_timestamp,
+        h.stale_warning_timestamp,
+        h.deletion_timestamp AS culled_timestamp,
         h.tags_alt as tags,
         h.system_profile_facts as system_profile,
-        h.insights_id,
+        (h.canonical_facts ->> 'insights_id')::uuid as insights_id,
         h.reporter,
         h.per_reporter_staleness,
         h.org_id,
-        h.groups,
-        h.last_check_in
+        h.groups
       FROM hbi.hosts h
-      LEFT JOIN hbi.system_profiles_static sps ON sps.org_id = h.org_id AND sps.host_id = h.id
-      WHERE h.insights_id != '00000000-0000-0000-0000-000000000000';
+      WHERE (h.canonical_facts->'insights_id' IS NOT NULL);
