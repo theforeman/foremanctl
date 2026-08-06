@@ -482,6 +482,8 @@ jobs:
         run: pip install --upgrade ansible-core
       - name: Setup environment
         run: ./setup-environment
+      - name: Apply vendor overrides
+        run: cp -a vendor_overrides/satellite src/playbooks/_vendor_overrides
       - name: Start VMs
         run: |
           ./forge vms start --vms "quadlet client"
