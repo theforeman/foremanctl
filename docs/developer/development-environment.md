@@ -147,13 +147,12 @@ In a source install, git branches control versioning instead of RPM packages. St
 
 All steps must be run as the root user. These steps assume that foremanctl is being ran from the same machine that Foreman was deployed on.
 
-1. Please take a moment to determine your preferred Foreman version / git branch, we only support sequential updates.
-2. We recommend a full foremanctl backup before all upgrade operations. Run `foremanctl backup <filepath for backup>`. Please see [Backup](backup.md) for more information on this process.
-3. Begin the upgrade by stopping all Foreman processes with `systemctl stop foreman.target`.
-4. Switch to the preferred target branch:
+1. Pull the latest changes using `git pull`.
+2. Begin the upgrade by stopping all Foreman processes with `systemctl stop foreman.target`.
+3. Switch to the preferred target branch:
     - Switch to a stable Y-stream: `git fetch origin && git checkout origin/X.y-stable`
     - Switch to nightly: `git fetch origin && git checkout origin/master`
-5. Run upgrade tasks by re-deploying foremanctl with your customized deploy command: `foremanctl deploy [...]`. Please see [Parameters](parameters.md) for available deploy options.
+4. Run upgrade tasks by re-deploying foremanctl with your customized deploy command: `foremanctl deploy [...]`. Please see [Parameters](parameters.md) for available deploy options.
 
 This final deploy command will pull new images and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
 
