@@ -141,6 +141,22 @@ After deployment, the environment includes:
   - `smart-proxy` and its plugins
   - the development smart proxy registered into Foreman
 
+### Upgrading from source
+
+In a source install, git branches control versioning instead of RPM packages. Stable branches (e.g. `2.y-stable`) track a specific Foreman Y-stream, while the `master` branch tracks nightly changes (most recent).
+
+All steps must be run as the root user. These steps assume that foremanctl is being ran from the same machine that Foreman was deployed on.
+
+1. Pull the latest changes using `git pull`.
+2. Begin the upgrade by stopping all Foreman processes with `systemctl stop foreman.target`.
+3. Switch to the preferred target branch:
+    - Switch to a stable Y-stream: `git fetch origin && git checkout origin/X.y-stable`
+    - Switch to nightly: `git fetch origin && git checkout origin/master`
+4. Run upgrade tasks by re-deploying foremanctl with your customized deploy command: `foremanctl deploy [...]`. Please see [Parameters](parameters.md) for available deploy options.
+
+This final deploy command will pull new images and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
+
+
 ## Architecture
 
 ### Service Integration
