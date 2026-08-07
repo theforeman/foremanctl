@@ -7,9 +7,9 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: foremanctl_api
-short_description: Make authenticated Foreman API calls using OAuth1
+short_description: Make authenticated Foreman API calls
 description:
-  - Make HTTP requests to the Foreman API using OAuth1 authentication.
+  - Make HTTP requests to the Foreman API using apypie from the theforeman.foreman collection.
   - Useful for one-off API calls where no dedicated Foreman Ansible Module exists.
 options:
   server_url:
@@ -40,11 +40,6 @@ options:
   ca_path:
     description: Path to CA certificate for SSL verification
     type: str
-  status_code:
-    description: List of acceptable HTTP status codes
-    default: [200]
-    type: list
-    elements: int
 '''
 
 EXAMPLES = '''
@@ -55,19 +50,15 @@ EXAMPLES = '''
     oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
     endpoint: /api/v2/rh_cloud/announce_to_sources
     method: POST
-    status_code: [200, 201]
 '''
-
-import json
 
 from ansible.module_utils.basic import AnsibleModule
 
 try:
-    import requests
-    from requests_oauthlib import OAuth1
-    HAS_DEPS = True
+    from ansible_collections.theforeman.foreman.plugins.module_utils._apypie import Api
+    HAS_APYPIE = True
 except ImportError:
-    HAS_DEPS = False
+    HAS_APYPIE = False
 
 
 def run_module():
@@ -80,57 +71,36 @@ def run_module():
             method=dict(default='GET', type='str', choices=['GET', 'POST', 'PUT', 'DELETE', 'PATCH']),
             body=dict(type='dict'),
             ca_path=dict(type='str'),
-            status_code=dict(default=[200], type='list', elements='int'),
         ),
         supports_check_mode=True,
     )
 
-    if not HAS_DEPS:
-        module.fail_json(msg='requests and requests-oauthlib are required for this module')
+    if not HAS_APYPIE:
+        module.fail_json(msg='The theforeman.foreman collection is required for this module')
 
-    url = module.params['server_url'].rstrip('/') + module.params['endpoint']
-    method = module.params['method']
+    server_url = module.params['server_url']
+    endpoint = module.params['endpoint']
+    method = module.params['method'].lower()
     body = module.params['body']
     ca_path = module.params['ca_path']
-    expected_status = module.params['status_code']
 
-    auth = OAuth1(
-        module.params['oauth1_consumer_key'],
-        client_secret=module.params['oauth1_consumer_secret'],
+    api = Api(
+        uri=server_url,
+        oauth1_consumer_key=module.params['oauth1_consumer_key'],
+        oauth1_consumer_secret=module.params['oauth1_consumer_secret'],
+        verify_ssl=ca_path if ca_path else True,
     )
 
-    headers = {'Content-Type': 'application/json'}
+    url = server_url.rstrip('/') + endpoint
 
     try:
-        response = requests.request(
-            method=method,
-            url=url,
-            auth=auth,
-            headers=headers,
-            json=body,
-            verify=ca_path if ca_path else True,
-        )
-    except requests.exceptions.RequestException as e:
-        module.fail_json(msg=f'Request failed: {e}', url=url)
-
-    response_body = None
-    try:
-        response_body = response.json()
-    except (json.JSONDecodeError, ValueError):
-        response_body = response.text
-
-    if response.status_code not in expected_status:
-        module.fail_json(
-            msg=f'Unexpected status code {response.status_code} (expected {expected_status})',
-            url=url,
-            status_code=response.status_code,
-            body=response_body,
-        )
+        response_body = api.http_call(method, endpoint, params=body)
+    except Exception as e:
+        module.fail_json(msg=f'API call failed: {e}', url=url)
 
     module.exit_json(
-        changed=method != 'GET',
+        changed=method != 'get',
         url=url,
-        status_code=response.status_code,
         body=response_body,
     )
 
