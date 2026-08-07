@@ -33,6 +33,9 @@ variables:
     parameter: --manage-repos
     help: Manage git repositories for Foreman and plugins. Set to false to skip cloning and checking out repositories.
     type: Boolean
+  cloud_connector_http_proxy:
+    parameter: --cloud-connector-http-proxy
+    help: HTTP proxy URL for the cloud connector rhcd service.
 
 include:
   - _flavor_features
