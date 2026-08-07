@@ -1,6 +1,8 @@
 ---
 foreman:
   description: Base Foreman Server
+  conflicts:
+    - container-gateway
 foreman-proxy:
   description: Base Foreman Proxy
 hammer:
@@ -74,9 +76,13 @@ iop:
     - rh-cloud
 container-gateway:
   description: Container registry gateway for smart proxy
-  internal: true
   foreman_proxy:
     plugin_name: container_gateway
+  dependencies:
+    - foreman-proxy
+    - pulp
+  conflicts:
+    - foreman
 bmc:
   description: Power management for bare metal hosts (IPMI, Redfish)
   foreman_proxy:
