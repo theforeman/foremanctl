@@ -1,5 +1,6 @@
 ---
-database_host: localhost
+# 127.0.0.1 (not localhost): co-located Postgres is published on IPv4 only.
+database_host: 127.0.0.1
 database_port: 5432
 database_ssl_mode: disable
 database_ssl_ca:
@@ -35,7 +36,8 @@ foreman_database_port: "{{ database_port }}"
 foreman_database_ssl_mode: "{{ database_ssl_mode }}"
 foreman_database_ssl_ca: "{{ database_ssl_ca }}"
 
-iop_database_host: host.containers.internal
+# Co-located Postgres joins iop-core-network; IOP reaches it by container name.
+iop_database_host: postgresql
 iop_database_port: 5432
 
 iop_inventory_database_host: "{{ iop_database_host }}"
@@ -101,41 +103,44 @@ databases:
     ssl_mode: "{{ pulp_database_ssl_mode }}"
     ssl_ca: "{{ pulp_database_ssl_ca }}"
     feature: pulp
+  # host uses database_host (published port) for Ansible checks on the host.
+  # IOP containers still use iop_*_database_host (postgresql on iop-core-network).
   - name: iop_advisor
     database: "{{ iop_advisor_database_name }}"
-    host: "{{ iop_advisor_database_host }}"
+    host: "{{ database_host }}"
     port: "{{ iop_advisor_database_port }}"
     user: "{{ iop_advisor_database_user }}"
     password: "{{ iop_advisor_database_password }}"
     feature: iop
   - name: iop_inventory
     database: "{{ iop_inventory_database_name }}"
-    host: "{{ iop_inventory_database_host }}"
+    host: "{{ database_host }}"
     port: "{{ iop_inventory_database_port }}"
     user: "{{ iop_inventory_database_user }}"
     password: "{{ iop_inventory_database_password }}"
     feature: iop
   - name: iop_remediation
     database: "{{ iop_remediation_database_name }}"
-    host: "{{ iop_remediation_database_host }}"
+    host: "{{ database_host }}"
     port: "{{ iop_remediation_database_port }}"
     user: "{{ iop_remediation_database_user }}"
     password: "{{ iop_remediation_database_password }}"
     feature: iop
   - name: iop_vmaas
     database: "{{ iop_vmaas_database_name }}"
-    host: "{{ iop_vmaas_database_host }}"
+    host: "{{ database_host }}"
     port: "{{ iop_vmaas_database_port }}"
     user: "{{ iop_vmaas_database_user }}"
     password: "{{ iop_vmaas_database_password }}"
     feature: iop
   - name: iop_vulnerability
     database: "{{ iop_vulnerability_database_name }}"
-    host: "{{ iop_vulnerability_database_host }}"
+    host: "{{ database_host }}"
     port: "{{ iop_vulnerability_database_port }}"
     user: "{{ iop_vulnerability_database_user }}"
     password: "{{ iop_vulnerability_database_password }}"
     feature: iop
+
 
 all_databases: >-
   {{ databases | databases_for_features(enabled_features) }}

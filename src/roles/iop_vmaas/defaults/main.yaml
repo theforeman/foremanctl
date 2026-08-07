@@ -5,7 +5,7 @@ iop_vmaas_container_tag: "latest"
 iop_vmaas_database_name: vmaas_db
 iop_vmaas_database_user: vmaas_admin
 iop_vmaas_database_password: "{{ undef(hint='Set a secure database password') }}"
-iop_vmaas_database_host: "host.containers.internal"
+iop_vmaas_database_host: "{{ iop_database_host | default('postgresql') }}"
 iop_vmaas_database_port: "5432"
 
 iop_vmaas_client_ca_certificate: "/var/lib/foremanctl/certs/certs/ca.crt"

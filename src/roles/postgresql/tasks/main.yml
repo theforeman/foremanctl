@@ -27,7 +27,8 @@
     state: quadlet
     healthcheck: pg_isready
     sdnotify: healthy
-    network: host
+    network: "{{ postgresql_networks if postgresql_networks else omit }}"
+    publish: "{{ postgresql_publish }}"
     volumes:
       - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:rw,Z"
     secrets:
@@ -44,7 +45,6 @@
         PartOf=foreman.target
   notify:
     - Restart postgresql
-
 - name: Configure SSL certificates
   when:
     - postgresql_ssl_crt is defined
@@ -116,7 +116,7 @@
     password: "{{ item.password }}"
     login_user: postgres
     login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_host: 127.0.0.1
     role_attr_flags: "{{ item.role_attr_flags | default(omit) }}"
     state: present
   loop: "{{ postgresql_users }}"
@@ -128,6 +128,6 @@
     owner: "{{ item.owner }}"
     login_user: postgres
     login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_host: 127.0.0.1
     state: present
   loop: "{{ postgresql_databases }}"

@@ -46,7 +46,7 @@ pulp_enabled_plugins: "{{ pulp_default_plugins + pulp_plugins }}"
 
 pulp_database_name: pulp
 pulp_database_user: pulp
-pulp_database_host: localhost
+pulp_database_host: 127.0.0.1
 pulp_database_port: 5432
 pulp_database_ssl_mode: disabled
 pulp_database_ssl_ca: # noqa: no-empty-defaults
