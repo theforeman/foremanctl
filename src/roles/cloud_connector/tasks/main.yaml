@@ -89,7 +89,6 @@
     ca_path: "{{ foreman_ca_certificate | default(omit) }}"
     method: POST
     endpoint: /api/v2/rh_cloud/announce_to_sources
-    status_code: [200, 201]
 
 - name: Configure HTTP proxy for rhcd
   ansible.builtin.include_tasks: http_proxy.yaml
