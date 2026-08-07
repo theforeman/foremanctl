@@ -5,18 +5,6 @@
       - rhc
       - yggdrasil-worker-forwarder
 
-- name: Create cloud connector role
-  theforeman.foreman.role:
-    name: Cloud Connector
-    filters:
-      - permissions:
-          - dispatch_cloud_requests
-    server_url: "{{ cloud_connector_url }}"
-    oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
-    oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
-    ca_path: "{{ foreman_ca_certificate | default(omit) }}"
-    state: present
-
 - name: Create cloud connector service user
   theforeman.foreman.user:
     login: "{{ cloud_connector_service_user }}"
@@ -67,15 +55,6 @@
   theforeman.foreman.setting:
     name: rhc_instance_id
     value: "{{ cloud_connector_cert_info.subject.commonName }}"
-    server_url: "{{ cloud_connector_url }}"
-    oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
-    oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
-    ca_path: "{{ foreman_ca_certificate | default(omit) }}"
-
-- name: Enable automatic inventory upload
-  theforeman.foreman.setting:
-    name: allow_auto_inventory_upload
-    value: true
     server_url: "{{ cloud_connector_url }}"
     oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
