@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "foremanctl"
+description = "Deployment tool for Foreman and Katello using Podman quadlets and Ansible"
+requires-python = ">=3.12"
+dynamic = ["version"]
+dependencies = [
+    "obsah>=1.9.1",
+    "requests",
+    "requests-oauthlib",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ansible-lint",
+    "apypie>=0.5.0",
+    "jinja2",
+    "paramiko",
+    "passlib",
+    "pytest>=9.0",
+    "pytest-testinfra",
+    "pytest-durations",
+    "python-dateutil",
+    "pyyaml",
+    "ruff",
+]
+
+[tool.setuptools]
+packages = []
+
+# Repo tags look like "3.0.0-develop" (not a PEP 440 version on their own);
+# only capture the leading numeric part and let setuptools_scm compute the
+# dev/distance suffix from there.
+[tool.setuptools_scm]
+tag_regex = "^(?P<version>\\d+\\.\\d+(?:\\.\\d+)?)"

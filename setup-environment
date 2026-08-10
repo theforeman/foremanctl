@@ -3,7 +3,25 @@
 set -eou pipefail
 
 if [[ -z "${GITHUB_ACTIONS:-}" ]] && [[ -z "${VIRTUAL_ENV:-}" ]]; then
-  python -m venv .venv
+  # Find an interpreter satisfying pyproject.toml's requires-python (>=3.12).
+  # Tried in order: the versioned binary name EL9 ships it under (python3.12
+  # isn't aliased to python3 there), then whatever "python3" resolves to (on
+  # EL10+ and future distros where 3.12+ is the default, this is enough).
+  found_python=""
+  for candidate in python3.12 python3; do
+    if command -v "${candidate}" >/dev/null 2>&1 \
+        && "${candidate}" -c 'import sys; sys.exit(0 if sys.version_info[:2] >= (3, 12) else 1)'; then
+      found_python="${candidate}"
+      break
+    fi
+  done
+
+  if [[ -z "${found_python}" ]]; then
+    echo "Error: Python >=3.12 is required (see pyproject.toml's requires-python)," >&2
+    echo "but was not found on PATH." >&2
+    exit 1
+  fi
+  "${found_python}" -m venv .venv
   source .venv/bin/activate
 fi
 pip install -r src/requirements.txt -r development/requirements.txt
