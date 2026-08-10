@@ -44,3 +44,18 @@ foreman_recurring_tasks:
     schedule: "monthly"
 
 foreman_plugins: []
+
+foreman_env:
+  SEED_ORGANIZATION: "{{ foreman_initial_organization }}"
+  SEED_LOCATION: "{{ foreman_initial_location }}"
+  FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
+  FOREMAN_LOGGING_LEVEL: "{{ foreman_log_level }}"
+  FOREMAN_PUMA_THREADS_MIN: "{{ foreman_puma_threads_min }}"
+  FOREMAN_PUMA_THREADS_MAX: "{{ foreman_puma_threads_max }}"
+  FOREMAN_PUMA_WORKERS: "{{ foreman_puma_workers }}"
+
+foreman_dynflow_extra_env:
+  DYNFLOW_REDIS_URL: "redis://localhost:6379/6"
+  REDIS_PROVIDER: "DYNFLOW_REDIS_URL"
+
+foreman_dynflow_env: "{{ foreman_env | ansible.builtin.combine(foreman_dynflow_extra_env) }}"
