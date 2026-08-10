@@ -156,6 +156,7 @@ foreman_development_packages:
   - ruby-devel
   - npm
   - postgresql-devel
+  - libcap-devel
   - libxml2-devel
   - libxslt-devel
   - libcurl-devel
