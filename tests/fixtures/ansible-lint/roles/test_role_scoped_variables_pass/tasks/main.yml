@@ -1,0 +1,51 @@
+---
+- name: Task using properly scoped variable
+  ansible.builtin.file:
+    path: "{{ test_role_scoped_variables_pass_storage_path }}/media"
+    state: directory
+    mode: '0755'
+
+- name: Task using ansible builtin variables
+  ansible.builtin.debug:
+    msg: "Running on {{ inventory_hostname }} with {{ ansible_os_family }}"
+
+- name: Task using item in loop
+  ansible.builtin.debug:
+    msg: "{{ item.name }}"
+  loop: "{{ test_role_scoped_variables_pass_databases }}"
+
+- name: Task using allowed global variable
+  ansible.builtin.stat:
+    path: "{{ obsah_state_path }}"
+  register: test_role_scoped_variables_pass_state
+
+- name: Task using ansible_facts
+  ansible.builtin.debug:
+    msg: "{{ ansible_facts['os_family'] }}"
+
+- name: Task with custom loop_var
+  ansible.builtin.debug:
+    msg: "{{ db_entry.name }}"
+  loop: "{{ test_role_scoped_variables_pass_databases }}"
+  loop_control:
+    loop_var: db_entry
+
+- name: Task using task-level vars as local definitions
+  ansible.builtin.set_fact:
+    test_role_scoped_variables_pass_result: "{{ local_entry }}"
+  vars:
+    local_entry:
+      name: "{{ item.name }}"
+
+- name: Task using underscore-prefixed role variable
+  ansible.builtin.debug:
+    msg: "{{ _test_role_scoped_variables_pass_internal }}"
+
+- name: Task using lookup function
+  containers.podman.podman_secret:
+    name: test-secret
+    data: "{{ lookup('file', 'secret.txt') }}"
+
+- name: Task using leading underscore internal variable
+  ansible.builtin.debug:
+    msg: "{{ _internal_var }}"
