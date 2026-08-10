@@ -7,13 +7,19 @@
     path: "{{ item | split(':') | first }}"
     state: directory
     mode: "0755"
+    owner: "700"
+    group: "700"
+    recurse: true
   loop: "{{ pulp_volumes }}"
 
 - name: Create Pulp storage subdirs
   ansible.builtin.file:
-    path: "/var/lib/pulp/{{ item }}"
+    path: "{{ pulp_storage_path }}/{{ item }}"
     state: directory
     mode: "0755"
+    owner: "700"
+    group: "700"
+    recurse: true
   loop:
     - tmp
     - assets
@@ -24,6 +30,9 @@
     path: "{{ item }}"
     state: directory
     mode: "0755"
+    owner: "700"
+    group: "700"
+    recurse: true
   loop: "{{ pulp_default_import_paths + pulp_import_paths }}"
   when: not pulp_mirror
 
@@ -32,6 +41,9 @@
     path: "{{ item }}"
     state: directory
     mode: "0755"
+    owner: "700"
+    group: "700"
+    recurse: true
   loop: "{{ pulp_default_export_paths + pulp_export_paths }}"
   when: not pulp_mirror
 
@@ -56,37 +68,37 @@
     - Restart pulp-worker
 
 - name: Generate Django secret key
-  ansible.builtin.command: "bash -c 'openssl rand -base64 50 | tr -d \"\\n\" | tr \"+/\" \"-_\" > /var/lib/pulp/django_secret_key'"
+  ansible.builtin.command: "bash -c 'openssl rand -base64 50 | tr -d \"\\n\" | tr \"+/\" \"-_\" > {{ pulp_storage_path }}/django_secret_key'"
   args:
-    creates: /var/lib/pulp/django_secret_key
+    creates: "{{ pulp_storage_path }}/django_secret_key"
 
 - name: Set secret key file permissions
   ansible.builtin.file:
-    path: /var/lib/pulp/django_secret_key
-    owner: root
-    group: root
+    path: "{{ pulp_storage_path }}/django_secret_key"
+    owner: "700"
+    group: "700"
     mode: '0600'
 
 - name: Create django pulp secret key secret
   containers.podman.podman_secret:
     state: present
     name: pulp-django-secret-key
-    path: /var/lib/pulp/django_secret_key
+    path: "{{ pulp_storage_path }}/django_secret_key"
   notify:
     - Restart pulp-api
     - Restart pulp-content
     - Restart pulp-worker
 
 - name: Generate database symmetric key
-  ansible.builtin.command: "bash -c 'openssl rand -base64 32 | tr \"+/\" \"-_\" > /var/lib/pulp/database_fields.symmetric.key'"
+  ansible.builtin.command: "bash -c 'openssl rand -base64 32 | tr \"+/\" \"-_\" > {{ pulp_storage_path }}/database_fields.symmetric.key'"
   args:
-    creates: /var/lib/pulp/database_fields.symmetric.key
+    creates: "{{ pulp_storage_path }}/database_fields.symmetric.key"
 
 - name: Create database symmetric key secret
   containers.podman.podman_secret:
     state: present
     name: pulp-symmetric-key
-    path: /var/lib/pulp/database_fields.symmetric.key
+    path: "{{ pulp_storage_path }}/database_fields.symmetric.key"
   notify:
     - Restart pulp-api
     - Restart pulp-content
