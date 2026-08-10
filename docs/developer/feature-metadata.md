@@ -20,6 +20,7 @@ feature_two:
 The following properties are defined:
 * `description` (_String_): A human-readable description of the feature, can be used in documentation/help output.
 * `internal` (_Boolean_): Whether the feature is user visible (shows up in documentation/help) or internal (just to perform additional configuration without user interaction).
+* `removable` (_Boolean_): Whether users may request removal of the feature. Flavor features are protected and cannot be removed even when this is `true`; omitted or `false` values are not removable.
 * `foreman` (_Hash_): How this feature should be applied on the "main" system that offers the main user interaction via UI/API.
   * `plugin_name` (_String_): The name of the Foreman plugin to be enabled (via `FOREMAN_ENABLED_PLUGINS`).
      If `roles/foreman/tasks/feature/{{ foreman_plugin }}.yaml` exists, it will be executed to perform any plugin-specific setup.

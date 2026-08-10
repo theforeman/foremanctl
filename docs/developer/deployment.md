@@ -100,6 +100,21 @@ These base features control which plugins are enabled when a feature is requeste
 
 A deployment can have multiple base features enabled.
 
+### Adding and removing features
+
+Feature selection is persisted in the `features` list in `parameters.yaml`. Add and remove flags operate on that same list, so a removal is durable without creating a separate deny-list; Obsah saves the resulting list after the playbook succeeds:
+
+```bash
+./foremanctl deploy --add-feature bmc
+./foremanctl deploy --remove-feature bmc
+```
+
+The second command removes `bmc` from the persisted user list. Running the first command again re-adds it. Repeated operations are idempotent; for a removable, non-flavor feature named by both flags, the last flag in command-line order determines whether it remains in the final list.
+
+A known removable feature that is already absent is an idempotent no-op. Unknown features, features without `removable: true`, flavor features, and features required by an enabled direct or transitive parent are rejected. Flavor features are baseline capabilities and cannot be disabled with `--remove-feature`; use a different flavor instead.
+
+Obsah updates the feature parameter file only after the playbook returns success. Validation or playbook failures leave the previous feature list in place; state-file write errors are reported by foremanctl.
+
 ### Enabling IOP
 
 IOP (Insights Operating Platform) deploys on-premise Insights services for advisor, vulnerability, and remediation. It requires internal database mode and depends on the `rh-cloud` and `katello` features.

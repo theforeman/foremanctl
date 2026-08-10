@@ -1,9 +1,13 @@
+import pytest
 from foremanctl import FEATURE_MAP
 from foremanctl import conflicting_features
 from foremanctl import foreman_plugins
 from foremanctl import foreman_proxy_plugins
 from foremanctl import hammer_plugins
+from foremanctl import is_feature_removable
 from foremanctl import list_all_features
+from foremanctl import unsatisfied_dependencies
+from foremanctl import validate_feature_removals
 
 
 def _asymmetric_conflicts():
@@ -66,6 +70,95 @@ def test_list_all_features_marks_dependency_as_enabled(monkeypatch):
     output = list_all_features(['test-parent'])
     child_line = next(line for line in output.splitlines() if line.startswith('test-child'))
     assert 'enabled' in child_line
+
+
+def test_list_all_features_marks_flavor_features(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-feature', {'removable': True})
+    output = list_all_features(['test-feature'], flavor_features=['test-feature'])
+    feature_line = next(line for line in output.splitlines() if line.startswith('test-feature'))
+    assert 'flavor' in feature_line
+
+
+def test_is_feature_removable_defaults_to_false(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-feature', {})
+    assert is_feature_removable('test-feature') is False
+
+
+def test_validate_feature_removals_rejects_unknown():
+    errors = validate_feature_removals(['missing'], [])
+    assert errors == [
+        "Cannot remove unknown feature 'missing'. Run 'foremanctl features' to see available features."
+    ]
+
+
+def test_validate_feature_removals_rejects_non_removable(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-feature', {})
+    errors = validate_feature_removals(['test-feature'], [])
+    assert errors == [
+        "Cannot remove feature 'test-feature' — this feature does not support removal. "
+        "Run 'foremanctl features' to see which features can be removed."
+    ]
+
+
+def test_validate_feature_removals_rejects_flavor_feature(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-feature', {'removable': True})
+    errors = validate_feature_removals(['test-feature'], ['test-feature'])
+    assert errors == [
+        "Cannot remove 'test-feature' — it is a core feature of the current flavor. "
+        "Flavor features cannot be removed."
+    ]
+
+
+def test_validate_feature_removals_allows_absent_removable_feature(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-feature', {'removable': True})
+    assert validate_feature_removals(['test-feature'], []) == []
+
+
+@pytest.mark.parametrize(
+    'feature',
+    [name for name, metadata in FEATURE_MAP.items() if metadata.get('removable')],
+)
+def test_registered_removable_features_are_accepted(feature):
+    assert validate_feature_removals([feature], []) == []
+
+
+def test_unsatisfied_dependencies_none_when_nothing_removed():
+    assert unsatisfied_dependencies(['foreman', 'katello'], []) == []
+
+
+def test_unsatisfied_dependencies_ignores_transitive_deps():
+    # httpd/valkey/dynflow/tasks are never listed explicitly; with no removals
+    # requested this must not report them as missing.
+    assert unsatisfied_dependencies(['foreman', 'katello', 'pulp']) == []
+
+
+def test_unsatisfied_dependencies_detects_removed_dependency(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-parent', {'dependencies': ['test-child']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-child', {})
+    result = unsatisfied_dependencies(['test-parent'], ['test-child'])
+    assert result == ["Cannot remove 'test-child' — it is required by enabled feature 'test-parent'"]
+
+
+def test_unsatisfied_dependencies_ignores_removal_canceled_by_readd(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-parent', {'dependencies': ['test-child']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-child', {})
+    result = unsatisfied_dependencies(['test-parent', 'test-child'], ['test-child'])
+    assert result == []
+
+
+def test_unsatisfied_dependencies_detects_transitively_removed_dependency(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-parent', {'dependencies': ['test-mid']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-mid', {'dependencies': ['test-leaf']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-leaf', {})
+    result = unsatisfied_dependencies(['test-parent'], ['test-leaf'])
+    assert any("Cannot remove 'test-leaf'" in error for error in result)
+
+
+def test_unsatisfied_dependencies_allows_unrelated_removal(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-parent', {'dependencies': ['test-child']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-child', {})
+    monkeypatch.setitem(FEATURE_MAP, 'test-other', {})
+    assert unsatisfied_dependencies(['test-parent'], ['test-other']) == []
 
 
 def test_foreman_plugins_deduplicates(monkeypatch):
