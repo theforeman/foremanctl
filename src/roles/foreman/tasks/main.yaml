@@ -241,6 +241,7 @@
     env:
       SEED_ORGANIZATION: "{{ foreman_initial_organization }}"
       SEED_LOCATION: "{{ foreman_initial_location }}"
+      FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
       FOREMAN_LOGGING_LEVEL: "{{ foreman_log_level }}"
     quadlet_options:
       - |
