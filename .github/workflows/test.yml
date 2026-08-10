@@ -532,6 +532,74 @@ jobs:
           limit-access-to-actor: true
           wait-timeout-minutes: 5
 
+  capsule-tests:
+    runs-on: ubuntu-24.04
+    name: "Tests Capsule Deployment"
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Setup libvirt for Vagrant
+        uses: voxpupuli/setup-vagrant@v0
+        with:
+          configure_dns: true
+      - name: Install Ansible
+        run: pip install --upgrade ansible-core
+      - name: Setup environment
+        run: ./setup-environment
+      - name: Apply vendor overrides
+        run: |
+          mkdir -p src/playbooks/_vendor_overrides
+          cp -a vendor_overrides/satellite/. src/playbooks/_vendor_overrides/
+          cp -a vendor_overrides/capsule/. src/playbooks/_vendor_overrides/
+      - name: Start VMs
+        run: |
+          ./forge vms start --vms "quadlet proxy"
+      - name: Configure repositories
+        run: |
+          ./forge setup-repositories
+      - name: Run image pull
+        run: |
+          ./foremanctl pull-images
+      - name: Deploy Satellite
+        run: |
+          ./foremanctl deploy \
+            --flavor satellite \
+            --initial-admin-password=changeme \
+            --tuning development
+      - name: Generate auth bundle on quadlet
+        run: |
+          ./foremanctl auth-bundle proxy.example.com
+      - name: Fetch auth bundle from quadlet
+        run: |
+          ./forge fetch-bundle proxy.example.com
+      - name: Deploy capsule
+        run: |
+          ./foremanctl deploy-proxy \
+            --flavor capsule \
+            --auth-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
+            --foreman-fqdn quadlet.example.com
+      - name: Run tests
+        run: |
+          ./forge test --pytest-args="--server-hostname=proxy"
+      - name: Generate sos reports
+        if: ${{ always() }}
+        run: ./forge sos
+      - name: Archive sos reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: sosreport-capsule
+          path: sos/
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: owenthereal/action-upterm@v1
+        with:
+          limit-access-to-actor: true
+          wait-timeout-minutes: 5
+
   # A dummy job that you can mark as a required check instead of each individual test
   test-suite:
     if: always()
@@ -542,6 +610,7 @@ jobs:
       - migration
       - foreman-proxy-content-tests
       - satellite-tests
+      - capsule-tests
       - ansible-lint
       - python-lint
     runs-on: ubuntu-latest

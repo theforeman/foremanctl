@@ -2,6 +2,8 @@ import json
 
 import pytest
 
+CONTENT_TYPE_FEATURES = ('content/rpm', 'content/deb', 'content/ansible', 'content/python', 'content/container')
+
 
 @pytest.fixture(scope="module")
 def pulp_smart_proxy_features(curl_request):
@@ -43,12 +45,18 @@ def test_pulp_smart_proxy_mirror_mode(pulp_smart_proxy_features):
     assert 'client_certificate' in settings.get('client_authentication', [])
 
 
-def test_pulp_smart_proxy_features(pulp_smart_proxy_features):
-    features = pulp_smart_proxy_features
-    assert 'pulpcore' in features
-    capabilities = features['pulpcore'].get('capabilities', [])
-    for expected in ('core', 'smart_proxy', 'rpm', 'deb', 'ansible', 'python', 'container', 'file', 'certguard'):
-        assert expected in capabilities, f"Missing capability: {expected}"
+@pytest.mark.parametrize('feature', [
+    pytest.param(feature, marks=pytest.mark.feature(feature), id=feature)
+    for feature in CONTENT_TYPE_FEATURES
+])
+def test_pulp_smart_proxy_content_type_feature(pulp_smart_proxy_features, feature):
+    capability = feature.removeprefix('content/')
+    assert capability in pulp_smart_proxy_features['pulpcore'].get('capabilities', [])
+
+
+@pytest.mark.parametrize('capability', ('core', 'smart_proxy', 'file', 'certguard'))
+def test_pulp_smart_proxy_base_capability(pulp_smart_proxy_features, capability):
+    assert capability in pulp_smart_proxy_features['pulpcore'].get('capabilities', [])
 
 
 def test_pulp_api_status(curl_request):

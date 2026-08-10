@@ -136,7 +136,7 @@ def test_pulp_import_export_volume_mounts(server, container, pulp_import_export_
 
 
 def test_pulp_rhsm_url_empty_on_server(pulp_smart_proxy_settings, obsah_params):
-    if obsah_params.get('flavor') == 'foreman-proxy-content':
+    if obsah_params.get('flavor') in ('foreman-proxy-content', 'capsule'):
         pytest.skip("content proxy deployments set PULP_SMART_PROXY_RHSM_URL")
 
     assert pulp_smart_proxy_settings["rhsm_url"] == ""
