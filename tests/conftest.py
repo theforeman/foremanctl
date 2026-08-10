@@ -21,6 +21,7 @@ PARAMETERS_FILE = os.path.join(OBSAH_STATE, 'parameters.yaml')
 FLAVOR_TESTS_DIR = py.path.local(__file__).dirpath() / 'flavor'
 FLAVOR_TESTS_DIR_OVERRIDES = {
     'satellite': 'katello',
+    'capsule': 'foreman-proxy-content',
 }
 FOREMAN_PROXY_PORT = 8443
 

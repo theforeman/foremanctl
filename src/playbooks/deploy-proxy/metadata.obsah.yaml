@@ -19,3 +19,4 @@ variables:
 include:
   - _flavor_features
   - _flavors/foreman-proxy-content
+  - _vendor_overrides/deploy-proxy

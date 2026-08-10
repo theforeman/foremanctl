@@ -1,0 +1,24 @@
+---
+flavor_features:
+  - foreman-proxy
+  - pulp
+  - content/ansible
+  - content/container
+  - content/rpm
+  - remote-execution
+
+pulp_mirror: true
+pulp_rhsm_url: "https://{{ ansible_facts['fqdn'] }}/rhsm"
+
+checks_to_execute:
+  - check_features
+  - check_hostname
+  - check_database_connection
+  - check_podman_network_backend
+
+health_checks_to_execute:
+  - check_hostname
+  - check_database_connection
+  - check_services
+
+certificates_generate: false
