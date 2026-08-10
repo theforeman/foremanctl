@@ -3,4 +3,5 @@ certificates_source: default
 database_mode: internal
 tuning: default
 features: []
-enabled_features: "{{ (flavor_features + features) }}"
+remove_features: []
+enabled_features: "{{ (flavor_features + features) | difference(remove_features) | resolve_dependencies }}"

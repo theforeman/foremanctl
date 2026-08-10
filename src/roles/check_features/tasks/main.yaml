@@ -1,26 +1,68 @@
 ---
+- name: Validate feature removal requests
+  ansible.builtin.assert:
+    that:
+      - check_features_removal_errors | length == 0
+    fail_msg: |
+      ERROR: Invalid feature removal request:
+      {% for error in check_features_removal_errors %}
+        - {{ error }}
+      {% endfor %}
+  vars:
+    check_features_removal_errors: "{{ remove_features | validate_feature_removals(flavor_features) }}"
+  when: remove_features | length > 0
+
+- name: Validate feature dependencies
+  ansible.builtin.assert:
+    that:
+      - check_features_dependency_errors | length == 0
+    fail_msg: |
+      ERROR: Unsatisfied feature dependencies:
+      {% for error in check_features_dependency_errors %}
+        - {{ error }}
+      {% endfor %}
+  vars:
+    check_features_dependency_errors: "{{ enabled_features | unsatisfied_dependencies }}"
+
+- name: Persist feature removals
+  when: remove_features | length > 0
+  block:
+    - name: Read current persisted parameters
+      ansible.builtin.slurp:
+        src: "{{ lookup('env', 'OBSAH_STATE') }}/parameters.yaml"
+      register: check_features_persisted_params_raw
+
+    - name: Write updated parameters
+      ansible.builtin.copy:
+        content: "{{ check_features_current_params | combine({'features': check_features_updated_features}) | to_nice_yaml }}"
+        dest: "{{ lookup('env', 'OBSAH_STATE') }}/parameters.yaml"
+        mode: "0644"
+      vars:
+        check_features_current_params: "{{ check_features_persisted_params_raw.content | b64decode | from_yaml }}"
+        check_features_updated_features: "{{ (check_features_current_params.features | default([])) | difference(remove_features) }}"
+
 - name: Validate requested features
   ansible.builtin.assert:
     that:
-      - found_invalid_features | length == 0
+      - check_features_invalid | length == 0
     fail_msg: |
-      ERROR: Unknown feature(s) requested: {{ found_invalid_features | join(', ') }}
+      ERROR: Unknown feature(s) requested: {{ check_features_invalid | join(', ') }}
 
       Run 'foremanctl features' to list all available features.
   vars:
-    found_invalid_features: "{{ features | invalid_features }}"
+    check_features_invalid: "{{ features | invalid_features }}"
   when: features | length > 0
 
 - name: Validate feature conflicts
   ansible.builtin.assert:
     that:
-      - found_conflicts | length == 0
+      - check_features_conflicts | length == 0
     fail_msg: |
       ERROR: Conflicting features detected:
-      {% for conflict in found_conflicts %}
+      {% for conflict in check_features_conflicts %}
         - {{ conflict }}
       {% endfor %}
 
       These features cannot be enabled together.
   vars:
-    found_conflicts: "{{ enabled_features | conflicting_features }}"
+    check_features_conflicts: "{{ enabled_features | conflicting_features }}"
