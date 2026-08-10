@@ -274,6 +274,7 @@
     command: bash -c "bin/rails db:migrate && bin/rails db:seed"
     env:
       FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
+      FOREMAN_LOGGING_LEVEL: "{{ foreman_log_level }}"
       SEED_ORGANIZATION: "{{ foreman_initial_organization }}"
       SEED_LOCATION: "{{ foreman_initial_location }}"
     secrets:
