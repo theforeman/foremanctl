@@ -128,14 +128,7 @@
       - 'foreman-client-cert,type=mount,target=/etc/foreman/client_cert.pem'
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
       - 'foreman-db-ca,type=mount,target={{ foreman_database_ssl_ca_path }}'
-    env:
-      SEED_ORGANIZATION: "{{ foreman_initial_organization }}"
-      SEED_LOCATION: "{{ foreman_initial_location }}"
-      FOREMAN_PUMA_THREADS_MIN: "{{ foreman_puma_threads_min }}"
-      FOREMAN_PUMA_THREADS_MAX: "{{ foreman_puma_threads_max }}"
-      FOREMAN_PUMA_WORKERS: "{{ foreman_puma_workers }}"
-      FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
-      FOREMAN_LOGGING_LEVEL: "{{ foreman_log_level }}"
+    env: "{{ foreman_env }}"
     quadlet_options:
       - |
         [Unit]
@@ -179,11 +172,7 @@
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
       - 'foreman-dynflow-worker-hosts-queue-yaml,type=mount,target=/etc/foreman/dynflow/worker-hosts-queue.yml'
       - 'foreman-db-ca,type=mount,target={{ foreman_database_ssl_ca_path }}'
-    env:
-      DYNFLOW_REDIS_URL: "redis://localhost:6379/6"
-      REDIS_PROVIDER: "DYNFLOW_REDIS_URL"
-      FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
-      FOREMAN_LOGGING_LEVEL: "{{ foreman_log_level }}"
+    env: "{{ foreman_dynflow_env }}"
     command: "/usr/libexec/foreman/sidekiq-selinux -e production -r ./extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yml"
     quadlet_options:
       - |
@@ -238,11 +227,7 @@
       - 'foreman-ca-cert,type=mount,target=/etc/foreman/katello-default-ca.crt'
       - 'foreman-client-cert,type=mount,target=/etc/foreman/client_cert.pem'
       - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
-    env:
-      SEED_ORGANIZATION: "{{ foreman_initial_organization }}"
-      SEED_LOCATION: "{{ foreman_initial_location }}"
-      FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
-      FOREMAN_LOGGING_LEVEL: "{{ foreman_log_level }}"
+    env: "{{ foreman_env }}"
     quadlet_options:
       - |
         [Unit]
@@ -273,11 +258,7 @@
     sdnotify: false
     network: host
     command: bash -c "bin/rails db:migrate && bin/rails db:seed"
-    env:
-      FOREMAN_ENABLED_PLUGINS: "{{ foreman_plugins | join(' ') }}"
-      FOREMAN_LOGGING_LEVEL: "{{ foreman_log_level }}"
-      SEED_ORGANIZATION: "{{ foreman_initial_organization }}"
-      SEED_LOCATION: "{{ foreman_initial_location }}"
+    env: "{{ foreman_env }}"
     secrets:
       - 'foreman-database-url,type=env,target=DATABASE_URL'
       - 'foreman-encryption-key,type=env,target=ENCRYPTION_KEY'
