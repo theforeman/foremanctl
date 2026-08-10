@@ -39,10 +39,16 @@
 - name: Deploy IOP Inventory service
   ansible.builtin.include_role:
     name: iop_inventory
+  vars:
+    iop_inventory_postgresql_admin_password: "{{ iop_core_postgresql_admin_password }}"
 
 - name: Deploy IOP Advisor service
   ansible.builtin.include_role:
     name: iop_advisor
+  vars:
+    iop_advisor_fdw_remote_database_name: "{{ iop_core_inventory_database_name }}"
+    iop_advisor_fdw_remote_database_user: "{{ iop_core_inventory_database_user }}"
+    iop_advisor_fdw_remote_database_password: "{{ iop_core_inventory_database_password }}"
 
 - name: Deploy IOP Remediation service
   ansible.builtin.include_role:
@@ -63,6 +69,10 @@
 - name: Deploy IOP Vulnerability service
   ansible.builtin.include_role:
     name: iop_vulnerability
+  vars:
+    iop_vulnerability_fdw_remote_database_name: "{{ iop_core_inventory_database_name }}"
+    iop_vulnerability_fdw_remote_database_user: "{{ iop_core_inventory_database_user }}"
+    iop_vulnerability_fdw_remote_database_password: "{{ iop_core_inventory_database_password }}"
 
 - name: Deploy IOP Inventory Frontend
   ansible.builtin.include_role:
