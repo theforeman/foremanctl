@@ -232,7 +232,6 @@
     login_host: localhost
     # TODO(RHINENG-26911): remove this view once Cyndi decommission completes
     # across all IoP services.
-    # Staleness intervals are hardcoded HBI defaults (29h, 7d, 30d).
     # Per-org custom staleness from hbi.staleness is not supported.
     query: |
       CREATE OR REPLACE VIEW "inventory"."hosts" AS SELECT
