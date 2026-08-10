@@ -1,6 +1,8 @@
 from foremanctl import FEATURE_MAP
 from foremanctl import conflicting_features
 from foremanctl import list_all_features
+from foremanctl import resolve_dependencies
+from foremanctl import unsatisfied_dependencies
 
 
 def _asymmetric_conflicts():
@@ -63,3 +65,41 @@ def test_list_all_features_marks_dependency_as_enabled(monkeypatch):
     output = list_all_features(['test-parent'])
     child_line = next(line for line in output.splitlines() if line.startswith('test-child'))
     assert 'enabled' in child_line
+
+
+def test_resolve_dependencies_adds_transitive_deps(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-a', {'dependencies': ['test-b']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-b', {'dependencies': ['test-c']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-c', {})
+    result = resolve_dependencies(['test-a'])
+    assert set(result) == {'test-a', 'test-b', 'test-c'}
+
+
+def test_resolve_dependencies_no_duplicates(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-a', {'dependencies': ['test-b']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-b', {})
+    result = resolve_dependencies(['test-a', 'test-b'])
+    assert result.count('test-b') == 1
+
+
+def test_resolve_dependencies_preserves_input_order(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-a', {})
+    monkeypatch.setitem(FEATURE_MAP, 'test-b', {})
+    result = resolve_dependencies(['test-b', 'test-a'])
+    assert result[:2] == ['test-b', 'test-a']
+
+
+def test_unsatisfied_dependencies_passes_after_resolve(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-a', {'dependencies': ['test-b']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-b', {})
+    resolved = resolve_dependencies(['test-a'])
+    assert unsatisfied_dependencies(resolved) == []
+
+
+def test_unsatisfied_dependencies_detects_missing():
+    assert unsatisfied_dependencies(['katello']) != []
+
+
+def test_unsatisfied_dependencies_passes_with_resolved():
+    resolved = resolve_dependencies(['katello'])
+    assert unsatisfied_dependencies(resolved) == []

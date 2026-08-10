@@ -59,6 +59,15 @@ def get_dependencies(features):
     return dependencies
 
 
+def resolve_dependencies(features):
+    """Return features plus all their transitive dependencies."""
+    all_features = list(features)
+    for dep in get_dependencies(features):
+        if dep not in all_features:
+            all_features.append(dep)
+    return all_features
+
+
 def foreman_plugins(value):
     dependencies = list(get_dependencies(filter_features(value)))
     plugins = [FEATURE_MAP.get(feature, {}).get('foreman', {}).get('plugin_name') for feature in filter_features(value + dependencies)]
@@ -79,21 +88,32 @@ def list_all_features(enabled_features, only_enabled=False):
         if internal and not list_internal:
             continue
         description = meta.get('description', '')
+
+        if meta.get('removable', False):
+            removable = 'yes'
+        else:
+            removable = 'no'
+
         if has_feature(enabled_features, name):
-            enabled_list.append((name, 'enabled', internal, description))
+            enabled_list.append((name, 'enabled', internal, removable, description))
         elif not only_enabled:
-            available_list.append((name, 'available', internal, description))
+            available_list.append((name, 'available', internal, removable, description))
 
     if not list_internal:
-        output = [f"{'FEATURE':<25} {'STATE':<12} DESCRIPTION"]
-        for name, state, _internal, description in enabled_list + available_list:
-            output.append(f"{name:<25} {state:<12} {description}")
+        output = [f"{'FEATURE':<25} {'STATE':<12} {'REMOVABLE':<13} DESCRIPTION"]
+        for name, state, _internal, removable, description in enabled_list + available_list:
+            output.append(f"{name:<25} {state:<12} {removable:<13} {description}")
     else:
-        output = [f"{'FEATURE':<25} {'STATE':<12} {'INTERNAL':<8} DESCRIPTION"]
-        for name, state, internal, description in enabled_list + available_list:
-            output.append(f"{name:<25} {state:<12} {internal:<8} {description}")
+        output = [f"{'FEATURE':<25} {'STATE':<12} {'INTERNAL':<8} {'REMOVABLE':<13} DESCRIPTION"]
+        for name, state, internal, removable, description in enabled_list + available_list:
+            output.append(f"{name:<25} {state:<12} {internal:<8} {removable:<13} {description}")
 
     return "\n".join(output)
+
+
+def is_feature_removable(feature_name):
+    """Check if a feature supports removal."""
+    return FEATURE_MAP.get(feature_name, {}).get('removable', False)
 
 
 def invalid_features(features):
@@ -109,6 +129,51 @@ def conflicting_features(features):
             if conflict in features:
                 conflicts.add(tuple(sorted([feature, conflict])))
     return [f"{pair[0]} conflicts with {pair[1]}" for pair in conflicts]
+
+
+def validate_feature_removals(remove_features, flavor_features):
+    """Validate that requested feature removals are allowed.
+
+    Returns a list of error message strings. Empty list means all valid.
+    """
+    errors = []
+
+    for feature in remove_features:
+        if feature in flavor_features:
+            errors.append(
+                f"Cannot remove '{feature}' — it is a core feature of the current flavor. "
+                f"Flavor features cannot be removed."
+            )
+        elif feature not in FEATURE_MAP:
+            errors.append(
+                f"Cannot remove unknown feature '{feature}'. "
+                f"Run 'foremanctl features' to see available features."
+            )
+        elif not is_feature_removable(feature):
+            errors.append(
+                f"Cannot remove feature '{feature}' — this feature does not support removal. "
+                f"Run 'foremanctl features' to see which features can be removed."
+            )
+
+    return errors
+
+
+def unsatisfied_dependencies(enabled_features):
+    """Check that all feature dependencies are satisfied.
+
+    Returns a list of error strings for missing dependencies.
+    """
+    errors = []
+    enabled_set = set(enabled_features)
+
+    for feature in enabled_features:
+        missing = set(get_dependencies_for_feature(feature)) - enabled_set
+        if missing:
+            errors.append(
+                f"Feature '{feature}' requires {', '.join(sorted(missing))} which are not enabled"
+            )
+
+    return errors
 
 
 def hammer_plugins(value):
@@ -161,6 +226,9 @@ class FilterModule(object):
             'list_all_features': list_all_features,
             'invalid_features': invalid_features,
             'conflicting_features': conflicting_features,
+            'validate_feature_removals': validate_feature_removals,
+            'resolve_dependencies': resolve_dependencies,
+            'unsatisfied_dependencies': unsatisfied_dependencies,
             'has_feature': has_feature,
             'databases_for_features': databases_for_features,
             'to_postgresql_databases': to_postgresql_databases,
