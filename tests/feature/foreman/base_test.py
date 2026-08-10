@@ -1,4 +1,5 @@
 import json
+import time
 
 import pytest
 
@@ -75,6 +76,44 @@ def test_foreman_recurring_timers_enabled_and_running(server, instance):
 def test_foreman_recurring_services_exist(server, instance):
     service = server.service(f"foreman-recurring@{instance}.service")
     assert service.exists
+
+
+@pytest.mark.parametrize("instance", RECURRING_INSTANCES)
+def test_foreman_recurring_timer_last_trigger(server, instance):
+    """Verify that timers have a valid last trigger time (if they've run)."""
+    timer_name = f"foreman-recurring@{instance}.timer"
+    timer = server.service(timer_name) 
+    assert "LastTriggerUSec" in timer.systemd_properties
+
+
+@pytest.mark.parametrize("instance", RECURRING_INSTANCES)
+def test_foreman_recurring_timer_next_trigger(server, instance):
+    """Verify that timers have a scheduled next trigger time."""
+    timer_name = f"foreman-recurring@{instance}.timer"
+    timer = server.service(timer_name)
+    assert timer.systemd_properties["NextElapseUSecRealtime"] != "0"
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("instance", RECURRING_INSTANCES)
+def test_foreman_recurring_timer_execution(server, instance):
+    """Trigger a timer manually and verify it executes successfully."""
+    service_name = f"foreman-recurring@{instance}.service"
+
+    server.check_output(f"systemctl start {service_name}")
+
+    # Wait for the service to complete (these are oneshot services)
+    # Poll the service status until it's no longer active
+    max_wait = 60  # Maximum wait time in seconds
+    poll_interval = 2
+    waited = 0
+
+    service = server.service(service_name)
+    while service.is_running and waited < max_wait:
+        time.sleep(poll_interval)
+        waited += poll_interval
+
+    assert service.systemd_properties["Result"] == "success"
 
 
 def test_foreman_delivery_method_setting(foremanapi):
