@@ -3,5 +3,6 @@ certificates_source: default
 database_mode: internal
 tuning: default
 features: []
+remove_features: []
 enabled_features: "{{ (flavor_features + features) }}"
 air_gapped: false

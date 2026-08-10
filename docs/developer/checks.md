@@ -15,9 +15,9 @@ Please update this file as check usage evolves.
 - **Rationale**: A validation was incorrectly removed which prevented users from creating duplicate Foreman permissions, causing upgrade failure. This check will need to be included until https://projects.theforeman.org/issues/38465 is addressed.
 
 ### check_features
-- **Description**: Ensures that all foremanctl features requested (via the `--feature` flag) are valid.
-- **Fail state**: Fails when requested features are not recognized by foremanctl.
-- **Rationale**: This check handles input sanitization for `--feature`.
+- **Description**: Ensures that all foremanctl features requested via `--add-feature` and `--remove-feature` are valid and that removals do not violate flavor or dependency rules.
+- **Fail state**: Fails when a requested feature is unknown, non-removable, protected by the current flavor, or required by another enabled feature.
+- **Rationale**: This check handles feature input sanitization. Feature state persistence remains owned by `obsah` and is committed only after the complete playbook succeeds.
 
 ### check_foreman_api
 - **Description**: Pings Foreman API (/api/v2/ping) to verify it responds. Verifies foreman_tasks service status is 'ok' when Katello/content feature is enabled.
