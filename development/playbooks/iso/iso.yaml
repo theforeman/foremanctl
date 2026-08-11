@@ -1,0 +1,61 @@
+---
+- name: Prepare a disconnected installation from an ISO
+  hosts:
+    - quadlet
+  become: true
+  vars:
+    iso_download_path: /root/satellite.iso
+    iso_mount_path: /mnt/satellite
+  tasks:
+    - name: Install packages
+      ansible.builtin.package:
+        name:
+          - podman
+          - skopeo
+        state: present
+
+    - name: Check if ISO already exists on target
+      ansible.builtin.stat:
+        path: "{{ iso_download_path }}"
+      register: iso_stat
+
+    - name: Upload the ISO from local path
+      ansible.builtin.copy:
+        src: "{{ iso_path }}"
+        dest: "{{ iso_download_path }}"
+        mode: "0644"
+      when: not iso_stat.stat.exists
+
+    - name: Ensure ISO mount point exists
+      ansible.builtin.file:
+        path: "{{ iso_mount_path }}"
+        state: directory
+        mode: "0755"
+
+    - name: Mount the ISO, run prepare_system, then always unmount
+      block:
+        - name: Mount the ISO
+          ansible.posix.mount:
+            path: "{{ iso_mount_path }}"
+            src: "{{ iso_download_path }}"
+            fstype: iso9660
+            opts: loop,ro
+            state: ephemeral
+
+        - name: Run the prepare_system script from the mounted ISO
+          ansible.builtin.command:
+            argv: "{{ ['python3', 'prepare_system'] + (['--nogpgcheck'] if iso_nogpgcheck | default(false) else []) }}"
+            chdir: "{{ iso_mount_path }}"
+          register: iso_prepare_system_result
+          changed_when: true
+
+        - name: Show prepare_system output
+          ansible.builtin.debug:
+            msg:
+              stdout: "{{ iso_prepare_system_result.stdout }}"
+              stderr: "{{ iso_prepare_system_result.stderr }}"
+      always:
+        - name: Unmount the ISO
+          ansible.posix.mount:
+            path: "{{ iso_mount_path }}"
+            state: unmounted

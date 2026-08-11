@@ -1,0 +1,21 @@
+---
+help: |
+  Prepare a disconnected installation from an ISO.
+
+  Uploads the ISO (unless already present), mounts it, and runs the
+  prepare_system script shipped on the ISO to install the foremanctl
+  package and import container images into local storage. The ISO is
+  unmounted afterwards. Once complete, run foremanctl deploy (as
+  suggested by the script) to finish the installation.
+
+  Use --nogpgcheck when installing from unsigned/nightly composes.
+
+variables:
+  iso_path:
+    parameter: iso_path
+    help: Path to a local ISO file to upload to the target machine.
+    type: AbsolutePath
+  iso_nogpgcheck:
+    parameter: --nogpgcheck
+    help: Skip GPG signature verification when installing packages (for unsigned/nightly composes).
+    action: store_true
