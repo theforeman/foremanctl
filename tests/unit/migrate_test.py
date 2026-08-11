@@ -18,13 +18,15 @@ class TestParameterMapping:
         old_config = {
             'foreman': {
                 'db_host': 'localhost',
-                'db_port': 5432
+                'db_port': 5432,
+                'db_manage': True,
             }
         }
 
         result = migrate_answers.apply_mappings(old_config)
 
-        assert result['mapped']['database_host'] == 'localhost'
+        assert result['mapped']['database_host'] == 'postgresql'
+        assert result['mapped']['database_mode'] == 'internal'
         assert result['mapped']['database_port'] == 5432
         assert result['unmappable'] == []
 
@@ -49,7 +51,8 @@ class TestParameterMapping:
         old_config = {
             'foreman': {
                 'db_manage_rake': True,
-                'db_host': 'localhost'
+                'db_host': 'localhost',
+                'db_manage': True,
             }
         }
 
@@ -57,7 +60,7 @@ class TestParameterMapping:
 
         assert 'db_manage_rake' not in result['mapped']
         assert 'db_manage_rake' not in str(result['unmappable'])
-        assert result['mapped']['database_host'] == 'localhost'
+        assert result['mapped']['database_host'] == 'postgresql'
 
     def test_certificate_parameters_ignored(self):
         """Test that certificate path parameters are ignored (handled by migration role)"""
@@ -66,7 +69,8 @@ class TestParameterMapping:
                 'server_ssl_cert': '/etc/pki/katello/certs/server.crt',
                 'server_ssl_key': '/etc/pki/katello/private/server.key',
                 'server_ssl_ca': '/etc/pki/katello/certs/ca.crt',
-                'db_host': 'localhost'
+                'db_host': 'localhost',
+                'db_manage': True,
             }
         }
 
@@ -76,7 +80,7 @@ class TestParameterMapping:
         assert 'server_key' not in result['mapped']
         assert 'ca_certificate' not in result['mapped']
         assert not any('ssl' in p for p in result['unmappable'])
-        assert result['mapped']['database_host'] == 'localhost'
+        assert result['mapped']['database_host'] == 'postgresql'
 
     def test_unmappable_parameters(self):
         """Test that unmappable parameters are reported"""
@@ -124,11 +128,40 @@ class TestParameterMapping:
         assert 'foreman::unknown_param' in result['unmappable']
         assert len(result['unmappable']) == 1
 
+    def test_internal_database_host_moves_off_localhost(self):
+        """Internal database migrations should use container DNS instead of loopback."""
+        old_config = {
+            'foreman': {
+                'db_host': '127.0.0.1',
+                'db_manage': True,
+            }
+        }
+
+        result = migrate_answers.apply_mappings(old_config)
+
+        assert result['mapped']['database_mode'] == 'internal'
+        assert result['mapped']['database_host'] == 'postgresql'
+
+    def test_external_database_host_keeps_original_value(self):
+        """External database migrations must preserve the installer host."""
+        old_config = {
+            'foreman': {
+                'db_host': 'localhost',
+                'db_manage': False,
+            }
+        }
+
+        result = migrate_answers.apply_mappings(old_config)
+
+        assert result['mapped']['database_mode'] == 'external'
+        assert result['mapped']['database_host'] == 'localhost'
+
     def test_skip_none_values_in_unmappable(self):
         """Test that None values are not added to unmappable list"""
         old_config = {
             'foreman': {
                 'db_host': 'localhost',
+                'db_manage': True,
                 'unknown_param': None,
                 'another_unknown': 'value'
             }
@@ -136,7 +169,7 @@ class TestParameterMapping:
 
         result = migrate_answers.apply_mappings(old_config)
 
-        assert result['mapped']['database_host'] == 'localhost'
+        assert result['mapped']['database_host'] == 'postgresql'
         assert 'foreman::unknown_param' not in result['unmappable']
         assert 'foreman::another_unknown' in result['unmappable']
         assert len(result['unmappable']) == 1

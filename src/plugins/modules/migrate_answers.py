@@ -113,6 +113,16 @@ def flatten_nested_dict(nested_dict, parent_key=''):
     return dict(items)
 
 
+def normalize_internal_database_host(mapped_config):
+    """Rewrite installer loopback DB hosts to container DNS for internal DB deployments."""
+    if mapped_config.get('database_mode') != 'internal':
+        return
+
+    database_host = mapped_config.get('database_host')
+    if database_host in {'localhost', '127.0.0.1', '::1'}:
+        mapped_config['database_host'] = 'postgresql'
+
+
 def apply_mappings(old_config):
     """
     Transform old config to new format using mapping table.
@@ -151,6 +161,8 @@ def apply_mappings(old_config):
                 else:
                     param_name = str(old_key)
                 unmappable.append(param_name)
+
+    normalize_internal_database_host(result)
 
     return {
         'mapped': result,
