@@ -1,7 +1,7 @@
 ---
 - name: Issue server certificate
   when:
-    - (certificates_source != 'custom_server') or (certificates_hostname == 'localhost')
+    - (certificates_source != 'custom_server') or (certificates_hostname in ['localhost', 'candlepin'])
   block:
     - name: 'Create server private key'
       community.crypto.openssl_privatekey:
@@ -22,8 +22,11 @@
         extended_key_usage:
           - serverAuth
       vars:
-        _certificates_extra_sans: "{{ certificates_server_aliases if certificates_hostname != 'localhost' else [] }}"
-        _certificates_desired_server_sans: "{{ ([certificates_hostname] + _certificates_extra_sans) | map('regex_replace', '^', 'DNS:') | list }}"
+        _certificates_extra_sans: >-
+          {{ (certificates_server_aliases if certificates_hostname != 'localhost' else [])
+             + ((certificates_hostname_aliases | default({})).get(certificates_hostname, [])) }}
+        _certificates_desired_server_sans: >-
+          {{ ([certificates_hostname] + _certificates_extra_sans) | unique | map('regex_replace', '^', 'DNS:') | list }}
 
     - name: 'Sign server certificate'
       community.crypto.x509_certificate:

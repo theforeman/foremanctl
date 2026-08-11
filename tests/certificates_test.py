@@ -88,6 +88,15 @@ def test_localhost_certificate_issued_by_internal_ca(server, certificates, custo
         "Localhost certificate should be issued by the internal CA even with custom server certs"
 
 
+def test_candlepin_certificate_issued_by_internal_ca(server, certificates, custom_certificates):
+    if not server.file(certificates['candlepin_certificate']).exists:
+        pytest.skip("candlepin certificate not present in proxy deployment")
+    candlepin_info = certificate_info(server, certificates['candlepin_certificate'])
+    ca_info = certificate_info(server, certificates['ca_certificate'])
+    assert candlepin_info['issuer'] == ca_info['subject'], \
+        "Candlepin certificate should be issued by the internal CA even with custom server certs"
+
+
 def test_ca_bundle_exists(server, certificates):
     f = server.file(certificates['ca_bundle'])
     assert f.exists
