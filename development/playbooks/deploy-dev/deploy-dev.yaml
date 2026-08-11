@@ -46,10 +46,25 @@
     - role: systemd_target
     - role: certificates
     - role: postgresql
+      vars:
+        postgresql_network: host
     - role: valkey
+      vars:
+        valkey_network: host
     - role: candlepin
+      vars:
+        candlepin_networks: host
+        candlepin_database_host: localhost
+        candlepin_healthcheck_host: localhost
+        candlepin_tomcat_key: "{{ localhost_key }}"
+        candlepin_tomcat_certificate: "{{ localhost_certificate }}"
     - role: httpd
     - role: pulp
+      vars:
+        pulp_networks: host
+        pulp_migration_networks: host
+        pulp_database_host: localhost
+        pulp_redis_url: "redis://localhost:6379/8"
     - role: foreman_development
       vars:
         foreman_development_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
