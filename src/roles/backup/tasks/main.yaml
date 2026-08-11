@@ -34,6 +34,14 @@
       ansible.builtin.include_tasks:
         file: preflight.yaml
 
+    - name: Select database access host for backup
+      ansible.builtin.set_fact:
+        backup_database_host: >-
+          {{
+            (backup_database_mode == 'internal')
+            | ternary((postgresql_socket_dir | default('/var/run/postgresql')), database_host)
+          }}
+
     - name: Create timestamped backup directory
       ansible.builtin.file:
         path: "{{ backup_dir_full }}"
@@ -63,7 +71,7 @@
 
     - name: Wait for PostgreSQL readiness
       ansible.builtin.command:
-        cmd: pg_isready -h {{ database_host }} -p {{ database_port }}
+        cmd: pg_isready -h {{ backup_database_host }} -p {{ database_port }}
       register: backup_pg_ready
       retries: "{{ backup_postgresql_ready_retries }}"
       delay: "{{ backup_postgresql_ready_delay }}"
@@ -77,7 +85,7 @@
         db_entry:
           name: "{{ item.name }}"
           database: "{{ item.database }}"
-          host: "{{ database_host }}"
+          host: "{{ backup_database_host }}"
           port: "{{ database_port }}"
           user: "{{ item.user }}"
           password: "{{ item.password }}"

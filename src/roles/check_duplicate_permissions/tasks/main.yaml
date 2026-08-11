@@ -5,7 +5,8 @@
     login_db: "{{ foreman_database_name }}"
     login_user: "{{ foreman_database_user }}"
     login_password: "{{ foreman_database_password }}"
-    login_host: "{{ foreman_database_host }}"
+    login_host: "{{ (database_mode == 'internal') | ternary(omit, foreman_database_host) }}"
+    login_unix_socket: "{{ (database_mode == 'internal') | ternary(postgresql_socket_dir | default('/var/run/postgresql'), omit) }}"
     query: |
       SELECT id, name
       FROM permissions p

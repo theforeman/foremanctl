@@ -113,7 +113,7 @@
     image: foreman.image
     state: quadlet
     sdnotify: true
-    network: host
+    network: "{{ foreman_networks }}"
     hostname: "{{ ansible_facts['hostname'] }}.local"
     volume:
       - 'foreman-data-run:/var/run/foreman:rw,z,U'
@@ -158,7 +158,7 @@
     image: foreman.image
     state: quadlet
     sdnotify: true
-    network: host
+    network: "{{ foreman_networks }}"
     hostname: "{{ ansible_facts['hostname'] }}.local"
     volume:
       - 'foreman-data-run:/var/run/foreman:rw,z,U'
@@ -212,7 +212,7 @@
     state: quadlet
     image: foreman.image
     sdnotify: false
-    network: host
+    network: "{{ foreman_networks }}"
     hostname: "{{ ansible_facts['hostname'] }}.local"
     command: "foreman-rake {{ item.rake }}"
     volume:
@@ -256,7 +256,7 @@
     state: quadlet
     image: foreman.image
     sdnotify: false
-    network: host
+    network: "{{ foreman_migration_networks }}"
     command: bash -c "bin/rails db:migrate && bin/rails db:seed"
     env: "{{ foreman_env }}"
     secrets:

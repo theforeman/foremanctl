@@ -2,8 +2,9 @@
 postgresql_container_image: quay.io/sclorg/postgresql-16-c10s
 postgresql_container_tag: "latest"
 postgresql_container_name: postgresql
-postgresql_network: host
+postgresql_network: foreman-db
 postgresql_restart_policy: always
+postgresql_socket_dir: /var/run/postgresql
 
 postgresql_data_dir: /var/lib/pgsql/data
 

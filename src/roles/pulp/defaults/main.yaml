@@ -46,7 +46,14 @@ pulp_enabled_plugins: "{{ pulp_default_plugins + pulp_plugins }}"
 
 pulp_database_name: pulp
 pulp_database_user: pulp
-pulp_database_host: localhost
+pulp_database_host: postgresql
+pulp_networks: >-
+  {{
+    ((database_mode == 'internal') | ternary(['foreman-db'], []))
+    + ['foreman-cache', 'foreman-app']
+  }}
+pulp_migration_networks: "{{ ['foreman-db'] if database_mode == 'internal' else ['foreman-app'] }}"
+pulp_redis_url: "redis://valkey:6379/8"
 pulp_database_port: 5432
 pulp_database_ssl_mode: disabled
 pulp_database_ssl_ca: # noqa: no-empty-defaults
@@ -73,7 +80,7 @@ pulp_settings_other_env:
   PULP_ANSIBLE_API_HOSTNAME: "{{ pulp_content_origin }}"
   PULP_ANSIBLE_CONTENT_HOSTNAME: "{{ pulp_content_origin }}/pulp/content"
   PULP_ANSIBLE_PERMISSION_CLASSES: "[]"
-  PULP_REDIS_URL: "redis://localhost:6379/8"
+  PULP_REDIS_URL: "{{ pulp_redis_url }}"
   PULP_REMOTE_USER_ENVIRON_NAME: "HTTP_REMOTE_USER"
   PULP_REST_FRAMEWORK__DEFAULT_AUTHENTICATION_CLASSES: >-
     ['rest_framework.authentication.SessionAuthentication', 'pulpcore.app.authentication.PulpRemoteUserAuthentication']
