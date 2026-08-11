@@ -1,0 +1,78 @@
+---
+- name: Gather Podman system info for network creation
+  containers.podman.podman_system_info:
+  register: deploy_network_podman_system_info
+  failed_when: false
+  changed_when: false
+
+- name: Set deploy_network creation strategy
+  ansible.builtin.set_fact:
+    deploy_network_is_netavark2_plus: >-
+      {{
+        (
+          deploy_network_podman_system_info.podman_system_info.version.Version
+          | default('0')
+        ).split('.')[0] | int >= 6
+        or
+        (
+          (
+            deploy_network_podman_system_info.podman_system_info.host.networkBackendInfo.version
+            | default('netavark 0')
+          ).split()[-1].split('.')[0] | int
+        ) >= 2
+      }}
+
+# netavark 2.0 changed the bridge driver's isolation default from opt-in to
+# opt-out (containers/netavark#709): a bridge network created with no explicit
+# isolate option is now isolated from every other bridge network by default,
+# whereas netavark 1.x left it non-isolated by default. We always pass an
+# explicit isolate value (strict or false) so behavior is deterministic
+# regardless of the installed netavark's own default, rather than relying on
+# omission (which silently produces isolation on netavark 2+ for every
+# network we did NOT intend to isolate, breaking hairpin NAT between them).
+#
+# containers.podman 1.20.2 serializes opt.isolate booleans as Python-style
+# True/False, which Podman 6 + netavark 2 reject ("invalid isolate option
+# \"True\""/"\"False\""). Upstream fixed this on main in
+# containers/ansible-podman-collections commit d45819fd6561, but until that
+# reaches a released collection we create/normalize these networks via the
+# CLI with the explicit lowercase value form Podman currently documents,
+# instead of going through the module on those versions.
+- name: Create network with explicit isolation via compatibility fallback for {{ deploy_network_name }}
+  when: deploy_network_is_netavark2_plus
+  block:
+    - name: Inspect existing network {{ deploy_network_name }}
+      ansible.builtin.command:
+        cmd: "podman network inspect {{ deploy_network_name | quote }}"
+      register: deploy_network_existing_inspect
+      changed_when: false
+      failed_when: false
+
+    - name: Create network {{ deploy_network_name }}
+      ansible.builtin.command:
+        cmd: >-
+          podman network create
+          --driver {{ deploy_network_driver | quote }}
+          {% if deploy_network_internal %} --internal{% endif %}
+          {% if deploy_network_ipv6 %} --ipv6{% endif %}
+          {% if deploy_network_subnet is defined %} --subnet {{ deploy_network_subnet | quote }}{% endif %}
+          {% if deploy_network_gateway is defined %} --gateway {{ deploy_network_gateway | quote }}{% endif %}
+          {% for dns_server in deploy_network_dns | default([]) %} --dns {{ dns_server | quote }}{% endfor %}
+          --opt isolate={{ 'strict' if (deploy_network_isolate | bool) else 'false' }}
+          {{ deploy_network_name | quote }}
+      changed_when: true
+      when: deploy_network_existing_inspect.rc != 0
+
+- name: Create network {{ deploy_network_name }}
+  containers.podman.podman_network:
+    name: "{{ deploy_network_name }}"
+    driver: "{{ deploy_network_driver }}"
+    internal: "{{ deploy_network_internal }}"
+    ipv6: "{{ deploy_network_ipv6 }}"
+    subnet: "{{ deploy_network_subnet | default(omit) }}"
+    gateway: "{{ deploy_network_gateway | default(omit) }}"
+    dns: "{{ deploy_network_dns | default(omit) }}"
+    opt:
+      isolate: "{{ deploy_network_isolate | bool }}"
+    state: present
+  when: not deploy_network_is_netavark2_plus

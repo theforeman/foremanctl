@@ -1,0 +1,12 @@
+---
+deploy_network_name: foreman-network
+deploy_network_driver: bridge
+deploy_network_internal: false
+deploy_network_isolate: false
+deploy_network_ipv6: false
+
+# Optional explicit network settings. Podman auto-assigns these when omitted.
+# deploy_network_subnet: "10.89.0.0/24"
+# deploy_network_gateway: "10.89.0.1"
+# deploy_network_dns:
+#   - 8.8.8.8
