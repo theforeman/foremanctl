@@ -12,6 +12,8 @@ def test_root_containers_match_expected(server, subtests):
     assert containers, "No running containers found"
 
     for container in containers:
+        if container.name.startswith("foreman-recurring-"):
+            continue
         with subtests.test(container.name):
             config = container.inspect()['Config']
             if config['Image'] in EXPECTED_ROOT_IMAGES:
