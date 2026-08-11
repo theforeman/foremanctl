@@ -4,6 +4,7 @@ import uuid
 import pytest
 
 LISTENER_PORT = 9999
+LISTENER_HOST = "host.containers.internal"
 
 
 @pytest.fixture
@@ -40,7 +41,7 @@ def webhook(foremanapi, server_fqdn, webhook_listener, webhook_template):
         "webhooks",
         {
             "name": str(uuid.uuid4()),
-            "target_url": f"http://localhost:{LISTENER_PORT}",
+            "target_url": f"http://{LISTENER_HOST}:{LISTENER_PORT}",
             "http_method": "POST",
             "event": "domain_created.event.foreman",
             "http_content_type": "application/json",

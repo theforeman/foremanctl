@@ -4,6 +4,16 @@ def assert_secret_content(server, secret_name, secret_value):
     assert secret.stdout.strip() == secret_value
 
 
+def run_candlepin_status_from_foreman(server):
+    return server.run(
+        "podman exec foreman curl "
+        "--cacert /etc/foreman/katello-default-ca.crt "
+        "--noproxy candlepin "
+        "--silent --output /dev/null --write-out '%{http_code}' "
+        "https://candlepin:23443/candlepin/status"
+    )
+
+
 def test_candlepin_service(server):
     candlepin = server.service("candlepin")
     assert candlepin.is_running
@@ -26,33 +36,27 @@ def test_candlepin_runs_as_tomcat(server):
     assert secret_ownership == 'root:tomcat 440'
 
 
-def test_candlepin_port(server):
+def test_candlepin_port_not_published(server):
     candlepin = server.addr("localhost")
-    assert candlepin.port("23443").is_reachable
+    assert not candlepin.port("23443").is_reachable
 
 
-def test_candlepin_status(server, certificates):
-    status = server.run(f"curl --cacert {certificates['ca_certificate']} --silent --output /dev/null --write-out '%{{http_code}}' https://localhost:23443/candlepin/status")
+def test_candlepin_status(server):
+    status = run_candlepin_status_from_foreman(server)
     assert status.succeeded
     assert status.stdout == '200'
 
 
-def test_candlepin_logs_in_journal(server, certificates):
-    server.run(
-        f"curl --cacert {certificates['ca_certificate']} --silent --output /dev/null "
-        f"https://localhost:23443/candlepin/status"
-    )
+def test_candlepin_logs_in_journal(server):
+    run_candlepin_status_from_foreman(server)
 
     journal = server.run("journalctl -u candlepin --since '2 min ago' --no-pager").stdout
     assert 'candlepin/status' in journal
     assert 'LoggingFilter' in journal
 
 
-def test_candlepin_tomcat_logs_in_journal(server, certificates):
-    server.run(
-        f"curl --cacert {certificates['ca_certificate']} --silent --output /dev/null "
-        f"https://localhost:23443/candlepin/status"
-    )
+def test_candlepin_tomcat_logs_in_journal(server):
+    run_candlepin_status_from_foreman(server)
 
     journal = server.run("journalctl -u candlepin --no-pager").stdout
     assert '"GET /candlepin/status HTTP/1.1"' in journal
@@ -60,14 +64,21 @@ def test_candlepin_tomcat_logs_in_journal(server, certificates):
 
 
 def test_tls(server):
-    result = server.run('nmap --script +ssl-enum-ciphers localhost -p 23443')
-    result = result.stdout
-    assert "TLSv1.3" in result
-    assert "TLSv1.2" in result
+    for flag in ("-tls1_2", "-tls1_3"):
+        result = server.run(
+            "podman exec foreman bash -lc "
+            f"\"echo Q | openssl s_client -connect candlepin:23443 -servername candlepin {flag} "
+            "-CAfile /etc/foreman/katello-default-ca.crt 2>&1\""
+        )
+        assert result.succeeded
+        assert "Verify return code: 0 (ok)" in result.stdout
 
-    # Test that older TLS versions are disabled
-    assert "TLSv1.1" not in result
-    assert "TLSv1.0" not in result
-
-    # Test that the least cipher strength is "strong" or "A"
-    assert "least strength: A" in result
+    for flag in ("-tls1_1", "-tls1"):
+        result = server.run(
+            "podman exec foreman bash -lc "
+            f"\"echo Q | openssl s_client -connect candlepin:23443 -servername candlepin {flag} "
+            "-CAfile /etc/foreman/katello-default-ca.crt 2>&1\""
+        )
+        assert result.failed
+        assert "no protocols available" in result.stdout
+        assert "no peer certificate available" in result.stdout

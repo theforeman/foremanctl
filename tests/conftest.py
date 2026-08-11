@@ -160,6 +160,45 @@ def client(client_hostname):
     yield get_paramiko_host(client_hostname)
 
 
+@pytest.fixture
+def remote_execution_authorized_proxy_key(server, client):
+    proxy_public_key = server.check_output(
+        "podman exec foreman-proxy cat /usr/share/foreman-proxy/.ssh/id_rsa_foreman_proxy.pub"
+    ).strip()
+
+    client.run_test(
+        "python3 - <<'PY'\n"
+        "from pathlib import Path\n"
+        "ssh_dir = Path('/root/.ssh')\n"
+        "ssh_dir.mkdir(mode=0o700, parents=True, exist_ok=True)\n"
+        "authorized_keys = ssh_dir / 'authorized_keys'\n"
+        "authorized_keys.touch()\n"
+        "authorized_keys.chmod(0o600)\n"
+        f"proxy_public_key = {proxy_public_key!r}\n"
+        "lines = authorized_keys.read_text().splitlines()\n"
+        "if proxy_public_key not in lines:\n"
+        "    with authorized_keys.open('a', encoding='utf-8') as fh:\n"
+        "        fh.write(proxy_public_key + '\\n')\n"
+        "PY"
+    )
+
+    yield
+
+    client.run(
+        "python3 - <<'PY'\n"
+        "from pathlib import Path\n"
+        "authorized_keys = Path('/root/.ssh/authorized_keys')\n"
+        f"proxy_public_key = {proxy_public_key!r}\n"
+        "if authorized_keys.exists():\n"
+        "    filtered = [line for line in authorized_keys.read_text().splitlines() if line != proxy_public_key]\n"
+        "    if filtered:\n"
+        "        authorized_keys.write_text('\\n'.join(filtered) + '\\n', encoding='utf-8')\n"
+        "    else:\n"
+        "        authorized_keys.unlink()\n"
+        "PY"
+    )
+
+
 @pytest.fixture(scope="module")
 def database(database_mode, server):
     if database_mode == 'external':
@@ -276,6 +315,15 @@ def wait_for_tasks(foremanapi, search=None):
 
 def wait_for_metadata_generate(foremanapi):
     wait_for_tasks(foremanapi, 'label = Actions::Katello::Repository::MetadataGenerate')
+
+
+def assert_container_resolves_hostname(server, container_name, hostname):
+    dns_result = server.run(f"podman exec {container_name} getent hosts {hostname}")
+    assert dns_result.succeeded, f"DNS-resolvable host {hostname} not found from {container_name} container"
+
+
+def assert_container_resolves_server_fqdn(server, container_name, server_fqdn):
+    assert_container_resolves_hostname(server, container_name, server_fqdn)
 
 
 def pytest_configure(config):

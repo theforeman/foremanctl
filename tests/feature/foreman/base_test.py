@@ -2,6 +2,8 @@ import json
 
 import pytest
 
+from tests.conftest import assert_container_resolves_server_fqdn
+
 FOREMAN_SOCKET = '/run/httpd.foreman.sock'
 
 RECURRING_INSTANCES = [
@@ -43,6 +45,10 @@ def test_foreman_status_database(foreman_status):
 def test_foreman_status_cache(foreman_status):
     assert foreman_status['results']['foreman']['cache']['servers']
     assert foreman_status['results']['foreman']['cache']['servers'][0]['status'] == 'ok'
+
+
+def test_foreman_resolves_server_fqdn(server, server_fqdn):
+    assert_container_resolves_server_fqdn(server, "foreman", server_fqdn)
 
 
 @pytest.mark.feature('katello')

@@ -4,6 +4,7 @@ import json
 import pytest
 
 from tests.conftest import FOREMAN_PROXY_PORT
+from tests.conftest import assert_container_resolves_server_fqdn
 
 
 @pytest.fixture(scope="module")
@@ -50,6 +51,27 @@ def test_foreman_proxy_service(server):
 def test_foreman_proxy_port(server):
     foreman_proxy = server.addr('localhost')
     assert foreman_proxy.port(FOREMAN_PROXY_PORT).is_reachable
+
+
+@pytest.mark.feature('foreman')
+def test_foreman_reaches_proxy_via_bridge_network(server, proxy_base_url):
+    cmd = server.run(
+        "podman exec foreman curl "
+        "--silent --show-error --fail "
+        "--connect-timeout 5 --max-time 10 "
+        "--cacert /etc/foreman/katello-default-ca.crt "
+        "--cert /etc/foreman/client_cert.pem "
+        "--key /etc/foreman/client_key.pem "
+        f"{proxy_base_url}/v2/features"
+    )
+    assert cmd.succeeded, (
+        "Foreman container could not reach the proxy over the bridge "
+        f"network: {cmd.stderr}"
+    )
+
+
+def test_foreman_proxy_resolves_server_fqdn(server, server_fqdn):
+    assert_container_resolves_server_fqdn(server, "foreman-proxy", server_fqdn)
 
 
 @pytest.mark.xfail(reason='Fails until report feature is available')

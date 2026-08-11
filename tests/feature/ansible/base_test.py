@@ -39,10 +39,19 @@ def test_import_ansible_role(ansible_role, foremanapi):
 
 
 @pytest.fixture
-def registered_client(client_environment, activation_key, organization, foremanapi, client, client_fqdn):
+def registered_client(
+    client_environment,
+    activation_key,
+    organization,
+    foremanapi,
+    client,
+    client_fqdn,
+    remote_execution_authorized_proxy_key,
+):
     client.run('dnf install -y subscription-manager')
     rcmd = foremanapi.create('registration_commands', {'organization_id': organization['id'], 'insecure': True, 'activation_keys': [activation_key['name']], 'force': True})
     client.run_test(rcmd['registration_command'])
+
     yield client_fqdn
     try:
         foremanapi.delete('hosts', {'id': client_fqdn})

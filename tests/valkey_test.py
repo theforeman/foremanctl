@@ -1,5 +1,4 @@
-VALKEY_HOST = 'localhost'
-VALKEY_PORT = 6379
+import pytest
 
 
 def test_valkey_service(server):
@@ -12,12 +11,18 @@ def test_redis_service_absent(server):
     assert not redis.exists
 
 
-def test_valkey_port(server):
-    valkey = server.addr(VALKEY_HOST)
-    assert valkey.port(VALKEY_PORT).is_reachable
+def test_valkey_not_exposed_on_host(server):
+    valkey = server.addr("localhost")
+    assert not valkey.port("6379").is_reachable
 
 
-def test_valkey_listens_on_localhost_only(server):
-    result = server.run(f"ss -tlnH sport = :{VALKEY_PORT}")
-    assert f'127.0.0.1:{VALKEY_PORT}' in result.stdout
-    assert f'0.0.0.0:{VALKEY_PORT}' not in result.stdout
+@pytest.mark.feature('foreman')
+def test_valkey_resolves_from_foreman(server):
+    result = server.run("podman exec foreman getent hosts valkey")
+    assert result.succeeded
+
+
+def test_valkey_ping(server):
+    result = server.run("podman exec valkey valkey-cli ping")
+    assert result.succeeded
+    assert result.stdout.strip() == "PONG"
