@@ -27,10 +27,16 @@
   ansible.builtin.include_role:
     name: iop_gateway
 
+- name: Wait for IOP Gateway smart proxy API to be reachable from Foreman
+  ansible.builtin.include_role:
+    name: wait_for_smart_proxy
+  vars:
+    wait_for_smart_proxy_url: "{{ iop_core_gateway_registration_url }}"
+
 - name: Register IOP Gateway as smart proxy
   theforeman.foreman.smart_proxy:
     name: "iop-gateway"
-    url: "https://localhost:24443"
+    url: "{{ iop_core_gateway_registration_url }}"
     server_url: "{{ iop_core_foreman_url }}"
     oauth1_consumer_key: "{{ iop_core_foreman_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ iop_core_foreman_oauth_consumer_secret }}"

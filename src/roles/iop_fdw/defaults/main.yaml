@@ -9,6 +9,7 @@ iop_fdw_remote_password: "{{ undef(hint='You must specify the remote FDW databas
 # Optional parameters - can use defaults
 iop_fdw_database_host: "localhost"
 iop_fdw_database_port: 5432
+iop_fdw_login_unix_socket: "{{ postgresql_socket_dir }}"
 
 # Constants - same for all invocations (matching puppet-iop)
 iop_fdw_foreign_server_name: hbi_server

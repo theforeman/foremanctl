@@ -1,8 +1,15 @@
 ---
+# Delegates to deploy_network rather than calling containers.podman.podman_network
+# directly so this network also gets deploy_network's netavark 2+ isolation-default
+# compatibility handling (see src/roles/deploy_network/tasks/podman.yaml):
+# iop-core-network is not meant to be isolated from the other bridge networks it
+# needs to reach (e.g. foreman-app, foreman-proxy), and netavark 2+ isolates bridge
+# networks by default unless told otherwise.
 - name: Create IOP Core network
-  containers.podman.podman_network:
-    name: "{{ iop_network_name }}"
-    state: present
-    driver: "{{ iop_network_driver }}"
-    subnet: "{{ iop_network_subnet }}"
-    gateway: "{{ iop_network_gateway }}"
+  ansible.builtin.include_role:
+    name: deploy_network
+  vars:
+    deploy_network_name: "{{ iop_network_name }}"
+    deploy_network_driver: "{{ iop_network_driver }}"
+    deploy_network_subnet: "{{ iop_network_subnet }}"
+    deploy_network_gateway: "{{ iop_network_gateway }}"

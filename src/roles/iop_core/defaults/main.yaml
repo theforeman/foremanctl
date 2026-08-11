@@ -1,2 +1,5 @@
 ---
 iop_core_foreman_url: "https://{{ ansible_facts['fqdn'] }}"
+iop_core_gateway_registration_host: "iop-core-gateway"
+iop_core_gateway_registration_port: 8443
+iop_core_gateway_registration_url: "https://{{ iop_core_gateway_registration_host }}:{{ iop_core_gateway_registration_port }}"

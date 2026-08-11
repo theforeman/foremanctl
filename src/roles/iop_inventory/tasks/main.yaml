@@ -38,8 +38,7 @@
     image: iop-inventory.image
     state: quadlet
     command: make upgrade_db
-    network:
-      - iop-core-network
+    network: "{{ iop_database_networks }}"
     env:
       KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
       USE_SUBMAN_ID: "true"
@@ -67,8 +66,7 @@
     image: iop-inventory.image
     state: quadlet
     command: make run_inv_mq_service
-    network:
-      - iop-core-network
+    network: "{{ iop_database_networks }}"
     env:
       KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
       USE_SUBMAN_ID: "true"
@@ -98,8 +96,7 @@
     image: iop-inventory.image
     state: quadlet
     command: python run_gunicorn.py
-    network:
-      - iop-core-network
+    network: "{{ iop_database_networks }}"
     env:
       KAFKA_BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
       LISTEN_PORT: "8081"
@@ -129,8 +126,7 @@
     image: iop-inventory.image
     state: quadlet
     command: make run_host_delete_access_tags
-    network:
-      - iop-core-network
+    network: "{{ iop_database_networks }}"
     env:
       KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
       USE_SUBMAN_ID: "true"
@@ -214,8 +210,7 @@
     name: postgres_fdw
     login_db: "{{ iop_inventory_database_name }}"
     login_user: postgres
-    login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_unix_socket: "{{ postgresql_socket_dir }}"
 
 - name: Create inventory schema in inventory database
   community.postgresql.postgresql_schema:
@@ -223,15 +218,13 @@
     name: inventory
     owner: "{{ iop_inventory_database_user }}"
     login_user: postgres
-    login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_unix_socket: "{{ postgresql_socket_dir }}"
 
 - name: Create inventory.hosts view in inventory database
   community.postgresql.postgresql_query:
     login_db: "{{ iop_inventory_database_name }}"
     login_user: postgres
-    login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_unix_socket: "{{ postgresql_socket_dir }}"
     # TODO(RHINENG-26911): remove this view once Cyndi decommission completes
     # across all IoP services.
     # Per-org custom staleness from hbi.staleness is not supported.

@@ -38,8 +38,7 @@
     image: iop-advisor.image
     state: quadlet
     command: sh -c "./container_init.sh && api/app.sh"
-    network:
-      - iop-core-network
+    network: "{{ iop_database_networks }}"
     env:
       DJANGO_SESSION_KEY: "UNUSED"
       BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
@@ -82,8 +81,7 @@
     image: iop-advisor.image
     state: quadlet
     command: pipenv run python service/service.py
-    network:
-      - iop-core-network
+    network: "{{ iop_database_networks }}"
     env:
       BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
       ADVISOR_DB_SSL_MODE: "disable"

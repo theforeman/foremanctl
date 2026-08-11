@@ -42,8 +42,7 @@
     name: iop-service-remediations-api
     image: iop-remediation.image
     state: quadlet
-    network:
-      - iop-core-network
+    network: "{{ iop_database_networks }}"
     command: sh -c "npm run db:migrate && exec node --max-http-header-size=16384 src/app.js"
     env:
       REDIS_ENABLED: "false"

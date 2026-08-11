@@ -1,6 +1,15 @@
 ---
 iop_gateway_container_image: "quay.io/iop/gateway"
 iop_gateway_container_tag: "foreman-3.18"
+iop_gateway_service_name: "iop-core-gateway"
+iop_gateway_container_port: 8443
+iop_gateway_publish_host: "127.0.0.1"
+iop_gateway_publish_port: 24443
+iop_gateway_iop_network: "iop-core-network"
+iop_gateway_foreman_network: "foreman-app"
+iop_gateway_networks:
+  - "{{ iop_gateway_iop_network }}"
+  - "{{ iop_gateway_foreman_network }}"
 
 iop_gateway_server_certificate: "/var/lib/foremanctl/certs/certs/localhost.crt"
 iop_gateway_server_key: "/var/lib/foremanctl/certs/private/localhost.key"

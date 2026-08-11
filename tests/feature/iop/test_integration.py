@@ -69,6 +69,35 @@ def test_iop_gateway_https_cert_auth(server, certificates):
     assert result.succeeded
 
 
+def test_foreman_container_reaches_registered_iop_gateway(server):
+    result = server.run(
+        "podman exec foreman curl --fail -s -o /dev/null "
+        "--cacert /etc/foreman/katello-default-ca.crt "
+        "--cert /etc/foreman/client_cert.pem "
+        "--key /etc/foreman/client_key.pem "
+        "https://iop-core-gateway:8443/v2/features"
+    )
+    assert result.succeeded
+
+
+def test_iop_gateway_bridges_foreman_and_iop_networks(server):
+    result = server.run(
+        "podman inspect iop-core-gateway --format '{{.NetworkSettings.Networks}}'"
+    )
+    assert result.succeeded
+    assert "iop-core-network" in result.stdout
+    assert "foreman-app" in result.stdout
+
+
+def test_foreman_container_is_not_on_iop_core_network(server):
+    result = server.run(
+        "podman inspect foreman --format '{{.NetworkSettings.Networks}}'"
+    )
+    assert result.succeeded
+    assert "foreman-app" in result.stdout
+    assert "iop-core-network" not in result.stdout
+
+
 def test_iop_core_host_inventory_api_service(server):
     service_exists = server.run("systemctl list-units --type=service | grep iop-core-host-inventory-api").succeeded
     if service_exists:

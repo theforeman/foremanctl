@@ -38,7 +38,7 @@
     image: iop-vmaas.image
     state: quadlet
     quadlet_dir: /etc/containers/systemd
-    network: iop-core-network
+    network: "{{ iop_database_networks }}"
     volumes:
       - iop-service-vmaas-data:/data:rw
     command: "/vmaas/entrypoint.sh database-upgrade reposcan"
@@ -52,9 +52,9 @@
       SYNC_CSAF: "yes"
       SYNC_RELEASES: "no"
       SYNC_RELEASE_GRAPH: "no"
-      KATELLO_URL: "http://iop-core-gateway:9090"
-      REDHAT_CVEMAP_URL: "http://iop-core-gateway:9090/pub/iop/data/meta/v1/cvemap.xml"
-      CSAF_VEX_BASE_URL: "http://iop-core-gateway:9090/pub/iop/data/csaf/v2/vex/"
+      KATELLO_URL: "http://{{ iop_vmaas_gateway_service_name }}:9090"
+      REDHAT_CVEMAP_URL: "http://{{ iop_vmaas_gateway_service_name }}:9090/pub/iop/data/meta/v1/cvemap.xml"
+      CSAF_VEX_BASE_URL: "http://{{ iop_vmaas_gateway_service_name }}:9090/pub/iop/data/csaf/v2/vex/"
       CSAF_VEX_INDEX_CSV_ENABLED: "no"
       POSTGRESQL_SSL_MODE: "disable"
     secrets:
@@ -80,7 +80,7 @@
     image: iop-vmaas.image
     state: quadlet
     quadlet_dir: /etc/containers/systemd
-    network: iop-core-network
+    network: "{{ iop_database_networks }}"
     command: "/vmaas/entrypoint.sh webapp-go"
     env:
       REPOSCAN_PUBLIC_URL: "http://iop-service-vmaas-reposcan:8000"

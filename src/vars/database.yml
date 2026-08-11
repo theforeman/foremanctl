@@ -35,8 +35,10 @@ foreman_database_port: "{{ database_port }}"
 foreman_database_ssl_mode: "{{ database_ssl_mode }}"
 foreman_database_ssl_ca: "{{ database_ssl_ca }}"
 
-iop_database_host: host.containers.internal
+iop_database_host: "{{ (database_mode == 'internal') | ternary('postgresql', 'host.containers.internal') }}"
 iop_database_port: 5432
+iop_database_networks: >-
+  {{ ['iop-core-network'] + ((database_mode == 'internal') | ternary(['foreman-db'], [])) }}
 
 iop_inventory_database_host: "{{ iop_database_host }}"
 iop_inventory_database_port: "{{ iop_database_port }}"
