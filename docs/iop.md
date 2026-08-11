@@ -10,7 +10,7 @@ The `iop` feature depends on `rh-cloud`, which installs the `foreman_rh_cloud` p
 
 ## Architecture
 
-IOP runs as a set of containerized services managed via podman quadlets on the `iop-core-network` (bridge, `10.130.0.0/24`). The gateway is registered as a Foreman smart proxy at `https://localhost:24443`.
+IOP runs as a set of containerized services managed via podman quadlets on the isolated `iop-core-network` (bridge, `10.130.0.0/24`). Foreman stays on the shared `foreman-app` bridge, while the gateway is dual-homed onto both networks and registered as a smart proxy at `https://iop-core-gateway:8443`. The same gateway remains exposed on host loopback at `https://localhost:24443` for host-side access.
 
 ```mermaid
 graph TB
@@ -79,10 +79,10 @@ graph TB
 | puptoo | `iop-core-puptoo` | - | Puppet/system facts processor |
 | yuptoo | `iop-core-yuptoo` | - | Yum/package data processor |
 | engine | `iop-core-engine` | - | Insights rules engine |
-| gateway | `iop-core-gateway` | 127.0.0.1:24443 | nginx proxy, smart proxy relay to Foreman |
+| gateway | `iop-core-gateway` | 8443 (internal), 127.0.0.1:24443 (host loopback) | nginx proxy, smart proxy relay to Foreman |
 | inventory | `iop-core-host-inventory`, `iop-core-host-inventory-api` | 8081 (internal) | Host inventory with MQ consumer and REST API |
 | advisor | `iop-service-advisor-backend-api`, `iop-service-advisor-backend-service` | 8000 (internal) | Advisor recommendations |
-| remediation | `iop-service-remediations-api` | 3000 (host network) | Remediation playbook generation |
+| remediation | `iop-service-remediations-api` | 3000 (internal) | Remediation playbook generation |
 | vmaas | `iop-service-vmaas-reposcan`, `iop-service-vmaas-webapp-go` | - | Vulnerability metadata and advisory sync |
 | vulnerability | 8 containers (manager, taskomatic, grouper, listener, evaluators, vmaas-sync) | 8443 (internal) | Vulnerability assessment pipeline |
 
@@ -96,7 +96,7 @@ Advisor and vulnerability frontend assets are extracted from container images an
 
 ### Databases
 
-IOP creates five PostgreSQL databases, all accessible to containers via `host.containers.internal:5432`:
+IOP creates five PostgreSQL databases. In the supported internal database mode, IoP database clients join the `foreman-db` bridge and reach PostgreSQL as `postgresql:5432`:
 
 | Database | User |
 |----------|------|
@@ -122,7 +122,7 @@ Set in the playbook vars or inventory to match your Foreman deployment:
 
 ### Certificates
 
-Gateway certificates use the default certificate paths:
+Gateway certificates continue to use the default certificate paths. The gateway server certificate is issued for both `localhost` and `iop-core-gateway` so the same endpoint works from the host and from the shared Foreman container network without introducing a separate host-side DNS mapping:
 
 - Server: `/var/lib/foremanctl/certs/certs/localhost.crt`
 - Client: `/var/lib/foremanctl/certs/certs/localhost-client.crt`
