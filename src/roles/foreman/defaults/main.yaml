@@ -59,3 +59,20 @@ foreman_dynflow_extra_env:
   REDIS_PROVIDER: "DYNFLOW_REDIS_URL"
 
 foreman_dynflow_env: "{{ foreman_env | ansible.builtin.combine(foreman_dynflow_extra_env) }}"
+
+foreman_secrets:
+  - 'foreman-database-url,type=env,target=DATABASE_URL'
+  - 'foreman-encryption-key,type=env,target=ENCRYPTION_KEY'
+  - 'foreman-seed-admin-user,type=env,target=SEED_ADMIN_USER'
+  - 'foreman-seed-admin-password,type=env,target=SEED_ADMIN_PASSWORD'
+  - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
+  - 'foreman-katello-yaml,type=mount,target=/etc/foreman/plugins/katello.yaml'
+  - 'foreman-ca-cert,type=mount,target=/etc/foreman/katello-default-ca.crt'
+  - 'foreman-client-cert,type=mount,target=/etc/foreman/client_cert.pem'
+  - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
+  - 'foreman-db-ca,type=mount,target={{ foreman_database_ssl_ca_path }}'
+
+foreman_dynflow_extra_secrets:
+  - 'foreman-dynflow-worker-hosts-queue-yaml,type=mount,target=/etc/foreman/dynflow/worker-hosts-queue.yml'
+
+foreman_dynflow_secrets: "{{ foreman_secrets + foreman_dynflow_extra_secrets }}"
