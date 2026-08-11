@@ -1,0 +1,19 @@
+---
+# Shared by foreman_proxy/tasks/main.yaml (both the initial deploy-time proxy
+# restart ahead of registration, and the end-of-role handler flush that can
+# restart the proxy again on every deploy run) and the backup role
+# (post-backup restart of foreman.target).
+# Self-contained (including the `when`) so callers don't need to duplicate
+# the feature gating: only meaningful when both Foreman and its proxy are
+# part of the deployment being acted on.
+- name: Wait for Foreman Proxy API to be reachable from Foreman
+  ansible.builtin.include_role:
+    name: wait_for_smart_proxy
+  vars:
+    # Spelled out with ansible_facts['fqdn'] rather than foreman_proxy_url:
+    # this task is also included from the backup role's play, which doesn't
+    # load the foreman_proxy role's defaults.
+    wait_for_smart_proxy_url: "https://{{ ansible_facts['fqdn'] }}:8443"
+  when:
+    - "enabled_features | has_feature('foreman')"
+    - "enabled_features | has_feature('foreman-proxy')"

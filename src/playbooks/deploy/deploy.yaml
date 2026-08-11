@@ -39,6 +39,11 @@
     - role: deploy_network
       vars:
         deploy_network_name: foreman-app
+    - role: deploy_network
+      vars:
+        deploy_network_name: foreman-proxy
+      when:
+        - "enabled_features | has_feature('foreman-proxy')"
     - role: postgresql
       when:
         - database_mode == 'internal'
@@ -53,6 +58,10 @@
         - "enabled_features | has_feature('iop')"
         - database_mode == 'internal'
     - role: foreman_proxy
+      vars:
+        foreman_proxy_network: foreman-proxy
+        foreman_proxy_ports:
+          - "0.0.0.0:8443:8443"
       when:
         - "enabled_features | has_feature('foreman-proxy')"
     - role: hammer

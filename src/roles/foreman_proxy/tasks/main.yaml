@@ -14,8 +14,11 @@
     image: foreman-proxy.image
     state: quadlet
     sdnotify: true
-    network: host
+    network: "{{ foreman_proxy_network }}"
+    ports: "{{ foreman_proxy_ports if foreman_proxy_ports | length > 0 else omit }}"
     hostname: "{{ ansible_facts['hostname'] }}.local"
+    volume:
+      - "/etc/hosts:/etc/hosts:ro"
     secrets:
       - 'foreman-proxy-settings-yml,type=mount,target=/etc/foreman-proxy/settings.yml'
       - 'foreman-proxy-ssl-ca,type=mount,target=/etc/foreman-proxy/ssl_ca.pem'
@@ -66,6 +69,28 @@
     state: started
   register: _foreman_proxy_service
 
+- name: Restart Foreman Proxy ahead of registration
+  ansible.builtin.systemd:
+    name: foreman-proxy
+    state: "{{ (_foreman_proxy_service is changed) | ternary('started', 'restarted') }}"
+  # Deliberately NOT done via `notify: Restart Foreman Proxy` + `meta: flush_handlers`
+  # here: this role's feature tasks notify "Restart Foreman Proxy" and
+  # "Refresh Foreman Proxy" together (matching master), and flush_handlers has no
+  # way to flush one without the other. "Refresh Foreman Proxy" calls
+  # smart_proxy_refresh, which requires the proxy to already be registered with
+  # Foreman - it must not run before "Register Foreman Proxy to Foreman" below.
+  # We still need the container running with up-to-date config *before* the
+  # readiness check and registration, because - unlike master's host-networking
+  # setup - this deployment uses a bridge network, so Foreman can only reach the
+  # proxy (and validate it during registration) once the container has actually
+  # picked up its current secrets/config. Doing this restart as a plain task
+  # sidesteps the handler pair entirely, at the cost of a harmless extra restart
+  # when "Restart Foreman Proxy" also fires at the normal end-of-role handler
+  # flush below.
+
+- name: Wait for Foreman Proxy API to be reachable from Foreman
+  ansible.builtin.include_tasks: wait_for_reachable.yaml
+
 - name: Register Foreman Proxy to Foreman
   theforeman.foreman.smart_proxy:
     name: "{{ foreman_proxy_name }}"
@@ -77,3 +102,15 @@
 
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers
+  # This flush restarts the foreman-proxy container again whenever any
+  # earlier task (certs/configs/features) notified "Restart Foreman Proxy" -
+  # which happens on effectively every deploy run, not just the first one
+  # (see the comment above "Restart Foreman Proxy ahead of registration").
+  # On the bridge-network setup, that means aardvark-dns needs another
+  # moment to reconverge before Foreman can reach the proxy again, so the
+  # readiness check below must be repeated here too - otherwise callers
+  # that use the proxy immediately after this role returns could hit it
+  # before DNS has reconverged.
+
+- name: Wait for Foreman Proxy API to be reachable from Foreman
+  ansible.builtin.include_tasks: wait_for_reachable.yaml

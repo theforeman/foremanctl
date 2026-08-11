@@ -1,0 +1,3 @@
+---
+wait_for_smart_proxy_retries: 30
+wait_for_smart_proxy_delay: 5

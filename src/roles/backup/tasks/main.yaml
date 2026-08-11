@@ -136,6 +136,9 @@
         name: foreman.target
         state: started
 
+    - name: Wait for Foreman Proxy API to be reachable from Foreman
+      ansible.builtin.include_tasks: ../../foreman_proxy/tasks/wait_for_reachable.yaml
+
     - name: Display backup completion
       ansible.builtin.debug:
         msg: |

@@ -1,0 +1,21 @@
+---
+# Shared by foreman_proxy (directly, and via the backup role) and iop_core:
+# both run their smart proxy on a Podman bridge network, where Netavark/
+# aardvark-dns needs a moment to reconverge after the container (re)starts
+# before Foreman can resolve/reach it again. Callers only need to supply
+# wait_for_smart_proxy_url (the proxy's own /v2/features base URL).
+- name: Wait for smart proxy API to be reachable from Foreman
+  ansible.builtin.command:
+    cmd: >-
+      podman exec foreman curl
+      --silent --show-error --fail
+      --connect-timeout 5 --max-time 10
+      --cacert /etc/foreman/katello-default-ca.crt
+      --cert /etc/foreman/client_cert.pem
+      --key /etc/foreman/client_key.pem
+      {{ wait_for_smart_proxy_url }}/v2/features
+  register: _wait_for_smart_proxy_result
+  changed_when: false
+  retries: "{{ wait_for_smart_proxy_retries }}"
+  delay: "{{ wait_for_smart_proxy_delay }}"
+  until: _wait_for_smart_proxy_result.rc == 0
