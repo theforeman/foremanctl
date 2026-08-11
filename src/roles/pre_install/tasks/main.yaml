@@ -20,6 +20,24 @@
       - podman
       - skopeo
 
+- name: Create Podman containers config drop-in directory
+  ansible.builtin.file:
+    path: /etc/containers/containers.conf.d
+    state: directory
+    mode: "0755"
+
+- name: Configure Podman to include host /etc/hosts entries
+  ansible.builtin.copy:
+    dest: /etc/containers/containers.conf.d/foremanctl.conf
+    mode: "0644"
+    content: |
+      [containers]
+      # Prefer real DNS for cross-container and host name resolution. We still
+      # seed container /etc/hosts from the host for compatibility with
+      # deployments that define host-only names locally, but later edits to the
+      # host file are not propagated into containers that are already running.
+      base_hosts_file = "/etc/hosts"
+
 - name: Install other dependencies
   ansible.builtin.package:
     name:
