@@ -268,9 +268,11 @@
     url: '{{ foreman_url }}/api/v2/ping'
     ca_path: '{{ foreman_ca_certificate }}'
     timeout: 120
-  until: foreman_status.status == 200
-  retries: 60
-  delay: 5
+  until:
+    - foreman_status.status == 200
+    - not (enabled_features | has_feature('katello')) or foreman_status.json['results']['katello']['services']['foreman_tasks']['status'] == 'ok'
+  retries: 120
+  delay: 2
   register: foreman_status
 
 - name: Enable & start recurring timers
@@ -282,20 +284,6 @@
   loop: "{{ foreman_recurring_tasks }}"
   loop_control:
     label: "{{ item.instance }}"
-
-- name: Wait for Foreman tasks to be ready
-  ansible.builtin.uri:
-    url: '{{ foreman_url }}/api/v2/ping'
-    ca_path: '{{ foreman_ca_certificate }}'
-    timeout: 120
-  until:
-    - foreman_tasks_status.status == 200
-    - foreman_tasks_status.json['results']['katello']['services']['foreman_tasks']['status'] == 'ok'
-  retries: 60
-  delay: 5
-  register: foreman_tasks_status
-  when:
-    - "'katello' in foreman_status.json['results']"
 
 - name: Warn about unrecognized Pulp Smart Proxy features
   ansible.builtin.debug:

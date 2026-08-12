@@ -9,11 +9,27 @@
     name: foreman
     state: restarted
 
-- name: Restart dynflow-sidekiq@
+- name: Restart dynflow-sidekiq@ instances
+  listen: Restart dynflow-sidekiq@
   ansible.builtin.systemd:
     name: "dynflow-sidekiq@{{ item }}"
     state: restarted
+  async: 120
+  poll: 0
   loop:
     - orchestrator
     - worker
     - worker-hosts-queue
+  register: foreman_dynflow_restart
+
+- name: Wait for dynflow-sidekiq@ restarts
+  listen: Restart dynflow-sidekiq@
+  ansible.builtin.async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: foreman_dynflow_restart_result
+  until: foreman_dynflow_restart_result is finished
+  retries: 120
+  delay: 1
+  loop: "{{ foreman_dynflow_restart.results }}"
+  loop_control:
+    label: "{{ item.item }}"
