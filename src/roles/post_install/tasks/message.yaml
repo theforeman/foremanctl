@@ -6,5 +6,5 @@
       - "{{ _post_install_url_msg }}"
       - "{{ _post_install_cred_msg if (post_install_done_flag is not exists) else '' }}"
   vars:
-    _post_install_url_msg: "Foreman is running at {{ post_install_foreman_server_url }}"
+    _post_install_url_msg: "You can log in at {{ post_install_foreman_server_url }}"
     _post_install_cred_msg: "Admin credentials: {{ post_install_foreman_initial_admin_username }}:{{ post_install_foreman_initial_admin_password }}"
