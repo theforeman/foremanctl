@@ -12,3 +12,7 @@
     - role: checks
       vars:
         checks_databases: "{{ all_databases }}"
+        checks_database_mode: "{{ database_mode }}"
+        checks_database_host: "{{ database_host }}"
+        checks_database_port: "{{ database_port }}"
+        checks_postgresql_admin_password: "{{ postgresql_admin_password }}"

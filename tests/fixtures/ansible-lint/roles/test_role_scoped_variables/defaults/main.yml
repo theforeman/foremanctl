@@ -1,0 +1,3 @@
+---
+test_role_scoped_variables_retries: 10
+test_role_scoped_variables_delay: 2

@@ -8,9 +8,12 @@
     name: check_database_index
   vars:
     check_database_index_database: "{{ item.database }}"
+    check_database_index_database_host: "{{ checks_database_host }}"
+    check_database_index_database_port: "{{ checks_database_port }}"
+    check_database_index_admin_password: "{{ checks_postgresql_admin_password }}"
   loop: "{{ checks_databases }}"
   no_log: true
-  when: database_mode == 'internal'
+  when: checks_database_mode == 'internal'
 
 - name: Report status of checks
   ansible.builtin.fail:

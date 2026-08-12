@@ -1,0 +1,26 @@
+---
+- name: Task using unscoped variable in module arg
+  ansible.builtin.file:
+    path: "{{ pulp_storage_path }}/media"
+    state: directory
+    mode: '0755'
+
+- name: Task using unscoped variable in when condition
+  ansible.builtin.fail:
+    msg: "Missing force flag"
+  when: not force | default(false)
+
+- name: Task using unscoped variable in loop
+  community.postgresql.postgresql_db:
+    name: "{{ item.database }}"
+    state: present
+    login_host: "{{ database_host }}"
+    login_port: "{{ database_port }}"
+  loop: "{{ databases }}"
+
+- name: Task using unscoped variable in environment
+  ansible.builtin.command:
+    cmd: pg_restore --dbname=test
+  environment:
+    PGPASSWORD: "{{ postgresql_admin_password }}"
+  changed_when: true

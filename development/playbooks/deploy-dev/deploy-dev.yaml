@@ -55,12 +55,19 @@
         foreman_development_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
         foreman_development_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
         foreman_development_candlepin_oauth_secret: "{{ candlepin_oauth_secret }}"
+        foreman_development_httpd_server_ca_certificate: "{{ httpd_server_ca_certificate }}"
+        foreman_development_httpd_server_certificate: "{{ httpd_server_certificate }}"
+        foreman_development_httpd_server_key: "{{ httpd_server_key }}"
     - role: iop_core
       when:
         - "enabled_features | has_feature('iop')"
       vars:
         iop_core_foreman_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
         iop_core_foreman_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+        iop_core_postgresql_admin_password: "{{ postgresql_admin_password }}"
+        iop_core_inventory_database_name: "{{ iop_inventory_database_name }}"
+        iop_core_inventory_database_user: "{{ iop_inventory_database_user }}"
+        iop_core_inventory_database_password: "{{ iop_inventory_database_password }}"
   post_tasks:
     - name: Stop Foreman development service
       ansible.builtin.include_role:

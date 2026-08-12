@@ -63,7 +63,7 @@
 
     - name: Wait for PostgreSQL readiness
       ansible.builtin.command:
-        cmd: pg_isready -h {{ database_host }} -p {{ database_port }}
+        cmd: pg_isready -h {{ backup_database_host }} -p {{ backup_database_port }}
       register: backup_pg_ready
       retries: "{{ backup_postgresql_ready_retries }}"
       delay: "{{ backup_postgresql_ready_delay }}"
@@ -77,8 +77,8 @@
         db_entry:
           name: "{{ item.name }}"
           database: "{{ item.database }}"
-          host: "{{ database_host }}"
-          port: "{{ database_port }}"
+          host: "{{ backup_database_host }}"
+          port: "{{ backup_database_port }}"
           user: "{{ item.user }}"
           password: "{{ item.password }}"
       loop: "{{ backup_databases }}"
@@ -117,7 +117,7 @@
     - name: Backup pulp content
       ansible.builtin.include_tasks:
         file: pulp_content.yaml
-      when: not skip_pulp_content | default(false)
+      when: not backup_skip_pulp_content
 
     - name: Generate backup metadata
       ansible.builtin.include_tasks:

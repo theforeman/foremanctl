@@ -1,0 +1,3 @@
+---
+test_role_scoped_variables_pass_retries: 10
+test_role_scoped_variables_pass_storage_path: /var/lib/pulp
