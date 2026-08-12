@@ -26,6 +26,7 @@
     image: postgresql.image
     state: quadlet
     healthcheck: pg_isready
+    healthcheck_interval: 5s
     sdnotify: healthy
     network: host
     volumes:
