@@ -580,7 +580,9 @@ jobs:
           ./foremanctl deploy-proxy \
             --flavor capsule \
             --auth-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
-            --foreman-fqdn quadlet.example.com
+            --foreman-fqdn quadlet.example.com \
+            --templates-url http://proxy.example.com:8000 \
+            --registration-url https://loadbalancer.example.com:8443
       - name: Run tests
         run: |
           ./forge test --pytest-args="--server-hostname=proxy"
