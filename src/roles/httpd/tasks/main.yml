@@ -125,6 +125,16 @@
       [Unit]
       PartOf=foreman.target
 
+- name: Ensure httpd starts after foreman.socket
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/httpd.service.d/foreman-socket.conf
+    mode: "0644"
+    content: |
+      [Unit]
+      Wants=foreman.socket
+      After=foreman.socket
+  when: httpd_with_foreman
+
 - name: Reload systemd daemon
   ansible.builtin.systemd:
     daemon_reload: true
