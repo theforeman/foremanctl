@@ -1,6 +1,6 @@
 ---
 - name: Post install message
-  when: flavor in ['katello']
+  when: post_install_message_enabled | default(false)
   ansible.builtin.debug:
     msg:
       - "{{ _post_install_url_msg }}"

@@ -14,13 +14,13 @@ def test_foremanctl_features(available_features):
         assert feature in result.stdout, f"Expected feature '{feature}' in output"
 
 
-def test_foremanctl_features_list_enabled(enabled_features):
+def test_foremanctl_features_list_enabled(user_enabled_features):
     command = ['./foremanctl', 'features', '--list-enabled']
     result = subprocess.run(command, capture_output=True, text=True)
 
     assert result.returncode == 0
 
-    for feature in enabled_features:
+    for feature in user_enabled_features:
         assert feature in result.stdout, f"Expected feature '{feature}' in output"
 
 
