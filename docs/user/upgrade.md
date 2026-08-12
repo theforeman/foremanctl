@@ -2,6 +2,8 @@
 
 Foremanctl releases bundle specific versions of Foreman with version-compatible dependencies and plugins.
 
+Upgrades are only supported to the next Z or Y version.
+
 For nearly all install situations, upgrading your Foreman server should be approached through upgrading foremanctl. Scroll to the correct procedure below which matches your installation environment type (RPM and disconnected RPM).
 
 ## Upgrading foremanctl from RPM install
