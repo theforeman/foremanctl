@@ -6,13 +6,6 @@ import pytest
 from tests.conftest import FOREMAN_PROXY_PORT
 
 
-@pytest.fixture(scope="module")
-def proxy_v2_features(curl_request, proxy_base_url):
-    cmd = curl_request("v2/features", base_url=proxy_base_url, return_body=True)
-    assert cmd.succeeded, f"Failed to query /v2/features: {cmd.stderr}"
-    return json.loads(cmd.stdout)
-
-
 def test_foreman_proxy_features(curl_request, proxy_base_url, enabled_features):
     cmd = curl_request("features", base_url=proxy_base_url, return_body=True)
     assert cmd.succeeded
@@ -40,6 +33,10 @@ def test_foreman_proxy_features(curl_request, proxy_base_url, enabled_features):
         assert "templates" in features
     else:
         assert "registration" not in features
+    if 'container-gateway' in enabled_features:
+        assert "container_gateway" in features
+    else:
+        assert "container_gateway" not in features
 
 
 def test_foreman_proxy_service(server):

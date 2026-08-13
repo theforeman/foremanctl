@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import uuid
@@ -371,6 +372,13 @@ def local_request(ssh_config, server_fqdn):
 @pytest.fixture(scope="module")
 def proxy_base_url(server_fqdn):
     return f"https://{server_fqdn}:{FOREMAN_PROXY_PORT}"
+
+
+@pytest.fixture(scope="module")
+def proxy_v2_features(curl_request, proxy_base_url):
+    cmd = curl_request("v2/features", base_url=proxy_base_url, return_body=True)
+    assert cmd.succeeded, f"Failed to query /v2/features: {cmd.stderr}"
+    return json.loads(cmd.stdout)
 
 
 @pytest.fixture(scope="module")
