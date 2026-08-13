@@ -550,10 +550,7 @@ jobs:
       - name: Setup environment
         run: ./setup-environment
       - name: Apply vendor overrides
-        run: |
-          mkdir -p src/playbooks/_vendor_overrides
-          cp -a vendor_overrides/satellite/. src/playbooks/_vendor_overrides/
-          cp -a vendor_overrides/capsule/. src/playbooks/_vendor_overrides/
+        run: cp -a vendor_overrides/satellite src/playbooks/_vendor_overrides
       - name: Start VMs
         run: |
           ./forge vms start --vms "quadlet proxy"
