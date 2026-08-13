@@ -85,7 +85,7 @@
     env:
       REPOSCAN_PUBLIC_URL: "http://iop-service-vmaas-reposcan:8000"
       REPOSCAN_PRIVATE_URL: "http://iop-service-vmaas-reposcan:10000"
-      CSAF_UNFIXED_EVAL_ENABLED: "FALSE"
+      CSAF_UNFIXED_EVAL_ENABLED: "TRUE"
       GIN_MODE: "release"
       POSTGRESQL_SSL_MODE: "disable"
     secrets:
