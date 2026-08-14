@@ -572,6 +572,9 @@ jobs:
       - name: Fetch auth bundle from quadlet
         run: |
           ./forge fetch-bundle proxy.example.com
+      - name: Remove old parameters
+        run: |
+          rm -f .var/lib/foremanctl/parameters.yaml
       - name: Deploy capsule
         run: |
           ./foremanctl deploy-proxy \
