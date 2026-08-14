@@ -39,8 +39,8 @@ def test_cvemap_download_path_unit(server):
     assert unit.is_file
 
     content = unit.content_string
-    assert "PathChanged=/var/lib/foreman/cvemap.xml" in content
-    assert "PathModified=/var/lib/foreman/cvemap.xml" in content
+    assert "PathChanged=/var/lib/foremanctl/iop/cvemap.xml" in content
+    assert "PathModified=/var/lib/foremanctl/iop/cvemap.xml" in content
     assert "WantedBy=multi-user.target" in content
 
 
@@ -48,3 +48,7 @@ def test_cvemap_download_path_enabled(server):
     path = server.service("iop-cvemap-download.path")
     assert path.is_enabled
     assert path.is_running
+
+
+def test_cvemap_manual_file_directory_exists(server):
+    assert server.file("/var/lib/foremanctl/iop/").is_directory

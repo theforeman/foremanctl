@@ -1,4 +1,10 @@
 ---
+- name: Create IOP manual override directory
+  ansible.builtin.file:
+    path: "{{ iop_cvemap_downloader_manual_file | dirname }}"
+    state: directory
+    mode: '0755'
+
 - name: Install cvemap download script
   ansible.builtin.template:
     src: iop-cvemap-download.sh.j2
@@ -33,8 +39,8 @@
   notify: Restart cvemap download timer
 
 - name: Create cvemap download path unit
-  ansible.builtin.copy:
-    src: iop-cvemap-download.path
+  ansible.builtin.template:
+    src: iop-cvemap-download.path.j2
     dest: /etc/systemd/system/iop-cvemap-download.path
     mode: '0644'
   notify: Restart cvemap download path

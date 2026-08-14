@@ -18,7 +18,7 @@ fi
 URL="${URL%/}/"
 OUTPUT_DIR="${OUTPUT_DIR%/}/"
 
-MANUAL_FILE="/var/lib/foreman/vex-latest.tar.zst"
+MANUAL_FILE="{{ iop_vex_downloader_manual_file }}"
 
 if [[ -f "$MANUAL_FILE" ]]; then
     echo "Offline mode: Using manual file from $MANUAL_FILE"
