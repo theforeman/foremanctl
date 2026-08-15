@@ -270,9 +270,21 @@
     daemon_reload: true
 
 - name: Migrate the Pulp database
-  ansible.builtin.systemd:
-    name: pulpcore-manager-migrate.service
-    state: restarted
+  block:
+    - name: Run Pulp database migration
+      ansible.builtin.systemd:
+        name: pulpcore-manager-migrate.service
+        state: restarted
+  rescue:
+    - name: Stop Pulp services to drain outdated components before migration
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: stopped
+      loop: "{{ pulp_all_services }}"
+    - name: Retry Pulp database migration with services stopped
+      ansible.builtin.systemd:
+        name: pulpcore-manager-migrate.service
+        state: restarted
 
 - name: Ensure Pulp admin user exists
   ansible.builtin.systemd:
