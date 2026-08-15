@@ -143,8 +143,14 @@ def custom_certificates(certificate_source):
 
 
 @pytest.fixture(scope="module")
+def custom_ca_certificates(certificate_source):
+    if certificate_source != 'custom_ca':
+        pytest.skip("Only applies to custom_ca deployments")
+
+
+@pytest.fixture(scope="module")
 def default_certificates(certificate_source):
-    if certificate_source == 'custom_server':
+    if certificate_source != 'default':
         pytest.skip("Only applies to non-custom certificate deployments")
 
 
