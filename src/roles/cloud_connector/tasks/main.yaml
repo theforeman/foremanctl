@@ -61,13 +61,11 @@
     ca_path: "{{ foreman_ca_certificate | default(omit) }}"
 
 - name: Announce to Sources
-  foremanctl_api:
+  foremanctl_announce_to_sources:
     server_url: "{{ cloud_connector_url }}"
     oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
     ca_path: "{{ foreman_ca_certificate | default(omit) }}"
-    method: POST
-    endpoint: /api/v2/rh_cloud/announce_to_sources
 
 - name: Configure HTTP proxy for rhcd
   ansible.builtin.include_tasks: http_proxy.yaml
