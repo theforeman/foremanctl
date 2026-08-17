@@ -52,6 +52,19 @@ def test_foreman_proxy_port(server):
     assert foreman_proxy.port(FOREMAN_PROXY_PORT).is_reachable
 
 
+@pytest.mark.feature('remote-execution')
+def test_remote_execution_ssh_public_key_comment(server, server_fqdn):
+    cmd = server.run(
+        "podman secret inspect "
+        "--format '{{.SecretData}}' "
+        "--showsecret foreman_proxy-remote_execution_ssh-id_rsa_foreman_proxy-pub"
+    )
+    assert cmd.succeeded
+    public_key = cmd.stdout.split()
+    assert len(public_key) == 3
+    assert public_key[2] == f"foreman-proxy@{server_fqdn}"
+
+
 @pytest.mark.xfail(reason='Fails until report feature is available')
 def test_foreman_proxy_client_auth_to_foreman(curl_request):
     test_report = {"config_report": {"host": "test.example.com", "reported_at": datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M:%S UTC')}}

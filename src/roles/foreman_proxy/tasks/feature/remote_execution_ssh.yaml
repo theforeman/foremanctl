@@ -2,6 +2,7 @@
 - name: Create SSH Key
   community.crypto.openssh_keypair:
     path: "/root/foreman-proxy-ssh"
+    comment: "foreman-proxy@{{ foreman_proxy_name }}"
 
 - name: Create SSH Key podman secret
   containers.podman.podman_secret:
