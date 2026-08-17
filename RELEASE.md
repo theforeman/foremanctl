@@ -33,6 +33,9 @@ When ready to stabilize a version (e.g., 3.18):
    git push --follow-tags
    ```
 
+> [!NOTE]
+> Tags ending with `-develop` will automatically be published as GitHub pre-releases.
+
 ## Cutting a Release
 
 To release from a stable branch (e.g., 3.18.0):
