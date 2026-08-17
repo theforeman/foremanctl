@@ -1,7 +1,11 @@
 ---
+- name: Install reposync trigger script
+  ansible.builtin.include_role:
+    name: iop_reposync_trigger
+
 - name: Install cvemap download script
-  ansible.builtin.template:
-    src: iop-cvemap-download.sh.j2
+  ansible.builtin.copy:
+    src: iop-cvemap-download.sh
     dest: /usr/local/bin/iop-cvemap-download.sh
     owner: root
     group: root
@@ -21,6 +25,10 @@
       ExecStart=/usr/local/bin/iop-cvemap-download.sh \
         '{{ iop_cvemap_downloader_base_url }}' \
         '{{ iop_cvemap_downloader_output_dir }}/{{ iop_cvemap_downloader_relative_path }}'
+      ExecStartPost=/usr/local/bin/iop-reposync-trigger.sh \
+        --cert '{{ iop_reposync_trigger_client_cert }}' \
+        --key '{{ iop_reposync_trigger_client_key }}' \
+        --cacert '{{ iop_reposync_trigger_client_ca }}'
       User=root
       Group=root
     mode: '0644'

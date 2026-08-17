@@ -1,3 +1,8 @@
+import pytest
+
+pytestmark = pytest.mark.feature("iop")
+
+
 def test_cvemap_download_script(server):
     script = server.file("/usr/local/bin/iop-cvemap-download.sh")
     assert script.exists
@@ -14,6 +19,13 @@ def test_cvemap_download_service_unit(server):
     assert "Type=oneshot" in content
     assert "iop-cvemap-download.sh" in content
     assert "iop-core-gateway.service" in content
+
+
+def test_cvemap_download_service_triggers_reposync(server):
+    unit = server.file("/etc/systemd/system/iop-cvemap-download.service")
+    content = unit.content_string
+    assert "ExecStartPost" in content
+    assert "iop-reposync-trigger.sh" in content
 
 
 def test_cvemap_download_timer_unit(server):
