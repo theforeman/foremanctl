@@ -1,0 +1,9 @@
+[Unit]
+Description=Timer for vulnerability metadata download
+
+[Timer]
+OnActiveSec=0
+OnUnitActiveSec={{ iop_vuln_metadata_downloader_timer_interval }}
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,25 @@
+---
+- name: Restart vulnerability metadata download timer
+  ansible.builtin.systemd:
+    name: iop-vuln-metadata-download.timer
+    state: restarted
+
+- name: Restart vulnerability metadata download path
+  ansible.builtin.systemd:
+    name: iop-vuln-metadata-download.path
+    state: restarted
+
+# Handlers to clean up previous cvemap downloader
+- name: Stop and disable previous cvemap download timer
+  ansible.builtin.systemd:
+    name: iop-cvemap-download.timer
+    no_block: true
+    enabled: false
+    state: stopped
+
+- name: Stop and disable previous cvemap download path watcher
+  ansible.builtin.systemd:
+    name: iop-cvemap-download.path
+    no_block: true
+    enabled: false
+    state: stopped
