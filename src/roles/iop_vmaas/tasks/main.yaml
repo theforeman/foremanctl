@@ -57,6 +57,7 @@
       CPE_DICT_URL: http://iop-core-gateway:9090/pub/iop/data/meta/v1/cpe-dictionary.xml
       REPOLIST_GIT: http://iop-core-gateway:9090/static/vmaas-assets/.git
       CSAF_VEX_BASE_URL: "http://iop-core-gateway:9090/pub/iop/data/csaf/v2/vex/"
+      REPO_TO_CPE_URL: "http://iop-core-gateway:9090/pub/iop/data/metrics/repository-to-cpe.json"
       CSAF_VEX_INDEX_CSV_ENABLED: "no"
       POSTGRESQL_SSL_MODE: "disable"
     secrets:

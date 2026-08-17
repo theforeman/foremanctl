@@ -1,0 +1,25 @@
+---
+- name: Remove previous cvemap downloader script
+  ansible.builtin.file:
+    path: /usr/local/bin/iop-cvemap-download.sh
+    state: absent
+
+- name: Remove previous cvemap downloader service unit
+  ansible.builtin.file:
+    path: /etc/systemd/system/iop-cvemap-download.service
+    state: absent
+
+- name: Remove previous cvemap downloader timer unit
+  ansible.builtin.file:
+    path: /etc/systemd/system/iop-cvemap-download.timer
+    state: absent
+  notify: Stop and disable previous cvemap download timer
+
+- name: Remove previous cvemap downloader path unit
+  ansible.builtin.file:
+    path: /etc/systemd/system/iop-cvemap-download.path
+    state: absent
+  notify: Stop and disable previous cvemap download path watcher
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers

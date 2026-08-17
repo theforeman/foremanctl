@@ -1,0 +1,13 @@
+[Unit]
+Description=Path unit for vulnerability metadata manual file watcher
+
+[Path]
+PathChanged={{ iop_vuln_metadata_downloader_manual_dir }}/cpe-dictionary.xml
+PathModified={{ iop_vuln_metadata_downloader_manual_dir }}/cpe-dictionary.xml
+PathChanged={{ iop_vuln_metadata_downloader_manual_dir }}/repository-to-cpe.json
+PathModified={{ iop_vuln_metadata_downloader_manual_dir }}/repository-to-cpe.json
+PathChanged={{ iop_vuln_metadata_downloader_manual_dir }}/cvemap.xml
+PathModified={{ iop_vuln_metadata_downloader_manual_dir }}/cvemap.xml
+
+[Install]
+WantedBy=multi-user.target
