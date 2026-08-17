@@ -1,0 +1,11 @@
+[Unit]
+Description=Path unit for CPE metadata manual file watcher
+
+[Path]
+PathChanged=/var/lib/foreman/cpe-dictionary.xml
+PathModified=/var/lib/foreman/cpe-dictionary.xml
+PathChanged=/var/lib/foreman/repository-to-cpe.json
+PathModified=/var/lib/foreman/repository-to-cpe.json
+
+[Install]
+WantedBy=multi-user.target

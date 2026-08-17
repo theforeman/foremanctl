@@ -1,0 +1,69 @@
+---
+- name: Install reposync trigger script
+  ansible.builtin.include_role:
+    name: iop_reposync_trigger
+
+- name: Install CPE metadata download script
+  ansible.builtin.copy:
+    src: iop-cpe-download.sh
+    dest: /usr/local/bin/iop-cpe-download.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create CPE metadata download service unit
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/iop-cpe-download.service
+    content: |
+      [Unit]
+      Description=CPE metadata dowloader for IoP Vulnerability
+      After=network-online.target iop-core-gateway.service
+      Wants=network-online.target iop-core-gateway.service
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/iop-cpe-download.sh \
+        '{{ iop_cpe_downloader_repo_to_cpe_url }}' \
+        '{{ iop_cpe_downloader_output_dir }}/{{ iop_cpe_downloader_repo_to_cpe_relative_path }}' \
+        '{{ iop_cpe_downloader_cpe_dict_url }}' \
+        '{{ iop_cpe_downloader_output_dir }}/{{ iop_cpe_downloader_cpe_dict_relative_path }}'
+      ExecStartPost=/usr/local/bin/iop-reposync-trigger.sh \
+        --cert '{{ iop_reposync_trigger_client_cert }}' \
+        --key '{{ iop_reposync_trigger_client_key }}' \
+        --cacert '{{ iop_reposync_trigger_client_ca }}'
+      User=root
+      Group=root
+    mode: '0644'
+
+- name: Create CPE metadata download timer unit
+  ansible.builtin.template:
+    src: iop-cpe-download.timer.j2
+    dest: /etc/systemd/system/iop-cpe-download.timer
+    mode: '0644'
+  notify: Restart CPE download timer
+
+- name: Create CPE metadata download path unit
+  ansible.builtin.copy:
+    src: iop-cpe-download.path
+    dest: /etc/systemd/system/iop-cpe-download.path
+    mode: '0644'
+  notify: Restart CPE download path
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start CPE metadata download timer
+  ansible.builtin.systemd:
+    name: iop-cpe-download.timer
+    enabled: true
+    state: started
+
+- name: Enable and start CPE metadata download path watcher
+  ansible.builtin.systemd:
+    name: iop-cpe-download.path
+    enabled: true
+    state: started
