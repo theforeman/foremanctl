@@ -47,4 +47,9 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create ${{ github.ref_name }} --repo ${{ github.repository }} --generate-notes foremanctl-*.tar.gz
+        run: |
+          FLAGS=""
+          if [[ "${{ github.ref_name }}" == *-develop ]]; then
+            FLAGS="--prerelease"
+          fi
+          gh release create ${{ github.ref_name }} --repo ${{ github.repository }} --generate-notes $FLAGS foremanctl-*.tar.gz
