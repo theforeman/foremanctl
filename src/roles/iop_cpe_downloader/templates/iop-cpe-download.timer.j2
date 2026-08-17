@@ -1,0 +1,9 @@
+[Unit]
+Description=Timer for CPE metadata download
+
+[Timer]
+OnActiveSec=0
+OnUnitActiveSec={{ iop_cpe_downloader_timer_interval }}
+
+[Install]
+WantedBy=timers.target
