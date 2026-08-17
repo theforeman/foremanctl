@@ -1,0 +1,9 @@
+---
+- name: Bootstrap this host for forge-driven development
+  hosts:
+    - localhost
+  gather_facts: true
+  tasks:
+    - name: Install Vagrant and a hypervisor provider
+      ansible.builtin.include_role:
+        name: theforeman.forklift.vagrant

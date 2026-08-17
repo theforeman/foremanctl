@@ -1,0 +1,96 @@
+---
+- name: Install podman
+  ansible.builtin.package:
+    name: podman
+    state: present
+
+- name: Check for existing persistent binfmt registration
+  ansible.builtin.stat:
+    path: /etc/binfmt.d/qemu-x86_64.conf
+  register: container_binfmt_conf
+
+# binfmt's "F" flag pins the interpreter's file descriptor to the SELinux
+# context of whatever registered it. Podman assigns each container a random
+# MCS category, so registering from inside a container breaks every other
+# container's exec. Extracting the interpreter to a real host path and
+# registering it via /etc/binfmt.d -- the same mechanism the built-in
+# systemd-binfmt.service already uses at every boot, well before any quadlet
+# service starts -- opens the fd as that system service instead, so it's
+# accessible to any container's category and survives reboots.
+- name: Register persistent binfmt support for foreign-architecture containers
+  when: not container_binfmt_conf.stat.exists
+  become: true
+  block:
+    # On the very first podman invocation on a freshly booted VM (storage
+    # driver and SELinux labeling still settling), this sometimes reports
+    # success without the kernel actually picking up the registration, so
+    # the command itself -- not just a check afterwards -- needs to retry.
+    - name: Register qemu-x86_64 to read its magic/mask from the kernel
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          for attempt in $(seq 1 10); do
+            podman run --rm --privileged docker.io/tonistiigi/binfmt --install amd64
+            [ -e /proc/sys/fs/binfmt_misc/qemu-x86_64 ] && exit 0
+            sleep 2
+          done
+          echo "qemu-x86_64 binfmt registration never took effect" >&2
+          exit 1
+      changed_when: true
+
+    - name: Read the kernel-registered magic bytes
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          awk '/^magic/{print $2}' /proc/sys/fs/binfmt_misc/qemu-x86_64 | sed 's/\(..\)/\\x\1/g'
+      register: container_binfmt_magic
+      changed_when: false
+
+    - name: Read the kernel-registered mask bytes
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          awk '/^mask/{print $2}' /proc/sys/fs/binfmt_misc/qemu-x86_64 | sed 's/\(..\)/\\x\1/g'
+      register: container_binfmt_mask
+      changed_when: false
+
+    - name: Remove the temporary container-scoped registration
+      ansible.builtin.command:
+        cmd: podman run --rm --privileged docker.io/tonistiigi/binfmt --uninstall qemu-x86_64
+      changed_when: true
+
+    - name: Create a container to extract the interpreter binary from
+      ansible.builtin.command:
+        cmd: podman create docker.io/tonistiigi/binfmt
+      register: container_binfmt_extract_cid
+      changed_when: true
+
+    - name: Copy the qemu-x86_64 interpreter to a persistent path
+      ansible.builtin.command:
+        cmd: podman cp {{ container_binfmt_extract_cid.stdout }}:/usr/bin/qemu-x86_64 /usr/libexec/qemu-x86_64-static
+      changed_when: true
+
+    - name: Remove the extraction container
+      ansible.builtin.command:
+        cmd: podman rm {{ container_binfmt_extract_cid.stdout }}
+      changed_when: true
+
+    - name: Make the interpreter binary executable
+      ansible.builtin.file:
+        path: /usr/libexec/qemu-x86_64-static
+        mode: "0755"
+
+    # P (preserve argv[0]) matters here: coreutils' single-binary/multicall
+    # build dispatches on argv[0] (e.g. "mkdir"), and without P, binfmt_misc
+    # replaces it with the interpreter's own path, breaking that dispatch.
+    - name: Write the persistent binfmt.d registration
+      ansible.builtin.copy:
+        dest: /etc/binfmt.d/qemu-x86_64.conf
+        content: >-
+          :qemu-x86_64:M::{{ container_binfmt_magic.stdout }}:{{ container_binfmt_mask.stdout }}:/usr/libexec/qemu-x86_64-static:POCF
+        mode: "0644"
+
+    - name: Apply the binfmt.d registration
+      ansible.builtin.systemd:
+        name: systemd-binfmt.service
+        state: restarted

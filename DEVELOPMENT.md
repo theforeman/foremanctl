@@ -14,10 +14,13 @@ This guide helps you set up foremanctl development enviornment.
 
 - Vagrant - 2.2+
 - Ansible - 2.14+
-- [Vagrant Libvirt provider plugin](https://github.com/vagrant-libvirt/vagrant-libvirt)
-- Virtualization enabled in BIOS
+- Virtualization enabled in BIOS (Linux) / a Mac with Apple Silicon (macOS)
 
-Follow [instructions](https://github.com/theforeman/forklift/blob/master/docs/vagrant.md) to install Vagrant and Libvirt.
+**Linux:** [Vagrant Libvirt provider plugin](https://github.com/vagrant-libvirt/vagrant-libvirt)
+
+**macOS (Apple Silicon):** [Vagrant qemu provider plugin](https://github.com/ppggff/vagrant-qemu) and QEMU. The dev VM runs a native arm64 guest for speed (HVF-accelerated), with `qemu-user-static` binfmt registered inside it so it can still run foremanctl's x86_64-only containers, emulating only the container processes rather than the whole guest OS. Only the single `quadlet` VM is supported on macOS for now; multi-VM setups still require Linux/libvirt.
+
+Run `./forge host-setup` once per host to install Vagrant and the appropriate provider automatically (this replaces manually following forklift's [vagrant setup docs](https://github.com/theforeman/forklift/blob/master/docs/vagrant.md)). It's opt-in and only needs to be run once, before `./setup-environment`.
 
 ### Development environment
 
