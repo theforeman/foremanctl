@@ -16,7 +16,7 @@
   tasks:
     - name: Run pytest
       ansible.builtin.command:
-        cmd: "python -m pytest --durations=10 -vv {{ pytest_args | default() }}"
+        cmd: "python -m pytest --durations=10 -vv {{ '-m \"not slow\"' if fast | default(false) else '' }} {{ pytest_args | default() }}"
       args:
         chdir: "{{ inventory_dir }}/../"
       changed_when: false
