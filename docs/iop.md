@@ -222,7 +222,7 @@ Downloads `cvemap.xml` from `https://security.access.redhat.com/data/meta/v1/cve
 
 ### Offline mode
 
-If `/var/lib/foremanctl/iop/cvemap.xml` exists on disk, the downloader uses it instead of fetching from the internet. The path watcher detects file changes and triggers the service automatically. This supports air-gapped deployments where the CVE map is provided manually. Override the location via `iop_cvemap_downloader_manual_file`.
+If `/var/lib/foremanctl/iop/cvemap.xml` exists on disk, the downloader uses it instead of fetching from the internet. The path watcher detects file changes and triggers the service automatically. This supports air-gapped deployments where the CVE map is provided manually. Override the directory via `iop_cvemap_downloader_manual_dir`.
 
 ### Reposync trigger
 
@@ -242,7 +242,7 @@ Downloads the latest `vex-latest.tar.zst` archive (and its `.asc` signature) fro
 
 ### Offline mode
 
-If `/var/lib/foremanctl/iop/vex-latest.tar.zst` exists on disk, the downloader uses it instead of fetching from the internet. The path watcher detects file changes and triggers the service automatically. Override the location via `iop_vex_downloader_manual_file`.
+If `/var/lib/foremanctl/iop/vex-latest.tar.zst` exists on disk, the downloader uses it instead of fetching from the internet. The path watcher detects file changes and triggers the service automatically. Override the directory via `iop_vex_downloader_manual_dir`.
 
 ## VMAAS-Katello Integration
 
