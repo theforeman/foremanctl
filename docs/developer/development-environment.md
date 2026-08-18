@@ -143,6 +143,8 @@ After deployment, the environment includes:
 
 ### Upgrading from source
 
+This section is intended for users with foremanctl source cloned onto the same machine where foreman is being deployed on.
+
 In a source install, git branches control versioning instead of RPM packages. Stable branches (e.g. `2.y-stable`) track a specific Foreman Y-stream, while the `master` branch tracks nightly changes (most recent).
 
 Run all the steps as the root user in the foremanctl source directory unless otherwise specified.
