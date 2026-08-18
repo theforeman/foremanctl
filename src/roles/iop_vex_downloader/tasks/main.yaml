@@ -1,7 +1,7 @@
 ---
 - name: Create IOP manual override directory
   ansible.builtin.file:
-    path: "{{ iop_vex_downloader_manual_file | dirname }}"
+    path: "{{ iop_vex_downloader_manual_dir }}"
     state: directory
     mode: '0755'
 

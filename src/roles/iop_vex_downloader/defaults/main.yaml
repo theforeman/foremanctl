@@ -2,4 +2,4 @@
 iop_vex_downloader_base_url: "https://security.access.redhat.com/data/csaf/v2/vex/"
 iop_vex_downloader_output_dir: "/var/www/html/pub/iop/data/csaf/v2/vex/"
 iop_vex_downloader_timer_interval: "1d"
-iop_vex_downloader_manual_file: "/var/lib/foremanctl/iop/vex-latest.tar.zst"
+iop_vex_downloader_manual_dir: "/var/lib/foremanctl/iop"
