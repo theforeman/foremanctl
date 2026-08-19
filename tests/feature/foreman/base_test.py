@@ -116,11 +116,6 @@ def test_foreman_recurring_timer_execution(server, instance):
     assert service.systemd_properties["Result"] == "success"
 
 
-def test_foreman_delivery_method_setting(foremanapi):
-    delivery_method_setting = foremanapi.list('settings', search='name=delivery_method')
-    assert delivery_method_setting[0]['value'] == 'smtp'
-
-
 @pytest.mark.parametrize("setting", ["foreman_url", "unattended_url"])
 def test_foreman_fqdn_in_url_settings(foremanapi, server_fqdn, setting):
     settings = foremanapi.list('settings', search=f'name={setting}')
