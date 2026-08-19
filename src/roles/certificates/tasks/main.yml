@@ -40,6 +40,12 @@
     - auth_bundle is not defined
     - certificates_generate
   block:
+    - name: 'Import the custom CA'
+      ansible.builtin.include_tasks: custom_ca.yml
+      when:
+        - certificates_source == 'custom_ca'
+        - certificates_custom_ca_certificate is defined
+
     - name: 'Generate CA certificate'
       ansible.builtin.include_tasks: ca.yml
       when:
