@@ -208,11 +208,11 @@ When the private registry mirrors upstream image names and tags exactly, `regist
 # /etc/containers/registries.conf.d/50-foremanctl-mirror.conf
 [[registry]]
 prefix = "quay.io/foreman"
-location = "katello.example.com/Default_Organization"
+location = "katello.example.com/default_organization/my_product"
 
 [[registry]]
 prefix = "quay.io/sclorg"
-location = "katello.example.com/Default_Organization"
+location = "katello.example.com/default_organization/my_product"
 ```
 
 When the private registry uses different image names or tags, use `.image.d` drop-ins instead:
@@ -220,8 +220,10 @@ When the private registry uses different image names or tags, use `.image.d` dro
 ```ini
 # /etc/containers/systemd/foreman.image.d/90-user.conf
 [Image]
-Image=katello.example.com/Default_Organization/foreman-rhel9:stream
+Image=katello.example.com/default_organization/my_product/foreman-rhel9:stream
 ```
+
+Adjust the container image naming above to match your lifecycle environment's registry name pattern.
 
 ##### Developer testing a container build
 
