@@ -28,6 +28,30 @@ To setup the environment, run the setup script which will create a virtualenv an
 source .venv/bin/activate
 ```
 
+### VM Configuration
+
+VMs can be customized via environment variables:
+
+**Quadlet VM (main Foreman server):**
+- `FOREMANCTL_QUADLET_MEMORY` - Memory in MB (default: 10240)
+- `FOREMANCTL_QUADLET_CPUS` - Number of CPUs (default: 4)
+- `FOREMANCTL_QUADLET_DISK` - Disk size in GB (default: 50)
+
+**Client VM:**
+- `FOREMANCTL_CLIENT_MEMORY` - Memory in MB (default: 1024)
+- `FOREMANCTL_CLIENT_CPUS` - Number of CPUs (default: 1)
+- `FOREMANCTL_CLIENT_DISK` - Disk size in GB (default: 20)
+
+**Database VM:**
+- `FOREMANCTL_DATABASE_MEMORY` - Memory in MB (default: 2048)
+- `FOREMANCTL_DATABASE_CPUS` - Number of CPUs (default: 1)
+- `FOREMANCTL_DATABASE_DISK` - Disk size in GB (default: 30)
+
+**Proxy VM:**
+- `FOREMANCTL_PROXY_MEMORY` - Memory in MB (default: 4096)
+- `FOREMANCTL_PROXY_CPUS` - Number of CPUs (default: 4)
+- `FOREMANCTL_PROXY_DISK` - Disk size in GB (default: 40)
+
 ### Deployment
 
 This setup uses Vagrant to create a basic VM for running the deployment on:

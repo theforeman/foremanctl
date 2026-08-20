@@ -24,9 +24,9 @@ Vagrant.configure("2") do |config|
     override.vm.hostname = "quadlet.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
-      libvirt.memory = 10240
-      libvirt.cpus = 4
-      libvirt.machine_virtual_size = 50
+      libvirt.memory = ENV.fetch("FOREMANCTL_QUADLET_MEMORY", "10240").to_i
+      libvirt.cpus = ENV.fetch("FOREMANCTL_QUADLET_CPUS", "4").to_i
+      libvirt.machine_virtual_size = ENV.fetch("FOREMANCTL_QUADLET_DISK", "50").to_i
     end
   end
 
@@ -35,7 +35,9 @@ Vagrant.configure("2") do |config|
     override.vm.hostname = "client.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
-      libvirt.memory = 1024
+      libvirt.memory = ENV.fetch("FOREMANCTL_CLIENT_MEMORY", "1024").to_i
+      libvirt.cpus = ENV.fetch("FOREMANCTL_CLIENT_CPUS", "1").to_i
+      libvirt.machine_virtual_size = ENV.fetch("FOREMANCTL_CLIENT_DISK", "20").to_i
     end
   end
 
@@ -44,7 +46,9 @@ Vagrant.configure("2") do |config|
     override.vm.hostname = "database.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
-      libvirt.memory = 2048
+      libvirt.memory = ENV.fetch("FOREMANCTL_DATABASE_MEMORY", "2048").to_i
+      libvirt.cpus = ENV.fetch("FOREMANCTL_DATABASE_CPUS", "1").to_i
+      libvirt.machine_virtual_size = ENV.fetch("FOREMANCTL_DATABASE_DISK", "30").to_i
     end
   end
 
@@ -53,8 +57,9 @@ Vagrant.configure("2") do |config|
     override.vm.hostname = "proxy.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
-      libvirt.memory = 4096
-      libvirt.cpus = 4
+      libvirt.memory = ENV.fetch("FOREMANCTL_PROXY_MEMORY", "4096").to_i
+      libvirt.cpus = ENV.fetch("FOREMANCTL_PROXY_CPUS", "4").to_i
+      libvirt.machine_virtual_size = ENV.fetch("FOREMANCTL_PROXY_DISK", "40").to_i
     end
   end
 
