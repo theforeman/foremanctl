@@ -62,12 +62,6 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "quadlet" do |override|
-    unless ENV['VAGRANT_DEFAULT_PROVIDER'] == 'qemu'
-      override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream9")
-      if override.vm.box == "centos/stream10"
-        override.vm.box_url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box"
-      end
-    end
     override.vm.hostname = "quadlet.#{DOMAIN}"
 
     if ENV['VAGRANT_DEFAULT_PROVIDER'] == 'qemu'
@@ -76,16 +70,21 @@ Vagrant.configure("2") do |config|
       override.vm.synced_folder ".", "/vagrant", disabled: true
 
       # Give quadlet a real routable IP via socket_vmnet (started by
-      # `forge host-setup`), matching how libvirt's virtual network gives it
-      # one on Linux, instead of NAT/port-forwarding the web ports. DHCP, not
-      # a static IP: vagrant-qemu 0.6.3 doesn't apply a static IP requested
-      # here when advanced_network is combined with a custom cloud_init
-      # block (like ours, for the ssh keypair) -- same as libvirt, which is
-      # DHCP-assigned too.
+      # `forge bootstrap-vagrant`), matching how libvirt's virtual network
+      # gives it one on Linux, instead of NAT/port-forwarding the web ports.
+      # DHCP, not a static IP: vagrant-qemu 0.6.3 doesn't apply a static IP
+      # requested here when advanced_network is combined with a custom
+      # cloud_init block (like ours, for the ssh keypair) -- same as
+      # libvirt, which is DHCP-assigned too.
       override.vm.network "private_network", type: "dhcp"
 
       override.vm.provision('container_binfmt', type: 'ansible') do |ansible|
         ansible.playbook = 'development/playbooks/container_binfmt.yaml'
+      end
+    else
+      override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream9")
+      if override.vm.box == "centos/stream10"
+        override.vm.box_url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box"
       end
     end
 

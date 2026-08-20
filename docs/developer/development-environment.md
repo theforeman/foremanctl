@@ -13,16 +13,16 @@ The development environment provides:
 
 ## Prerequisites
 
-- A host with Vagrant and a hypervisor provider installed. Run `./forge host-setup` once to bootstrap this (libvirt on Linux, vagrant-qemu on Apple Silicon macOS).
-- A running EL9 virtual machine, and inventory that contains knowledge of the VM. For example, using `./forge vms start`.
-  - CentOS Stream 9 is recommended and tested
-  - Other EL9 variants should work too. Please report if they do not.
-  - On Apple Silicon macOS, the `quadlet` VM instead runs a native arm64 CentOS Stream 10 guest under vagrant-qemu, with `qemu-user-static` binfmt registered so it can run foremanctl's x86_64 containers unmodified. Only the `quadlet` VM is supported on macOS today — multi-VM scenarios (`client`/`database`/`proxy`) still require libvirt.
+- A target host reachable over SSH, running EL9 (CentOS Stream 9 is recommended and tested; other EL9 variants should work too), with inventory that contains knowledge of it. `./forge vms start` using Vagrant is the default way to get one (see below), but any reachable host works with `./forge deploy-dev --target-host=...`.
 - Run `./setup-environment` and activate the virtual environment
 
 ## Quick Start
 
 ### Using Vagrant VMs (Default)
+
+Vagrant needs a hypervisor provider installed on the host: libvirt on Linux, vagrant-qemu on Apple Silicon macOS. Run `./forge bootstrap-vagrant` once per host to install this automatically.
+
+On Apple Silicon macOS, the `quadlet` VM instead runs a native arm64 CentOS Stream 10 guest under vagrant-qemu, with `qemu-user-static` binfmt registered so it can run foremanctl's x86_64 containers unmodified. Only the `quadlet` VM is supported on macOS today — multi-VM scenarios (`client`/`database`/`proxy`) still require libvirt.
 
 1. **Start the development environment:**
    ```bash

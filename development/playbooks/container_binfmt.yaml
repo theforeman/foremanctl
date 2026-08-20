@@ -4,42 +4,6 @@
   hosts:
     - all
   gather_facts: true
-  tasks:
-    - name: Register binfmt support
-      ansible.builtin.include_role:
-        name: container_binfmt
+  roles:
+    - role: container_binfmt
       when: ansible_facts['architecture'] != 'x86_64'
-
-    # Ruby/Rails-heavy services take much longer than systemd's default
-    # start timeout to boot under x86_64-on-arm64 emulation. Drop-ins apply
-    # once foremanctl generates these quadlet units later, so this can run
-    # ahead of any deploy, without touching foremanctl's own src/ templates.
-    - name: Extend systemd start timeouts for Ruby services under emulation
-      when: ansible_facts['architecture'] != 'x86_64'
-      become: true
-      block:
-        - name: Create systemd drop-in directories
-          ansible.builtin.file:
-            path: "/etc/systemd/system/{{ item }}.d"
-            state: directory
-            mode: "0755"
-          loop:
-            - foreman.service
-            - "dynflow-sidekiq@.service"
-
-        - name: Write extended TimeoutStartSec drop-ins
-          ansible.builtin.copy:
-            dest: "/etc/systemd/system/{{ item }}.d/binfmt-timeout.conf"
-            content: |
-              [Service]
-              TimeoutStartSec=600
-            mode: "0644"
-          loop:
-            - foreman.service
-            - "dynflow-sidekiq@.service"
-          notify: Reload systemd after adding binfmt timeout drop-ins
-
-  handlers:
-    - name: Reload systemd after adding binfmt timeout drop-ins
-      ansible.builtin.systemd:
-        daemon_reload: true

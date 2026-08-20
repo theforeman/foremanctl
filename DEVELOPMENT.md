@@ -20,7 +20,7 @@ This guide helps you set up foremanctl development enviornment.
 
 **macOS (Apple Silicon):** [Vagrant qemu provider plugin](https://github.com/ppggff/vagrant-qemu) and QEMU. The dev VM runs a native arm64 guest for speed (HVF-accelerated), with `qemu-user-static` binfmt registered inside it so it can still run foremanctl's x86_64-only containers, emulating only the container processes rather than the whole guest OS. Only the single `quadlet` VM is supported on macOS for now; multi-VM setups still require Linux/libvirt.
 
-Run `./forge host-setup` once per host to install Vagrant and the appropriate provider automatically (this replaces manually following forklift's [vagrant setup docs](https://github.com/theforeman/forklift/blob/master/docs/vagrant.md)). It's opt-in and only needs to be run once, before `./setup-environment`.
+Run `./forge bootstrap-vagrant` once per host to install Vagrant and the appropriate provider automatically (this replaces manually following forklift's [vagrant setup docs](https://github.com/theforeman/forklift/blob/master/docs/vagrant.md)). It's opt-in and only needs to be run once, before `./setup-environment`.
 
 ### Development environment
 
