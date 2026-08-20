@@ -33,7 +33,7 @@ All steps must be run as root user.
     - Example: Foreman 3.19 -> 3.20 upgrades would use `dnf install https://yum.theforeman.org/releases/3.20/el9/x86_64/foreman-release.rpm`.
 4. On a connected machine, create a local mirror of the foreman repository:
     - `reposync -n -p /path/to/mirror --download-metadata --repoid=foreman`
-5. On a connected machine, install foremanctl and configure it identially to your disconnected environment:
+5. On a connected machine, install foremanctl and configure it identically to your disconnected environment:
     - `dnf install foremanctl`
     - Note the version of foremanctl which installed.
     - Configure your connected foremanctl to use the same features as your disconnected environment.
