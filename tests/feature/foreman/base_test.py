@@ -98,23 +98,43 @@ def test_foreman_recurring_timer_next_trigger(server, instance):
 @pytest.mark.slow
 @pytest.mark.parametrize("instance", RECURRING_INSTANCES)
 def test_foreman_recurring_timer_execution(server, instance):
-    """Trigger a timer manually and verify it executes successfully."""
+    """Verify the recurring container is wired up correctly and can run.
+
+    Triggers a controlled run to exercise the quadlet/image/secrets/env/
+    volume plumbing. It deliberately does not wait for the rake task to
+    finish: cron:daily/weekly/monthly can run for many minutes and their
+    runtime and outcome are not what this test verifies.
+    """
     service_name = f"foreman-recurring@{instance}.service"
 
-    server.check_output(f"systemctl start {service_name}")
+    previous_invocation = server.service(service_name).systemd_properties.get("InvocationID", "")
 
-    # Wait for the service to complete (these are oneshot services)
-    # Poll the service status until it's no longer active
-    max_wait = 60  # Maximum wait time in seconds
-    poll_interval = 2
+    server.check_output(f"systemctl start --no-block {service_name}")
+
+    startup_timeout = 60
+    poll_interval = 5
     waited = 0
+    while waited < startup_timeout:
+        props = server.service(service_name).systemd_properties
+        active_state = props["ActiveState"]
+        result = props["Result"]
+        invocation = props.get("InvocationID", "")
 
-    service = server.service(service_name)
-    while service.is_running and waited < max_wait:
+        assert active_state != "failed", (
+            f"{service_name} failed to start: "
+            f"ActiveState={active_state}, Result={result}"
+        )
+
+        if invocation and invocation != previous_invocation and (
+            active_state in ("active", "activating", "deactivating")
+            or (active_state == "inactive" and result == "success")
+        ):
+            break
+
         time.sleep(poll_interval)
         waited += poll_interval
-
-    assert service.systemd_properties["Result"] == "success"
+    else:
+        pytest.fail(f"{service_name} did not start within {startup_timeout}s")
 
 
 def test_foreman_delivery_method_setting(foremanapi):
