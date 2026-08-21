@@ -213,3 +213,8 @@ Development certificates are copied to `/home/vagrant/foreman-certs/`:
 - `proxy_ca.pem` - CA certificate
 - `client_cert.pem` - Client certificate
 - `client_key.pem` - Client private key
+
+## Backup/Restore in Development Environment
+
+- **Backup/Restore with Multiple Nodes**: When running both quadlet and proxy nodes with the same controller, ensure you're switching to the correct `obsah_state` context before performing backup or restore operations. On user installs, foreman quadlet and smart proxy map to localhost (same machine). In the development environment, these are separate VMs which alters behavior.
+- **BACKUP_DIR Location**: The `BACKUP_DIR` argument in backup/restore commands refers to a directory on the target node (the VM running quadelt/proxy), not the controller node running foremanctl.
