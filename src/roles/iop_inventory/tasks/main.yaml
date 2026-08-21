@@ -54,6 +54,8 @@
       - |
         [Unit]
         Description=Database Readiness and Migration Init Container
+        After=postgresql.service
+        Wants=postgresql.service
         PartOf=foreman.target
         [Service]
         Type=oneshot
@@ -117,6 +119,8 @@
       - |
         [Unit]
         Description=IOP Core Host-Based Inventory Web Container
+        After=postgresql.service iop-core-host-inventory-migrate.service
+        Wants=postgresql.service iop-core-host-inventory-migrate.service
         PartOf=foreman.target
         [Service]
         Restart=on-failure

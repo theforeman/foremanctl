@@ -68,8 +68,8 @@
       - |
         [Unit]
         Description=Advisor Backend API
-        After=iop-core-kafka.service
-        Wants=iop-core-kafka.service
+        After=postgresql.service iop-core-kafka.service iop-core-host-inventory-api.service
+        Wants=postgresql.service iop-core-kafka.service iop-core-host-inventory-api.service
         PartOf=foreman.target
         [Service]
         Restart=on-failure
@@ -98,8 +98,8 @@
       - |
         [Unit]
         Description=Advisor Backend Service
-        After=iop-core-kafka.service
-        Wants=iop-core-kafka.service
+        After=postgresql.service iop-core-kafka.service
+        Wants=postgresql.service iop-core-kafka.service
         PartOf=foreman.target
         [Service]
         Restart=on-failure
