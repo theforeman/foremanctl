@@ -27,6 +27,7 @@
       dump_file: "{{ restore_backup_metadata.database_mapping[item.name] }}.dump"
       database: "{{ item.database }}"
       user: "{{ item.user }}"
+      password: "{{ item.password }}"
   loop: "{{ databases }}"
   loop_control:
     label: "{{ item.name }}"
@@ -89,7 +90,7 @@
       --dbname={{ item.database }}
       {{ backup_dir }}/{{ item.dump_file }}
   environment:
-    PGPASSWORD: "{{ postgresql_admin_password }}"
+    PGPASSWORD: "{{ item.password }}"
   loop: "{{ restore_databases_to_restore }}"
   loop_control:
     label: "{{ item.dump_file }} → {{ item.database }}"
