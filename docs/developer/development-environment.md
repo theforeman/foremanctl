@@ -22,7 +22,7 @@ The development environment provides:
 
 Vagrant needs a hypervisor provider installed on the host: libvirt on Linux, vagrant-qemu on Apple Silicon macOS. Run `./forge bootstrap-vagrant` once per host to install this automatically.
 
-On Apple Silicon macOS, the `quadlet` VM instead runs a native arm64 CentOS Stream 10 guest under vagrant-qemu, with `qemu-user-static` binfmt registered so it can run foremanctl's x86_64 containers unmodified. Only the `quadlet` VM is supported on macOS today — multi-VM scenarios (`client`/`database`/`proxy`) still require libvirt.
+On Apple Silicon macOS, `quadlet` and `client` instead run as native arm64 CentOS Stream 10 guests under vagrant-qemu; `quadlet` also has `qemu-user-static` binfmt registered so it can run foremanctl's x86_64 containers unmodified. `database` and `proxy` are not supported on macOS yet and still require libvirt.
 
 1. **Start the development environment:**
    ```bash
