@@ -27,6 +27,9 @@ def expected_databases(enabled_features):
     if 'pulp' in enabled_features:
         databases.append('pulp')
 
+    if 'container-gateway' in enabled_features:
+        databases.append('container_gateway')
+
     # Add IOP databases if IOP feature is enabled
     if 'iop' in enabled_features:
         databases.extend([
