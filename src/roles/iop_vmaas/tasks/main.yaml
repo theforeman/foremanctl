@@ -68,6 +68,8 @@
       - |
         [Unit]
         Description=VMAAS Reposcan Service
+        After=postgresql.service
+        Wants=postgresql.service
         PartOf=foreman.target
         [Service]
         Restart=on-failure

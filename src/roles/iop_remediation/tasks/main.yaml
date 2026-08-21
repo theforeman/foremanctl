@@ -64,8 +64,8 @@
       - |
         [Unit]
         Description=Remediations API
-        Wants=iop-core-host-inventory-api.service iop-service-advisor-backend-api.service
-        After=iop-core-host-inventory-api.service iop-service-advisor-backend-api.service
+        Wants=postgresql.service iop-core-host-inventory-api.service iop-service-advisor-backend-api.service
+        After=postgresql.service iop-core-host-inventory-api.service iop-service-advisor-backend-api.service
         PartOf=foreman.target
         [Service]
         Restart=on-failure
