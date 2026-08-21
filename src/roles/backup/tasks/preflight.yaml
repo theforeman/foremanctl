@@ -92,6 +92,8 @@
     name: check_database_index
   vars:
     check_database_index_database: "{{ item.database }}"
+    check_database_index_user: "{{ item.user }}"
+    check_database_index_password: "{{ item.password }}"
   loop: "{{ backup_databases }}"
   no_log: true
   when: backup_database_mode == 'internal'
