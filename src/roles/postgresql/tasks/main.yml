@@ -28,6 +28,7 @@
     healthcheck: pg_isready
     healthcheck_interval: 5s
     sdnotify: healthy
+    stop_signal: 2
     network: host
     volumes:
       - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:rw,Z"
