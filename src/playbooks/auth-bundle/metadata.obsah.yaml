@@ -29,6 +29,7 @@ constraints:
     - ['certificates_source', 'custom_server', ['certificates_custom_server_certificate', 'certificates_custom_server_key']]
   forbidden_if:
     - ['certificates_source', 'default', ['certificates_custom_server_certificate', 'certificates_custom_server_key']]
+    - ['certificates_source', 'custom_server', ['server_aliases']]
 
 include:
   - _certificate_source
