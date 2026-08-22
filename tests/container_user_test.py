@@ -1,6 +1,5 @@
 # These still need to be fixed
 EXPECTED_ROOT_IMAGES = {
-    "quay.io/foreman/pulp:foreman-nightly",
     "quay.io/iop/puptoo:foreman-3.18",
     "quay.io/iop/yuptoo:foreman-3.18",
 }
