@@ -1,0 +1,9 @@
+[Unit]
+Description=Path unit for cvemap.xml manual file watcher
+
+[Path]
+PathChanged={{ iop_cvemap_downloader_manual_dir }}/cvemap.xml
+PathModified={{ iop_cvemap_downloader_manual_dir }}/cvemap.xml
+
+[Install]
+WantedBy=multi-user.target

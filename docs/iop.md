@@ -214,7 +214,7 @@ A non-containerized service that provides CVE map data to the VMAAS reposcan. Ma
 
 - `iop-cvemap-download.service` - oneshot download job
 - `iop-cvemap-download.timer` - runs every 24 hours
-- `iop-cvemap-download.path` - watches `/var/lib/foreman/cvemap.xml` for changes (air-gapped mode)
+- `iop-cvemap-download.path` - watches `/var/lib/foremanctl/iop/cvemap.xml` for changes (air-gapped mode)
 
 ### Online mode
 
@@ -222,11 +222,27 @@ Downloads `cvemap.xml` from `https://security.access.redhat.com/data/meta/v1/cve
 
 ### Offline mode
 
-If `/var/lib/foreman/cvemap.xml` exists on disk, the downloader uses it instead of fetching from the internet. The path watcher detects file changes and triggers the service automatically. This supports air-gapped deployments where the CVE map is provided manually.
+If `/var/lib/foremanctl/iop/cvemap.xml` exists on disk, the downloader uses it instead of fetching from the internet. The path watcher detects file changes and triggers the service automatically. This supports air-gapped deployments where the CVE map is provided manually. Override the directory via `iop_cvemap_downloader_manual_dir`.
 
 ### Reposync trigger
 
 When the CVE map file changes, the downloader triggers a VMAAS reposync via `PUT https://localhost:24443/api/vmaas-reposcan/v1/sync` using client certificates. The trigger retries up to 5 times with exponential backoff.
+
+## VEX Downloader
+
+A non-containerized service that provides CSAF VEX (Vulnerability Exploitability eXchange) data to the vulnerability service, following the same pattern as the CVE Map Downloader. Managed by three systemd units:
+
+- `iop-vex-download.service` - oneshot download job
+- `iop-vex-download.timer` - runs every 24 hours
+- `iop-vex-download.path` - watches `/var/lib/foremanctl/iop/vex-latest.tar.zst` for changes (air-gapped mode)
+
+### Online mode
+
+Downloads the latest `vex-latest.tar.zst` archive (and its `.asc` signature) from `https://security.access.redhat.com/data/csaf/v2/vex/` and writes it to `/var/www/html/pub/iop/data/csaf/v2/vex/`.
+
+### Offline mode
+
+If `/var/lib/foremanctl/iop/vex-latest.tar.zst` exists on disk, the downloader uses it instead of fetching from the internet. The path watcher detects file changes and triggers the service automatically. Override the directory via `iop_vex_downloader_manual_dir`.
 
 ## VMAAS-Katello Integration
 

@@ -12,7 +12,7 @@ if [[ -z "$URL" || -z "$OUTPUT_FILE" ]]; then
 fi
 
 OUTPUT_DIR=$(dirname "$OUTPUT_FILE")
-MANUAL_FILE="/var/lib/foreman/cvemap.xml"
+MANUAL_FILE="{{ iop_cvemap_downloader_manual_dir }}/cvemap.xml"
 CHECKSUM_FILE="${OUTPUT_FILE}.checksum"
 FILE_UPDATED=false
 
