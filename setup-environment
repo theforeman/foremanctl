@@ -3,7 +3,8 @@
 set -eou pipefail
 
 if [[ -z "${GITHUB_ACTIONS:-}" ]] && [[ -z "${VIRTUAL_ENV:-}" ]]; then
-  python -m venv .venv
+  PYTHON=$(command -v python3 || command -v python)
+  "${PYTHON}" -m venv .venv
   source .venv/bin/activate
 fi
 pip install -r src/requirements.txt -r development/requirements.txt
