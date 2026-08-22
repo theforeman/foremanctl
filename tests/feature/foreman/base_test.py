@@ -98,22 +98,23 @@ def test_foreman_recurring_timer_next_trigger(server, instance):
 @pytest.mark.slow
 @pytest.mark.parametrize("instance", RECURRING_INSTANCES)
 def test_foreman_recurring_timer_execution(server, instance):
-    """Trigger a timer manually and verify it executes successfully."""
+    """Verify the Persistent=true timer-triggered run completes successfully."""
     service_name = f"foreman-recurring@{instance}.service"
-
-    server.check_output(f"systemctl start {service_name}")
-
-    # Wait for the service to complete (these are oneshot services)
-    # Poll the service status until it's no longer active
-    max_wait = 60  # Maximum wait time in seconds
-    poll_interval = 2
+    max_wait = 300
+    poll_interval = 5
     waited = 0
 
+    # Persistent=true timers fire on first enable, so the service will
+    # be triggered automatically. Wait for that run to start and complete
+    # rather than launching a redundant run.
     service = server.service(service_name)
-    while service.is_running and waited < max_wait:
+    while waited < max_wait:
+        if not service.is_running and service.systemd_properties.get("ActiveEnterTimestamp"):
+            break
         time.sleep(poll_interval)
         waited += poll_interval
 
+    assert waited < max_wait, f"{service_name} did not complete within {max_wait}s"
     assert service.systemd_properties["Result"] == "success"
 
 
