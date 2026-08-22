@@ -8,6 +8,8 @@
     name: check_database_index
   vars:
     check_database_index_database: "{{ item.database }}"
+    check_database_index_user: "{{ item.user }}"
+    check_database_index_password: "{{ item.password }}"
   loop: "{{ checks_databases }}"
   no_log: true
   when: database_mode == 'internal'
