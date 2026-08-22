@@ -8,6 +8,8 @@ pytestmark = pytest.mark.feature('katello')
 HOSTNAME = 'proxy.example.com'
 TARBALL = f'/var/lib/foremanctl/certs/bundles/{HOSTNAME}.tar.gz'
 
+ALIAS = 'loadbalancer.example.com'
+
 EXPECTED_CA_FILES = [
     'certs/ca.crt',
     'certs/server-ca.crt',
@@ -111,3 +113,21 @@ def test_server_ca_and_default_ca_differ_for_custom_deployment(server, generate_
     default_ca = server.run(f'tar xzf {TARBALL} -O certs/ca.crt')
     assert default_ca.succeeded
     assert server_ca.stdout != default_ca.stdout
+
+
+@pytest.fixture(scope="module")
+def generate_bundle_with_alias(server, default_certificates):
+    """--server-alias only applies to certificates issued by the internal CA."""
+    result = subprocess.run(
+        ['./foremanctl', 'auth-bundle', '--server-alias', ALIAS, HOSTNAME],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, f'auth-bundle failed: {result.stdout}\n{result.stderr}'
+
+
+def test_server_certificate_includes_server_alias_san(server, generate_bundle_with_alias):
+    """--server-alias must add the given name as a SAN, e.g. for a load balancer in front of a proxy."""
+    cert_path = f'/var/lib/foremanctl/certs/hosts/{HOSTNAME}/certs/{HOSTNAME}.crt'
+    result = server.run(f'openssl x509 -in {cert_path} -noout -text')
+    assert result.succeeded
+    assert f'DNS:{ALIAS}' in result.stdout

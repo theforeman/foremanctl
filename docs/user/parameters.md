@@ -65,7 +65,8 @@ There are multiple use cases from the users perspective that dictate what parame
 
 | Parameter | Description | foreman-installer Parameter |
 | ----------| ----------- | --------------------------- |
-| `--server-alias` | Allows defining additional DNS names (SANs) for default certificates | --certs-cname |
+| `--server-alias` (on `deploy`) | Allows defining additional DNS names (SANs) for the main server's certificate | --certs-cname |
+| `--server-alias` (on `auth-bundle`) | Allows defining additional DNS names (SANs) for a secondary system's certificate, e.g. a load-balanced proxy | --foreman-proxy-cname |
 
 ##### Unmapped
 
@@ -151,7 +152,6 @@ There are multiple use cases from the users perspective that dictate what parame
 
 | Installer Parameter | Description | Module | Puppet Parameter |
 | ------------------- | ----------- | ------ | ---------------- |
-| `--foreman-proxy-cname` | Enables DHCP feature in smart-proxy | foreman_proxy | cname |
 | `--foreman-proxy-fqdn` | Enables DHCP feature in smart-proxy | foreman_proxy | fqdn |
 | `--foreman-proxy-foreman-base-url` | | foreman_proxy | foreman_base_url |
 | `--foreman-proxy-register-in-foreman` | | foreman_proxy | register_in_foreman |
