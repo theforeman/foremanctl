@@ -254,6 +254,36 @@ The extraction process for each frontend:
 
 No frontend containers remain running after deployment.
 
+### Content for Vulnerability Evaluation
+
+IOP Vulnerability (VMaaS) requires content (metadata) from Red Hat Security to evaluate hosts.
+This content needs to be refreshed periodically.
+Three downloader roles fetch this metadata and publish it under `/var/www/html/pub`, where it is served over HTTP for the VMaaS reposcan container to consume.
+
+| Role | Files | Published under `/var/www/html/pub/` | Reposync trigger | Default interval |
+|------|-------|--------|--------------------------------------|:----------------:|
+| `iop_cpe_downloader` | `cpe-dictionary.xml`, `repository-to-cpe.json` |  yes | `24h` |
+| `iop_cvemap_downloader` | `cvemap.xml` | | `iop/data/meta/v1/` | yes | `24h` |
+| `iop_vex_downloader` | `vex-latest.tar.zst` (+ `.asc` signature) | `iop/data/csaf/v2/vex/` | no | `1d` |
+
+Each role installs a download script under `/usr/local/bin/` and three systemd units sharing the same pattern:
+
+
+Units that trigger reposync use execute `iop-reposync-trigger.sh` as a `ExecStartPost` step.
+
+#### Offline / disconnected installs
+
+For disconnected installs, the metadata can be supplied manually by dropping the file into `/var/lib/foreman/`.
+The corresponding `*.path` systemd unit watcher triggers the downloader, which copies the file into the expected location.
+As long as a manual file is present the downloader stays in offline mode and never attempts a network download.
+
+| Manual file | Consumed by |
+|-------------|-------------|
+| `/var/lib/foreman/cpe-dictionary.xml` | `iop_cpe_downloader` |
+| `/var/lib/foreman/repository-to-cpe.json` | `iop_cpe_downloader` |
+| `/var/lib/foreman/cvemap.xml` | `iop_cvemap_downloader` |
+| `/var/lib/foreman/vex-latest.tar.zst` | `iop_vex_downloader` |
+
 ## Configuration
 
 ### Foreman Connection
