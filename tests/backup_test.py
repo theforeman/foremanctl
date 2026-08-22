@@ -44,14 +44,14 @@ def expected_databases(enabled_features):
 
 
 @pytest.fixture(scope="module")
-def backup_result(server, server_hostname):
+def backup_result(server, test_target):
     server.run(f"rm -rf {BACKUP_DIR}")
 
     result = server.run(f"mkdir -p {BACKUP_DIR}")
     assert result.rc == 0, f"Failed to create backup directory on VM: {result.stderr}"
 
     result = subprocess.run(
-        ['./foremanctl', 'backup', BACKUP_DIR, '--target-host', server_hostname],
+        ['./foremanctl', 'backup', BACKUP_DIR, '--target-host', test_target],
         capture_output=True, text=True,
     )
     returncode = result.returncode
