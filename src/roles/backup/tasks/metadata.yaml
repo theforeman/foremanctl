@@ -40,7 +40,10 @@
       os_version: "{{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}"
       foremanctl_version: "{{ ansible_facts.packages['foremanctl'][0].version | default('unknown') if 'foremanctl' in ansible_facts.packages else 'unknown' }}"
       type: offline
-      incremental: false
+      incremental:
+        is_incremental: "{{ (incremental is defined and incremental | length > 0) | bool }}"
+        base_backup_dir: "{{ incremental | default('') }}"
+        base_backup_timestamp: "{{ (backup_previous_metadata | default({})).timestamp | default('') }}"
       timestamp: "{{ backup_timestamp }}"
       databases: "{{ backup_databases_to_backup }}"
       database_mapping: "{{ backup_databases_config | items2dict(key_name='name', value_name='database') }}"
