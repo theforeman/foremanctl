@@ -1,5 +1,5 @@
 ---
-database_host: localhost
+database_host: 127.0.0.1
 database_port: 5432
 database_ssl_mode: disable
 database_ssl_ca:
@@ -28,22 +28,19 @@ foreman_proxy_container_gateway_db_password: >-
 postgresql_admin_password_file: "{{ obsah_state_path }}/postgresql-admin-password"
 postgresql_admin_password: "{{ lookup('ansible.builtin.password', postgresql_admin_password_file, chars=['ascii_letters', 'digits']) }}"
 
-candlepin_database_host: "{{ database_host }}"
 candlepin_database_port: "{{ database_port }}"
 candlepin_database_ssl_mode: "{{ database_ssl_mode }}"
 candlepin_database_ssl_ca: "{{ database_ssl_ca }}"
 
-pulp_database_host: "{{ database_host }}"
 pulp_database_port: "{{ database_port }}"
 pulp_database_ssl_mode: "{{ database_ssl_mode }}"
 pulp_database_ssl_ca: "{{ database_ssl_ca }}"
 
-foreman_database_host: "{{ database_host }}"
 foreman_database_port: "{{ database_port }}"
 foreman_database_ssl_mode: "{{ database_ssl_mode }}"
 foreman_database_ssl_ca: "{{ database_ssl_ca }}"
 
-iop_database_host: host.containers.internal
+iop_database_host: postgresql
 iop_database_port: 5432
 
 iop_inventory_database_host: "{{ iop_database_host }}"
@@ -84,7 +81,7 @@ iop_vulnerability_database_password: "{{ lookup('ansible.builtin.password', iop_
 databases:
   - name: foreman
     database: "{{ foreman_database_name }}"
-    host: "{{ foreman_database_host }}"
+    host: "{{ database_host }}"
     port: "{{ foreman_database_port }}"
     user: "{{ foreman_database_user }}"
     password: "{{ foreman_database_password }}"
@@ -93,16 +90,17 @@ databases:
     feature: foreman
   - name: candlepin
     database: "{{ candlepin_database_name }}"
-    host: "{{ candlepin_database_host }}"
+    host: "{{ database_host }}"
     port: "{{ candlepin_database_port }}"
     user: "{{ candlepin_database_user }}"
     password: "{{ candlepin_database_password }}"
     ssl_mode: "{{ candlepin_database_ssl_mode }}"
     ssl_ca: "{{ candlepin_database_ssl_ca }}"
     feature: candlepin
+
   - name: pulp
     database: "{{ pulp_database_name }}"
-    host: "{{ pulp_database_host }}"
+    host: "{{ database_host }}"
     port: "{{ pulp_database_port }}"
     user: "{{ pulp_database_user }}"
     password: "{{ pulp_database_password }}"
@@ -118,35 +116,35 @@ databases:
     feature: container-gateway
   - name: iop_advisor
     database: "{{ iop_advisor_database_name }}"
-    host: "{{ iop_advisor_database_host }}"
+    host: "{{ database_host }}"
     port: "{{ iop_advisor_database_port }}"
     user: "{{ iop_advisor_database_user }}"
     password: "{{ iop_advisor_database_password }}"
     feature: iop
   - name: iop_inventory
     database: "{{ iop_inventory_database_name }}"
-    host: "{{ iop_inventory_database_host }}"
+    host: "{{ database_host }}"
     port: "{{ iop_inventory_database_port }}"
     user: "{{ iop_inventory_database_user }}"
     password: "{{ iop_inventory_database_password }}"
     feature: iop
   - name: iop_remediation
     database: "{{ iop_remediation_database_name }}"
-    host: "{{ iop_remediation_database_host }}"
+    host: "{{ database_host }}"
     port: "{{ iop_remediation_database_port }}"
     user: "{{ iop_remediation_database_user }}"
     password: "{{ iop_remediation_database_password }}"
     feature: iop
   - name: iop_vmaas
     database: "{{ iop_vmaas_database_name }}"
-    host: "{{ iop_vmaas_database_host }}"
+    host: "{{ database_host }}"
     port: "{{ iop_vmaas_database_port }}"
     user: "{{ iop_vmaas_database_user }}"
     password: "{{ iop_vmaas_database_password }}"
     feature: iop
   - name: iop_vulnerability
     database: "{{ iop_vulnerability_database_name }}"
-    host: "{{ iop_vulnerability_database_host }}"
+    host: "{{ database_host }}"
     port: "{{ iop_vulnerability_database_port }}"
     user: "{{ iop_vulnerability_database_user }}"
     password: "{{ iop_vulnerability_database_password }}"

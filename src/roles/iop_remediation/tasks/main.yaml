@@ -43,7 +43,7 @@
     image: iop-remediation.image
     state: quadlet
     network:
-      - iop-core-network
+      - foreman-core-network
     command: sh -c "npm run db:migrate && exec node --max-http-header-size=16384 src/app.js"
     env:
       REDIS_ENABLED: "false"

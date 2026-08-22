@@ -35,12 +35,13 @@ def webhook_template(foremanapi):
 
 
 @pytest.fixture
-def webhook(foremanapi, server_fqdn, webhook_listener, webhook_template):
+def webhook(foremanapi, webhook_listener, webhook_template):
+    # host.containers.internal: Foreman is on foreman-core-network, not host net.
     hook = foremanapi.create(
         "webhooks",
         {
             "name": str(uuid.uuid4()),
-            "target_url": f"http://localhost:{LISTENER_PORT}",
+            "target_url": f"http://host.containers.internal:{LISTENER_PORT}",
             "http_method": "POST",
             "event": "domain_created.event.foreman",
             "http_content_type": "application/json",

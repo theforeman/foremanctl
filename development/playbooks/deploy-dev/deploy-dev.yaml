@@ -5,6 +5,14 @@
   vars:
     flavor: katello
     pulp_register_foreman_proxy: false
+    postgresql_publish:
+      - "127.0.0.1:5432:5432"
+    valkey_publish:
+      - "127.0.0.1:6379:6379"
+    candlepin_publish:
+      - "127.0.0.1:23443:23443"
+
+
   vars_files:
     - "../../../src/vars/defaults.yml"
     - "../../../src/vars/flavors/{{ flavor }}.yml"
@@ -45,6 +53,7 @@
     - role: pre_install
     - role: systemd_target
     - role: certificates
+    - role: foreman_core_network
     - role: postgresql
     - role: valkey
     - role: candlepin
@@ -55,10 +64,13 @@
         foreman_development_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
         foreman_development_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
         foreman_development_candlepin_oauth_secret: "{{ candlepin_oauth_secret }}"
+        foreman_development_database_password: "{{ foreman_database_password }}"
+
     - role: iop_core
       when:
         - "enabled_features | has_feature('iop')"
       vars:
+        iop_core_gateway_url: "https://localhost:24443"
         iop_core_foreman_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
         iop_core_foreman_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
   post_tasks:

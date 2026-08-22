@@ -29,7 +29,8 @@
     healthcheck_interval: 5s
     sdnotify: healthy
     stop_signal: 2
-    network: host
+    network: "{{ postgresql_networks }}"
+    publish: "{{ postgresql_publish | default(omit) }}"
     volumes:
       - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:rw,Z"
     secrets:
@@ -118,7 +119,7 @@
     password: "{{ item.password }}"
     login_user: postgres
     login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_host: 127.0.0.1
     role_attr_flags: "{{ item.role_attr_flags | default(omit) }}"
     state: present
   loop: "{{ postgresql_users }}"
@@ -130,6 +131,6 @@
     owner: "{{ item.owner }}"
     login_user: postgres
     login_password: "{{ postgresql_admin_password }}"
-    login_host: localhost
+    login_host: 127.0.0.1
     state: present
   loop: "{{ postgresql_databases }}"

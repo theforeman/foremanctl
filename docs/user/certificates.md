@@ -233,7 +233,7 @@ For `certificate_source: custom_server`:
 
 1. **CA Generation**: Generate self-signed internal CA certificate and key with 20-year validity
 2. **Custom Server Certificates**: Copy the custom server cert, key, and CA bundle from user-provided paths to `/var/lib/foremanctl/certs/` (only when certificate paths are provided)
-3. **Host Certificate Issuance**: Generate client certificate and localhost certificate signed by the internal CA (server cert for FQDN is skipped)
+3. **Host Certificate Issuance**: Generate client certificates for every hostname. Internally issued server certificates are still created for localhost and other internal names (`candlepin`, `iop-core-gateway`). The public FQDN server certificate is skipped (the custom cert is used instead).
 
 #### Auth Bundle Generation
 
