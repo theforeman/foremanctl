@@ -4,8 +4,8 @@
     login_db: "{{ check_database_index_database }}"
     login_host: "{{ database_host }}"
     login_port: "{{ database_port }}"
-    login_user: postgres
-    login_password: "{{ postgresql_admin_password }}"
+    login_user: "{{ check_database_index_user }}"
+    login_password: "{{ check_database_index_password }}"
     query: SELECT COUNT(*) as count FROM pg_extension WHERE extname = 'amcheck'
   register: check_database_index_amcheck_installed
   failed_when: false
@@ -21,8 +21,8 @@
         login_db: "{{ check_database_index_database }}"
         login_host: "{{ database_host }}"
         login_port: "{{ database_port }}"
-        login_user: postgres
-        login_password: "{{ postgresql_admin_password }}"
+        login_user: "{{ check_database_index_user }}"
+        login_password: "{{ check_database_index_password }}"
         query: |
           SELECT bt_index_check(index => c.oid, heapallindexed => i.indisunique),
                  c.relname,
