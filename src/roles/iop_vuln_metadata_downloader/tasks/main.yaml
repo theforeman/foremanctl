@@ -1,0 +1,66 @@
+---
+- name: Install vulnerability metadata download script
+  ansible.builtin.copy:
+    src: iop-vuln-metadata-download.sh
+    dest: /usr/local/bin/iop-vuln-metadata-download.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create vulnerability metadata download service unit
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/iop-vuln-metadata-download.service
+    content: |
+      [Unit]
+      Description=Vulnerability metadata downloader for IoP Vulnerability
+      After=network-online.target iop-core-gateway.service
+      Wants=network-online.target iop-core-gateway.service
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/iop-vuln-metadata-download.sh \
+        --cert '{{ iop_vuln_metadata_downloader_client_cert }}' \
+        --key '{{ iop_vuln_metadata_downloader_client_key }}' \
+        --cacert '{{ iop_vuln_metadata_downloader_client_ca }}' \
+        '{{ iop_vuln_metadata_downloader_repo_to_cpe_url }}' \
+        '{{ iop_vuln_metadata_downloader_output_dir }}/{{ iop_vuln_metadata_downloader_repo_to_cpe_relative_path }}' \
+        '{{ iop_vuln_metadata_downloader_cpe_dict_url }}' \
+        '{{ iop_vuln_metadata_downloader_output_dir }}/{{ iop_vuln_metadata_downloader_cpe_dict_relative_path }}' \
+        '{{ iop_vuln_metadata_downloader_cvemap_url }}' \
+        '{{ iop_vuln_metadata_downloader_output_dir }}/{{ iop_vuln_metadata_downloader_cvemap_relative_path }}'
+      User=root
+      Group=root
+    mode: '0644'
+
+- name: Create vulnerability metadata download timer unit
+  ansible.builtin.template:
+    src: iop-vuln-metadata-download.timer.j2
+    dest: /etc/systemd/system/iop-vuln-metadata-download.timer
+    mode: '0644'
+  notify: Restart vulnerability metadata download timer
+
+- name: Create vulnerability metadata download path unit
+  ansible.builtin.copy:
+    src: iop-vuln-metadata-download.path
+    dest: /etc/systemd/system/iop-vuln-metadata-download.path
+    mode: '0644'
+  notify: Restart vulnerability metadata download path
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start vulnerability metadata download timer
+  ansible.builtin.systemd:
+    name: iop-vuln-metadata-download.timer
+    enabled: true
+    state: started
+
+- name: Enable and start vulnerability metadata download path watcher
+  ansible.builtin.systemd:
+    name: iop-vuln-metadata-download.path
+    enabled: true
+    state: started

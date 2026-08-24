@@ -1,0 +1,10 @@
+---
+- name: Restart vulnerability metadata download timer
+  ansible.builtin.systemd:
+    name: iop-vuln-metadata-download.timer
+    state: restarted
+
+- name: Restart vulnerability metadata download path
+  ansible.builtin.systemd:
+    name: iop-vuln-metadata-download.path
+    state: restarted

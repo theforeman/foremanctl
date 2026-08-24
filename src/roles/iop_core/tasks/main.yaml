@@ -48,17 +48,13 @@
   ansible.builtin.include_role:
     name: iop_remediation
 
-- name: Deploy IOP CVE Map Downloader
+- name: Deploy IOP Vulnerability Metadata Downloader
   ansible.builtin.include_role:
-    name: iop_cvemap_downloader
+    name: iop_vuln_metadata_downloader
 
 - name: Deploy IOP VEX Downloader
   ansible.builtin.include_role:
     name: iop_vex_downloader
-
-- name: Deploy IOP CPE Metadata Downloader
-  ansible.builtin.include_role:
-    name: iop_cpe_downloader
 
 - name: Deploy IOP VMAAS service
   ansible.builtin.include_role:

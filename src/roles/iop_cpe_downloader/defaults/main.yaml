@@ -1,7 +1,0 @@
----
-iop_cpe_downloader_cpe_dict_url: "https://security.access.redhat.com/data/meta/v1/cpe-dictionary.xml"
-iop_cpe_downloader_repo_to_cpe_url: "https://security.access.redhat.com/data/metrics/repository-to-cpe.json"
-iop_cpe_downloader_timer_interval: "24h"
-iop_cpe_downloader_output_dir: "/var/www/html/pub"
-iop_cpe_downloader_cpe_dict_relative_path: "iop/data/meta/v1/cpe-dictionary.xml"
-iop_cpe_downloader_repo_to_cpe_relative_path: "iop/data/metrics/repository-to-cpe.json"
