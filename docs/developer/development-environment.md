@@ -189,7 +189,7 @@ Run all the steps as the root user in the foremanctl source directory unless oth
 3. Switch to the preferred target branch:
     - Switch to a stable Y-stream: `git fetch origin && git checkout origin/X.y-stable`
     - Switch to nightly: `git fetch origin && git checkout origin/master`
-4. Run upgrade tasks by re-deploying foremanctl with your customized deploy command: `foremanctl deploy [...]`. Please see [Parameters](parameters.md) for available deploy options.
+4. Run upgrade tasks by re-deploying foremanctl with your customized deploy command: `foremanctl deploy [...]`. Please see [Parameters](../user/parameters.md) for available deploy options.
 
 This final deploy command will pull new images and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
 

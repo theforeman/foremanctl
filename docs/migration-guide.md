@@ -94,7 +94,7 @@ foremanctl migrate --output /tmp/migrated.yaml
 
 ## Parameter Mappings
 
-The migrate command automatically maps foreman-installer parameters to foremanctl parameters. For a complete list of all parameter mappings, see the [Parameters documentation](parameters.md#mapping).
+The migrate command automatically maps foreman-installer parameters to foremanctl parameters. For a complete list of all parameter mappings, see the [Parameters documentation](user/parameters.md#mapping).
 
 ## Example
 
@@ -136,7 +136,7 @@ When the migration completes, you may see warnings like:
 >  - katello::enable_ostree
 > - foreman::some_other_param
 
-These parameters need to be manually reviewed and added to the new configuration if needed. Check the [parameters documentation](parameters.md) for equivalent foremanctl parameters.
+These parameters need to be manually reviewed and added to the new configuration if needed. Check the [parameters documentation](user/parameters.md) for equivalent foremanctl parameters.
 
 ## Using the Migrated Configuration
 
