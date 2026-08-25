@@ -1,0 +1,5 @@
+---
+iop_compliance_frontend_container_image: "quay.io/rblanco/compliance-frontend"
+iop_compliance_frontend_container_tag: "iop-devel"
+iop_compliance_frontend_assets_path: "/var/www/iop/assets/apps/compliance"
+iop_compliance_frontend_source_path: "/srv/dist/."

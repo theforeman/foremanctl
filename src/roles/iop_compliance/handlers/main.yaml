@@ -1,0 +1,10 @@
+---
+- name: Restart compliance
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: restarted
+  loop:
+    - iop-service-compliance-backend-api
+    - iop-service-compl-inventory-consumer
+    - iop-service-compl-goodjob
+    - iop-service-compl-ssg
