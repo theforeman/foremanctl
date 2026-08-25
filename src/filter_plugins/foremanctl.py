@@ -79,7 +79,7 @@ def list_all_features(enabled_features, only_enabled=False):
         if internal and not list_internal:
             continue
         description = meta.get('description', '')
-        if name in enabled_features:
+        if has_feature(enabled_features, name):
             enabled_list.append((name, 'enabled', internal, description))
         elif not only_enabled:
             available_list.append((name, 'available', internal, description))

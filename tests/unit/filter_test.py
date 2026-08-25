@@ -1,5 +1,6 @@
 from foremanctl import FEATURE_MAP
 from foremanctl import conflicting_features
+from foremanctl import list_all_features
 
 
 def _asymmetric_conflicts():
@@ -54,3 +55,11 @@ def test_conflict_with_unknown_feature_detected(monkeypatch):
     monkeypatch.setitem(FEATURE_MAP, 'test-a', {'conflicts': ['nonexistent']})
     errors = _asymmetric_conflicts()
     assert any('unknown feature nonexistent' in e for e in errors)
+
+
+def test_list_all_features_marks_dependency_as_enabled(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-parent', {'dependencies': ['test-child']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-child', {})
+    output = list_all_features(['test-parent'])
+    child_line = next(line for line in output.splitlines() if line.startswith('test-child'))
+    assert 'enabled' in child_line
