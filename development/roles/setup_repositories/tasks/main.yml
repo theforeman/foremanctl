@@ -1,13 +1,19 @@
 ---
-- name: Setup OpenVox repositories
-  ansible.builtin.include_role:
-    name: theforeman.operations.openvox_repositories
-  vars:
-    foreman_openvox_repositories_version: "8"
+- name: Setup repository for Foreman {{ setup_repositories_version }}
+  ansible.builtin.package:
+    name: "https://yum.theforeman.org/releases/{{ setup_repositories_version }}/el{{ ansible_facts['distribution_major_version'] }}/x86_64/foreman-release.rpm"
+    disable_gpg_check: true
+    state: present
 
-- name: Setup Foreman repositories
-  ansible.builtin.include_role:
-    name: theforeman.operations.foreman_repositories
-  vars:
-    foreman_repositories_version: nightly
-    foreman_repositories_katello_version: nightly
+- name: Setup repository for Katello {{ setup_repositories_version }}
+  ansible.builtin.yum_repository:
+    name: katello
+    description: Katello repository
+    gpgcheck: false
+    baseurl: "https://yum.theforeman.org/katello/{{ setup_repositories_version }}/katello/el{{ ansible_facts['distribution_major_version'] }}/$basearch/"
+
+- name: 'Setup OpenVox repository'
+  ansible.builtin.package:
+    name: https://yum.voxpupuli.org/openvox{{ setup_repositories_openvox_version }}-release-el-{{ ansible_facts['distribution_major_version'] }}.noarch.rpm
+    disable_gpg_check: true
+    state: present
