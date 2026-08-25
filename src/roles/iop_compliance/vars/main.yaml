@@ -1,0 +1,8 @@
+---
+iop_compliance_common_secrets:
+  - 'iop-service-compliance-database-username,type=env,target=POSTGRESQL_USER'
+  - 'iop-service-compliance-database-password,type=env,target=POSTGRESQL_PASSWORD'
+  - 'iop-service-compliance-database-name,type=env,target=POSTGRESQL_DATABASE'
+  - 'iop-service-compliance-database-host,type=env,target=POSTGRESQL_HOST'
+  - 'iop-service-compliance-database-port,type=env,target=POSTGRESQL_PORT'
+  - 'iop-service-compliance-secret-key-base,type=env,target=SECRET_KEY_BASE'
