@@ -49,6 +49,10 @@
       when:
         - "enabled_features | has_feature('iop')"
         - database_mode == 'internal'
+    - role: iop_remove
+      when:
+        - "'iop' in (remove_features | default([]))"
+        - database_mode == 'internal'
     - role: foreman_proxy
       when:
         - "enabled_features | has_feature('foreman-proxy')"

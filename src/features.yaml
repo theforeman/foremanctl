@@ -92,6 +92,7 @@ cloud-connector:
     - iop
 iop:
   description: iop services
+  removable: true
   dependencies:
     - rh-cloud
   conflicts:

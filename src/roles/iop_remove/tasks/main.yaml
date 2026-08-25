@@ -1,0 +1,251 @@
+---
+- name: Deregister IOP Gateway smart proxy from Foreman
+  theforeman.foreman.smart_proxy:
+    name: iop-gateway
+    url: "https://localhost:24443"
+    state: absent
+    server_url: "{{ iop_core_foreman_url }}"
+    oauth1_consumer_key: "{{ iop_core_foreman_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ iop_core_foreman_oauth_consumer_secret }}"
+    validate_certs: false
+  failed_when: false
+
+- name: Stop IOP container services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+  failed_when: false
+  loop:
+    - iop-service-vuln-manager
+    - iop-service-vuln-taskomatic
+    - iop-service-vuln-grouper
+    - iop-service-vuln-listener
+    - iop-service-vuln-evaluator-recalc
+    - iop-service-vuln-evaluator-upload
+    - iop-service-vuln-vmaas-sync
+    - iop-service-vuln-dbupgrade
+    - iop-service-vmaas-reposcan
+    - iop-service-vmaas-webapp-go
+    - iop-service-remediations-api
+    - iop-service-advisor-backend-api
+    - iop-service-advisor-backend-service
+    - iop-core-host-inventory-api
+    - iop-core-host-inventory-cleanup
+    - iop-core-host-inventory-migrate
+    - iop-core-host-inventory
+    - iop-core-gateway
+    - iop-core-engine
+    - iop-core-yuptoo
+    - iop-core-puptoo
+    - iop-core-ingress
+    - iop-core-kafka
+
+- name: Disable and stop IOP timer and path units
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  failed_when: false
+  loop:
+    - iop-core-host-inventory-cleanup.timer
+    - iop-cvemap-download.timer
+    - iop-cvemap-download.path
+    - iop-vex-download.timer
+    - iop-vex-download.path
+    - iop-service-vuln-vmaas-sync.timer
+
+- name: Remove IOP quadlet container files
+  ansible.builtin.file:
+    path: "/etc/containers/systemd/{{ item }}.container"
+    state: absent
+  loop:
+    - iop-service-vuln-manager
+    - iop-service-vuln-taskomatic
+    - iop-service-vuln-grouper
+    - iop-service-vuln-listener
+    - iop-service-vuln-evaluator-recalc
+    - iop-service-vuln-evaluator-upload
+    - iop-service-vuln-vmaas-sync
+    - iop-service-vuln-dbupgrade
+    - iop-service-vmaas-reposcan
+    - iop-service-vmaas-webapp-go
+    - iop-service-remediations-api
+    - iop-service-advisor-backend-api
+    - iop-service-advisor-backend-service
+    - iop-core-host-inventory-api
+    - iop-core-host-inventory-cleanup
+    - iop-core-host-inventory-migrate
+    - iop-core-host-inventory
+    - iop-core-gateway
+    - iop-core-engine
+    - iop-core-yuptoo
+    - iop-core-puptoo
+    - iop-core-ingress
+    - iop-core-kafka
+
+- name: Remove IOP systemd unit files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/systemd/system/iop-core-host-inventory-cleanup.timer
+    - /etc/systemd/system/iop-cvemap-download.service
+    - /etc/systemd/system/iop-cvemap-download.timer
+    - /etc/systemd/system/iop-cvemap-download.path
+    - /etc/systemd/system/iop-vex-download.service
+    - /etc/systemd/system/iop-vex-download.timer
+    - /etc/systemd/system/iop-vex-download.path
+    - /etc/systemd/system/iop-service-vuln-vmaas-sync.timer
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Remove IOP podman secrets
+  containers.podman.podman_secret:
+    name: "{{ item }}"
+    state: absent
+  failed_when: false
+  loop:
+    - iop-core-kafka-init-start
+    - iop-core-kafka-server-properties
+    - iop-core-kafka-init
+    - iop-core-engine-config-yml
+    - iop-core-gateway-server-cert
+    - iop-core-gateway-server-key
+    - iop-core-gateway-server-ca-cert
+    - iop-core-gateway-client-cert
+    - iop-core-gateway-client-key
+    - iop-core-gateway-client-ca-cert
+    - iop-core-gateway-relay-conf
+    - iop-core-host-inventory-database-username
+    - iop-core-host-inventory-database-password
+    - iop-core-host-inventory-database-name
+    - iop-core-host-inventory-database-host
+    - iop-core-host-inventory-database-port
+    - iop-service-advisor-backend-database-username
+    - iop-service-advisor-backend-database-password
+    - iop-service-advisor-backend-database-name
+    - iop-service-advisor-backend-database-host
+    - iop-service-advisor-backend-database-port
+    - iop-service-remediations-db-username
+    - iop-service-remediations-db-password
+    - iop-service-remediations-db-name
+    - iop-service-remediations-db-host
+    - iop-service-remediations-db-port
+    - iop-service-vmaas-reposcan-client-ca-cert
+    - iop-service-vmaas-reposcan-database-username
+    - iop-service-vmaas-reposcan-database-password
+    - iop-service-vmaas-reposcan-database-name
+    - iop-service-vmaas-reposcan-database-host
+    - iop-service-vmaas-reposcan-database-port
+    - iop-service-vulnerability-database-username
+    - iop-service-vulnerability-database-password
+    - iop-service-vulnerability-database-name
+    - iop-service-vulnerability-database-host
+    - iop-service-vulnerability-database-port
+
+- name: Remove IOP podman volumes
+  containers.podman.podman_volume:
+    name: "{{ item }}"
+    state: absent
+  failed_when: false
+  loop:
+    - iop-core-kafka-data
+    - iop-service-vmaas-data
+
+- name: Remove IOP image quadlet files
+  ansible.builtin.file:
+    path: "/etc/containers/systemd/{{ item }}"
+    state: absent
+  loop:
+    - iop-kafka.image
+    - iop-kafka.image.d
+    - iop-ingress.image
+    - iop-ingress.image.d
+    - iop-puptoo.image
+    - iop-puptoo.image.d
+    - iop-yuptoo.image
+    - iop-yuptoo.image.d
+    - iop-engine.image
+    - iop-engine.image.d
+    - iop-gateway.image
+    - iop-gateway.image.d
+    - iop-inventory.image
+    - iop-inventory.image.d
+    - iop-advisor.image
+    - iop-advisor.image.d
+    - iop-remediation.image
+    - iop-remediation.image.d
+    - iop-vmaas.image
+    - iop-vmaas.image.d
+    - iop-vulnerability.image
+    - iop-vulnerability.image.d
+    - iop-inventory-frontend.image
+    - iop-inventory-frontend.image.d
+    - iop-advisor-frontend.image
+    - iop-advisor-frontend.image.d
+    - iop-vulnerability-frontend.image
+    - iop-vulnerability-frontend.image.d
+
+- name: Remove IOP podman network
+  containers.podman.podman_network:
+    name: iop-core-network
+    state: absent
+  failed_when: false
+
+- name: Remove IOP Apache configuration files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/httpd/conf.d/05-foreman-ssl.d/inventory-frontend.conf
+    - /etc/httpd/conf.d/05-foreman-ssl.d/advisor-frontend.conf
+    - /etc/httpd/conf.d/05-foreman-ssl.d/vulnerability-frontend.conf
+  notify: "httpd : Restart httpd"
+
+- name: Remove IOP frontend asset directories
+  ansible.builtin.file:
+    path: /var/www/iop
+    state: absent
+
+- name: Remove IOP cvemap downloader script
+  ansible.builtin.file:
+    path: /usr/local/bin/iop-cvemap-download.sh
+    state: absent
+
+- name: Remove IOP vex downloader script
+  ansible.builtin.file:
+    path: /usr/local/bin/iop-vex-downloader.sh
+    state: absent
+
+- name: Remove IOP vex data directory
+  ansible.builtin.file:
+    path: /var/www/html/pub/iop
+    state: absent
+
+- name: Remove FDW objects from advisor database
+  community.postgresql.postgresql_query:
+    login_db: "{{ iop_advisor_database_name }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+    login_host: localhost
+    query: "{{ item }}"
+  loop:
+    - "DROP SERVER IF EXISTS hbi_server CASCADE"
+    - "DROP SCHEMA IF EXISTS inventory_source CASCADE"
+    - "DROP SCHEMA IF EXISTS inventory CASCADE"
+  failed_when: false
+
+- name: Remove FDW objects from vulnerability database
+  community.postgresql.postgresql_query:
+    login_db: "{{ iop_vulnerability_database_name }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+    login_host: localhost
+    query: "{{ item }}"
+  loop:
+    - "DROP SERVER IF EXISTS hbi_server CASCADE"
+    - "DROP SCHEMA IF EXISTS inventory_source CASCADE"
+    - "DROP SCHEMA IF EXISTS inventory CASCADE"
+  failed_when: false
