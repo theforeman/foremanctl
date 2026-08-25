@@ -1,0 +1,18 @@
+---
+- name: Deploy iop-compliance image unit
+  ansible.builtin.include_role:
+    name: images
+    tasks_from: deploy_image.yaml
+  vars:
+    images_definition:
+      name: iop-compliance
+      image: "{{ iop_compliance_container_image }}:{{ iop_compliance_container_tag }}"
+
+- name: Deploy iop-compliance-ssg image unit
+  ansible.builtin.include_role:
+    name: images
+    tasks_from: deploy_image.yaml
+  vars:
+    images_definition:
+      name: iop-compliance-ssg
+      image: "{{ iop_compliance_ssg_container_image }}:{{ iop_compliance_ssg_container_tag }}"
