@@ -127,6 +127,7 @@ archive contents eligible for cleanup after 24 hours.
 | remediation | `iop-service-remediations-api` | 3000 (internal) | Remediation playbook generation |
 | vmaas | `iop-service-vmaas-reposcan`, `iop-service-vmaas-webapp-go` | - | Vulnerability metadata and advisory sync |
 | vulnerability | 8 containers (see below) | 8443 (internal) | Vulnerability assessment pipeline |
+| compliance | 6 containers (see below) | 8000 API, 8080 SSG | Compliance API, SSG content, inventory consumer, GoodJob worker, migrations, and periodic SSG import |
 
 #### Vulnerability containers
 
@@ -140,6 +141,17 @@ archive contents eligible for cleanup after 24 hours.
 | `iop-service-vuln-evaluator-recalc` | service | Recalculates vulnerability scores |
 | `iop-service-vuln-evaluator-upload` | service | Evaluates new uploads against VMAAS data |
 | `iop-service-vuln-vmaas-sync` | timer (4h) | Periodic sync from VMAAS webapp |
+
+#### Compliance containers
+
+| Container | Type | Description |
+|-----------|------|-------------|
+| `iop-service-compl-dbmigrate` | oneshot | Database schema migration |
+| `iop-service-compl-backend` | service | Main Compliance API endpoint |
+| `iop-service-compl-ssg` | service | SSG content server |
+| `iop-service-compl-inventory-consumer` | service | Consumes inventory events |
+| `iop-service-compl-goodjob` | service | GoodJob background worker |
+| `iop-service-compl-import-ssg` | oneshot | Imports SSG datastreams and remediation playbooks during deployment after the SSG image is refreshed |
 
 ### Network
 
@@ -171,7 +183,7 @@ Timers:
 
 ## Databases
 
-IOP creates five PostgreSQL databases, all accessible to containers via the
+IOP creates six PostgreSQL databases, all accessible to containers via the
 `postgresql` container on `foreman-core-network` (`postgresql:5432`):
 
 | Database | User |
@@ -181,6 +193,7 @@ IOP creates five PostgreSQL databases, all accessible to containers via the
 | `remediations_db` | `remediations_user` |
 | `vmaas_db` | `vmaas_admin` |
 | `vulnerability_db` | `vulnerability_admin` |
+| `compliance_db` | `compliance_admin` |
 
 Passwords are auto-generated using Ansible's `password` lookup and stored as podman secrets.
 

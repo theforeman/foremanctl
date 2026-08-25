@@ -64,9 +64,11 @@
         - iop_remediation
         - iop_vmaas
         - iop_vulnerability
+        - iop_compliance
         - iop_advisor_frontend
         - iop_inventory_frontend
         - iop_vulnerability_frontend
+        - iop_compliance_frontend
       when: enabled_features | has_feature('iop')
 
     - name: Pull images
