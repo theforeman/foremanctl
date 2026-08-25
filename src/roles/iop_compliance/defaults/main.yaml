@@ -1,0 +1,49 @@
+---
+iop_compliance_container_image: "quay.io/rblanco/compliance-backend"
+iop_compliance_container_tag: "iop-devel"
+iop_compliance_ssg_container_image: "quay.io/rblanco/compliance-ssg-upstream"
+iop_compliance_ssg_container_tag: "latest"
+
+iop_compliance_database_volumes: []
+
+iop_compliance_ssg_port: 8080
+iop_compliance_ssg_url: "http://iop-service-compl-ssg:{{ iop_compliance_ssg_port }}"
+iop_compliance_host_inventory_url: "http://iop-core-host-inventory-api:8081"
+
+# SECRET_KEY_BASE is randomly generated once and persisted to the state
+# directory, mirroring the DB-password pattern (vars/database.yml). This keeps
+# it stable across restarts without shipping a hardcoded key in the repo.
+iop_compliance_secret_key_base_file: "{{ obsah_state_path }}/iop-compliance-secret-key-base"
+iop_compliance_secret_key_base: "{{ lookup('ansible.builtin.password', iop_compliance_secret_key_base_file, chars=['ascii_letters', 'digits'], length=64) }}"
+
+# Shared environment applied to every compliance container. Per-container
+# additions (APPLICATION_TYPE, tuning) are merged on top in tasks/main.yaml.
+iop_compliance_common_env:
+  DISABLE_RBAC: "true"
+  RAILS_ENV: "foreman"
+  RAILS_LOG_TO_STDOUT: "true"
+  PATH_PREFIX: "/api"
+  APP_NAME: "compliance-backend"
+  RUBY_YJIT_ENABLE: "true"
+  SETTINGS__REPORT_DOWNLOAD_SSL_ONLY: "false"
+  MAX_INIT_TIMEOUT_SECONDS: "120"
+  KAFKA_BROKERS: "iop-core-kafka:9092"
+  KAFKA_SECURITY_PROTOCOL: "plaintext"
+  POSTGRESQL_SSLMODE: "disable"
+  HOST_INVENTORY_URL: "{{ iop_compliance_host_inventory_url }}"
+  COMPLIANCE_SSG_URL: "{{ iop_compliance_ssg_url }}"
+  KAFKA_TOPIC_INVENTORY_EVENTS: "platform.inventory.events"
+  KAFKA_TOPIC_UPLOAD_COMPLIANCE: "platform.upload.compliance"
+  KAFKA_TOPIC_PAYLOAD_STATUS: "platform.payload-status"
+  KAFKA_TOPIC_NOTIFICATIONS_INGRESS: "platform.notifications.ingress"
+  KAFKA_TOPIC_REMEDIATION_UPDATES: "platform.remediation-updates.compliance"
+  KAFKA_TOPIC_INVENTORY_HOST_APPS: "platform.inventory.host-apps"
+
+# DB credentials + SECRET_KEY_BASE are injected as podman secrets (env-targeted).
+iop_compliance_common_secrets:
+  - 'iop-service-compliance-database-username,type=env,target=POSTGRESQL_USER'
+  - 'iop-service-compliance-database-password,type=env,target=POSTGRESQL_PASSWORD'
+  - 'iop-service-compliance-database-name,type=env,target=POSTGRESQL_DATABASE'
+  - 'iop-service-compliance-database-host,type=env,target=POSTGRESQL_HOST'
+  - 'iop-service-compliance-database-port,type=env,target=POSTGRESQL_PORT'
+  - 'iop-service-compliance-secret-key-base,type=env,target=SECRET_KEY_BASE'
