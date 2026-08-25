@@ -246,7 +246,7 @@
 - name: Migrate and seed the Foreman database
   ansible.builtin.systemd:
     name: foreman-db-migrate.service
-    state: restarted
+    state: "{{ 'restarted' if (images_changed.foreman | default(false) | bool) else 'started' }}"
 
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers

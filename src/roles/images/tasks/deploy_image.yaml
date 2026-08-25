@@ -11,6 +11,7 @@
       - |
         [Service]
         Environment=REGISTRY_AUTH_FILE={{ images_registry_auth_file }}
+  register: image_deploy_result
 
 - name: Create drop-in directory for {{ images_definition.name }}
   ansible.builtin.file:
@@ -21,3 +22,9 @@
 - name: Register deployed image name
   ansible.builtin.set_fact:
     images_deployed_names: "{{ images_deployed_names + [images_definition.name] }}"
+
+- name: Track whether image changed for {{ images_definition.name }}
+  ansible.builtin.set_fact:
+    images_changed: >-
+      {{ images_changed | default({})
+         | combine({images_definition.name: (image_deploy_result is changed)}) }}
