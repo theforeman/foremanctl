@@ -9,19 +9,6 @@
     disconnected_mode: true
   when: disconnected_config_stat.stat.exists
 
-- name: Validate images are available in disconnected mode
-  ansible.builtin.shell: podman images | wc -l
-  register: podman_images_count
-  changed_when: false
-  when: disconnected_mode | bool
-
-- name: Fail if no images found in disconnected mode
-  ansible.builtin.fail:
-    msg: "Error: No container images found. Run prepare_system to import images."
-  when:
-    - disconnected_mode | bool
-    - podman_images_count.stdout | int == 0
-
 - name: Deploy debug_tools
   ansible.builtin.include_role:
     name: debug_tools
