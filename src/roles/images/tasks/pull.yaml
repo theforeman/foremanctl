@@ -1,4 +1,11 @@
 ---
+- name: Block image pulling in disconnected mode
+  ansible.builtin.fail:
+    msg: |
+      Cannot run 'foremanctl pull-images' in disconnected mode.
+      Images must be pre-loaded using prepare_system.
+  when: disconnected_mode | bool
+
 - name: Pull images
   block:
     - name: Set Policy=always to force image pull
