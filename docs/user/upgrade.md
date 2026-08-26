@@ -6,14 +6,14 @@ Foreman MUST be upgraded one release at a time (e.g. 3.19 -> 3.20).
 
 Scroll to the correct procedure below which matches your installation environment type (RPM and disconnected RPM) and targeted stream (Z stream and Y Stream).
 
-# Y Stream
+# Upgrading foremanctl Y Stream (ex. x.1 to x.2)
 
-## Upgrading foremanctl from RPM install (Y Stream)
+## Upgrading foremanctl from RPM install
 
 All steps must be run as root user.
 
 1. Run `foremanctl health` to ensure your existing Foreman server is healthy. Correct any issues before continuing.
-2. Consider backing up your Foreman environment before upgrade. See [Backup](backup.md).
+2. Consider backing up your Foreman environment before upgrade. See [Backup and Restore](backup-restore.md).
 3. Manually update your Foreman Release repository to the next Foreman Y release:
     - `dnf upgrade https://yum.theforeman.org/releases/<next-version>/el9/x86_64/foreman-release.rpm`
     - Example: Foreman 3.19 -> 3.20 upgrades would use `dnf upgrade https://yum.theforeman.org/releases/3.20/el9/x86_64/foreman-release.rpm`.
@@ -27,12 +27,12 @@ All steps must be run as root user.
     - Please see [Parameters](parameters.md) for additional deployment options.
     - This deploy command will pull new images (if not already pulled in the previous step) and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
 
-## Upgrading foremanctl from disconnected RPM install (Y stream)
+## Upgrading foremanctl from disconnected RPM install
 
 All steps must be run as root user.
 
 1. On your disconnected environment, run `foremanctl health` to ensure your existing Foreman server is healthy. Correct any issues before continuing.
-2. Consider backing up your Foreman environment before upgrade. See [Backup](backup.md).
+2. Consider backing up your Foreman environment before upgrade. See [Backup and Restore](backup-restore.md).
 3. On a connected machine, install the Foreman Release repository for the next Foreman Y release:
     - `dnf install https://yum.theforeman.org/releases/<next-version>/el9/x86_64/foreman-release.rpm`
     - Example: Foreman 3.19 -> 3.20 upgrades would use `dnf install https://yum.theforeman.org/releases/3.20/el9/x86_64/foreman-release.rpm`.
@@ -63,30 +63,31 @@ All steps must be run as root user.
     - Please see [Parameters](parameters.md) for additional deployment options.
     - This deploy command will pull new images and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
 
-# Z Stream
-## Upgrading foremanctl from RPM install (Z stream)
+# Updating foremanctl Z Stream (x.y.1, x.y.2)
+## Updating foremanctl from RPM install
 
 All steps must be run as root user.
 
 1. Run `foremanctl health` to ensure your existing Foreman server is healthy. Correct any issues before continuing.
-2. Consider backing up your Foreman environment before upgrade. See [Backup](backup.md).
-3. Upgrade the foremanctl package:
+2. Consider backing up your Foreman environment before update. See [Backup and Restore](backup-restore.md).
+3. update the foremanctl package:
     - `dnf upgrade foremanctl`
 4. Pull updated container images:
     - `foremanctl pull-images`
     - Z-stream updates do not change container image tags, but the images behind those tags are updated with bug fixes and security patches. This step ensures you get the latest images.
-5. Run upgrade tasks by re-deploying your Foreman environment: 
+5. Run update tasks by re-deploying your Foreman environment: 
     - `foremanctl deploy` 
     - Please see [Parameters](parameters.md) for additional deployment options.
-    - This deploy command will restart services with the updated images and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
+6. Restart foreman services
+    - `systemclt restart foreman.target`
 
 
-## Upgrading foremanctl from disconnected RPM install (Z stream)
+## Updating foremanctl from disconnected RPM install
 
 All steps must be run as root user.
 
 1. On your disconnected environment, run `foremanctl health` to ensure your existing Foreman server is healthy. Correct any issues before continuing.
-2. Consider backing up your Foreman environment before upgrade. See [Backup](backup.md).
+2. Consider backing up your Foreman environment before update. See [Backup and Restore](backup-restore.md).
 3. On a connected machine, install the same Foreman Release repository as your disconnected environment:
     - `dnf install https://yum.theforeman.org/releases/<current-version>/el9/x86_64/foreman-release.rpm`
 4. On a connected machine, create a local mirror of the foreman repository:
@@ -110,9 +111,10 @@ All steps must be run as root user.
     - Verify the mirror is serving the correct package version with `dnf info foremanctl`. This version should match step 5.
 9. On the disconnected environment, stage the updated container images:
     - `podman load -i <filename>.tar`
-10. On the disconnected environment, upgrade the foremanctl package:
+10. On the disconnected environment, update the foremanctl package:
     - `dnf upgrade foremanctl`
-11. Run upgrade tasks by re-deploying your Foreman environment: 
+11. Run update tasks by re-deploying your Foreman environment: 
     - `foremanctl deploy` 
     - Please see [Parameters](parameters.md) for additional deployment options.
-    - This deploy command will restart services with the updated images and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
+12. Restart foreman services
+    - `systemclt restart foreman.target`
