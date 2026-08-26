@@ -44,6 +44,8 @@ httpd_pulp_trusted_hosts:
 httpd_aliases: "{{ server_aliases | default([]) }}"
 
 pulp_storage_path: /var/lib/pulp
+pulp_container_uid: 700
+pulp_container_gid: 700
 pulp_content_origin: "https://{{ ansible_facts['fqdn'] }}"
 pulp_pulp_url: "https://{{ ansible_facts['fqdn'] }}"
 pulp_plugins: "{{ enabled_features | select('contains', 'content/') | map('replace', 'content/', 'pulp_') | list }}"
