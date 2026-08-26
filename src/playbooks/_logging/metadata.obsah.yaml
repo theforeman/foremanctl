@@ -1,7 +1,7 @@
 ---
 variables:
   log_level:
-    help: Default log level for all services.
+    help: Default log level for all services, unless overridden by the service-specific parameters.
     parameter: --log-level
     choices:
       - debug
@@ -10,7 +10,7 @@ variables:
       - error
       - fatal
   foreman_proxy_log_level:
-    help: Log level for Foreman Proxy. Defaults to the global log level.
+    help: Defaults to the global log level, can be set independently. Once set, it overrides --log-level and is unaffected by later changes.
     choices:
       - debug
       - info
@@ -18,7 +18,7 @@ variables:
       - error
       - fatal
   valkey_log_level:
-    help: Log level for Valkey.
+    help: Defaults to the global log level, can be set independently. Once set, it overrides --log-level and is unaffected by later changes.
     choices:
       - debug
       - verbose
@@ -26,7 +26,7 @@ variables:
       - warning
       - nothing
   pulp_log_level:
-    help: Log level for Pulp. Defaults to the global log level.
+    help: Defaults to the global log level, can be set independently. Once set, it overrides --log-level and is unaffected by later changes.
     parameter: --pulp-log-level
     choices:
       - debug
