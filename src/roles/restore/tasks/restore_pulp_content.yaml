@@ -43,12 +43,13 @@
     - name: Fix ownership after restore for non-root containers
       ansible.builtin.file:
         path: "{{ pulp_storage_path }}"
-        owner: "700"
-        group: "700"
+        owner: "{{ pulp_container_uid }}"
+        group: "{{ pulp_container_gid }}"
         recurse: true
       when:
         - restore_pulp_media_ownership.stat.exists
         - restore_pulp_media_ownership.stat.uid == 0
+        - restore_pulp_media_ownership.stat.gid == 0
 
     - name: Verify Pulp encryption key was restored
       ansible.builtin.stat:
