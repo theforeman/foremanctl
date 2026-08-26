@@ -24,20 +24,30 @@
         dest: "{{ pulp_storage_path }}"
         remote_src: true
 
-    - name: Check ownership of restored Pulp content
+    - name: Check ownership of restored Pulp storage
+      ansible.builtin.stat:
+        path: "{{ pulp_storage_path }}"
+      register: restore_pulp_storage_ownership
+
+    - name: Check ownership of restored Pulp media directory
       ansible.builtin.stat:
         path: "{{ pulp_storage_path }}/media"
       register: restore_pulp_media_ownership
 
-    - name: Fix ownership after restore for non-root containers
+    - name: Migrate restored Pulp storage ownership from root to container user
       ansible.builtin.file:
         path: "{{ pulp_storage_path }}"
-        owner: "700"
-        group: "700"
+        owner: "{{ pulp_container_uid }}"
+        group: "{{ pulp_container_gid }}"
         recurse: true
       when:
-        - restore_pulp_media_ownership.stat.exists
-        - restore_pulp_media_ownership.stat.uid == 0
+        - restore_pulp_storage_ownership.stat.exists
+        - >-
+          restore_pulp_storage_ownership.stat.uid == 0 or
+          (
+            restore_pulp_media_ownership.stat.exists and
+            restore_pulp_media_ownership.stat.uid == 0
+          )
 
     - name: Verify Pulp encryption key was restored
       ansible.builtin.stat:

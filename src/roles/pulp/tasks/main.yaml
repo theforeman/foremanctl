@@ -9,7 +9,6 @@
     mode: "0755"
     owner: "{{ pulp_container_uid }}"
     group: "{{ pulp_container_gid }}"
-    recurse: true
   loop: "{{ pulp_volumes }}"
 
 - name: Create Pulp storage subdirs
@@ -19,7 +18,6 @@
     mode: "0755"
     owner: "{{ pulp_container_uid }}"
     group: "{{ pulp_container_gid }}"
-    recurse: true
   loop:
     - tmp
     - assets
@@ -32,7 +30,6 @@
     mode: "0755"
     owner: "{{ pulp_container_uid }}"
     group: "{{ pulp_container_gid }}"
-    recurse: true
   loop: "{{ pulp_default_import_paths + pulp_import_paths }}"
   when: not pulp_mirror
 
@@ -43,9 +40,25 @@
     mode: "0755"
     owner: "{{ pulp_container_uid }}"
     group: "{{ pulp_container_gid }}"
-    recurse: true
   loop: "{{ pulp_default_export_paths + pulp_export_paths }}"
   when: not pulp_mirror
+
+- name: Check ownership of Pulp volume paths
+  ansible.builtin.stat:
+    path: "{{ item | split(':') | first }}"
+  register: pulp_volume_path_stats
+  loop: "{{ pulp_volumes }}"
+
+- name: Migrate root-owned Pulp volume paths to container user
+  ansible.builtin.file:
+    path: "{{ item.item | split(':') | first }}"
+    owner: "{{ pulp_container_uid }}"
+    group: "{{ pulp_container_gid }}"
+    recurse: true
+  loop: "{{ pulp_volume_path_stats.results }}"
+  when:
+    - item.stat.exists
+    - item.stat.uid == 0
 
 - name: Create DB password secret
   containers.podman.podman_secret:
