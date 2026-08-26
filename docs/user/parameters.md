@@ -78,7 +78,7 @@ There are multiple use cases from the users perspective that dictate what parame
 
 | Parameter | Description |
 | ----------| ----------- |
-| `--log-level` | Default log level for all services. Accepted values: `debug`, `info`, `warn`, `error`, `fatal`. Defaults to `info`. |
+| `--log-level` | Default log level for all services, unless overridden by the service-specific parameters. Accepted values: `debug`, `info`, `warn`, `error`, `fatal`. Defaults to `info`. | 
 | `--valkey-log-level` | Log level for Valkey. Uses Valkey's native levels. Overrides `--log-level`. Accepted values: `debug`, `verbose`, `notice`, `warning` & `nothing`. Defaults to `notice`. |
 
 ##### Mapped
