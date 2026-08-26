@@ -64,6 +64,16 @@
             restore_pulp_media_ownership.stat.gid == 0
           )
 
+    - name: Set restored secret key file permissions
+      ansible.builtin.file:
+        path: "{{ item }}"
+        owner: root
+        group: root
+        mode: '0600'
+      loop:
+        - "{{ pulp_storage_path }}/django_secret_key"
+        - "{{ pulp_storage_path }}/database_fields.symmetric.key"
+
     - name: Verify Pulp encryption key was restored
       ansible.builtin.stat:
         path: "{{ pulp_storage_path }}/database_fields.symmetric.key"
