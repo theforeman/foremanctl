@@ -88,8 +88,8 @@
 - name: Set secret key file permissions
   ansible.builtin.file:
     path: "{{ pulp_storage_path }}/django_secret_key"
-    owner: "{{ pulp_container_uid }}"
-    group: "{{ pulp_container_gid }}"
+    owner: root
+    group: root
     mode: '0600'
 
 - name: Create django pulp secret key secret
@@ -106,6 +106,13 @@
   ansible.builtin.command: "bash -c 'openssl rand -base64 32 | tr \"+/\" \"-_\" > {{ pulp_storage_path }}/database_fields.symmetric.key'"
   args:
     creates: "{{ pulp_storage_path }}/database_fields.symmetric.key"
+
+- name: Set database symmetric key file permissions
+  ansible.builtin.file:
+    path: "{{ pulp_storage_path }}/database_fields.symmetric.key"
+    owner: root
+    group: root
+    mode: '0600'
 
 - name: Create database symmetric key secret
   containers.podman.podman_secret:

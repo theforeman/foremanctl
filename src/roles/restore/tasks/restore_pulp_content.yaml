@@ -60,3 +60,13 @@
         path: "{{ pulp_storage_path }}/django_secret_key"
       register: restore_django_secret_key
       failed_when: not restore_django_secret_key.stat.exists
+
+    - name: Set restored secret key file permissions
+      ansible.builtin.file:
+        path: "{{ item }}"
+        owner: root
+        group: root
+        mode: '0600'
+      loop:
+        - "{{ pulp_storage_path }}/django_secret_key"
+        - "{{ pulp_storage_path }}/database_fields.symmetric.key"
