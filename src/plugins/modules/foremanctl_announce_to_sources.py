@@ -28,6 +28,10 @@ options:
   ca_path:
     description: Path to CA certificate for SSL verification
     type: str
+  instance_id:
+    description: RHC instance ID to register with Red Hat Sources. Also stored as the rhc_instance_id Foreman setting.
+    required: true
+    type: str
 '''
 
 EXAMPLES = '''
@@ -36,6 +40,7 @@ EXAMPLES = '''
     server_url: "https://foreman.example.com"
     oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+    instance_id: "{{ cloud_connector_cert_info.subject.commonName }}"
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -55,6 +60,7 @@ def run_module():
             oauth1_consumer_key=dict(required=True, type='str'),
             oauth1_consumer_secret=dict(required=True, type='str', no_log=True),
             ca_path=dict(type='str'),
+            instance_id=dict(required=True, type='str'),
         ),
         supports_check_mode=True,
     )
@@ -82,7 +88,7 @@ def run_module():
         # The announce_to_sources action lives on the rh_cloud "inventory" resource.
         # It returns its Foreman task wrapped as {"task": {...}}, so resource_action's
         # own task auto-detection doesn't fire; wait for the task explicitly.
-        result = api.resource_action('inventory', 'announce_to_sources', {})
+        result = api.resource_action('inventory', 'announce_to_sources', {'instance_id': module.params['instance_id']})
         task = result.get('task') if isinstance(result, dict) else None
         if task:
             task = api.wait_for_task(task)
