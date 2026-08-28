@@ -129,7 +129,7 @@
         PartOf=foreman.target
         Wants=valkey.service postgresql.service candlepin.service
         After=valkey.service postgresql.service candlepin.service
-        Requires=foreman-db-migrate.service
+        Wants=foreman-db-migrate.service
         After=foreman-db-migrate.service
   notify: Restart foreman
 
@@ -163,7 +163,7 @@
         PartOf=foreman.target
         Wants=valkey.service postgresql.service
         After=valkey.service postgresql.service
-        Requires=foreman-db-migrate.service
+        Wants=foreman-db-migrate.service
         After=foreman-db-migrate.service
       - |
         [Service]
