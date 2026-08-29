@@ -38,11 +38,37 @@ create_topics() {
 
   echo -e "====================="
   echo -e "Creating Kafka topics:"
+
+  existing_topics_list=$("$kafka_cmd" --bootstrap-server "$kafka_bootstrap_server" --list 2>&1)
+  list_exit_code=$?
+  if [ $list_exit_code -ne 0 ]; then
+    echo "Error: Failed to list Kafka topics" >&2
+    echo "Output/Error:" >&2
+    echo "$existing_topics_list" >&2
+    return 1
+  fi
+
+  local pids=()
   for topic in "${topics[@]}"; do
-    echo -e "Creating topic ""$topic"
-    $kafka_cmd --create --if-not-exists --topic "$topic" --bootstrap-server $kafka_bootstrap_server --partitions 1 replication-factor 1 &
+    if ! echo "$existing_topics_list" | grep -q -x -F -- "$topic"; then
+        echo -e "Creating topic ""$topic"
+        $kafka_cmd --create --if-not-exists --topic "$topic" --bootstrap-server $kafka_bootstrap_server --partitions 1 replication-factor 1 &
+        pids+=($!)
+    else
+        echo -e "$topic exists"
+    fi
   done
-  wait
+
+  local failed=0
+  for pid in "${pids[@]}"; do
+    if ! wait "$pid"; then
+      failed=1
+    fi
+  done
+  if [ $failed -ne 0 ]; then
+    echo "Error: One or more topic creations failed" >&2
+    return 1
+  fi
 
   echo -e "=========================="
   echo -e "Listing all Kafka topics:"
