@@ -10,6 +10,7 @@
     smoker_variables:
       username: "{{ foreman_initial_admin_username }}"
       password: "{{ foreman_initial_admin_password }}"
+      browser_log_threshold: OFF
     # We want to rely on the OS to already provide the needed packages
     smoker_browser_packages: []
     pytest_project_packages: []
