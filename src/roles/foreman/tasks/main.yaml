@@ -115,6 +115,7 @@
     sdnotify: true
     network: host
     hostname: "{{ ansible_facts['hostname'] }}.local"
+    command: "/usr/share/foreman/bin/rails server --environment production --pid /tmp/rails.pid"
     volume:
       - 'foreman-data-run:/var/run/foreman:rw,z,U'
     secrets: "{{ foreman_secrets }}"
