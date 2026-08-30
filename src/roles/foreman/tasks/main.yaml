@@ -129,8 +129,6 @@
         PartOf=foreman.target
         Wants=valkey.service postgresql.service candlepin.service
         After=valkey.service postgresql.service candlepin.service
-        Wants=foreman-db-migrate.service
-        After=foreman-db-migrate.service
   notify: Restart foreman
 
 - name: Install foreman-rake wrapper
@@ -163,8 +161,6 @@
         PartOf=foreman.target
         Wants=valkey.service postgresql.service
         After=valkey.service postgresql.service
-        Wants=foreman-db-migrate.service
-        After=foreman-db-migrate.service
       - |
         [Service]
         Restart=on-failure
@@ -222,6 +218,24 @@
   loop_control:
     label: "{{ item.instance }}"
 
+- name: Deploy foreman database migration check container
+  containers.podman.podman_container:
+    name: foreman-db-migration-check
+    state: quadlet
+    image: foreman.image
+    sdnotify: false
+    network: host
+    command: bash -c "bin/rails db:abort_if_pending_migrations"
+    env: "{{ foreman_env }}"
+    secrets: "{{ foreman_secrets }}"
+    quadlet_options:
+      - |
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        SuccessExitStatus=1
+        TimeoutStartSec=30m
+
 - name: Deploy foreman database migration container
   containers.podman.podman_container:
     name: foreman-db-migrate
@@ -229,7 +243,7 @@
     image: foreman.image
     sdnotify: false
     network: host
-    command: bash -c "bin/rails db:migrate && bin/rails db:seed"
+    command: bash -c "bin/rails db:migrate"
     env: "{{ foreman_env }}"
     secrets: "{{ foreman_secrets }}"
     quadlet_options:
@@ -243,10 +257,31 @@
   ansible.builtin.systemd:
     daemon_reload: true
 
-- name: Migrate and seed the Foreman database
+- name: Check for pending Foreman migrations
+  ansible.builtin.systemd:
+    name: foreman-db-migration-check.service
+    state: restarted
+  failed_when: false
+
+- name: Get Foreman migration check exit status  # noqa command-instead-of-module
+  ansible.builtin.command:
+    cmd: systemctl show --property=ExecMainStatus --value foreman-db-migration-check.service
+  register: foreman_migration_check_status
+  changed_when: false
+  failed_when: >-
+    foreman_migration_check_status.rc != 0 or
+    (foreman_migration_check_status.stdout | trim) not in ['0', '1']
+
+- name: Determine if Foreman migration is needed
+  ansible.builtin.set_fact:
+    foreman_migration_needed: >-
+      {{ (foreman_migration_check_status.stdout | trim | int) == 1 }}
+
+- name: Migrate the Foreman database
   ansible.builtin.systemd:
     name: foreman-db-migrate.service
     state: restarted
+  when: foreman_migration_needed
 
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers
