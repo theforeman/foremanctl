@@ -61,8 +61,9 @@ def get_dependencies(features):
 
 def foreman_plugins(value):
     dependencies = list(get_dependencies(filter_features(value)))
-    plugins = [FEATURE_MAP.get(feature, {}).get('foreman', {}).get('plugin_name') for feature in filter_features(value + dependencies)]
-    return compact_list(plugins)
+    features = set(filter_features(value + dependencies))
+    plugins = [FEATURE_MAP.get(feature, {}).get('foreman', {}).get('plugin_name') for feature in features]
+    return sorted(compact_list(plugins))
 
 
 def available_foreman_plugins(_value):
@@ -113,14 +114,16 @@ def conflicting_features(features):
 
 def hammer_plugins(value):
     dependencies = list(get_dependencies(filter_features(value)))
-    plugins = [FEATURE_MAP.get(feature, {}).get('hammer') for feature in filter_features(value + dependencies)]
-    return compact_list(plugins)
+    features = set(filter_features(value + dependencies))
+    plugins = [FEATURE_MAP.get(feature, {}).get('hammer') for feature in features]
+    return sorted(compact_list(plugins))
 
 
 def foreman_proxy_plugins(value):
     dependencies = list(get_dependencies(filter_features(value)))
-    plugins = [FEATURE_MAP.get(feature, {}).get('foreman_proxy', {}).get('plugin_name') for feature in filter_features(value + dependencies)]
-    return compact_list(plugins)
+    features = set(filter_features(value + dependencies))
+    plugins = [FEATURE_MAP.get(feature, {}).get('foreman_proxy', {}).get('plugin_name') for feature in features]
+    return sorted(compact_list(plugins))
 
 
 def available_foreman_proxy_plugins(_value):
