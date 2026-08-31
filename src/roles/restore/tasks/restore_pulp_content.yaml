@@ -1,11 +1,22 @@
 ---
-- name: Check if pulp content archive exists
+- name: Check if pulp content archive exists (single volume)
   ansible.builtin.stat:
     path: "{{ restore_backup_dir }}/pulp-content.tar.gz"
   register: restore_pulp_content_check
 
+- name: Check if pulp content archive exists (multi-volume)
+  ansible.builtin.find:
+    paths: "{{ restore_backup_dir }}"
+    patterns: "pulp-content.tar.gz.part*"
+  register: restore_pulp_content_volumes
+
+- name: Check if pulp snapshot file exists
+  ansible.builtin.stat:
+    path: "{{ restore_backup_dir }}/pulp.snar"
+  register: restore_pulp_snar_check
+
 - name: Restore pulp content and encryption keys
-  when: restore_pulp_content_check.stat.exists
+  when: restore_pulp_content_check.stat.exists or restore_pulp_content_volumes.matched > 0
   block:
     - name: Ensure pulp storage directory exists
       ansible.builtin.file:
@@ -19,21 +30,32 @@
         state: absent
       when: not restore_is_incremental
 
-    - name: Extract pulp content archive (incremental with snar)  # noqa: command-instead-of-module
-      ansible.builtin.command:
+    # Use find + xargs to avoid "Argument list too long" error with many volume files.
+    # Wildcards expand all filenames in memory, hitting ARG_MAX limit (~2MB).
+    # This approach: find files, sort by name (part000000, part000001, ...),
+    # concatenate in order, pipe to tar for extraction.
+    - name: Extract pulp content archive (compressed multi-volume)  # noqa: risky-shell-pipe
+      ansible.builtin.shell:
         cmd: >
-          tar -xzf "{{ restore_backup_dir }}/pulp-content.tar.gz"
-          --listed-incremental=/dev/null
-          -C "{{ pulp_storage_path }}"
-      when: restore_is_incremental
+          set -o pipefail;
+          find "{{ restore_backup_dir }}" -name "pulp-content.tar.gz.part*" -print0 |
+          sort --zero-terminated |
+          xargs --null cat |
+          tar --extract --gzip --file - --listed-incremental=/dev/null --directory="{{ pulp_storage_path }}"
+        executable: /bin/bash
+      when: restore_pulp_content_volumes.matched > 0
       changed_when: true
 
-    - name: Extract pulp content archive (full backup)
-      ansible.builtin.unarchive:
-        src: "{{ restore_backup_dir }}/pulp-content.tar.gz"
-        dest: "{{ pulp_storage_path }}"
-        remote_src: true
-      when: not restore_is_incremental
+    - name: Extract pulp content archive (single volume)  # noqa: command-instead-of-module
+      ansible.builtin.command:
+        cmd: >
+          tar --extract --gzip --file="{{ restore_backup_dir }}/pulp-content.tar.gz"
+          --listed-incremental=/dev/null
+          --directory="{{ pulp_storage_path }}"
+      when:
+        - restore_pulp_content_check.stat.exists
+        - restore_pulp_content_volumes.matched == 0
+      changed_when: true
 
     - name: Check ownership of restored Pulp content
       ansible.builtin.stat:
@@ -69,7 +91,26 @@
         recurse: true
       register: restore_pulp_media_files
 
-    - name: Get archive size
+    - name: Get archive size (single volume)
       ansible.builtin.stat:
         path: "{{ restore_backup_dir }}/pulp-content.tar.gz"
       register: restore_pulp_content_size
+      when: restore_pulp_content_volumes.matched == 0
+
+    - name: Display restore completion (multi-volume)
+      ansible.builtin.debug:
+        msg: >-
+          Pulp content restored from {{ restore_pulp_content_volumes.matched }} compressed volumes,
+          {{ restore_pulp_media_files.matched }} files restored
+      when: restore_pulp_content_volumes.matched > 0
+
+    - name: Display restore completion (single volume)
+      ansible.builtin.debug:
+        msg: >-
+          Pulp content restored from {{ restore_backup_dir }}/pulp-content.tar.gz
+          ({{ (restore_pulp_content_size.stat.size / 1024 / 1024) | round(2) }} MB),
+          {{ restore_pulp_media_files.matched }} files restored
+      when:
+        - restore_pulp_content_volumes.matched == 0
+        - restore_pulp_content_size is defined
+        - restore_pulp_content_size.stat.exists
