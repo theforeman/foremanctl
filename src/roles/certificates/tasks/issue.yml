@@ -6,8 +6,9 @@
     - name: 'Create server private key'
       community.crypto.openssl_privatekey:
         path: "{{ certificates_output_directory_keys }}/{{ certificates_hostname }}.key"
-        type: "{{ certificates_algorithm_type }}"
-        size: "{{ certificates_algorithm_size }}"
+        type: "{{ _certificates_key_parameters.type }}"
+        size: "{{ _certificates_key_parameters.size | default(omit) }}"
+        curve: "{{ _certificates_key_parameters.curve | default(omit) }}"
         mode: '0600'
 
     - name: 'Create server CSR'
@@ -16,9 +17,7 @@
         privatekey_path: "{{ certificates_output_directory_keys }}/{{ certificates_hostname }}.key"
         common_name: "{{ certificates_hostname }}"
         subject_alt_name: "{{ _certificates_desired_server_sans }}"
-        key_usage:
-          - digitalSignature
-          - keyEncipherment
+        key_usage: "{{ _certificates_key_usage }}"
         extended_key_usage:
           - serverAuth
       vars:
@@ -38,8 +37,9 @@
 - name: 'Create client private key'
   community.crypto.openssl_privatekey:
     path: "{{ certificates_output_directory_keys }}/{{ certificates_hostname }}-client.key"
-    type: "{{ certificates_algorithm_type }}"
-    size: "{{ certificates_algorithm_size }}"
+    type: "{{ _certificates_key_parameters.type }}"
+    size: "{{ _certificates_key_parameters.size | default(omit) }}"
+    curve: "{{ _certificates_key_parameters.curve | default(omit) }}"
     mode: '0600'
 
 - name: 'Create client CSR'
@@ -49,9 +49,7 @@
     common_name: "{{ certificates_hostname }}"
     subject_alt_name:
       - "DNS:{{ certificates_hostname }}"
-    key_usage:
-      - digitalSignature
-      - keyEncipherment
+    key_usage: "{{ _certificates_key_usage }}"
     extended_key_usage:
       - clientAuth
 

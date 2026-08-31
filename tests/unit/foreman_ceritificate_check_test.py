@@ -152,3 +152,12 @@ def test_fails_with_sha1_ca_certificate(command, certs_directory, ca_bundle_file
     expected_error_part = f"The file '{ca_sha1}' contains a certificate signed with sha1"
     assert expected_error_part in result.stderr
 
+
+def test_fails_when_rsa_certificate_lacks_key_encipherment(command, ca_bundle, certs_directory):
+    key = os.path.join(certs_directory, 'foreman-nokeyenc.example.com.key')
+    cert = os.path.join(certs_directory, 'foreman-nokeyenc.example.com.crt')
+    args = ['-b', ca_bundle, '-k', key, '-c', cert]
+    result = run_script(command, args)
+
+    assert result.returncode == 4
+    assert f"The {cert} does not allow for the 'Key Encipherment' key usage." in result.stderr

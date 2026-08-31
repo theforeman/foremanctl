@@ -200,13 +200,23 @@ function check-cert-san () {
     fi
 }
 
-function check-cert-usage-key-encipherment () {
-    printf "Checking Key Usage extension on certificate for Key Encipherment "
-    CHECK=$(openssl x509 -noout -text -in $CERT_FILE | grep -A1 'X509v3 Key Usage:' | grep 'Key Encipherment')
-    if [[ $? == "0" ]]; then
+function check-cert-key-usage () {
+    KEY_ALGORITHM=$(openssl x509 -noout -text -in $CERT_FILE | grep -m1 'Public Key Algorithm:' | sed -e 's/.*Public Key Algorithm: //' -e 's/[[:space:]]*$//')
+    KEY_USAGE=$(openssl x509 -noout -text -in $CERT_FILE | grep -A1 'X509v3 Key Usage' | tail -n 1)
+
+    # Only RSA keys can perform key encipherment. EC and ML-DSA certificates
+    # carry Digital Signature instead.
+    if [[ "$KEY_ALGORITHM" == "rsaEncryption" ]]; then
+        REQUIRED_USAGE="Key Encipherment"
+    else
+        REQUIRED_USAGE="Digital Signature"
+    fi
+
+    printf "Checking Key Usage extension on certificate for %s " "$REQUIRED_USAGE"
+    if grep -q "$REQUIRED_USAGE" <<< "$KEY_USAGE"; then
         success
     else
-        error 4 "The $CERT_FILE does not allow for the 'Key Encipherment' key usage."
+        error 4 "The $CERT_FILE does not allow for the '$REQUIRED_USAGE' key usage."
     fi
 }
 
@@ -253,7 +263,7 @@ check-ca-bundle
 check-ca-bundle-size
 check-ca-bundle-trust-rules
 check-cert-san
-check-cert-usage-key-encipherment
+check-cert-key-usage
 check-shortname
 check-ca-signing-algorithm
 
