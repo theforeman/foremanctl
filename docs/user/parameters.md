@@ -68,6 +68,14 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--server-alias` (on `deploy`) | Allows defining additional DNS names (SANs) for the main server's certificate | --certs-cname |
 | `--server-alias` (on `auth-bundle`) | Allows defining additional DNS names (SANs) for a secondary system's certificate, e.g. a load-balanced proxy | --foreman-proxy-cname |
 
+##### New
+
+| Parameter | Description |
+| ----------| ----------- |
+| `--certificate-algorithm` | Key algorithm of the generated certificates. Accepted values: `RSA` & `ECC`. Defaults to `RSA`. |
+| `--certificate-algorithm-size` | Key size of the generated certificates. Only applies to RSA. Defaults to `4096`. |
+| `--certificate-algorithm-curve` | Elliptic curve of the generated certificates. Only applies to ECC. Defaults to `secp384r1`. |
+
 ##### Unmapped
 
 | foreman-installer Parameter | Description | Reason |

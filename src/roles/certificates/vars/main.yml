@@ -1,0 +1,31 @@
+---
+# Algorithms foremanctl can generate keys for today. Kept separate from the
+# parameter table below so an algorithm can be staged before it is offered.
+_certificates_supported_algorithms:
+  - RSA
+  - ECC
+
+# Private key parameters per algorithm. Every entry maps directly onto the
+# arguments community.crypto.openssl_privatekey expects for that algorithm:
+# RSA takes a size, ECC takes a curve and ML-DSA takes neither.
+#
+# ML-DSA is staged, not supported: neither the python-cryptography versions
+# shipped in RHEL nor community.crypto can generate ML-DSA keys yet. Its
+# parameters are defined so the rest of the pipeline is ready once they can,
+# but it is absent from _certificates_supported_algorithms and from the
+# --certificate-algorithm choices, so it cannot be selected.
+_certificates_algorithm_parameters:
+  RSA:
+    type: RSA
+    size: "{{ certificates_algorithm_size }}"
+  ECC:
+    type: ECC
+    curve: "{{ certificates_algorithm_curve }}"
+  ML-DSA:
+    type: ML-DSA
+
+_certificates_key_parameters: "{{ _certificates_algorithm_parameters[certificates_algorithm_type] }}"
+
+# Key encipherment is an RSA-only capability. EC and ML-DSA keys can only sign,
+# so their certificates must not request it.
+_certificates_key_usage: "{{ ['digitalSignature'] + (['keyEncipherment'] if certificates_algorithm_type == 'RSA' else []) }}"
