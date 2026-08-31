@@ -198,7 +198,7 @@
 
 - name: Install Node.js dependencies
   ansible.builtin.command:
-    cmd: npm install
+    cmd: npm install --no-audit --no-fund --prefer-offline
     chdir: "{{ foreman_development_foreman_dir }}"
   become: true
   become_user: "{{ foreman_development_user }}"
