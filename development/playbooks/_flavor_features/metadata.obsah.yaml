@@ -4,3 +4,8 @@ variables:
     parameter: --add-feature
     help: Additional features to enable in this deployment.
     action: append_unique
+  remove_features:
+    parameter: --remove-feature
+    help: Features to remove from this deployment.
+    action: append_unique
+    persist: false
