@@ -18,11 +18,6 @@
     - "'Nothing to do' not in foreman_development_nodejs_module_result.stdout"
     - "'already enabled' not in foreman_development_nodejs_module_result.stdout"
 
-- name: Install nodejs from enabled module
-  ansible.builtin.package:
-    name: nodejs
-    state: present
-
 - name: Ensure the crb repository is enabled
   community.general.dnf_config_manager:
     name: crb
