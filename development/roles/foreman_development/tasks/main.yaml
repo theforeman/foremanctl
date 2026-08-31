@@ -186,7 +186,7 @@
   loop_control:
     loop_var: plugin_item
 
-- name: Install Ruby dependencies
+- name: Install Ruby dependencies (async)
   ansible.builtin.command:
     cmd: bundle install --path .vendor --jobs {{ ansible_facts['processor_vcpus'] }} --without "journald"
     chdir: "{{ foreman_development_foreman_dir }}"
@@ -195,6 +195,9 @@
   environment:
     PATH: "/usr/bin:/bin:/usr/local/bin"
   changed_when: true
+  async: 600
+  poll: 0
+  register: foreman_development_bundle_install_async
 
 - name: Install Node.js dependencies
   ansible.builtin.command:
@@ -203,6 +206,16 @@
   become: true
   become_user: "{{ foreman_development_user }}"
   changed_when: true
+
+- name: Wait for Ruby dependencies installation to complete
+  ansible.builtin.async_status:
+    jid: "{{ foreman_development_bundle_install_async.ansible_job_id }}"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  register: foreman_development_bundle_install_result
+  until: foreman_development_bundle_install_result.finished
+  retries: 120
+  delay: 5
 
 - name: Run database migrations
   ansible.builtin.command:
