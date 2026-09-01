@@ -44,8 +44,3 @@
 
 # Configure SMTP as delivery method
 :delivery_method: smtp
-
-{% if air_gapped_mode | bool %}
-# Disable subscription connection in disconnected mode
-:subscription_connection_enabled: false
-{% endif %}
