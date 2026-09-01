@@ -1,0 +1,34 @@
+---
+# Container images required for proxy deployments.
+# Upstream defaults use the public quay.io/foreman images.
+#
+# Downstream vendors override these by shipping a file at
+# src/vars/vendor/proxy-registry-images.yml (gitignored, loaded automatically
+# if present). A vendor file replaces the whole dict, so each entry must define
+# repository_name, upstream_name and base_tag.
+
+organization: "{{ foreman_initial_organization }}"
+product_name: "Proxy Container Images"
+
+# Registry each image is synced from.
+proxy_registry_url: https://quay.io
+
+# Image definitions for proxy deployment registry sync.
+# base_tag is the tag synced for each repository (they do not share a version).
+proxy_registry_images:
+  foreman_proxy:
+    repository_name: foreman-proxy
+    upstream_name: foreman/foreman-proxy
+    base_tag: "{{ foreman_proxy_container_tag }}"
+  pulp:
+    repository_name: pulp
+    upstream_name: foreman/pulp
+    base_tag: "{{ pulp_container_tag }}"
+  postgresql:
+    repository_name: postgresql-16
+    upstream_name: sclorg/postgresql-16-c10s
+    base_tag: "{{ postgresql_container_tag }}"
+  valkey:
+    repository_name: valkey-8
+    upstream_name: sclorg/valkey-8-c10s
+    base_tag: "{{ valkey_container_tag }}"
