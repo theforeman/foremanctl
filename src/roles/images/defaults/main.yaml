@@ -2,4 +2,4 @@
 images_quadlet_dir: /etc/containers/systemd
 images_registry_auth_file: /etc/foreman/registry-auth.json
 images_deployed_names: []
-images_pull_policy: "{{ 'never' if disconnected_mode | bool else 'missing' }}"
+images_pull_policy: "{{ 'never' if air_gapped_mode | bool else 'missing' }}"

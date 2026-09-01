@@ -1,10 +1,10 @@
 ---
-- name: Block image pulling in disconnected mode
+- name: Block image pulling in air-gapped mode
   ansible.builtin.fail:
     msg: |
-      Cannot run 'foremanctl pull-images' in disconnected mode.
-      Images must be pre-loaded using prepare_system.
-  when: disconnected_mode | bool
+      Image pulling is disabled in air-gapped mode.
+      Ensure that all required images are available in local container storage.
+  when: images_air_gapped | bool
 
 - name: Pull images
   block:
