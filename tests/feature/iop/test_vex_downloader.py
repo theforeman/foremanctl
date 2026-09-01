@@ -56,7 +56,11 @@ def test_vex_download_path_enabled(server):
 
 
 def test_vex_manual_file_directory_exists(server):
-    assert server.file("/var/lib/foreman/").is_directory
+    directory = server.file("/var/lib/foreman/")
+    assert directory.is_directory
+    assert directory.user == "root"
+    assert directory.group == "root"
+    assert directory.mode == 0o755
 
 
 def test_vex_download_folder_exists(server):

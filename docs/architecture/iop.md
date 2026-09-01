@@ -214,7 +214,7 @@ A non-containerized service that provides CVE map data to the VMAAS reposcan. Ma
 
 - `iop-cvemap-download.service` - oneshot download job
 - `iop-cvemap-download.timer` - runs every 24 hours
-- `iop-cvemap-download.path` - watches `/var/lib/foreman/cvemap.xml` for changes (air-gapped mode)
+- `iop-cvemap-download.path` - watches `/var/lib/foreman/cvemap.xml` (the default manual directory) for changes (air-gapped mode)
 
 ### Online mode
 
@@ -222,7 +222,7 @@ Downloads `cvemap.xml` from `https://security.access.redhat.com/data/meta/v1/cve
 
 ### Offline mode
 
-If `/var/lib/foreman/cvemap.xml` exists on disk, the downloader uses it instead of fetching from the internet. The path watcher detects file changes and triggers the service automatically. This supports air-gapped deployments where the CVE map is provided manually. Override the directory via `iop_cvemap_downloader_manual_dir`.
+`/var/lib/foreman` is the default manual directory; if `cvemap.xml` exists there on disk, the downloader uses it instead of fetching from the internet. The path watcher detects file changes and triggers the service automatically. This supports air-gapped deployments where the CVE map is provided manually. `iop_cvemap_downloader_manual_dir` controls both where the downloader looks for the file and what directory the systemd path unit watches — override it consistently, not just the file location.
 
 ### Reposync trigger
 
@@ -234,7 +234,7 @@ A non-containerized service that provides CSAF VEX (Vulnerability Exploitability
 
 - `iop-vex-download.service` - oneshot download job
 - `iop-vex-download.timer` - runs every 24 hours
-- `iop-vex-download.path` - watches `/var/lib/foreman/vex-latest.tar.zst` for changes (air-gapped mode)
+- `iop-vex-download.path` - watches `/var/lib/foreman/vex-latest.tar.zst` (the default manual directory) for changes (air-gapped mode)
 
 ### Online mode
 
@@ -242,7 +242,7 @@ Downloads the latest `vex-latest.tar.zst` archive (and its `.asc` signature) fro
 
 ### Offline mode
 
-If `/var/lib/foreman/vex-latest.tar.zst` exists on disk, the downloader uses it instead of fetching from the internet. The path watcher detects file changes and triggers the service automatically. Override the directory via `iop_vex_downloader_manual_dir`.
+`/var/lib/foreman` is the default manual directory; if `vex-latest.tar.zst` exists there on disk, the downloader uses it instead of fetching from the internet. The path watcher detects file changes and triggers the service automatically. `iop_vex_downloader_manual_dir` controls both where the downloader looks for the file and what directory the systemd path unit watches — override it consistently, not just the file location.
 
 ## VMAAS-Katello Integration
 

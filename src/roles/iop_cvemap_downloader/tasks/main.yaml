@@ -3,6 +3,8 @@
   ansible.builtin.file:
     path: "{{ iop_cvemap_downloader_manual_dir }}"
     state: directory
+    owner: root
+    group: root
     mode: '0755'
 
 - name: Install cvemap download script

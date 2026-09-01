@@ -51,4 +51,8 @@ def test_cvemap_download_path_enabled(server):
 
 
 def test_cvemap_manual_file_directory_exists(server):
-    assert server.file("/var/lib/foreman/").is_directory
+    directory = server.file("/var/lib/foreman/")
+    assert directory.is_directory
+    assert directory.user == "root"
+    assert directory.group == "root"
+    assert directory.mode == 0o755
