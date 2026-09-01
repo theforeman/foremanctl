@@ -46,7 +46,7 @@ graph TB
             VulnFE[Vulnerability Frontend]
         end
 
-        CVEMap["CVE Map Downloader<br/>(systemd timer + path watcher)"]
+        VulnMeta["Vulnerability Metadata Downloader<br/>(systemd timer + path watcher)"]
     end
 
     Foreman -- "smart proxy<br/>relay" --> Gateway
@@ -71,7 +71,7 @@ graph TB
     Vuln --> Inventory
     Vuln --> VMAAS
     Vuln -. "FDW" .-> PG
-    CVEMap -- "trigger reposync" --> Gateway
+    VulnMeta -- "trigger reposync" --> Gateway
 ```
 
 ### Data Flow
@@ -160,7 +160,7 @@ Timers:
 |-------|----------|---------|
 | `iop-core-host-inventory-cleanup.timer` | 24h | Host access tags cleanup |
 | `iop-service-vuln-vmaas-sync.timer` | 4h | Vulnerability data sync from VMAAS |
-| `iop-cvemap-download.timer` | 24h | CVE map XML download |
+| `iop-vuln-metadata-download.timer` | 24h | Vulnerability metadata download (CPE, repo-to-CPE, CVE map) |
 
 ## Databases
 
@@ -208,31 +208,31 @@ graph LR
     inv_view -- "FDW (hbi_server)" --> foreign_table
 ```
 
-## CVE Map Downloader
+## Vulnerability Metadata Downloader
 
-A non-containerized service that provides CVE map data to the VMAAS reposcan. Managed by three systemd units:
+A non-containerized service that provides vulnerability metadata to the VMAAS reposcan. A single downloader (the `iop_vuln_metadata_downloader` role) fetches `cpe-dictionary.xml`, `repository-to-cpe.json`, and `cvemap.xml`. Managed by three systemd units:
 
-- `iop-cvemap-download.service` - oneshot download job
-- `iop-cvemap-download.timer` - runs every 24 hours
-- `iop-cvemap-download.path` - watches `/var/lib/foreman/cvemap.xml` for changes (air-gapped mode)
+- `iop-vuln-metadata-download.service` - oneshot download job
+- `iop-vuln-metadata-download.timer` - runs every 24 hours
+- `iop-vuln-metadata-download.path` - watches the manual files under `/var/lib/foreman/` for changes (air-gapped mode)
 
 ### Online mode
 
-Downloads `cvemap.xml` from `https://security.access.redhat.com/data/meta/v1/cvemap.xml` and writes it to `/var/www/html/pub/iop/data/meta/v1/cvemap.xml`.
+Downloads each file from `https://security.access.redhat.com/` and writes it under `/var/www/html/pub/iop/data/`. Each file is fetched conditionally (based on its current modification time), so unchanged files are not re-downloaded.
 
 ### Offline mode
 
-If `/var/lib/foreman/cvemap.xml` exists on disk, the downloader uses it instead of fetching from the internet. The path watcher detects file changes and triggers the service automatically. This supports air-gapped deployments where the CVE map is provided manually.
+If a manual file exists on disk under `/var/lib/foreman/` (matching the target file's basename), the downloader uses it instead of fetching from the internet. The path watcher detects file changes and triggers the service automatically. This supports air-gapped deployments where the metadata is provided manually.
 
 ### Reposync trigger
 
-When the CVE map file changes, the downloader triggers a VMAAS reposync via `PUT https://localhost:24443/api/vmaas-reposcan/v1/sync` using client certificates. The trigger retries up to 5 times with exponential backoff.
+The reposync trigger is merged into the download script: after processing all files, it triggers a VMAAS reposync via `PUT https://localhost:24443/api/vmaas-reposcan/v1/sync` using client certificates **only if at least one file actually changed**. The trigger retries up to 5 times with exponential backoff.
 
 ## VMAAS-Katello Integration
 
 VMAAS reposcan syncs its repository list from Katello (`SYNC_REPO_LIST_SOURCE=katello`) via the gateway at port 9090. VMAAS does not maintain its own repository list; it pulls from the content already managed by Katello.
 
-The CVE map URL is served locally at `http://iop-core-gateway:9090/pub/iop/data/meta/v1/cvemap.xml`, provided by the CVE map downloader.
+The CVE map URL is served locally at `http://iop-core-gateway:9090/pub/iop/data/meta/v1/cvemap.xml`, provided by the vulnerability metadata downloader.
 
 ## Frontend Assets
 
@@ -253,6 +253,34 @@ The extraction process for each frontend:
 6. Configure Apache alias and caching
 
 No frontend containers remain running after deployment.
+
+### Content for Vulnerability Evaluation
+
+IOP Vulnerability (VMaaS) requires content (metadata) from Red Hat Security to evaluate hosts.
+This content needs to be refreshed periodically.
+Two downloader roles fetch this metadata and publish it under `/var/www/html/pub`, where it is served over HTTP for the VMaaS reposcan container to consume.
+
+| Role | Files | Published under `/var/www/html/pub/` | Reposync trigger | Default interval |
+|------|-------|--------------------------------------|:----------------:|:----------------:|
+| `iop_vuln_metadata_downloader` | `cpe-dictionary.xml`, `repository-to-cpe.json`, `cvemap.xml` | `iop/data/` | yes | `24h` |
+| `iop_vex_downloader` | `vex-latest.tar.zst` (+ `.asc` signature) | `iop/data/csaf/v2/vex/` | no | `24h` |
+
+Each role installs a download script under `/usr/local/bin/` and three systemd units sharing the same pattern.
+
+The `iop_vuln_metadata_downloader` script triggers the reposync itself (via a merged `trigger_reposync` function) after the downloads, and only when at least one file changed — there is no separate `ExecStartPost` step.
+
+#### Offline / disconnected installs
+
+For disconnected installs, the metadata can be supplied manually by dropping the file into `/var/lib/foreman/`.
+The corresponding `*.path` systemd unit watcher triggers the downloader, which copies the file into the expected location.
+As long as a manual file is present the downloader stays in offline mode and never attempts a network download.
+
+| Manual file | Consumed by |
+|-------------|-------------|
+| `/var/lib/foreman/cpe-dictionary.xml` | `iop_vuln_metadata_downloader` |
+| `/var/lib/foreman/repository-to-cpe.json` | `iop_vuln_metadata_downloader` |
+| `/var/lib/foreman/cvemap.xml` | `iop_vuln_metadata_downloader` |
+| `/var/lib/foreman/vex-latest.tar.zst` | `iop_vex_downloader` |
 
 ## Configuration
 
@@ -277,8 +305,8 @@ Gateway and service certificates use the default foremanctl CA infrastructure at
 | Gateway client cert | `certs/localhost-client.crt` |
 | Gateway client key | `private/localhost-client.key` |
 | CA | `certs/ca.crt` |
-| CVE map downloader client cert | `certs/<fqdn>-client.crt` |
-| CVE map downloader client key | `private/<fqdn>-client.key` |
+| Vulnerability metadata downloader client cert | `certs/<fqdn>-client.crt` |
+| Vulnerability metadata downloader client key | `private/<fqdn>-client.key` |
 | VMAAS client CA | `certs/ca.crt` |
 
 The gateway stores its certificates as 6 podman secrets mounted into the nginx container.
