@@ -5,8 +5,9 @@
     - name: Backup pulp content directory with encryption keys  # noqa: command-instead-of-module
       ansible.builtin.command:
         cmd: >
-          tar -czf {{ backup_dir_full }}/pulp-content.tar.gz
-          --directory={{ backup_pulp_storage_path }}
+          tar -czf "{{ backup_dir_full }}/pulp-content.tar.gz"
+          --listed-incremental="{{ backup_dir_full }}/pulp.snar"
+          --directory="{{ backup_pulp_storage_path }}"
           --exclude=media/exports
           --exclude=media/imports
           --exclude=media/sync_imports
