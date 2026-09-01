@@ -61,6 +61,7 @@
   </Location>
 {% endif %}
 
+{% if httpd_with_pulpcore %}
   ProxyPass /pulp_ansible/galaxy/ {{ httpd_pulp_api_backend }}/pulp_ansible/galaxy/
   ProxyPassReverse /pulp_ansible/galaxy/ {{ httpd_pulp_api_backend }}/pulp_ansible/galaxy/
 
@@ -106,6 +107,7 @@
     ProxyPass {{ httpd_pulp_api_backend }}/pulp/api/v3 timeout=600
     ProxyPassReverse {{ httpd_pulp_api_backend }}/pulp/api/v3
   </Location>
+{% endif %}
 
   Alias /pub {{ httpd_pub_dir }}
 
@@ -114,8 +116,10 @@
     Require all granted
   </Location>
 
+{% if httpd_with_pulpcore %}
   ProxyPass /pulp/assets/ {{ httpd_pulp_api_backend }}/pulp/assets/
   ProxyPassReverse /pulp/assets/ {{ httpd_pulp_api_backend }}/pulp/assets/
+{% endif %}
 
   ## Proxy rules
   ProxyRequests Off

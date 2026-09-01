@@ -1,0 +1,22 @@
+---
+flavor_features:
+  - foreman
+
+checks_to_execute:
+  - check_features
+  - check_hostname
+  - check_database_connection
+  # TODO: this requires 20 GB RAM but plain Foreman can work with a lot less
+  #- check_system_requirements
+  - check_podman_network_backend
+
+health_checks_to_execute:
+  - check_hostname
+  - check_database_connection
+  - check_services
+  - check_foreman_api
+  - check_foreman_tasks
+  - check_host_facts_count
+  - check_duplicate_permissions
+
+post_install_message_enabled: true
