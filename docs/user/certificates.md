@@ -311,6 +311,8 @@ The `certificate_checks` role uses `foreman-certificate-check` binary to validat
 - PEM format validation
 - Private key and certificate pairing
 - Certificate chain integrity
+- Key usage appropriate for the certificate's key algorithm: Key Encipherment for RSA, Digital Signature for EC and ML-DSA
+- No SHA-1 in the signature algorithm of any certificate in the CA bundle, whichever key type signed it
 
 ### Technical Specifications
 

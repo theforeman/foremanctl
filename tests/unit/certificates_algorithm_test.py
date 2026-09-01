@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -99,7 +100,8 @@ def deploy_help():
     result = subprocess.run(['./foremanctl', 'deploy', '--help'],
                             cwd=REPO_DIR, text=True, capture_output=True, env=environment)
     assert result.returncode == 0, result.stderr
-    return result.stdout
+    # obsah colorises its help when the terminal supports it.
+    return re.sub(r'\x1b\[[0-9;]*m', '', result.stdout)
 
 
 def test_deploy_offers_every_supported_algorithm():
