@@ -2,6 +2,6 @@
 images_quadlet_dir: /etc/containers/systemd
 images_registry_auth_file: /etc/foreman/registry-auth.json
 images_deployed_names: []
-images_air_gapped: false
+images_air_gapped: "{{ air_gapped | default(false) | bool }}"
 images_pull_policy: >-
-  {{ (images_air_gapped | bool) | ternary('never', 'missing') }}
+  {{ images_air_gapped | ternary('never', 'missing') }}
