@@ -1,14 +1,4 @@
 ---
-- name: Check if disconnected config file exists
-  ansible.builtin.stat:
-    path: /etc/foreman/disconnected.conf
-  register: disconnected_config_stat
-
-- name: Set disconnected_mode if config file exists
-  ansible.builtin.set_fact:
-    disconnected_mode: true
-  when: disconnected_config_stat.stat.exists
-
 - name: Deploy debug_tools
   ansible.builtin.include_role:
     name: debug_tools
