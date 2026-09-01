@@ -7,8 +7,8 @@
       --port={{ item.port }}
       --username={{ item.user }}
       --format=custom
-      --file={{ backup_dir_full }}/{{ item.database }}.dump
-      {{ item.database }}
+      --file="{{ backup_dir_full }}/{{ item.database }}.dump"
+      "{{ item.database }}"
   environment:
     PGPASSWORD: "{{ item.password }}"
   loop: "{{ backup_databases_config }}"

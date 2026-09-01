@@ -242,7 +242,7 @@ def test_metadata_structure(backup_metadata, expected_databases):
         assert field in backup_metadata, f"Metadata should contain '{field}' field"
 
     assert backup_metadata['type'] == 'offline', "Backup type should be 'offline'"
-    assert backup_metadata['incremental'] is False, "Backup should not be incremental"
+    assert backup_metadata['incremental']['is_incremental'] is False, "Backup should not be incremental"
     assert backup_metadata['database_mode'] in ['internal', 'external'], "Database mode should be 'internal' or 'external'"
 
     # Verify expected databases are present

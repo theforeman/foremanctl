@@ -1,6 +1,6 @@
 ---
 help: |
-  Create offline backup of Foreman databases and configuration
+  Create offline backup of databases and configuration
 
 variables:
   backup_dir:
@@ -22,4 +22,13 @@ variables:
   wait_for_tasks:
     help: Wait for running tasks to complete instead of failing immediately
     action: store_true
+    persist: false
+
+  backup_incremental:
+    parameter: --base-backup
+    help: |
+      Path to base backup directory for incremental backup.
+      Creates a differential backup containing only files changed since
+      the base backup. Requires .snar files from base backup.
+    type: AbsolutePath
     persist: false
