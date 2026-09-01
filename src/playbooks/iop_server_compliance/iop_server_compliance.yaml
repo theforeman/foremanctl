@@ -1,0 +1,96 @@
+---
+# Deploy compliance services onto an existing IoP server (forklift iop-server).
+# Unlike the main deploy.yaml which targets a foremanctl quadlet VM, this
+# playbook targets a forklift iop-server where postgres is managed by puppet
+# via unix socket. All other IoP services must already be running.
+- name: Ensure foremanctl state directory exists on controller
+  hosts: localhost
+  gather_facts: false
+  vars:
+    obsah_state_path: /var/lib/foreman/foremanctl
+  tasks:
+    - name: Create foremanctl state directory
+      ansible.builtin.file:
+        path: "{{ obsah_state_path }}"
+        state: directory
+        mode: "0700"
+
+- name: Deploy compliance services on IoP server
+  hosts: all
+  become: true
+  vars:
+    obsah_state_path: /var/lib/foreman/foremanctl
+    # postgres is on the host, accessible via unix socket from containers
+    iop_compliance_database_host: /var/run/postgresql
+    iop_compliance_database_port: 5432
+    iop_compliance_database_name: compliance_db
+    iop_compliance_database_user: compliance_admin
+    iop_compliance_database_password_file: "{{ obsah_state_path }}/iop-compliance-db-password"
+    iop_compliance_database_password: >-
+      {{ lookup('ansible.builtin.password', iop_compliance_database_password_file,
+                chars=['ascii_letters', 'digits']) }}
+    iop_compliance_database_volumes:
+      - '/var/run/postgresql:/var/run/postgresql:rw'
+    # skip foremanctl's internal postgres extension tasks (handled below via peer auth)
+    database_mode: external
+    # iop-devel image builds assets to /opt/app-root/src/dist, not /srv/dist
+    iop_compliance_frontend_source_path: "/opt/app-root/src/dist/."
+  handlers:
+    - name: "Restart httpd"
+      listen: "httpd : Restart httpd"
+      ansible.builtin.systemd:
+        name: httpd
+        state: restarted
+
+  pre_tasks:
+    - name: Ensure foremanctl state directory exists
+      ansible.builtin.file:
+        path: "{{ obsah_state_path }}"
+        state: directory
+        mode: '0700'
+
+    - name: Create compliance_admin PostgreSQL role
+      become: true
+      become_user: postgres
+      community.postgresql.postgresql_user:
+        name: "{{ iop_compliance_database_user }}"
+        password: "{{ iop_compliance_database_password }}"
+        state: present
+
+    - name: Create compliance_db database
+      become: true
+      become_user: postgres
+      community.postgresql.postgresql_db:
+        name: "{{ iop_compliance_database_name }}"
+        owner: "{{ iop_compliance_database_user }}"
+        encoding: UTF8
+        lc_collate: en_US.utf8
+        lc_ctype: en_US.utf8
+        state: present
+
+    - name: Ensure pgcrypto extension in compliance database
+      become: true
+      become_user: postgres
+      community.postgresql.postgresql_ext:
+        name: pgcrypto
+        login_db: "{{ iop_compliance_database_name }}"
+        login_user: postgres
+        state: present
+
+    - name: Ensure dblink extension in compliance database
+      become: true
+      become_user: postgres
+      community.postgresql.postgresql_ext:
+        name: dblink
+        login_db: "{{ iop_compliance_database_name }}"
+        login_user: postgres
+        state: present
+
+  tasks:
+    - name: Deploy iop_compliance role
+      ansible.builtin.include_role:
+        name: iop_compliance
+
+    - name: Deploy iop_compliance_frontend role
+      ansible.builtin.include_role:
+        name: iop_compliance_frontend

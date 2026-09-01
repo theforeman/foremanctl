@@ -81,6 +81,13 @@ iop_vulnerability_database_user: vulnerability_admin
 iop_vulnerability_database_password_file: "{{ obsah_state_path }}/iop-vulnerability-db-password"
 iop_vulnerability_database_password: "{{ lookup('ansible.builtin.password', iop_vulnerability_database_password_file, chars=['ascii_letters', 'digits']) }}"
 
+iop_compliance_database_host: "{{ iop_database_host }}"
+iop_compliance_database_port: "{{ iop_database_port }}"
+iop_compliance_database_name: compliance_db
+iop_compliance_database_user: compliance_admin
+iop_compliance_database_password_file: "{{ obsah_state_path }}/iop-compliance-db-password"
+iop_compliance_database_password: "{{ lookup('ansible.builtin.password', iop_compliance_database_password_file, chars=['ascii_letters', 'digits']) }}"
+
 databases:
   - name: foreman
     database: "{{ foreman_database_name }}"
@@ -150,6 +157,13 @@ databases:
     port: "{{ iop_vulnerability_database_port }}"
     user: "{{ iop_vulnerability_database_user }}"
     password: "{{ iop_vulnerability_database_password }}"
+    feature: iop
+  - name: iop_compliance
+    database: "{{ iop_compliance_database_name }}"
+    host: "{{ iop_compliance_database_host }}"
+    port: "{{ iop_compliance_database_port }}"
+    user: "{{ iop_compliance_database_user }}"
+    password: "{{ iop_compliance_database_password }}"
     feature: iop
 
 all_databases: >-

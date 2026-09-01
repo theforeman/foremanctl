@@ -12,9 +12,12 @@ IOP_IMAGES = [
     "iop-remediation",
     "iop-vmaas",
     "iop-vulnerability",
+    "iop-compliance",
+    "iop-compliance-ssg",
     "iop-advisor-frontend",
     "iop-inventory-frontend",
     "iop-vulnerability-frontend",
+    "iop-compliance-frontend",
 ]
 
 
