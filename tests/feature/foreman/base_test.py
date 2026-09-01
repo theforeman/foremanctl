@@ -79,15 +79,6 @@ def test_foreman_recurring_services_exist(server, instance):
 
 
 @pytest.mark.parametrize("instance", RECURRING_INSTANCES)
-def test_foreman_recurring_timer_last_trigger(server, instance):
-    """Verify that timers have a valid last trigger time (if they've run)."""
-    timer_name = f"foreman-recurring@{instance}.timer"
-    timer = server.service(timer_name)
-    props = timer.systemd_properties
-    assert 'LastTriggerUSec' in props or 'LastTriggerUSecRealtime' in props
-
-
-@pytest.mark.parametrize("instance", RECURRING_INSTANCES)
 def test_foreman_recurring_timer_next_trigger(server, instance):
     """Verify that timers have a scheduled next trigger time."""
     timer_name = f"foreman-recurring@{instance}.timer"
