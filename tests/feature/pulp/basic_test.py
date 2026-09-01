@@ -1,9 +1,12 @@
 import json
+import time
 
 import pytest
 
 PULP_API_SOCKET = '/run/httpd.pulp-api.sock'
 PULP_CONTENT_SOCKET = '/run/httpd.pulp-content.sock'
+PULP_STATUS_POLL_INTERVAL = 5
+PULP_STATUS_POLL_TIMEOUT = 60
 
 
 @pytest.fixture(scope="module")
@@ -79,8 +82,24 @@ def test_pulp_status_content(pulp_status):
     assert pulp_status['online_content_apps']
 
 
-def test_pulp_status_workers(pulp_status):
-    assert pulp_status['online_workers']
+def _fetch_pulp_status(server, server_fqdn):
+    result = server.run(
+        f"curl -k -s --unix-socket {PULP_API_SOCKET} http://{server_fqdn}/pulp/api/v3/status/"
+    )
+    assert result.succeeded, result.stderr
+    return json.loads(result.stdout)
+
+
+def test_pulp_status_workers(server, server_fqdn):
+    # Workers can take a moment to heartbeat after systemd reports them running.
+    deadline = time.monotonic() + PULP_STATUS_POLL_TIMEOUT
+    while time.monotonic() < deadline:
+        if _fetch_pulp_status(server, server_fqdn)['online_workers']:
+            return
+        time.sleep(PULP_STATUS_POLL_INTERVAL)
+
+    status = _fetch_pulp_status(server, server_fqdn)
+    assert status['online_workers'], "Pulp workers did not appear online in status endpoint"
 
 
 def test_pulp_volumes(server):
