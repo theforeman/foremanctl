@@ -6,6 +6,19 @@
     status_code: 200
     timeout: 10
   register: check_foreman_api_ping
+  failed_when: false
+
+- name: Assert Foreman API is reachable
+  ansible.builtin.assert:
+    that:
+      - check_foreman_api_ping.status == 200
+    fail_msg: >
+      Foreman API is unreachable at {{ foreman_url }}/api/v2/ping.
+      {% if check_foreman_api_ping.status == -1 %}
+      Connection failed - foreman.service may not be running.
+      {% else %}
+      Returned HTTP status {{ check_foreman_api_ping.status }}.
+      {% endif %}
 
 - name: Check Foreman tasks status
   ansible.builtin.assert:
@@ -14,6 +27,7 @@
     fail_msg: "Foreman tasks status: {{ check_foreman_api_ping.json.results.katello.services.foreman_tasks.status | default('unknown') }}"
     success_msg: "Foreman tasks status: ok"
   when:
+    - check_foreman_api_ping.status == 200
     - enabled_features | has_feature('tasks')
     - enabled_features | has_feature('katello')
     - check_foreman_api_ping.json.results.katello is defined
