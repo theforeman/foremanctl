@@ -56,7 +56,7 @@ You can define custom hosts in boxes.yaml:
 ---
 # User-local box definitions (this file is gitignored)
 # Each entry becomes a vagrant box. Available settings:
-#   box:       base box (default: centos/stream9)
+#   box:       base box (default: centos/stream10)
 #   memory:    RAM in MB (default: 3072)
 #   cpus:      CPU count (default: 1)
 #   disk_size: disk in GB (default: 50)
