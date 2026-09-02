@@ -1,0 +1,9 @@
+[Unit]
+Description=Path unit for vex-latest.tar.zst manual file watcher
+
+[Path]
+PathChanged={{ iop_vex_downloader_manual_dir }}/vex-latest.tar.zst
+PathModified={{ iop_vex_downloader_manual_dir }}/vex-latest.tar.zst
+
+[Install]
+WantedBy=multi-user.target
