@@ -1,7 +1,7 @@
 # (REQUIRED) CName of the Foreman instance (must match Foreman's TLS certificate)
-proxy_ssl_name "{{ foreman_servername | default(ansible_fqdn) }}";
+proxy_ssl_name "{{ iop_gateway_foreman_name }}";
 
 # URI to forman
 # Example of host.containers.internal is the container network gateway.
-proxy_set_header Host "{{ foreman_servername | default(ansible_fqdn) }}";
+proxy_set_header Host "{{ iop_gateway_foreman_name }}";
 proxy_pass "https://host.containers.internal";

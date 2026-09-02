@@ -2,6 +2,8 @@
 iop_gateway_container_image: "quay.io/iop/gateway"
 iop_gateway_container_tag: "foreman-5.0"
 
+iop_gateway_foreman_name: "{{ ansible_facts['fqdn'] }}"
+
 iop_gateway_server_certificate: "/var/lib/foremanctl/certs/certs/localhost.crt"
 iop_gateway_server_key: "/var/lib/foremanctl/certs/private/localhost.key"
 iop_gateway_server_ca_certificate: "/var/lib/foremanctl/certs/certs/ca.crt"
