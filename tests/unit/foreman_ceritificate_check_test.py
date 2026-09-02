@@ -152,3 +152,35 @@ def test_fails_with_sha1_ca_certificate(command, certs_directory, ca_bundle_file
     expected_error_part = f"The file '{ca_sha1}' contains a certificate signed with sha1"
     assert expected_error_part in result.stderr
 
+
+def test_fails_with_pkcs12_metadata_in_ca_bundle(command, certs_directory):
+    key = os.path.join(certs_directory, 'foreman.example.com.key')
+    cert = os.path.join(certs_directory, 'foreman.example.com.crt')
+    ca = os.path.join(certs_directory, 'ca-bundle-bag-attributes.crt')
+    args = ['-b', ca, '-k', key, '-c', cert]
+    result = run_script(command, args)
+
+    assert result.returncode == 12
+    assert (
+        f"The CA bundle '{ca}' contains content outside PEM CERTIFICATE blocks. "
+        "Only PEM CERTIFICATE blocks are allowed."
+    ) in result.stderr
+
+
+def test_fails_with_comment_lines_in_certificate_files(command, certs_directory):
+    key = os.path.join(certs_directory, 'foreman.example.com.key')
+    cert = os.path.join(certs_directory, 'foreman.example.com-comment-lines.crt')
+    ca = os.path.join(certs_directory, 'ca-bundle-comment-lines.crt')
+    args = ['-b', ca, '-k', key, '-c', cert]
+    result = run_script(command, args)
+
+    assert result.returncode == 12
+    assert (
+        f"The certificate file '{cert}' contains content outside PEM CERTIFICATE blocks. "
+        "Only PEM CERTIFICATE blocks are allowed."
+    ) in result.stderr
+    assert (
+        f"The CA bundle '{ca}' contains content outside PEM CERTIFICATE blocks. "
+        "Only PEM CERTIFICATE blocks are allowed."
+    ) in result.stderr
+
