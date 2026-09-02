@@ -67,6 +67,7 @@ foreman_proxy_trusted_hosts:
 iop_core_foreman_url: "{{ foreman_url }}"
 iop_core_foreman_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
 iop_core_foreman_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+iop_gateway_foreman_name: "{{ foreman_name }}"
 
 backup_foreman_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
 backup_foreman_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
