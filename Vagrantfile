@@ -17,7 +17,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "quadlet" do |override|
-    override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream9")
+    override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10")
     if override.vm.box == "centos/stream10"
       override.vm.box_url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box"
     end
@@ -31,7 +31,10 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "client" do |override|
-    override.vm.box = "centos/stream9"
+    override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10")
+    if override.vm.box == "centos/stream10"
+      override.vm.box_url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box"
+    end
     override.vm.hostname = "client.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
@@ -42,7 +45,10 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "database" do |override|
-    override.vm.box = "centos/stream9"
+    override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10")
+    if override.vm.box == "centos/stream10"
+      override.vm.box_url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box"
+    end
     override.vm.hostname = "database.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
@@ -53,7 +59,10 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "proxy" do |override|
-    override.vm.box = "centos/stream9"
+    override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10")
+    if override.vm.box == "centos/stream10"
+      override.vm.box_url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box"
+    end
     override.vm.hostname = "proxy.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
@@ -69,7 +78,10 @@ Vagrant.configure("2") do |config|
     user_boxes = YAML.safe_load(File.read(boxes_yaml)) || {}
     user_boxes.compact.each do |name, settings|
       config.vm.define name do |override|
-        override.vm.box = settings.fetch('box') { ENV.fetch('FOREMANCTL_BASE_BOX', 'centos/stream9') }
+        override.vm.box = settings.fetch('box') { ENV.fetch('FOREMANCTL_BASE_BOX', 'centos/stream10') }
+        if override.vm.box == "centos/stream10"
+          override.vm.box_url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box"
+        end
 
         override.vm.provider "libvirt" do |libvirt, _provider|
           libvirt.memory = settings.fetch('memory', 3072)
