@@ -1,0 +1,9 @@
+---
+- name: Register binfmt support for foreign-architecture containers
+  become: true
+  hosts:
+    - all
+  gather_facts: true
+  roles:
+    - role: container_binfmt
+      when: ansible_facts['architecture'] != 'x86_64'

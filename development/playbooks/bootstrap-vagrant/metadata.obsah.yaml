@@ -1,0 +1,6 @@
+---
+help: |
+  Bootstrap this host with Vagrant and a hypervisor provider (libvirt on
+  Linux, vagrant-qemu on macOS) so it can run `forge vms start`. Opt-in,
+  one-time step, run before `./setup-environment`. Requires elevated
+  privileges since it installs host packages and services.
