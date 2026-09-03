@@ -7,9 +7,8 @@
     path: "{{ item | split(':') | first }}"
     state: directory
     mode: "0755"
-    owner: "700"
-    group: "700"
-    recurse: true
+    owner: "{{ pulp_container_uid }}"
+    group: "{{ pulp_container_gid }}"
   loop: "{{ pulp_volumes }}"
 
 - name: Create Pulp storage subdirs
@@ -17,9 +16,8 @@
     path: "{{ pulp_storage_path }}/{{ item }}"
     state: directory
     mode: "0755"
-    owner: "700"
-    group: "700"
-    recurse: true
+    owner: "{{ pulp_container_uid }}"
+    group: "{{ pulp_container_gid }}"
   loop:
     - tmp
     - assets
@@ -30,9 +28,8 @@
     path: "{{ item }}"
     state: directory
     mode: "0755"
-    owner: "700"
-    group: "700"
-    recurse: true
+    owner: "{{ pulp_container_uid }}"
+    group: "{{ pulp_container_gid }}"
   loop: "{{ pulp_default_import_paths + pulp_import_paths }}"
   when: not pulp_mirror
 
@@ -41,11 +38,27 @@
     path: "{{ item }}"
     state: directory
     mode: "0755"
-    owner: "700"
-    group: "700"
-    recurse: true
+    owner: "{{ pulp_container_uid }}"
+    group: "{{ pulp_container_gid }}"
   loop: "{{ pulp_default_export_paths + pulp_export_paths }}"
   when: not pulp_mirror
+
+- name: Check ownership of Pulp volume paths
+  ansible.builtin.stat:
+    path: "{{ item | split(':') | first }}"
+  register: pulp_volume_path_stats
+  loop: "{{ pulp_volumes }}"
+
+- name: Migrate root-owned Pulp volume paths to container user
+  ansible.builtin.file:
+    path: "{{ item.item | split(':') | first }}"
+    owner: "{{ pulp_container_uid }}"
+    group: "{{ pulp_container_gid }}"
+    recurse: true
+  loop: "{{ pulp_volume_path_stats.results }}"
+  when:
+    - item.stat.exists
+    - item.stat.uid == 0
 
 - name: Create DB password secret
   containers.podman.podman_secret:
@@ -75,8 +88,8 @@
 - name: Set secret key file permissions
   ansible.builtin.file:
     path: "{{ pulp_storage_path }}/django_secret_key"
-    owner: "700"
-    group: "700"
+    owner: root
+    group: root
     mode: '0600'
 
 - name: Create django pulp secret key secret
@@ -93,6 +106,13 @@
   ansible.builtin.command: "bash -c 'openssl rand -base64 32 | tr \"+/\" \"-_\" > {{ pulp_storage_path }}/database_fields.symmetric.key'"
   args:
     creates: "{{ pulp_storage_path }}/database_fields.symmetric.key"
+
+- name: Set database symmetric key file permissions
+  ansible.builtin.file:
+    path: "{{ pulp_storage_path }}/database_fields.symmetric.key"
+    owner: root
+    group: root
+    mode: '0600'
 
 - name: Create database symmetric key secret
   containers.podman.podman_secret:
