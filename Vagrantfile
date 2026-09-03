@@ -1,4 +1,5 @@
 DOMAIN = ENV.fetch('VAGRANT_DOMAIN', 'example.com'.freeze)
+CENTOS_STREAM_10_VAGRANT_BOX = 'https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box'.freeze
 
 Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant"
@@ -19,7 +20,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "quadlet" do |override|
     override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10")
     if override.vm.box == "centos/stream10"
-      override.vm.box_url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box"
+      override.vm.box_url = CENTOS_STREAM_10_VAGRANT_BOX
     end
     override.vm.hostname = "quadlet.#{DOMAIN}"
 
@@ -33,7 +34,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "client" do |override|
     override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10")
     if override.vm.box == "centos/stream10"
-      override.vm.box_url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box"
+      override.vm.box_url = CENTOS_STREAM_10_VAGRANT_BOX
     end
     override.vm.hostname = "client.#{DOMAIN}"
 
@@ -47,7 +48,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "database" do |override|
     override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10")
     if override.vm.box == "centos/stream10"
-      override.vm.box_url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box"
+      override.vm.box_url = CENTOS_STREAM_10_VAGRANT_BOX
     end
     override.vm.hostname = "database.#{DOMAIN}"
 
@@ -61,7 +62,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "proxy" do |override|
     override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10")
     if override.vm.box == "centos/stream10"
-      override.vm.box_url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box"
+      override.vm.box_url = CENTOS_STREAM_10_VAGRANT_BOX
     end
     override.vm.hostname = "proxy.#{DOMAIN}"
 
@@ -80,7 +81,7 @@ Vagrant.configure("2") do |config|
       config.vm.define name do |override|
         override.vm.box = settings.fetch('box') { ENV.fetch('FOREMANCTL_BASE_BOX', 'centos/stream10') }
         if override.vm.box == "centos/stream10"
-          override.vm.box_url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-Vagrant-10-latest.x86_64.vagrant-libvirt.box"
+          override.vm.box_url = CENTOS_STREAM_10_VAGRANT_BOX
         end
 
         override.vm.provider "libvirt" do |libvirt, _provider|
