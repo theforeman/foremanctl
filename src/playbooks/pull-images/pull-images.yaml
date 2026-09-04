@@ -74,4 +74,4 @@
         name: images
         tasks_from: pull.yaml
       vars:
-        images_air_gapped: "{{ air_gapped_mode | bool }}"
+        images_air_gapped: "{{ air_gapped | bool }}"
