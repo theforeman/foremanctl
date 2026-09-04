@@ -40,6 +40,15 @@
     - auth_bundle is not defined
     - certificates_generate
   block:
+    - name: 'Validate certificate algorithm'
+      ansible.builtin.assert:
+        that:
+          - certificates_algorithm_type in _certificates_supported_algorithms
+        fail_msg: >-
+          Unsupported certificates_algorithm_type '{{ certificates_algorithm_type }}'.
+          Supported algorithms: {{ _certificates_supported_algorithms | join(', ') }}.
+        quiet: true
+
     - name: 'Generate CA certificate'
       ansible.builtin.include_tasks: ca.yml
       when:

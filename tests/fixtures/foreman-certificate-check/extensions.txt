@@ -23,3 +23,43 @@ DNS.1 = *.example.com
 
 [shortname_alt_names]
 DNS.1 = foreman
+
+[ec_extensions]
+keyUsage = digitalSignature
+subjectAltName = @ec_alt_names
+
+[nokeyenc_extensions]
+keyUsage = digitalSignature
+subjectAltName = @nokeyenc_alt_names
+
+[ec_alt_names]
+DNS.1 = foreman-ec384.example.com
+
+[nokeyenc_alt_names]
+DNS.1 = foreman-nokeyenc.example.com
+
+[ec_ca_extensions]
+keyUsage = digitalSignature
+subjectAltName = @ec_ca_alt_names
+
+[ec_sha1_extensions]
+keyUsage = digitalSignature
+subjectAltName = @ec_sha1_alt_names
+
+[mldsa_extensions]
+keyUsage = digitalSignature
+subjectAltName = @mldsa_alt_names
+
+# An intermediate CA needs CA:TRUE and keyCertSign to be usable as an issuer.
+[intermediate_ca_extensions]
+basicConstraints = critical,CA:TRUE
+keyUsage = critical,keyCertSign,cRLSign
+
+[ec_ca_alt_names]
+DNS.1 = foreman-ec-ca.example.com
+
+[ec_sha1_alt_names]
+DNS.1 = foreman-ec-sha1.example.com
+
+[mldsa_alt_names]
+DNS.1 = foreman-mldsa.example.com

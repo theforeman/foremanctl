@@ -152,3 +152,51 @@ def test_fails_with_sha1_ca_certificate(command, certs_directory, ca_bundle_file
     expected_error_part = f"The file '{ca_sha1}' contains a certificate signed with sha1"
     assert expected_error_part in result.stderr
 
+
+def test_fails_when_rsa_certificate_lacks_key_encipherment(command, ca_bundle, certs_directory):
+    key = os.path.join(certs_directory, 'foreman-nokeyenc.example.com.key')
+    cert = os.path.join(certs_directory, 'foreman-nokeyenc.example.com.crt')
+    args = ['-b', ca_bundle, '-k', key, '-c', cert]
+    result = run_script(command, args)
+
+    assert result.returncode == 4
+    assert f"The {cert} does not allow for the 'Key Encipherment' key usage." in result.stderr
+
+
+def test_completes_correctly_with_ec_ca_certificates(command, certs_directory):
+    key = os.path.join(certs_directory, 'foreman-ec-ca.example.com.key')
+    cert = os.path.join(certs_directory, 'foreman-ec-ca.example.com.crt')
+    ca_ec = os.path.join(certs_directory, 'ca-ec.crt')
+    args = ['-b', ca_ec, '-k', key, '-c', cert]
+    result = run_script(command, args)
+
+    assert result.returncode == 0, result.stderr
+    assert "Validation succeeded" in result.stdout
+
+
+def test_fails_with_sha1_ec_ca_certificate(command, certs_directory):
+    key = os.path.join(certs_directory, 'foreman-ec-sha1.example.com.key')
+    cert = os.path.join(certs_directory, 'foreman-ec-sha1.example.com.crt')
+    ca_ec_sha1 = os.path.join(certs_directory, 'ca-ec-sha1-bundle.crt')
+    args = ['-b', ca_ec_sha1, '-k', key, '-c', cert]
+    result = run_script(command, args)
+
+    assert result.returncode == 4
+    assert f"The file '{ca_ec_sha1}' contains a certificate signed with sha1" in result.stderr
+
+
+def openssl_supports_ml_dsa():
+    result = subprocess.run(['openssl', 'list', '-signature-algorithms'], text=True, capture_output=True)
+    return 'ML-DSA-65' in result.stdout
+
+
+@pytest.mark.skipif(not openssl_supports_ml_dsa(), reason='OpenSSL does not support ML-DSA')
+def test_completes_correctly_with_ml_dsa_certificates(command, certs_directory):
+    key = os.path.join(certs_directory, 'foreman-mldsa.example.com.key')
+    cert = os.path.join(certs_directory, 'foreman-mldsa.example.com.crt')
+    ca_mldsa = os.path.join(certs_directory, 'ca-mldsa.crt')
+    args = ['-b', ca_mldsa, '-k', key, '-c', cert]
+    result = run_script(command, args)
+
+    assert result.returncode == 0, result.stderr
+    assert "Validation succeeded" in result.stdout
