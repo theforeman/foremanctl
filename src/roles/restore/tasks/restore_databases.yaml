@@ -11,7 +11,7 @@
 
 - name: Wait for PostgreSQL readiness
   ansible.builtin.command:
-    cmd: pg_isready --host={{ database_host }} --port={{ database_port }}
+    cmd: pg_isready --host={{ database_management_host }} --port={{ database_port }}
   register: restore_pg_ready
   retries: "{{ restore_postgresql_ready_retries }}"
   delay: "{{ restore_postgresql_ready_delay }}"
@@ -45,7 +45,7 @@
   community.postgresql.postgresql_db:
     name: "{{ item.database }}"
     state: absent
-    login_host: "{{ database_host }}"
+    login_host: "{{ database_management_host }}"
     login_port: "{{ database_port }}"
     login_user: postgres
     login_password: "{{ postgresql_admin_password }}"
@@ -58,7 +58,7 @@
     name: "{{ item.database }}"
     state: present
     owner: "{{ item.user }}"
-    login_host: "{{ database_host }}"
+    login_host: "{{ database_management_host }}"
     login_port: "{{ database_port }}"
     login_user: postgres
     login_password: "{{ postgresql_admin_password }}"
@@ -70,7 +70,7 @@
   community.postgresql.postgresql_ext:
     name: postgres_fdw
     db: "{{ item.database }}"
-    login_host: "{{ database_host }}"
+    login_host: "{{ database_management_host }}"
     login_port: "{{ database_port }}"
     login_user: postgres
     login_password: "{{ postgresql_admin_password }}"
@@ -83,7 +83,7 @@
   ansible.builtin.command:
     cmd: >
       pg_restore
-      --host={{ database_host }}
+      --host={{ database_management_host }}
       --port={{ database_port }}
       --username={{ item.user }}
       --dbname={{ item.database }}

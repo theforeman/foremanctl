@@ -6,9 +6,12 @@ iop_fdw_remote_database_name: "{{ undef(hint='You must specify the remote FDW da
 iop_fdw_remote_user: "{{ undef(hint='You must specify the remote FDW database user') }}"
 iop_fdw_remote_password: "{{ undef(hint='You must specify the remote FDW database password') }}"
 
-# Optional parameters - can use defaults
-iop_fdw_database_host: "localhost"
+# Optional parameters - can use defaults.
+# Use 127.0.0.1: Postgres is published on IPv4 only (not ::1), and TCP
+# requires a password now that it is no longer on host networking.
+iop_fdw_database_host: "{{ database_management_host }}"
 iop_fdw_database_port: 5432
+iop_fdw_login_password: "{{ postgresql_admin_password }}"
 
 # Constants - same for all invocations (matching puppet-iop)
 iop_fdw_foreign_server_name: hbi_server

@@ -1,0 +1,5 @@
+---
+foreman_core_network_name: "foreman-core-network"
+foreman_core_network_subnet: "10.130.0.0/24"
+foreman_core_network_gateway: "10.130.0.1"
+foreman_core_network_driver: "bridge"

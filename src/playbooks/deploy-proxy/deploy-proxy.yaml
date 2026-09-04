@@ -26,6 +26,7 @@
         certificate_checks_key: "{{ server_key }}"
         certificate_checks_ca: "{{ server_ca_certificate }}"
     - role: oauth_from_bundle
+    - role: foreman_core_network
     - role: postgresql
       when:
         - database_mode == 'internal'

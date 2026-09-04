@@ -95,7 +95,7 @@ IOP (Insights Operating Platform) deploys on-premise Insights services for advis
 ./foremanctl deploy --add-feature iop
 ```
 
-See [IOP Architecture](iop.md) for details on the services deployed and configuration options.
+See [IOP Architecture](../architecture/iop.md) for details on the services deployed and configuration options, and [Network Architecture](../architecture/network.md) for how IOP sits on the shared container network.
 
 ### Image Management
 
@@ -451,3 +451,5 @@ As `foremanctl` is Ansible-based, this means that the ["control node"](https://d
 To simplify the "install `foremanctl`" step, our test infrastructure uses different systems for the "control node" (the system the source code is cloned to) and the "target node" (the VM created by our development tooling).
 
 There is a desire to allow deployments where a single `foremanctl` control node manages multiple managed nodes, but no code exists yet for this.
+
+How those components talk to each other on the managed node — the shared `foreman-core-network` bridge, Apache unix sockets, and loopback publishes — is described in [Network Architecture](../architecture/network.md).

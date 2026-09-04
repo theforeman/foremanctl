@@ -63,7 +63,7 @@
 
     - name: Wait for PostgreSQL readiness
       ansible.builtin.command:
-        cmd: pg_isready -h {{ database_host }} -p {{ database_port }}
+        cmd: pg_isready -h {{ database_management_host }} -p {{ database_port }}
       register: backup_pg_ready
       retries: "{{ backup_postgresql_ready_retries }}"
       delay: "{{ backup_postgresql_ready_delay }}"
@@ -77,7 +77,7 @@
         db_entry:
           name: "{{ item.name }}"
           database: "{{ item.database }}"
-          host: "{{ database_host }}"
+          host: "{{ database_management_host }}"
           port: "{{ database_port }}"
           user: "{{ item.user }}"
           password: "{{ item.password }}"
