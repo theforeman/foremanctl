@@ -23,3 +23,17 @@ DNS.1 = *.example.com
 
 [shortname_alt_names]
 DNS.1 = foreman
+
+[ec_extensions]
+keyUsage = digitalSignature
+subjectAltName = @ec_alt_names
+
+[nokeyenc_extensions]
+keyUsage = digitalSignature
+subjectAltName = @nokeyenc_alt_names
+
+[ec_alt_names]
+DNS.1 = foreman-ec384.example.com
+
+[nokeyenc_alt_names]
+DNS.1 = foreman-nokeyenc.example.com
