@@ -82,6 +82,10 @@ jobs:
             security: none
             database: internal
             box: centos/stream9
+          - certificate_source: custom_ca
+            security: none
+            database: internal
+            box: centos/stream9
     runs-on: ubuntu-24.04
     env:
       FOREMANCTL_BASE_BOX: ${{ matrix.box }}
@@ -113,7 +117,7 @@ jobs:
         run: |
           ./forge setup-repositories
       - name: Create custom certificates
-        if: matrix.certificate_source == 'custom_server'
+        if: matrix.certificate_source == 'custom_server' || matrix.certificate_source == 'custom_ca'
         run: |
           ./forge custom-certs
       - name: Setup security mode ${{ matrix.security }}
@@ -137,6 +141,7 @@ jobs:
             --certificate-source=${{ matrix.certificate_source }} \
             ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com --database-ssl-ca $(pwd)/.var/lib/foremanctl/db-ca.crt --database-ssl-mode verify-full' || '' }} \
             ${{ matrix.certificate_source == 'custom_server' && '--certificate-server-certificate /root/custom-certificates/certs/quadlet.example.com.crt --certificate-server-key /root/custom-certificates/private/quadlet.example.com.key --certificate-server-ca-certificate /root/custom-certificates/certs/ca.crt' || '' }} \
+            ${{ matrix.certificate_source == 'custom_ca' && '--certificate-ca-certificate /root/custom-certificates/certs/ca.crt --certificate-ca-key /root/custom-certificates/private/ca.key' || '' }} \
             --initial-admin-password=changeme \
             --initial-organization "Foreman CI" \
             --initial-location "Internet" \

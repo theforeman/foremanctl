@@ -2,7 +2,6 @@
 - name: Apply custom server certificates
   ansible.builtin.include_tasks: custom.yml
   when:
-    - certificates_source == 'custom_server'
     - certificates_custom_server_certificate is defined
 
 - name: Issue certificates

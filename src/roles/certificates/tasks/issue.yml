@@ -1,7 +1,7 @@
 ---
 - name: Issue server certificate
   when:
-    - (certificates_source != 'custom_server') or (certificates_hostname == 'localhost')
+    - (certificates_custom_server_certificate is not defined) or (certificates_hostname == 'localhost')
   block:
     - name: 'Create server private key'
       community.crypto.openssl_privatekey:

@@ -1,8 +1,9 @@
 ---
 variables:
   certificates_source:
-    help: Where certificates are coming from. Currently default Ansible role or custom server certificates.
+    help: Where certificates come from - the default self-signed CA, custom server certificates, or a custom user supplied CA
     parameter: --certificate-source
     choices:
       - default
       - custom_server
+      - custom_ca

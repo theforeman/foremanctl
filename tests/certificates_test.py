@@ -47,6 +47,31 @@ def test_client_certificate_issued_by_internal_ca(server, certificates, custom_c
         "Client certificate should still be issued by the internal CA"
 
 
+def test_custom_ca_signs_entire_stack(server, certificates, custom_ca_certificates):
+    ca_info = certificate_info(server, certificates['ca_certificate'])
+    server_info = certificate_info(server, certificates['server_certificate'])
+    client_info = certificate_info(server, certificates['client_certificate'])
+    assert server_info['issuer'] == ca_info['subject'], \
+        "Server certificate should be issued by the custom CA"
+    assert client_info['issuer'] == ca_info['subject'], \
+        "Client certificate should be issued by the custom CA"
+
+
+def test_custom_ca_signs_candlepin(server, certificates, custom_ca_certificates):
+    assert server.service("candlepin").is_running, \
+        "Candlepin failed to start with the custom CA"
+    result = server.run(
+        "podman exec candlepin cat /etc/candlepin/certs/tomcat.crt "
+        "| openssl x509 -noout -subject -issuer"
+    )
+    assert result.succeeded, \
+        f"could not read Candlepin certificate: {result.stderr}"
+    tomcat_info = dict(line.split('=', 1) for line in result.stdout.splitlines())
+    ca_info = certificate_info(server, certificates['ca_certificate'])
+    assert tomcat_info['issuer'] == ca_info['subject'], \
+        "Candlepin certificate should be issued by the custom CA"
+
+
 def test_ca_bundle_contains_both_cas(server, certificates, custom_certificates):
     openssl_result = server.run(f"awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/' {certificates['ca_bundle']} | openssl crl2pkcs7 -nocrl -certfile /dev/stdin | openssl pkcs7 -print_certs -noout -text | grep 'Subject:'")
     subjects = [line.strip() for line in openssl_result.stdout.splitlines()]
