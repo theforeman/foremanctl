@@ -1,0 +1,136 @@
+---
+- name: Setup Proxy Container Images
+  hosts: quadlet
+  become: true
+  vars_files:
+    - "../../vars/images.yml"
+    - "../../vars/foreman.yml"
+    - "../../vars/base.yaml"
+    - "../../vars/proxy-registry-images.yml"
+
+  tasks:
+    - name: Load vendor image overrides if present
+      ansible.builtin.include_vars: "{{ item }}"
+      with_first_found:
+        - files:
+            - ../../vars/vendor/proxy-registry-images.yml
+          skip: true
+
+    - name: Create product for proxy images
+      theforeman.foreman.product:
+        oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
+        oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+        server_url: "{{ foreman_url }}"
+        validate_certs: false
+        name: "{{ product_name }}"
+        organization: "{{ organization }}"
+        state: present
+
+    - name: Create container repositories
+      theforeman.foreman.repository:
+        oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
+        oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+        server_url: "{{ foreman_url }}"
+        validate_certs: false
+        name: "{{ item.value.repository_name }}"
+        product: "{{ product_name }}"
+        organization: "{{ organization }}"
+        content_type: docker
+        url: "{{ proxy_registry_url }}"
+        docker_upstream_name: "{{ item.value.upstream_name }}"
+        include_tags:
+          - "{{ item.value.base_tag }}"
+        upstream_username: "{{ registry_username | default(omit) }}"
+        upstream_password: "{{ registry_password | default(omit)  }}"
+        state: present
+      loop: "{{ proxy_registry_images | dict2items }}"
+      loop_control:
+        label: "{{ item.value.repository_name }}"
+      no_log: true
+
+    - name: Synchronize product
+      theforeman.foreman.repository_sync:
+        oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
+        oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+        server_url: "{{ foreman_url }}"
+        validate_certs: false
+        product: "{{ product_name }}"
+        organization: "{{ organization }}"
+
+    - name: Get organization info for registry path
+      theforeman.foreman.resource_info:
+        oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
+        oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+        server_url: "{{ foreman_url }}"
+        validate_certs: false
+        resource: organizations
+        search: "name=\"{{ organization }}\""
+      register: org_info
+
+    - name: Extract organization label
+      ansible.builtin.set_fact:
+        org_label: "{{ org_info.resources[0].label }}"
+
+    - name: Get product info for registry path
+      theforeman.foreman.resource_info:
+        oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
+        oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+        server_url: "{{ foreman_url }}"
+        validate_certs: false
+        resource: products
+        organization: "{{ organization }}"
+        search: "name=\"{{ product_name }}\""
+      register: product_info
+
+    - name: Extract product label
+      ansible.builtin.set_fact:
+        product_label: "{{ product_info.resources[0].label }}"
+
+    - name: Build published registry paths
+      ansible.builtin.set_fact:
+        registry_repo_paths: >-
+          {{ proxy_registry_images.values()
+             | map(attribute='repository_name')
+             | map('regex_replace', '^', '  ' ~ (org_label | lower) ~ '/' ~ (product_label | lower) ~ '/')
+             | list }}
+
+    - name: Query the container registry catalog
+      ansible.builtin.uri:
+        url: "{{ foreman_url }}/v2/_catalog"
+        method: GET
+        user: "{{ foreman_initial_admin_username }}"
+        password: "{{ foreman_initial_admin_password }}"
+        force_basic_auth: true
+        validate_certs: false
+      register: registry_catalog
+
+    - name: Confirm each repository is published in the registry catalog
+      ansible.builtin.assert:
+        that:
+          - "((org_label | lower) ~ '/' ~ (product_label | lower) ~ '/' ~ item.value.repository_name) in (registry_catalog.json.repositories | default([]))"
+        fail_msg: >-
+          Expected path '{{ (org_label | lower) }}/{{ (product_label | lower) }}/{{ item.value.repository_name }}'
+          is not present in the container registry catalog at {{ foreman_url }}/v2/_catalog.
+          The product sync may be incomplete.
+        quiet: true
+      loop: "{{ proxy_registry_images | dict2items }}"
+      loop_control:
+        label: "{{ item.value.repository_name }}"
+
+    - name: Display setup summary
+      ansible.builtin.debug:
+        msg: >-
+          {{ summary_lines_top + registry_repo_paths + summary_lines_bottom }}
+      vars:
+        summary_lines_top:
+          - "=============================================="
+          - "Proxy Container Images Setup Complete"
+          - "=============================================="
+          - ""
+          - "Product: {{ product_name }}"
+          - "Repositories created: {{ proxy_registry_images | length }}"
+        summary_lines_bottom:
+          - ""
+          - "The shared parent -- {{ org_label | lower }}/{{ product_label | lower }} -- is your"
+          - "registry location for deployment."
+          - "=============================================="

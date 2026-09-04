@@ -1,0 +1,19 @@
+---
+help: Configure container images for proxy deployments
+variables:
+  organization:
+    help: Organization name where the product will be created
+  registry_username:
+    help: |
+      Username for the upstream registry (e.g. a Red Hat registry service
+      account).
+    persist: false
+  registry_password:
+    help: |
+      Password for the upstream registry. Omit for public
+      registries such as quay.io.
+    persist: false
+
+constraints:
+  required_together:
+    - [registry_username, registry_password]
