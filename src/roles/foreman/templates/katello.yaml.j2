@@ -2,6 +2,11 @@
 :katello:
   :rest_client_timeout: 3600
 
+{% if air_gapped | bool %}
+  # Disable subscription connection in air-gapped mode
+  :subscription_connection_enabled: false
+{% endif %}
+
   :candlepin:
     :url: https://localhost:23443/candlepin
     :oauth_key: "katello"

@@ -1,4 +1,11 @@
 ---
+- name: Block image pulling in air-gapped mode
+  ansible.builtin.fail:
+    msg: |
+      Image pulling is disabled in air-gapped mode.
+      Ensure that all required images are available in local container storage.
+  when: images_air_gapped | bool
+
 - name: Pull images
   block:
     - name: Set Policy=always to force image pull

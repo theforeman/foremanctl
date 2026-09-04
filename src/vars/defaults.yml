@@ -4,3 +4,4 @@ database_mode: internal
 tuning: default
 features: []
 enabled_features: "{{ (flavor_features + features) }}"
+air_gapped: false
