@@ -25,3 +25,11 @@ variables:
     help: Force restore on existing system (bypasses safety check)
     action: store_true
     persist: false
+
+  tar_volume_size:
+    parameter: --tar-volume-size
+    help: |
+      Extract from multi-volume tar archives split at specified size.
+      Must match the size used during backup. Automatically handles
+      .part0001, .part0002, etc. archive files.
+    persist: false

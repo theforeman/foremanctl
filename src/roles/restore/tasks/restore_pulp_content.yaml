@@ -1,11 +1,17 @@
 ---
-- name: Check if pulp content archive exists
+- name: Check if pulp content archive exists (single volume)
   ansible.builtin.stat:
     path: "{{ restore_backup_dir }}/pulp-content.tar.gz"
   register: restore_pulp_content_check
 
+- name: Check if pulp content archive exists (multi-volume)
+  ansible.builtin.find:
+    paths: "{{ restore_backup_dir }}"
+    patterns: "pulp-content.tar.gz.part*"
+  register: restore_pulp_content_volumes
+
 - name: Restore pulp content and encryption keys
-  when: restore_pulp_content_check.stat.exists
+  when: restore_pulp_content_check.stat.exists or restore_pulp_content_volumes.matched > 0
   block:
     - name: Ensure pulp storage directory exists
       ansible.builtin.file:
@@ -19,21 +25,47 @@
         state: absent
       when: not restore_is_incremental
 
-    - name: Extract pulp content archive (incremental with snar)  # noqa: command-instead-of-module
+    - name: Extract pulp content archive (compressed multi-volume incremental)  # noqa: risky-shell-pipe
+      ansible.builtin.shell:
+        cmd: >
+          cat {{ restore_backup_dir }}/pulp-content.tar.gz.part* |
+          tar -xzf - --listed-incremental=/dev/null -C {{ pulp_storage_path }}
+      when:
+        - restore_pulp_content_volumes.matched > 0
+        - restore_pulp_snar_check.stat.exists
+      changed_when: true
+
+    - name: Extract pulp content archive (compressed multi-volume full)  # noqa: risky-shell-pipe
+      ansible.builtin.shell:
+        cmd: >
+          cat {{ restore_backup_dir }}/pulp-content.tar.gz.part* |
+          tar -xzf - -C {{ pulp_storage_path }}
+      when:
+        - restore_pulp_content_volumes.matched > 0
+        - not restore_pulp_snar_check.stat.exists
+      changed_when: true
+
+    - name: Extract pulp content archive (single volume incremental)  # noqa: command-instead-of-module
       ansible.builtin.command:
         cmd: >
           tar -xzf "{{ restore_backup_dir }}/pulp-content.tar.gz"
           --listed-incremental=/dev/null
           -C "{{ pulp_storage_path }}"
-      when: restore_is_incremental
+      when:
+        - restore_pulp_content_check.stat.exists
+        - restore_pulp_content_volumes.matched == 0
+        - restore_pulp_snar_check.stat.exists
       changed_when: true
 
-    - name: Extract pulp content archive (full backup)
+    - name: Extract pulp content archive (single volume full)
       ansible.builtin.unarchive:
         src: "{{ restore_backup_dir }}/pulp-content.tar.gz"
         dest: "{{ pulp_storage_path }}"
         remote_src: true
-      when: not restore_is_incremental
+      when:
+        - restore_pulp_content_check.stat.exists
+        - restore_pulp_content_volumes.matched == 0
+        - not restore_pulp_snar_check.stat.exists
 
     - name: Check ownership of restored Pulp content
       ansible.builtin.stat:
@@ -69,7 +101,26 @@
         recurse: true
       register: restore_pulp_media_files
 
-    - name: Get archive size
+    - name: Get archive size (single volume)
       ansible.builtin.stat:
         path: "{{ restore_backup_dir }}/pulp-content.tar.gz"
       register: restore_pulp_content_size
+      when: restore_pulp_content_volumes.matched == 0
+
+    - name: Display restore completion (multi-volume)
+      ansible.builtin.debug:
+        msg: >-
+          Pulp content restored from {{ restore_pulp_content_volumes.matched }} compressed volumes,
+          {{ restore_pulp_media_files.matched }} files restored
+      when: restore_pulp_content_volumes.matched > 0
+
+    - name: Display restore completion (single volume)
+      ansible.builtin.debug:
+        msg: >-
+          Pulp content restored from {{ restore_backup_dir }}/pulp-content.tar.gz
+          ({{ (restore_pulp_content_size.stat.size / 1024 / 1024) | round(2) }} MB),
+          {{ restore_pulp_media_files.matched }} files restored
+      when:
+        - restore_pulp_content_volumes.matched == 0
+        - restore_pulp_content_size is defined
+        - restore_pulp_content_size.stat.exists
