@@ -1,6 +1,7 @@
 ---
 variables:
   air_gapped:
-    help: Enable air-gapped mode for fully offline deployments. When enabled, foremanctl prevents container image pulls from external registries and enforces local image availability. Requires all container images to be pre-loaded before deployment.
-    type: bool
-    default: false
+    help: >-
+      Enable air-gapped mode. All required container images must already
+      be available in local container storage.
+    action: store_true
