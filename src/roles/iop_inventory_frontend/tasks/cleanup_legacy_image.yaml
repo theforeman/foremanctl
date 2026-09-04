@@ -1,0 +1,8 @@
+---
+- name: Remove legacy iop-inventory-frontend image unit and drop-in directory
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ images_quadlet_dir }}/iop-inventory-frontend.image"
+    - "{{ images_quadlet_dir }}/iop-inventory-frontend.image.d"
