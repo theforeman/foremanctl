@@ -29,6 +29,8 @@ pulp_pulp_url: "http://{{ ansible_facts['fqdn'] }}:24817"
 pulp_enable_analytics: false
 pulp_mirror: false
 pulp_register_foreman_proxy: true
+# Pulp post-migration hooks must run even when there are no pending migrations.
+pulp_always_run_migrations: true
 
 pulp_default_import_paths: "{{ pulp_mirror | ternary([], ['/var/lib/pulp/sync_imports', '/var/lib/pulp/imports']) }}"
 pulp_default_export_paths: "{{ pulp_mirror | ternary([], ['/var/lib/pulp/exports']) }}"

@@ -235,6 +235,29 @@
       [Install]
       WantedBy=foreman.target
 
+- name: Deploy Pulp database migration check container
+  when: not pulp_always_run_migrations
+  containers.podman.podman_container:
+    name: pulpcore-manager-migration-check
+    state: quadlet
+    image: pulp.image
+    sdnotify: false
+    command: bash -c "pulpcore-manager migrate --check"
+    network: host
+    volumes: "{{ pulp_volumes }}"
+    secrets:
+      - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
+      - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
+      - 'pulp-db-ca,type=mount,target={{ pulp_database_ssl_ca_path }}'
+    env: "{{ pulp_settings_database_env }}"
+    quadlet_options:
+      - |
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        SuccessExitStatus=1
+        TimeoutStartSec=30m
+
 - name: Deploy Pulp database migration container
   containers.podman.podman_container:
     name: pulpcore-manager-migrate
@@ -281,10 +304,34 @@
   ansible.builtin.systemd:
     daemon_reload: true
 
+- name: Check for pending Pulp migrations
+  when: not pulp_always_run_migrations
+  ansible.builtin.systemd:
+    name: pulpcore-manager-migration-check.service
+    state: restarted
+  failed_when: false
+
+- name: Get Pulp migration check exit status  # noqa command-instead-of-module
+  when: not pulp_always_run_migrations
+  ansible.builtin.command:
+    cmd: systemctl show --property=ExecMainStatus --value pulpcore-manager-migration-check.service
+  register: pulp_migration_check_status
+  changed_when: false
+  failed_when: >-
+    pulp_migration_check_status.rc != 0 or
+    (pulp_migration_check_status.stdout | trim) not in ['0', '1']
+
+- name: Determine if Pulp migration is needed
+  when: not pulp_always_run_migrations
+  ansible.builtin.set_fact:
+    pulp_migration_needed: >-
+      {{ (pulp_migration_check_status.stdout | trim | int) == 1 }}
+
 - name: Migrate the Pulp database
   ansible.builtin.systemd:
     name: pulpcore-manager-migrate.service
     state: restarted
+  when: pulp_always_run_migrations or pulp_migration_needed | default(false)
 
 - name: Ensure Pulp admin user exists
   ansible.builtin.systemd:
