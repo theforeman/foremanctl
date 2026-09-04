@@ -1,6 +1,9 @@
 ---
-- name: Deploy iop-remediation image
+- name: Deploy iop-remediations image
   ansible.builtin.include_tasks: image.yaml
+
+- name: Clean up legacy iop-remediation image unit
+  ansible.builtin.include_tasks: cleanup_legacy_image.yaml
 
 - name: Create Remediation database username secret
   containers.podman.podman_secret:
@@ -40,7 +43,7 @@
 - name: Deploy Remediation API container
   containers.podman.podman_container:
     name: iop-service-remediations-api
-    image: iop-remediation.image
+    image: iop-remediations.image
     state: quadlet
     network:
       - iop-core-network
