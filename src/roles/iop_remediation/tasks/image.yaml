@@ -7,3 +7,11 @@
     images_definition:
       name: iop-remediations
       image: "{{ iop_remediation_container_image }}:{{ iop_remediation_container_tag }}"
+
+- name: Clean up legacy iop-remediation image unit
+  ansible.builtin.include_role:
+    name: images
+    tasks_from: cleanup_legacy_image.yaml
+  vars:
+    images_definition:
+      name: iop-remediation

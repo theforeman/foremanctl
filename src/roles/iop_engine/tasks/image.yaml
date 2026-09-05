@@ -7,3 +7,11 @@
     images_definition:
       name: iop-insights-engine
       image: "{{ iop_engine_container_image }}:{{ iop_engine_container_tag }}"
+
+- name: Clean up legacy iop-engine image unit
+  ansible.builtin.include_role:
+    name: images
+    tasks_from: cleanup_legacy_image.yaml
+  vars:
+    images_definition:
+      name: iop-engine
