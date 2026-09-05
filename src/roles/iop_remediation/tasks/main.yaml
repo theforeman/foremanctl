@@ -2,9 +2,6 @@
 - name: Deploy iop-remediations image
   ansible.builtin.include_tasks: image.yaml
 
-- name: Clean up legacy iop-remediation image unit
-  ansible.builtin.include_tasks: cleanup_legacy_image.yaml
-
 - name: Create Remediation database username secret
   containers.podman.podman_secret:
     state: present
