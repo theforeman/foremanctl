@@ -13,7 +13,7 @@ Stage versions of containers will have stage in the namespace and be published i
 
   * `quay.io/foreman/stage/$service:$tag`
 
-The base image will be `quay.io/centos/centos:stream9`.
+The base image will be `quay.io/centos/centos:stream10`.
 
 ## Containerfile Artifacts
 

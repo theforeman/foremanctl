@@ -17,6 +17,9 @@
     - foreman_development_nodejs_module_result.rc != 0
     - "'Nothing to do' not in foreman_development_nodejs_module_result.stdout"
     - "'already enabled' not in foreman_development_nodejs_module_result.stdout"
+  when:
+    - ansible_facts['os_family'] == 'RedHat'
+    - ansible_facts['distribution_major_version'] == '9'
 
 - name: Install nodejs from enabled module
   ansible.builtin.package:
