@@ -1,5 +1,5 @@
 ---
-- name: Deploy iop-engine image
+- name: Deploy iop-insights-engine image
   ansible.builtin.include_tasks: image.yaml
 
 - name: Create Engine config secret
@@ -12,7 +12,7 @@
 - name: Deploy Engine container
   containers.podman.podman_container:
     name: iop-core-engine
-    image: iop-engine.image
+    image: iop-insights-engine.image
     state: quadlet
     command: insights-core-engine /var/config.yml
     secrets:
