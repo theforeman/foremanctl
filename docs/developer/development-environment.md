@@ -28,13 +28,16 @@ The development environment provides:
    ```
 
 2. **Access the environment:**
-   - SSH into the VM: `vagrant ssh`
+   - To run commands on the VM, SSH into it: `vagrant ssh quadlet`
    - Navigate to Foreman directory: `cd /home/vagrant/foreman`
    - Start Rails server: `bundle exec foreman start`
 
 3. **Access URLs:**
    - Foreman UI: `http://$(hostname -f):3000` (development server)
    - Production-style UI: `https://$(hostname -f)` (via Apache proxy)
+
+> [!NOTE]
+> Do not run `./foremanctl` or `./forge` from inside the VM. These commands should be run on the **control node** (where foremanctl source is cloned) and use the `--target-host` parameter to deploy to the VM remotely via SSH. See [Deploying to a Remote Host](#deploying-to-a-remote-host) for details.
 
 ### Deploying to a Remote Host
 
@@ -66,6 +69,26 @@ katello-production:
   cpus: 4
   disk_size: 50
 ```
+
+### DNS
+
+This repository does not use the `vagrant-hostmanager` plugin; instead, it automatically configures `/etc/hosts` inside all VMs during provisioning. However, to enable host-to-VM communication (e.g., using `ssh` or `scp` from your host, which is required for proxy/capsule node deployments), you need a working DNS resolution of the libvirt VMs.
+
+This can be configured by editing the default libvirt network on your host:
+
+```bash
+virsh net-edit default
+```
+
+And ensuring that the domain name tag matches your `VAGRANT_DOMAIN` environment variable (which defaults to `example.com`):
+
+```xml
+<network>
+  <domain name='example.com'/>
+</network>
+```
+
+Once VMs are running, the guest hostnames should resolve automatically on modern Linux distributions (tested on Fedora).
 
 ### SSH Authentication
 
