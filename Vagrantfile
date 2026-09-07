@@ -1,3 +1,7 @@
+if ARGV.any? { |arg| %w[up provision reload].include?(arg) } && ENV['ANSIBLE_COLLECTIONS_PATH'].nil?
+  abort("Do not use vagrant directly, use: ./forge vms start\n")
+end
+
 DOMAIN = ENV.fetch('VAGRANT_DOMAIN', 'example.com'.freeze)
 
 # Official CentOS libvirt images include swap; Vagrant Cloud boxes do not.
