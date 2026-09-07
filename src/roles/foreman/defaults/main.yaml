@@ -3,6 +3,9 @@ foreman_container_image: "quay.io/foreman/foreman"
 foreman_container_tag: "nightly"
 foreman_container_name: foreman
 
+foreman_bootsnap_cache_volume: foreman-bootsnap-cache
+foreman_bootsnap_cache_dir: /var/cache/foreman
+
 foreman_database_name: foreman
 foreman_database_user: foreman
 foreman_database_host: localhost
@@ -53,6 +56,7 @@ foreman_env:
   FOREMAN_PUMA_THREADS_MIN: "{{ foreman_puma_threads_min }}"
   FOREMAN_PUMA_THREADS_MAX: "{{ foreman_puma_threads_max }}"
   FOREMAN_PUMA_WORKERS: "{{ foreman_puma_workers }}"
+  BOOTSNAP_CACHE_DIR: "{{ foreman_bootsnap_cache_dir }}"
 
 foreman_dynflow_extra_env:
   DYNFLOW_REDIS_URL: "redis://localhost:6379/6"
