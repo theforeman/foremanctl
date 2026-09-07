@@ -2,7 +2,7 @@
 :katello:
   :rest_client_timeout: 3600
 
-{% if air_gapped | bool %}
+{% if air_gapped %}
   # Disable subscription connection in air-gapped mode
   :subscription_connection_enabled: false
 {% endif %}

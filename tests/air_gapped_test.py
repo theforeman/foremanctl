@@ -2,29 +2,16 @@ import subprocess
 from pathlib import Path
 
 import pytest
-import yaml
-
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
-PARAMETERS_FILE = (
-    REPOSITORY_ROOT / ".var/lib/foremanctl/parameters.yaml"
-)
 
 
 @pytest.fixture
-def air_gapped():
-    if not PARAMETERS_FILE.exists():
-        pytest.skip("foremanctl parameters file not found")
-
-    try:
-        parameters = yaml.safe_load(PARAMETERS_FILE.read_text()) or {}
-    except yaml.YAMLError as error:
-        pytest.fail(f"Failed to parse parameters.yaml: {error}")
-
-    if parameters.get("air_gapped") is not True:
+def air_gapped(obsah_params: dict) -> dict:
+    """Skip the tests unless air-gapped mode is enabled."""
+    if not obsah_params.get("air_gapped", False):
         pytest.skip("Not running in air-gapped mode")
-
-    return parameters
+    return obsah_params 
 
 
 def test_air_gapped_image_policy_never(server, air_gapped):
