@@ -13,3 +13,5 @@ Steps to reproduce:
 #### Checklist
 * [ ] Tests added/updated (if applicable)
 * [ ] Documentation updated (if applicable)
+
+Add the `skip-coderabbit` label if an automated CodeRabbit review is not needed.
