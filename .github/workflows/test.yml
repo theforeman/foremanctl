@@ -497,7 +497,9 @@ jobs:
           ./forge setup-repositories
       - name: Run image pull
         run: |
-          ./foremanctl pull-images
+          # The Satellite flavor includes foreman-proxy, so preload it before
+          # enabling air-gapped mode with Policy=never.
+          ./foremanctl pull-images ${{ matrix.mode == 'air-gapped' && '--add-feature foreman-proxy' || '' }}
       - name: Run deployment
         run: |
           ./foremanctl deploy \

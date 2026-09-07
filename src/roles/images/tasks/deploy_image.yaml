@@ -18,6 +18,13 @@
     state: directory
     mode: "0755"
 
+- name: Remove stale force-pull override for {{ images_definition.name }}
+  ansible.builtin.file:
+    path: >-
+      {{ images_quadlet_dir }}/{{ images_definition.name }}.image.d/00-pull-always.conf
+    state: absent
+  when: images_air_gapped
+
 - name: Register deployed image name
   ansible.builtin.set_fact:
     images_deployed_names: "{{ images_deployed_names + [images_definition.name] }}"
