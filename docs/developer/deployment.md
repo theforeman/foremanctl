@@ -1,5 +1,18 @@
 # Deployment Design
 
+## Deployment architecture
+
+The primary way of deployment is to install `foremanctl` on a system and then let `foremanctl` deploy the various components on the same system.
+As `foremanctl` is Ansible-based, this means that the ["control node"](https://docs.ansible.com/projects/ansible/latest/network/getting_started/basic_concepts.html#control-node) and the ["managed node"](https://docs.ansible.com/projects/ansible/latest/network/getting_started/basic_concepts.html#managed-nodes) are the same system (`localhost`).
+
+To simplify the "install `foremanctl`" step, our test infrastructure uses different systems for the "control node" (the system the source code is cloned to) and the "target node" (the VM created by our development tooling).
+The same architecture can be used for testing changes against `foremanctl`.
+
+There is a desire to allow deployments where a single `foremanctl` control node manages multiple managed nodes, but no code exists yet for this.
+
+The rest of this documentation assumes you have `foremanctl` installed inside a VM and "control node" and "managed node" are the same system (`localhost`).
+If they are not, adjust any calls to use `./foremanctl` from the Git checkout.
+
 ## Deployment Types
 
 foremanctl supports two deployment types: **server** and **proxy**. Each has its own sub-command, flavor, and set of services.
@@ -9,8 +22,8 @@ foremanctl supports two deployment types: **server** and **proxy**. Each has its
 Deploys a Foreman server. This is the primary deployment type and the default entry point.
 
 
-```bash
-./foremanctl deploy
+```console
+# foremanctl deploy
 ```
 
 ### Proxy
@@ -21,8 +34,8 @@ Before running the proxy deployment, an auth bundle must be generated on the For
 
 1. On the **Foreman server**, generate an auth bundle for the proxy hostname:
 
-   ```bash
-   ./foremanctl auth-bundle proxy.example.com
+   ```console
+   # foremanctl auth-bundle proxy.example.com
    ```
 
    This produces a tar archive at a path like `/var/lib/foremanctl/certs/bundles/<hostname>.tar.gz`.
@@ -32,14 +45,14 @@ Before running the proxy deployment, an auth bundle must be generated on the For
 
 2. Copy the bundle to the **proxy VM**:
 
-   ```bash
-   scp /var/lib/foremanctl/certs/bundles/proxy.example.com.tar.gz root@proxy.example.com:/root/proxy.example.com.tar.gz
+   ```console
+   # scp /var/lib/foremanctl/certs/bundles/proxy.example.com.tar.gz root@proxy.example.com:/root/proxy.example.com.tar.gz
    ```
 
 3. On the **proxy VM**, run the deployment:
 
-   ```bash
-   ./foremanctl deploy-proxy \
+   ```console
+   # foremanctl deploy-proxy \
      --flavor foreman-proxy-content \
      --auth-bundle /root/proxy.example.com.tar.gz \
      --foreman-fqdn quadlet.example.com
@@ -442,12 +455,3 @@ The external authentication configuration is managed through `foremanctl` comman
 - `--external-authentication-pam-server`: PAM service name to use when authenticating users, can be changed in case a specific FreeIPA/IDM HBAC service should be used (default: `foreman`)
 
 If `hammer` feature is enabled and `--external-authentication` is set to `ipa_with_api`, `hammer` will be configured to use negotiate-based authentication.
-
-## Deployment architecture
-
-The primary way of deployment is to install `foremanctl` on a system and then let `foremanctl` deploy the various components on the same system.
-As `foremanctl` is Ansible-based, this means that the ["control node"](https://docs.ansible.com/projects/ansible/latest/network/getting_started/basic_concepts.html#control-node) and the ["managed node"](https://docs.ansible.com/projects/ansible/latest/network/getting_started/basic_concepts.html#managed-nodes) are the same system (`localhost`).
-
-To simplify the "install `foremanctl`" step, our test infrastructure uses different systems for the "control node" (the system the source code is cloned to) and the "target node" (the VM created by our development tooling).
-
-There is a desire to allow deployments where a single `foremanctl` control node manages multiple managed nodes, but no code exists yet for this.
