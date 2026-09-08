@@ -30,7 +30,7 @@ Vagrant.configure("2") do |config|
     override.vm.hostname = "quadlet.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
-      libvirt.memory = ENV.fetch("FOREMANCTL_QUADLET_MEMORY", "10240").to_i
+      libvirt.memory = ENV.fetch("FOREMANCTL_QUADLET_MEMORY", "12288").to_i
       libvirt.cpus = ENV.fetch("FOREMANCTL_QUADLET_CPUS", "4").to_i
       libvirt.machine_virtual_size = ENV.fetch("FOREMANCTL_QUADLET_DISK", "50").to_i
     end
@@ -66,7 +66,7 @@ Vagrant.configure("2") do |config|
     override.vm.hostname = "proxy.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
-      libvirt.memory = ENV.fetch("FOREMANCTL_PROXY_MEMORY", "4096").to_i
+      libvirt.memory = ENV.fetch("FOREMANCTL_PROXY_MEMORY", "3072").to_i
       libvirt.cpus = ENV.fetch("FOREMANCTL_PROXY_CPUS", "4").to_i
       libvirt.machine_virtual_size = ENV.fetch("FOREMANCTL_PROXY_DISK", "40").to_i
     end
