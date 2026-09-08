@@ -37,8 +37,6 @@
     - name: Set proxy deploy parameters
       ansible.builtin.set_fact:
         foreman_name: "{{ restore_params.foreman_name }}"
-        foreman_proxy_oauth_consumer_key: "{{ restore_params.foreman_proxy_oauth_consumer_key }}"
-        foreman_proxy_oauth_consumer_secret: "{{ restore_params.foreman_proxy_oauth_consumer_secret }}"
       when:
         - restore_params is defined
         - restore_enabled_features | default([]) | has_feature('foreman-proxy')
