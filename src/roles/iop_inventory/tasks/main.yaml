@@ -1,5 +1,5 @@
 ---
-- name: Deploy iop-inventory image
+- name: Deploy iop-host-inventory image
   ansible.builtin.include_tasks: image.yaml
 
 - name: Create podman secret for inventory database username
@@ -35,7 +35,7 @@
 - name: Deploy Host Inventory Database Migration Container
   containers.podman.podman_container:
     name: iop-core-host-inventory-migrate
-    image: iop-inventory.image
+    image: iop-host-inventory.image
     state: quadlet
     command: make upgrade_db
     network:
@@ -66,7 +66,7 @@
 - name: Deploy Host Inventory MQ Service Container
   containers.podman.podman_container:
     name: iop-core-host-inventory
-    image: iop-inventory.image
+    image: iop-host-inventory.image
     state: quadlet
     command: make run_inv_mq_service
     network:
@@ -97,7 +97,7 @@
 - name: Deploy Host Inventory API Container
   containers.podman.podman_container:
     name: iop-core-host-inventory-api
-    image: iop-inventory.image
+    image: iop-host-inventory.image
     state: quadlet
     command: python run_gunicorn.py
     network:
@@ -130,7 +130,7 @@
 - name: Deploy Host Inventory Cleanup Container
   containers.podman.podman_container:
     name: iop-core-host-inventory-cleanup
-    image: iop-inventory.image
+    image: iop-host-inventory.image
     state: quadlet
     command: make run_host_delete_access_tags
     network:

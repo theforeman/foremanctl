@@ -1,9 +1,17 @@
 ---
-- name: Deploy iop-advisor image unit
+- name: Deploy iop-advisor-backend image unit
   ansible.builtin.include_role:
     name: images
     tasks_from: deploy_image.yaml
   vars:
     images_definition:
-      name: iop-advisor
+      name: iop-advisor-backend
       image: "{{ iop_advisor_container_image }}:{{ iop_advisor_container_tag }}"
+
+- name: Clean up legacy iop-advisor image unit
+  ansible.builtin.include_role:
+    name: images
+    tasks_from: cleanup_legacy_image.yaml
+  vars:
+    images_definition:
+      name: iop-advisor

@@ -1,9 +1,17 @@
 ---
-- name: Deploy iop-inventory image unit
+- name: Deploy iop-host-inventory image unit
   ansible.builtin.include_role:
     name: images
     tasks_from: deploy_image.yaml
   vars:
     images_definition:
-      name: iop-inventory
+      name: iop-host-inventory
       image: "{{ iop_inventory_container_image }}:{{ iop_inventory_container_tag }}"
+
+- name: Clean up legacy iop-inventory image unit
+  ansible.builtin.include_role:
+    name: images
+    tasks_from: cleanup_legacy_image.yaml
+  vars:
+    images_definition:
+      name: iop-inventory

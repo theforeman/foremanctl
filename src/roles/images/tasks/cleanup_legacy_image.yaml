@@ -1,0 +1,8 @@
+---
+- name: Remove legacy image unit and drop-in directory for {{ images_definition.name }}
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ images_quadlet_dir }}/{{ images_definition.name }}.image"
+    - "{{ images_quadlet_dir }}/{{ images_definition.name }}.image.d"
