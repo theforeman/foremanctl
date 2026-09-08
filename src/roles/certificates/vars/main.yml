@@ -1,0 +1,34 @@
+---
+# Private key parameters per algorithm. Every entry maps directly onto the
+# arguments community.crypto.openssl_privatekey expects for that algorithm:
+# RSA takes a size, ECC takes a curve and ML-DSA takes neither. The keys of
+# this table are the algorithms foremanctl can generate a certificate set for,
+# and they are the accepted values of --certificate-algorithm.
+#
+# ML-DSA needs community.crypto 3.3.0 to generate the keys and
+# python-cryptography 49.0.0 to sign certificates and CSRs with them. On a
+# platform whose python-cryptography is older, selecting an ML-DSA algorithm
+# fails at key generation. Candlepin is a further caveat: it is handed this CA
+# and its legacy crypto scheme signs with SHA256withRSA, so a deployment that
+# runs Candlepin still needs an RSA CA.
+_certificates_algorithm_parameters:
+  RSA:
+    type: RSA
+    size: "{{ certificates_algorithm_size }}"
+  ECC:
+    type: ECC
+    curve: "{{ certificates_algorithm_curve }}"
+  ML-DSA-44:
+    type: ML-DSA-44
+  ML-DSA-65:
+    type: ML-DSA-65
+  ML-DSA-87:
+    type: ML-DSA-87
+
+_certificates_supported_algorithms: "{{ _certificates_algorithm_parameters.keys() | list }}"
+
+_certificates_key_parameters: "{{ _certificates_algorithm_parameters[certificates_algorithm_type] }}"
+
+# Key encipherment is an RSA-only capability. Non-RSA keys can only sign, so
+# their certificates must not request it.
+_certificates_key_usage: "{{ ['digitalSignature'] + (['keyEncipherment'] if certificates_algorithm_type == 'RSA' else []) }}"

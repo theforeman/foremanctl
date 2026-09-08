@@ -14,6 +14,7 @@ certificates_ca_subject: 'Foreman Self-signed CA'
 certificates_server_aliases: []
 certificates_algorithm_type: RSA
 certificates_algorithm_size: 4096
+certificates_algorithm_curve: secp384r1
 certificates_ca_validity_days: 7300
 certificates_validity_days: 7300
 certificates_renew: false
