@@ -1,5 +1,5 @@
 ---
-help: Configure container images for proxy deployments
+help: Publish Foreman infrastructure container images through this server's registry
 variables:
   organization:
     help: Organization name where the product will be created
