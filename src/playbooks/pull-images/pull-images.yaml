@@ -4,6 +4,7 @@
     - quadlet
   vars:
     flavor: katello
+    images_air_gapped: "{{ air_gapped | bool }}"
   vars_files:
     - "../../vars/defaults.yml"
     - "../../vars/flavors/{{ flavor }}.yml"
@@ -73,5 +74,3 @@
       ansible.builtin.include_role:
         name: images
         tasks_from: pull.yaml
-      vars:
-        images_air_gapped: "{{ air_gapped | bool }}"

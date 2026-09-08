@@ -11,7 +11,7 @@ def air_gapped(obsah_params: dict) -> dict:
     """Skip the tests unless air-gapped mode is enabled."""
     if not obsah_params.get("air_gapped", False):
         pytest.skip("Not running in air-gapped mode")
-    return obsah_params 
+    return obsah_params
 
 
 def test_air_gapped_image_policy_never(server, air_gapped):
