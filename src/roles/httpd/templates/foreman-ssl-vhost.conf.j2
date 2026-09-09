@@ -5,7 +5,7 @@
 {% endfor %}
 
   ## Load additional static includes
-  IncludeOptional "/etc/httpd/conf.d/05-foreman-ssl.d/*.conf"
+  IncludeOptional "{{ httpd_conf_path }}/05-foreman-ssl.d/*.conf"
 
   ## Logging
   ErrorLog "|/usr/bin/systemd-cat -t {{ 'httpd-ssl-error' if httpd_with_foreman else 'pulpcore-ssl-error' }} -p err"

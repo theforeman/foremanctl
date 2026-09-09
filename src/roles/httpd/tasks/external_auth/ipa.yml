@@ -10,13 +10,13 @@
 
 - name: Create directory for Apache module configuration
   ansible.builtin.file:
-    path: /etc/httpd/conf.modules.d
+    path: "{{ httpd_modules_path }}"
     state: directory
     mode: "0755"
 
 - name: Load Apache modules for IPA authentication
   ansible.builtin.copy:
-    dest: /etc/httpd/conf.modules.d/55-{{ item }}.conf
+    dest: "{{ httpd_modules_path }}/55-{{ item }}.conf"
     content: |
       LoadModule {{ item }}_module modules/mod_{{ item }}.so
     mode: "0644"
@@ -66,13 +66,13 @@
 - name: Set keytab file permissions
   ansible.builtin.file:
     path: "{{ httpd_ipa_keytab }}"
-    owner: apache
-    group: apache
+    owner: "{{ httpd_user }}"
+    group: "{{ httpd_group }}"
     mode: "0600"
 
 - name: Create directory for Apache configuration fragments
   ansible.builtin.file:
-    path: /etc/httpd/conf.d/05-{{ item }}.d
+    path: "{{ httpd_conf_path }}/05-{{ item }}.d"
     state: directory
     mode: "0755"
   loop:
@@ -82,7 +82,7 @@
 - name: Deploy external authentication configuration
   ansible.builtin.template:
     src: external_auth.conf.j2
-    dest: /etc/httpd/conf.d/05-{{ item }}.d/external_auth.conf
+    dest: "{{ httpd_conf_path }}/05-{{ item }}.d/external_auth.conf"
     mode: "0644"
   notify:
     - Restart httpd
