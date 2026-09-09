@@ -1,7 +1,7 @@
 images_quadlet_dir: /etc/containers/systemd
 images_registry_auth_file: /etc/foreman/registry-auth.json
 
-container_tag_stream: "nightly"
+container_tag_stream: "5.0"
 candlepin_container_image: quay.io/foreman/candlepin
 candlepin_container_tag: "foreman-{{ container_tag_stream }}"
 foreman_container_image: quay.io/foreman/foreman
