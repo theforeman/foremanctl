@@ -153,8 +153,9 @@ foreman_development_enabled_plugins: []
 
 foreman_development_packages:
   - git
-  - ruby-devel
+  - nodejs
   - npm
+  - ruby-devel
   - postgresql-devel
   - libcap-devel
   - libxml2-devel
