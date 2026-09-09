@@ -52,7 +52,7 @@ Before running the proxy deployment, an auth bundle must be generated on the For
 3. On the **control node** (where foremanctl is installed), run the deployment remotely via SSH:
 
    ```console
-   # foremanctl deploy-proxy \
+   # foremanctl deploy-proxy proxy.example.com \
      --flavor foreman-proxy-content \
      --auth-bundle $(pwd)/proxy.example.com.tar.gz \
      --foreman-fqdn quadlet.example.com
