@@ -15,7 +15,7 @@ def test_foreman_compute_resources_built_in(provider_description, compute_resour
     assert compute_resource in provider_description
 
 
-@pytest.mark.feature('azure-rm')
+@pytest.mark.feature('azure')
 def test_foreman_compute_resources_azure_rm(provider_description):
     assert 'AzureRm' in provider_description
 

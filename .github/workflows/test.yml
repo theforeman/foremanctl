@@ -170,7 +170,7 @@ jobs:
           ./foremanctl deploy \
             --add-feature hammer \
             --add-feature foreman-proxy \
-            --add-feature azure-rm \
+            --add-feature azure \
             --add-feature google \
             --add-feature remote-execution \
             --add-feature ansible \
@@ -288,7 +288,7 @@ jobs:
           ./foremanctl deploy \
             --add-feature hammer \
             --add-feature foreman-proxy \
-            --add-feature azure-rm \
+            --add-feature azure \
             --add-feature google \
             --add-feature remote-execution
       - name: Stop services
@@ -373,7 +373,7 @@ jobs:
             --tuning development \
             --add-feature hammer \
             --add-feature foreman-proxy \
-            --add-feature azure-rm \
+            --add-feature azure \
             --add-feature google \
             --add-feature remote-execution \
             --add-feature webhooks
