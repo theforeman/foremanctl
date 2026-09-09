@@ -1,7 +1,8 @@
 ---
 help: Publish Foreman infrastructure container images through this server's registry
 variables:
-  organization:
+  infra_images_organization:
+    parameter: --organization
     help: Organization name where the product will be created
   registry_username:
     help: |
