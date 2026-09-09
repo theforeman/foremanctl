@@ -17,11 +17,11 @@ All steps must be run as root user.
 4. Pull updated container images:
     - `foremanctl pull-images`
     - z-stream updates do not change container image tags, but the images behind those tags are updated with bug fixes and security patches. This step ensures you get the latest images.
-5. Run update tasks by re-deploying your Foreman environment: 
+5. Stop the exisiting Foreman services:
+    - `systemctl stop foreman.target`
+6. Run update tasks by re-deploying your Foreman environment: 
     - `foremanctl deploy` 
     - Please see [Parameters](parameters.md) for additional deployment options.
-6. Restart foreman services
-    - `systemclt restart foreman.target`
 
 
 ## Updating foremanctl from disconnected RPM install
@@ -55,8 +55,8 @@ All steps must be run as root user.
     - `podman load -i <filename>.tar`
 10. On the disconnected environment, update the foremanctl package:
     - `dnf upgrade foremanctl`
-11. Run update tasks by re-deploying your Foreman environment: 
+11. Stop the exisiting Foreman services:
+    - `systemctl stop foreman.target`
+12. Run update tasks by re-deploying your Foreman environment: 
     - `foremanctl deploy` 
     - Please see [Parameters](parameters.md) for additional deployment options.
-12. Restart foreman services
-    - `systemclt restart foreman.target`

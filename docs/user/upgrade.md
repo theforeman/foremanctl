@@ -22,7 +22,9 @@ All steps must be run as root user.
 5. (Optional) Pre-pull container images to reduce downtime during deploy:
     - `foremanctl pull-images`
     - This step is optional but recommended. Services can continue running while images are pulled, reducing the downtime window during the deploy.
-6. Run upgrade tasks by re-deploying your Foreman environment: 
+6. Stop the exisiting Foreman services:
+    - `systemctl stop foreman.target`
+7. Run upgrade tasks by re-deploying your Foreman environment: 
     - `foremanctl deploy` 
     - Please see [Parameters](parameters.md) for additional deployment options.
     - This deploy command will pull new images (if not already pulled in the previous step) and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
@@ -58,7 +60,9 @@ All steps must be run as root user.
     - `podman load -i <filename>.tar`
 10. On the disconnected environment, upgrade the foremanctl package:
     - `dnf upgrade foremanctl`
-11. Run upgrade tasks by re-deploying your Foreman environment: 
+11. Stop the exisiting Foreman services:
+    - `systemctl stop foreman.target`
+12. Run upgrade tasks by re-deploying your Foreman environment: 
     - `foremanctl deploy` 
     - Please see [Parameters](parameters.md) for additional deployment options.
     - This deploy command will pull new images and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
