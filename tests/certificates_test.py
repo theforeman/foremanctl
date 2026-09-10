@@ -103,8 +103,8 @@ def test_ca_bundle_verifies_server_certificate(server, certificates):
     assert "OK" in cmd.stdout
 
 
-def test_ca_key_unencrypted(server, server_hostname, certificates):
-    if server_hostname == 'proxy':
+def test_ca_key_unencrypted(server, test_target, certificates):
+    if test_target == 'proxy':
         pytest.skip("no ca key on proxy")
     f = server.file(certificates['ca_key'])
     assert f.exists
@@ -119,8 +119,8 @@ def test_ca_key_password_file_absent(server, certificates):
     assert not server.file(ca_pwd).exists
 
 
-def test_ca_key_matches_ca_certificate(server, server_hostname, certificates):
-    if server_hostname == 'proxy':
+def test_ca_key_matches_ca_certificate(server, test_target, certificates):
+    if test_target == 'proxy':
         pytest.skip("no ca key on proxy")
     key_pub = server.run(f"openssl pkey -in {certificates['ca_key']} -pubout")
     cert_pub = server.run(f"openssl x509 -in {certificates['ca_certificate']} -noout -pubkey")
