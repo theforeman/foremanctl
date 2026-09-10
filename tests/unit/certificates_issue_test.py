@@ -56,7 +56,7 @@ def public_key_algorithm(certificate):
 
 def openssl_supports_ml_dsa():
     result = subprocess.run(['openssl', 'list', '-signature-algorithms'], text=True, capture_output=True)
-    return 'ML-DSA-65' in result.stdout
+    return 'ML-DSA-87' in result.stdout
 
 
 # ML-DSA certificates can be generated with a recent python-cryptography, but
@@ -126,7 +126,7 @@ def mldsa_certificates(tmp_path_factory, certificate_authority):
     directory = tmp_path_factory.mktemp('mldsa')
     shutil.copytree(certificate_authority / 'certs', directory / 'certs')
     shutil.copytree(certificate_authority / 'private', directory / 'private')
-    return issue_certificates(directory, 'ML-DSA-65')
+    return issue_certificates(directory, 'ML-DSA-87')
 
 
 def test_rsa_certificates_use_an_rsa_key(rsa_certificates):
@@ -162,7 +162,7 @@ def test_ecc_certificates_pass_the_certificate_check(certificate_authority, ecc_
 
 @requires_openssl_ml_dsa
 def test_mldsa_certificates_use_an_mldsa_key(mldsa_certificates):
-    assert public_key_algorithm(mldsa_certificates['certificate']) == 'ML-DSA-65'
+    assert public_key_algorithm(mldsa_certificates['certificate']) == 'ML-DSA-87'
 
 
 @requires_openssl_ml_dsa

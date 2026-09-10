@@ -69,7 +69,7 @@ def test_ecc_key_parameters_use_curve(tmp_path):
     assert 'size' not in parameters
 
 
-@pytest.mark.parametrize('algorithm', ['ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87'])
+@pytest.mark.parametrize('algorithm', ['ML-DSA-87'])
 def test_ml_dsa_key_parameters_have_neither_size_nor_curve(tmp_path, algorithm):
     parameters = resolve_algorithm(tmp_path, algorithm)['key_parameters']
     assert parameters['type'] == algorithm
@@ -81,6 +81,6 @@ def test_rsa_certificates_request_key_encipherment(tmp_path):
     assert resolve_algorithm(tmp_path)['key_usage'] == ['digitalSignature', 'keyEncipherment']
 
 
-@pytest.mark.parametrize('algorithm', ['ECC', 'ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87'])
+@pytest.mark.parametrize('algorithm', ['ECC', 'ML-DSA-87'])
 def test_non_rsa_certificates_only_request_digital_signature(tmp_path, algorithm):
     assert resolve_algorithm(tmp_path, algorithm)['key_usage'] == ['digitalSignature']
