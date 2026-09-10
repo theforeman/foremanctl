@@ -56,15 +56,27 @@ def public_key_algorithm(certificate):
 
 def openssl_supports_ml_dsa():
     result = subprocess.run(['openssl', 'list', '-signature-algorithms'], text=True, capture_output=True)
-    return 'ML-DSA-65' in result.stdout
+    return 'ML-DSA-87' in result.stdout
 
 
-# ML-DSA certificates can be generated with a recent python-cryptography, but
-# inspecting or validating them additionally needs the system openssl to
-# understand ML-DSA (3.5+). Older platforms can still offer the algorithm; they
-# just cannot exercise these tests, so skip them there.
-requires_openssl_ml_dsa = pytest.mark.skipif(
-    not openssl_supports_ml_dsa(), reason='system openssl does not support ML-DSA')
+def cryptography_supports_ml_dsa():
+    try:
+        import cryptography
+    except ImportError:
+        return False
+    # python-cryptography gained ML-DSA in 49.0.0, and it bumps the major
+    # version every release, so the major number alone settles support.
+    return int(cryptography.__version__.split('.')[0]) >= 49
+
+
+# Generating ML-DSA keys needs a python-cryptography that understands the
+# algorithm (49.0.0+), and inspecting or validating the resulting certificates
+# additionally needs the system openssl to understand ML-DSA (3.5+). Older
+# platforms can still offer the algorithm; they just cannot exercise these
+# tests, so skip them where either piece is missing.
+requires_ml_dsa = pytest.mark.skipif(
+    not (openssl_supports_ml_dsa() and cryptography_supports_ml_dsa()),
+    reason='ML-DSA needs system openssl 3.5+ and python-cryptography 49.0.0+')
 
 
 @pytest.fixture(scope='module')
@@ -126,7 +138,7 @@ def mldsa_certificates(tmp_path_factory, certificate_authority):
     directory = tmp_path_factory.mktemp('mldsa')
     shutil.copytree(certificate_authority / 'certs', directory / 'certs')
     shutil.copytree(certificate_authority / 'private', directory / 'private')
-    return issue_certificates(directory, 'ML-DSA-65')
+    return issue_certificates(directory, 'ML-DSA-87')
 
 
 def test_rsa_certificates_use_an_rsa_key(rsa_certificates):
@@ -160,22 +172,23 @@ def test_ecc_certificates_pass_the_certificate_check(certificate_authority, ecc_
     assert 'Validation succeeded' in result.stdout
 
 
-@requires_openssl_ml_dsa
+@requires_ml_dsa
 def test_mldsa_certificates_use_an_mldsa_key(mldsa_certificates):
-    assert public_key_algorithm(mldsa_certificates['certificate']) == 'ML-DSA-65'
+    assert public_key_algorithm(mldsa_certificates['certificate']) == 'ML-DSA-87'
 
 
-@requires_openssl_ml_dsa
+@requires_ml_dsa
 def test_mldsa_certificates_only_allow_digital_signature(mldsa_certificates):
     assert key_usage(mldsa_certificates['certificate']) == ['Digital Signature']
 
 
-@requires_openssl_ml_dsa
+@requires_ml_dsa
 def test_mldsa_client_certificates_only_allow_digital_signature(mldsa_certificates):
+    assert public_key_algorithm(mldsa_certificates['client_certificate']) == 'ML-DSA-87'
     assert key_usage(mldsa_certificates['client_certificate']) == ['Digital Signature']
 
 
-@requires_openssl_ml_dsa
+@requires_ml_dsa
 def test_mldsa_certificates_pass_the_certificate_check(certificate_authority, mldsa_certificates):
     result = subprocess.run([CHECK_SCRIPT,
                              '-c', mldsa_certificates['certificate'],

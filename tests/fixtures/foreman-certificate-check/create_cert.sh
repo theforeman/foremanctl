@@ -96,7 +96,7 @@ else
   echo "Server certificate exists. Skipping."
 fi
 
-CERT_NAME=foreman-ec384.example.com
+CERT_NAME=foreman-ecc384.example.com
 if [[ ! -f "$CERTS_DIR/$CERT_NAME.key" || ! -f "$CERTS_DIR/$CERT_NAME.crt" ]]; then
   echo "Generate server certificate"
   openssl ecparam -genkey -name secp384r1 -out $CERTS_DIR/$CERT_NAME.key
@@ -146,7 +146,7 @@ else
   echo "Shortname server certificate exists. Skipping."
 fi
 
-CA_EC_CERT_NAME=ca-ec
+CA_EC_CERT_NAME=ca-ecc
 if [[ ! -f "$CERTS_DIR/$CA_EC_CERT_NAME.key" || ! -f "$CERTS_DIR/$CA_EC_CERT_NAME.crt" ]]; then
   echo "Generate EC CA"
   openssl ecparam -genkey -name secp384r1 -out $CERTS_DIR/$CA_EC_CERT_NAME.key
@@ -155,7 +155,7 @@ else
   echo "EC CA certificate exists. Skipping."
 fi
 
-CERT_NAME=foreman-ec-ca.example.com
+CERT_NAME=foreman-ecc-ca.example.com
 if [[ ! -f "$CERTS_DIR/$CERT_NAME.key" || ! -f "$CERTS_DIR/$CERT_NAME.crt" ]]; then
   echo "Generate server certificate signed by the EC CA"
   openssl ecparam -genkey -name secp384r1 -out $CERTS_DIR/$CERT_NAME.key
@@ -165,8 +165,8 @@ else
   echo "Server certificate signed by the EC CA exists. Skipping."
 fi
 
-CA_EC_SHA1_CERT_NAME=ca-ec-sha1
-CA_EC_SHA1_CERT_BUNDLE=ca-ec-sha1-bundle
+CA_EC_SHA1_CERT_NAME=ca-ecc-sha1
+CA_EC_SHA1_CERT_BUNDLE=ca-ecc-sha1-bundle
 if [[ ! -f "$CERTS_DIR/$CA_EC_SHA1_CERT_NAME.key" || ! -f "$CERTS_DIR/$CA_EC_SHA1_CERT_NAME.crt" || ! -f "$CERTS_DIR/$CA_EC_SHA1_CERT_BUNDLE.crt" ]]; then
   echo "Generate EC CA with sha1 signing algorithm"
   openssl ecparam -genkey -name secp384r1 -out $CERTS_DIR/$CA_EC_SHA1_CERT_NAME.key
@@ -178,7 +178,7 @@ else
   echo "EC CA certificate with sha1 signing algorithm exists. Skipping."
 fi
 
-CERT_NAME=foreman-ec-sha1.example.com
+CERT_NAME=foreman-ecc-sha1.example.com
 if [[ ! -f "$CERTS_DIR/$CERT_NAME.key" || ! -f "$CERTS_DIR/$CERT_NAME.crt" ]]; then
   echo "Generate server certificate signed by the sha1 EC CA"
   openssl ecparam -genkey -name secp384r1 -out $CERTS_DIR/$CERT_NAME.key
@@ -190,20 +190,20 @@ fi
 
 # ML-DSA needs OpenSSL 3.5 or newer. The generated fixtures are committed, so
 # older systems can still run the tests that consume them.
-if openssl list -signature-algorithms 2>/dev/null | grep -q 'ML-DSA-65'; then
-  CA_MLDSA_CERT_NAME=ca-mldsa
+if openssl list -signature-algorithms 2>/dev/null | grep -q 'ML-DSA-87'; then
+  CA_MLDSA_CERT_NAME=ca-mldsa87
   if [[ ! -f "$CERTS_DIR/$CA_MLDSA_CERT_NAME.key" || ! -f "$CERTS_DIR/$CA_MLDSA_CERT_NAME.crt" ]]; then
     echo "Generate ML-DSA CA"
-    openssl genpkey -algorithm ML-DSA-65 -out $CERTS_DIR/$CA_MLDSA_CERT_NAME.key
+    openssl genpkey -algorithm ML-DSA-87 -out $CERTS_DIR/$CA_MLDSA_CERT_NAME.key
     openssl req -x509 -new -nodes -key $CERTS_DIR/$CA_MLDSA_CERT_NAME.key -days 3650 -out $CERTS_DIR/$CA_MLDSA_CERT_NAME.crt -subj "/CN=Test ML-DSA CA"
   else
     echo "ML-DSA CA certificate exists. Skipping."
   fi
 
-  CERT_NAME=foreman-mldsa.example.com
+  CERT_NAME=foreman-mldsa87.example.com
   if [[ ! -f "$CERTS_DIR/$CERT_NAME.key" || ! -f "$CERTS_DIR/$CERT_NAME.crt" ]]; then
     echo "Generate ML-DSA server certificate"
-    openssl genpkey -algorithm ML-DSA-65 -out $CERTS_DIR/$CERT_NAME.key
+    openssl genpkey -algorithm ML-DSA-87 -out $CERTS_DIR/$CERT_NAME.key
     openssl req -new -key $CERTS_DIR/$CERT_NAME.key -out $CERTS_DIR/$CERT_NAME.csr -subj "/CN=${CERT_NAME}"
     openssl x509 -req -in $CERTS_DIR/$CERT_NAME.csr -CA $CERTS_DIR/$CA_MLDSA_CERT_NAME.crt -CAkey $CERTS_DIR/$CA_MLDSA_CERT_NAME.key -CAcreateserial -out $CERTS_DIR/$CERT_NAME.crt -days 3650 -extfile extensions.txt -extensions mldsa_extensions
   else

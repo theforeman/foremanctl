@@ -6,12 +6,17 @@ variables:
     choices:
       - RSA
       - ECC
-      - ML-DSA-44
-      - ML-DSA-65
       - ML-DSA-87
-  certificates_algorithm_size:
+  certificates_algorithm_rsa_size:
     help: Key size of the generated certificates. Only applies to RSA.
-    parameter: --certificate-algorithm-size
-  certificates_algorithm_curve:
+    parameter: --certificate-algorithm-rsa-size
+  certificates_algorithm_ecc_curve:
     help: Elliptic curve of the generated certificates. Only applies to ECC.
-    parameter: --certificate-algorithm-curve
+    parameter: --certificate-algorithm-ecc-curve
+
+constraints:
+  forbidden_if:
+    - ['certificates_algorithm_type', 'ECC', ['certificates_algorithm_rsa_size']]
+    - ['certificates_algorithm_type', 'ML-DSA-87', ['certificates_algorithm_rsa_size']]
+    - ['certificates_algorithm_type', 'RSA', ['certificates_algorithm_ecc_curve']]
+    - ['certificates_algorithm_type', 'ML-DSA-87', ['certificates_algorithm_ecc_curve']]
