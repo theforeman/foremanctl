@@ -100,6 +100,14 @@
     - Restart foreman
     - Restart dynflow-sidekiq@
 
+- name: Create Foreman storage directory
+  ansible.builtin.file:
+    path: /var/lib/foreman
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
 - name: Deploy Foreman socket
   ansible.builtin.template:
     src: foreman.socket.j2
@@ -117,6 +125,7 @@
     hostname: "{{ ansible_facts['hostname'] }}.local"
     volume:
       - 'foreman-data-run:/var/run/foreman:rw,z,U'
+      - '/var/lib/foreman:/var/lib/foreman:rw,z,U'
     secrets: "{{ foreman_secrets }}"
     env: "{{ foreman_env }}"
     quadlet_options:
@@ -152,6 +161,7 @@
     hostname: "{{ ansible_facts['hostname'] }}.local"
     volume:
       - 'foreman-data-run:/var/run/foreman:rw,z,U'
+      - '/var/lib/foreman:/var/lib/foreman:rw,z,U'
     secrets: "{{ foreman_dynflow_secrets }}"
     env: "{{ foreman_dynflow_env }}"
     command: "/usr/libexec/foreman/sidekiq-selinux -e production -r ./extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yml"

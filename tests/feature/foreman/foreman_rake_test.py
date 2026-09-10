@@ -19,3 +19,8 @@ def test_foreman_rake_rejects_unsupported_action(server):
 def test_foreman_rake_supported_action(server):
     result = server.run('foreman-rake facts:clean')
     assert result.succeeded
+
+
+def test_foreman_rake_allows_rh_cloud_inventory_report_generate(server):
+    wrapper = server.file('/usr/sbin/foreman-rake')
+    assert 'rh_cloud_inventory:report:generate' in wrapper.content_string
