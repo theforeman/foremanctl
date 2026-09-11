@@ -1,0 +1,16 @@
+---
+bootloader_universe_rhel_releases:
+  '7.9':
+    boot_iso_url: https://cdn.redhat.com/content/dist/rhel/server/7/7.9/x86_64/kickstart/images/boot.iso
+  '8.10':
+    boot_iso_url: https://cdn.redhat.com/content/dist/rhel8/8.10/x86_64/baseos/kickstart/images/boot.iso
+  '9.6':
+    boot_iso_url: https://cdn.redhat.com/content/dist/rhel9/9.6/x86_64/baseos/kickstart/images/boot.iso
+  '10.0':
+    boot_iso_url: https://cdn.redhat.com/content/dist/rhel10/10/x86_64/baseos/kickstart/images/boot.iso
+
+bootloader_universe_tftp_root: /var/lib/tftpboot
+bootloader_universe_os_name: rhel
+bootloader_universe_architecture: x86_64
+bootloader_universe_entitlement_directory: /etc/pki/entitlement
+bootloader_universe_entitlement_ca: /etc/rhsm/ca/redhat-uep.pem

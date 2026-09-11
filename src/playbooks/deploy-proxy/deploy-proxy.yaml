@@ -20,6 +20,8 @@
       vars:
         checks_databases: "{{ all_databases }}"
     - role: certificates
+    - role: bootloader_universe
+      when: flavor == 'foreman-proxy-content'
     - role: certificate_checks
       vars:
         certificate_checks_certificate: "{{ server_certificate }}"

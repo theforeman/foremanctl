@@ -1,0 +1,113 @@
+---
+- name: Find RHEL entitlement certificates
+  ansible.builtin.find:
+    paths: "{{ bootloader_universe_entitlement_directory }}"
+    patterns: '*.pem'
+    file_type: file
+    recurse: false
+  register: _bootloader_universe_entitlement_files
+
+- name: Select RHEL entitlement certificate and key
+  ansible.builtin.set_fact:
+    _bootloader_universe_entitlement_certificate: >-
+      {{ (_bootloader_universe_entitlement_files.files
+          | rejectattr('path', 'search', '-key[.]pem$')
+          | map(attribute='path') | list | first) | default('') }}
+    _bootloader_universe_entitlement_key: >-
+      {{ (_bootloader_universe_entitlement_files.files
+          | selectattr('path', 'search', '-key[.]pem$')
+          | map(attribute='path') | list | first) | default('') }}
+
+- name: Verify RHEL entitlement credentials are available
+  ansible.builtin.assert:
+    that:
+      - _bootloader_universe_entitlement_certificate | length > 0
+      - _bootloader_universe_entitlement_key | length > 0
+      - bootloader_universe_entitlement_ca is file
+    fail_msg: >-
+      A subscribed RHEL system is required. Expected an entitlement certificate
+      and key in {{ bootloader_universe_entitlement_directory }} and
+      {{ bootloader_universe_entitlement_ca }}.
+
+- name: Install ISO extraction tool
+  ansible.builtin.package:
+    name: bsdtar
+    state: present
+
+- name: Verify ISO extraction tool is available
+  ansible.builtin.command:
+    argv:
+      - bsdtar
+      - --version
+  changed_when: false
+
+- name: Create bootloader universe directories
+  ansible.builtin.file:
+    path: "{{ bootloader_universe_tftp_root }}/bootloader-universe/pxegrub2/{{ bootloader_universe_os_name }}/{{ item.key }}/{{ bootloader_universe_architecture }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop: "{{ bootloader_universe_rhel_releases | dict2items }}"
+  loop_control:
+    label: "RHEL {{ item.key }}"
+
+- name: Download RHEL boot ISOs from the CDN
+  # noqa command-instead-of-module -- curl provides client-certificate authentication.
+  ansible.builtin.shell:
+    cmd: >-
+      curl --fail --location --silent --show-error --retry 3
+      --cacert {{ bootloader_universe_entitlement_ca }}
+      --cert {{ _bootloader_universe_entitlement_certificate }}
+      --key {{ _bootloader_universe_entitlement_key }}
+      --output boot.iso.tmp {{ item.value.boot_iso_url }}
+      && mv boot.iso.tmp boot.iso
+  args:
+    chdir: "{{ bootloader_universe_tftp_root }}/bootloader-universe/pxegrub2/{{ bootloader_universe_os_name }}/{{ item.key }}/{{ bootloader_universe_architecture }}"
+    creates: boot.iso
+  no_log: true
+  loop: "{{ bootloader_universe_rhel_releases | dict2items }}"
+  loop_control:
+    label: "RHEL {{ item.key }}"
+
+- name: Extract RHEL shim from boot ISO
+  ansible.builtin.shell:
+    cmd: >-
+      bsdtar --extract --to-stdout --file boot.iso EFI/BOOT/BOOTX64.EFI
+      > shimx64.efi.tmp && mv shimx64.efi.tmp shimx64.efi
+    chdir: "{{ bootloader_universe_tftp_root }}/bootloader-universe/pxegrub2/{{ bootloader_universe_os_name }}/{{ item.key }}/{{ bootloader_universe_architecture }}"
+    creates: shimx64.efi
+  loop: "{{ bootloader_universe_rhel_releases | dict2items }}"
+  loop_control:
+    label: "RHEL {{ item.key }} shim"
+
+- name: Extract RHEL GRUB from boot ISO
+  ansible.builtin.shell:
+    cmd: >-
+      bsdtar --extract --to-stdout --file boot.iso EFI/BOOT/grubx64.efi
+      > grubx64.efi.tmp && mv grubx64.efi.tmp grubx64.efi
+    chdir: "{{ bootloader_universe_tftp_root }}/bootloader-universe/pxegrub2/{{ bootloader_universe_os_name }}/{{ item.key }}/{{ bootloader_universe_architecture }}"
+    creates: grubx64.efi
+  loop: "{{ bootloader_universe_rhel_releases | dict2items }}"
+  loop_control:
+    label: "RHEL {{ item.key }} GRUB"
+
+- name: Create Smart Proxy shim alias
+  ansible.builtin.file:
+    src: shimx64.efi
+    dest: "{{ bootloader_universe_tftp_root }}/bootloader-universe/pxegrub2/{{ bootloader_universe_os_name }}/{{ item.key }}/{{ bootloader_universe_architecture }}/boot-sb.efi"
+    state: link
+    force: true
+  loop: "{{ bootloader_universe_rhel_releases | dict2items }}"
+  loop_control:
+    label: "RHEL {{ item.key }} shim alias"
+
+- name: Create Smart Proxy GRUB alias
+  ansible.builtin.file:
+    src: grubx64.efi
+    dest: "{{ bootloader_universe_tftp_root }}/bootloader-universe/pxegrub2/{{ bootloader_universe_os_name }}/{{ item.key }}/{{ bootloader_universe_architecture }}/boot.efi"
+    state: link
+    force: true
+  loop: "{{ bootloader_universe_rhel_releases | dict2items }}"
+  loop_control:
+    label: "RHEL {{ item.key }} GRUB alias"
