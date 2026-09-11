@@ -6,6 +6,7 @@ flavor_features:
   - content/ansible
   - content/container
   - content/rpm
+  - ansible
   - remote-execution
   - templates
   - registration
