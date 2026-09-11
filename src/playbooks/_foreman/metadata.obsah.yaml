@@ -14,6 +14,23 @@ variables:
     parameter: --initial-location
   foreman_puma_workers:
     help: Number of workers for Puma.
+  foreman_trusted_proxies:
+    help: >-
+      IP address or CIDR Foreman should trust for X-Forwarded-For (e.g. Foreman Proxy).
+      Can be specified multiple times. Localhost ranges are always included.
+    parameter: --foreman-trusted-proxy-add
+    type: IP
+    action: append_unique
+  remove_foreman_trusted_proxies:
+    help: >-
+      Remove an IP address or CIDR from the persisted trusted proxy list.
+      Can be specified multiple times. Localhost ranges are always included;
+      proxies discovered from registered Smart Proxies on deploy are not
+      controlled by this flag.
+    parameter: --foreman-trusted-proxy-remove
+    type: IP
+    action: remove
+    dest: foreman_trusted_proxies
 
 include:
   - _server_aliases

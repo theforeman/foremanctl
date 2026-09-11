@@ -24,6 +24,8 @@ foreman_client_certificate: "{{ client_certificate }}"
 foreman_plugins: "{{ enabled_features | features_to_foreman_plugins }}"
 foreman_name: "{{ ansible_facts['fqdn'] }}"
 foreman_url: "https://{{ foreman_name }}"
+foreman_trusted_proxies: []
+
 
 foreman_listen_stream: /run/httpd.foreman.sock
 httpd_foreman_backend: "unix://{{ foreman_listen_stream }}|http://foreman"
