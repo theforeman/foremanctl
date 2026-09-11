@@ -1,0 +1,135 @@
+---
+- name: Select the images to publish
+  ansible.builtin.set_fact:
+    infra_images_selected: "{{ infra_registry_images | dict2items }}"
+
+- name: Confirm at least one image is defined
+  ansible.builtin.assert:
+    that:
+      - infra_images_selected | length > 0
+    fail_msg: >-
+      No images are defined in infra_registry_images. A vendor override at
+      src/vars/vendor/infra-registry-images.yml replaces the whole dict, so it
+      must define every image to publish.
+    quiet: true
+
+- name: Create product for infra images
+  theforeman.foreman.product:
+    oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: false
+    name: "{{ infra_images_product_name }}"
+    organization: "{{ infra_images_organization }}"
+    state: present
+
+- name: Create container repositories
+  theforeman.foreman.repository:
+    oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: false
+    name: "{{ item.value.repository_name }}"
+    product: "{{ infra_images_product_name }}"
+    organization: "{{ infra_images_organization }}"
+    content_type: docker
+    url: "{{ infra_registry_url }}"
+    docker_upstream_name: "{{ item.value.upstream_name }}"
+    include_tags:
+      - "{{ item.value.base_tag }}"
+    upstream_username: "{{ registry_username | default(omit) }}"
+    upstream_password: "{{ registry_password | default(omit) }}"
+    state: present
+  loop: "{{ infra_images_selected }}"
+  loop_control:
+    label: "{{ item.value.repository_name }}"
+  no_log: true
+
+- name: Synchronize product
+  theforeman.foreman.repository_sync:
+    oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: false
+    product: "{{ infra_images_product_name }}"
+    organization: "{{ infra_images_organization }}"
+
+- name: Get organization info for registry path
+  theforeman.foreman.resource_info:
+    oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: false
+    resource: organizations
+    search: "name=\"{{ infra_images_organization }}\""
+  register: infra_images_org_info
+
+- name: Extract organization label
+  ansible.builtin.set_fact:
+    infra_images_org_label: "{{ infra_images_org_info.resources[0].label | lower }}"
+
+- name: Get product info for registry path
+  theforeman.foreman.resource_info:
+    oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+    server_url: "{{ foreman_url }}"
+    validate_certs: false
+    resource: products
+    organization: "{{ infra_images_organization }}"
+    search: "name=\"{{ infra_images_product_name }}\""
+  register: infra_images_product_info
+
+- name: Extract product label
+  ansible.builtin.set_fact:
+    infra_images_product_label: "{{ infra_images_product_info.resources[0].label | lower }}"
+
+- name: Build published registry paths
+  ansible.builtin.set_fact:
+    infra_images_repo_paths: >-
+      {{ infra_images_selected
+         | map(attribute='value.repository_name')
+         | map('regex_replace', '^', '  ' ~ infra_images_org_label ~ '/' ~ infra_images_product_label ~ '/')
+         | list }}
+
+- name: Query the container registry catalog
+  ansible.builtin.uri:
+    url: "{{ foreman_url }}/v2/_catalog"
+    method: GET
+    user: "{{ foreman_initial_admin_username }}"
+    password: "{{ foreman_initial_admin_password }}"
+    force_basic_auth: true
+    validate_certs: false
+  register: infra_images_catalog
+
+- name: Confirm each repository is published in the registry catalog
+  ansible.builtin.assert:
+    that:
+      - infra_images_expected_path in (infra_images_catalog.json.repositories | default([]))
+    fail_msg: >-
+      Expected path '{{ infra_images_expected_path }}' is not present in the
+      container registry catalog at {{ foreman_url }}/v2/_catalog.
+      The product sync may be incomplete.
+    quiet: true
+  vars:
+    infra_images_expected_path: "{{ infra_images_org_label }}/{{ infra_images_product_label }}/{{ item.value.repository_name }}"
+  loop: "{{ infra_images_selected }}"
+  loop_control:
+    label: "{{ item.value.repository_name }}"
+
+- name: Display setup summary
+  ansible.builtin.debug:
+    msg: >-
+      {{ infra_images_summary_top + infra_images_repo_paths + infra_images_summary_bottom }}
+  vars:
+    infra_images_summary_top:
+      - "=============================================="
+      - "Foreman Infra Container Images Setup Complete"
+      - "=============================================="
+      - ""
+      - "Product: {{ infra_images_product_name }}"
+      - "Repositories created: {{ infra_images_selected | length }}"
+    infra_images_summary_bottom:
+      - ""
+      - "The shared parent -- {{ infra_images_org_label }}/{{ infra_images_product_label }} -- is your"
+      - "registry location for deployment."
+      - "=============================================="

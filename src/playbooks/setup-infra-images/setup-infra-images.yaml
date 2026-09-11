@@ -1,0 +1,21 @@
+---
+- name: Setup Foreman Infra Container Images
+  hosts: quadlet
+  become: true
+  vars_files:
+    - "../../vars/images.yml"
+    - "../../vars/foreman.yml"
+    - "../../vars/base.yaml"
+    - "../../vars/infra-registry-images.yml"
+
+  tasks:
+    - name: Load vendor image overrides if present
+      ansible.builtin.include_vars: "{{ item }}"
+      with_first_found:
+        - files:
+            - ../../vars/vendor/infra-registry-images.yml
+          skip: true
+
+    - name: Publish the infra container images
+      ansible.builtin.include_role:
+        name: infra_images
