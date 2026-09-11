@@ -41,8 +41,9 @@
     - name: 'Create CA private key'
       community.crypto.openssl_privatekey:
         path: "{{ certificates_ca_directory_keys }}/ca.key"
-        type: "{{ certificates_algorithm_type }}"
-        size: "{{ certificates_algorithm_size }}"
+        type: "{{ _certificates_key_parameters.type }}"
+        size: "{{ _certificates_key_parameters.size | default(omit) }}"
+        curve: "{{ _certificates_key_parameters.curve | default(omit) }}"
         owner: root
         group: root
         mode: '0600'

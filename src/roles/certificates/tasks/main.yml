@@ -40,6 +40,19 @@
     - auth_bundle is not defined
     - certificates_generate
   block:
+    - name: 'Reject a non-RSA algorithm on a Candlepin deployment'
+      ansible.builtin.assert:
+        that:
+          - certificates_algorithm_type == 'RSA'
+        fail_msg: >-
+          Candlepin is handed this CA and its legacy crypto scheme signs with
+          SHA256withRSA, so it requires an RSA CA. certificates_algorithm_type is
+          '{{ certificates_algorithm_type }}'. Set --certificate-algorithm=RSA, or
+          deploy a flavor without Candlepin.
+        quiet: true
+      when:
+        - enabled_features | default([]) | has_feature('candlepin')
+
     - name: 'Generate CA certificate'
       ansible.builtin.include_tasks: ca.yml
       when:
