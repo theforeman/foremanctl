@@ -7,6 +7,9 @@ variables:
     help: Base flavor to use in this deployment.
     choices:
       - foreman-proxy-content
+  target_host:
+    help: Target hostname or IP address for the proxy deployment
+    action: store
   auth_bundle:
     help: Path to the auth bundle tar file.
     type: AbsolutePath
