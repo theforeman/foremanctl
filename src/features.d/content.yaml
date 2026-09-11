@@ -26,5 +26,6 @@ content/python:
     - pulp
 content/ostree:
   description: OSTree content type for Pulp
+  internal: true
   dependencies:
     - pulp
