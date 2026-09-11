@@ -117,6 +117,7 @@
     hostname: "{{ ansible_facts['hostname'] }}.local"
     volume:
       - 'foreman-data-run:/var/run/foreman:rw,z,U'
+      - "{{ foreman_bootsnap_cache_volume }}:{{ foreman_bootsnap_cache_dir }}:rw,z,U"
     secrets: "{{ foreman_secrets }}"
     env: "{{ foreman_env }}"
     quadlet_options:
@@ -152,6 +153,7 @@
     hostname: "{{ ansible_facts['hostname'] }}.local"
     volume:
       - 'foreman-data-run:/var/run/foreman:rw,z,U'
+      - "{{ foreman_bootsnap_cache_volume }}:{{ foreman_bootsnap_cache_dir }}:rw,z,U"
     secrets: "{{ foreman_dynflow_secrets }}"
     env: "{{ foreman_dynflow_env }}"
     command: "/usr/libexec/foreman/sidekiq-selinux -e production -r ./extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yml"
@@ -198,6 +200,7 @@
     command: "foreman-rake {{ item.rake }}"
     volume:
       - 'foreman-data-run:/var/run/foreman:rw,z,U'
+      - "{{ foreman_bootsnap_cache_volume }}:{{ foreman_bootsnap_cache_dir }}:rw,z,U"
     secrets: "{{ foreman_secrets }}"
     env: "{{ foreman_env }}"
     quadlet_options:
@@ -230,6 +233,8 @@
     sdnotify: false
     network: host
     command: bash -c "bin/rails db:migrate && bin/rails db:seed"
+    volume:
+      - "{{ foreman_bootsnap_cache_volume }}:{{ foreman_bootsnap_cache_dir }}:rw,z,U"
     env: "{{ foreman_env }}"
     secrets: "{{ foreman_secrets }}"
     quadlet_options:
