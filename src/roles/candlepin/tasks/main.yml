@@ -74,7 +74,8 @@
     name: "candlepin"
     image: candlepin.image
     state: quadlet
-    network: host
+    network: "{{ candlepin_networks }}"
+    publish: "{{ candlepin_publish | default(omit) }}"
     hostname: "{{ ansible_facts['hostname'] }}.local"
     secrets:
       - 'candlepin-ca-cert,target=/etc/candlepin/certs/candlepin-ca.crt,{{ candlepin_secret_mount_opts }}'

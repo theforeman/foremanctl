@@ -20,5 +20,5 @@ def test_remediation_api_environment_variables(server):
 
 
 def test_remediation_api_endpoint(server, iop_image):
-    result = server.run(f"podman run --network=iop-core-network --rm {iop_image('iop-remediation')} curl --fail -s -o /dev/null http://iop-service-remediations-api:9002/health")
+    result = server.run(f"podman run --network=foreman-core-network --rm {iop_image('iop-remediation')} curl --fail -s -o /dev/null http://iop-service-remediations-api:9002/health")
     assert result.succeeded

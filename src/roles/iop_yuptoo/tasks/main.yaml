@@ -12,7 +12,7 @@
       BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
       BYPASS_PAYLOAD_EXPIRATION: "true"
     network:
-      - iop-core-network
+      - foreman-core-network
     quadlet_options:
       - |
         [Unit]

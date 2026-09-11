@@ -1,2 +1,3 @@
 ---
 iop_core_foreman_url: "https://{{ ansible_facts['fqdn'] }}"
+iop_core_gateway_url: "https://iop-core-gateway:8443"

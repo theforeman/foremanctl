@@ -1,7 +1,7 @@
 ---
-- name: Deploy IOP Network
+- name: Ensure shared app network exists
   ansible.builtin.include_role:
-    name: iop_network
+    name: foreman_core_network
 
 - name: Deploy IOP Kafka service
   ansible.builtin.include_role:
@@ -30,7 +30,7 @@
 - name: Register IOP Gateway as smart proxy
   theforeman.foreman.smart_proxy:
     name: "iop-gateway"
-    url: "https://localhost:24443"
+    url: "{{ iop_core_gateway_url }}"
     server_url: "{{ iop_core_foreman_url }}"
     oauth1_consumer_key: "{{ iop_core_foreman_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ iop_core_foreman_oauth_consumer_secret }}"

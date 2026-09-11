@@ -17,7 +17,7 @@
       INGRESS_WEBPORT: "8080"
       INGRESS_METRICSPORT: "3001"
     network:
-      - iop-core-network
+      - foreman-core-network
     quadlet_options:
       - |
         [Unit]

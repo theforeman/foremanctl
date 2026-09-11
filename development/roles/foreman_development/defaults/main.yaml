@@ -29,11 +29,10 @@ foreman_development_rails_command: "puma -w 2 -p {{ foreman_development_rails_po
 
 foreman_development_url: "http://{{ ansible_facts['fqdn'] }}:{{ foreman_development_rails_port }}"
 
-foreman_development_database_host: "localhost"
+foreman_development_database_host: "127.0.0.1"
 foreman_development_database_port: 5432
 foreman_development_database_name: "foreman_development"
 foreman_development_database_user: "foreman"
-foreman_development_database_password: "foreman" # noqa: no-static-secrets
 
 foreman_development_nodejs_stream: "22"
 
