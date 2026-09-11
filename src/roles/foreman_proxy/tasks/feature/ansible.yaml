@@ -40,14 +40,12 @@
     force: false
     mode: '0644'
 
-- name: Mount ansible directories
+- name: Mount ansible directory
   ansible.builtin.copy:
     dest: /etc/containers/systemd/foreman-proxy.container.d/ansible-volumes.conf
     content: |
       [Container]
-      Volume=/var/lib/foreman-proxy/ansible/roles:/etc/ansible/roles:ro,Z,U
-      Volume=/var/lib/foreman-proxy/ansible/collections:/etc/ansible/collections:ro,Z,U
-      Volume=/var/lib/foreman-proxy/ansible/ansible.cfg:/etc/ansible/ansible.cfg:ro,Z
+      Volume=/var/lib/foreman-proxy/ansible:/etc/ansible:ro,Z,U
     mode: '0644'
     owner: root
     group: root
