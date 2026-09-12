@@ -1,0 +1,7 @@
+---
+variables:
+  air_gapped:
+    help: >-
+      Enable air-gapped mode. All required container images must already
+      be available in local container storage.
+    action: store_true

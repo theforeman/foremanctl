@@ -73,3 +73,5 @@
       ansible.builtin.include_role:
         name: images
         tasks_from: pull.yaml
+      vars:
+        images_air_gapped: "{{ air_gapped | bool }}"

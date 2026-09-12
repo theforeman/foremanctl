@@ -27,6 +27,7 @@ variables:
     help: HTTP proxy URL for the cloud connector rhcd service.
 
 include:
+  - _air_gapped
   - _flavor_features
   - _flavors/katello
   - _vendor_overrides/deploy

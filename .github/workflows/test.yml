@@ -489,8 +489,14 @@ jobs:
           wait-timeout-minutes: 5
 
   satellite-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        mode:
+          - connected
+          - air-gapped
     runs-on: ubuntu-24.04
-    name: "Tests Satellite Deployment"
+    name: "Tests Satellite Deployment (${{ matrix.mode }})"
     steps:
       - uses: actions/checkout@v7
       - name: Set up Python
@@ -515,15 +521,22 @@ jobs:
           ./forge setup-repositories
       - name: Run image pull
         run: |
-          ./foremanctl pull-images
+          # The Satellite flavor includes foreman-proxy, so preload it before
+          # enabling air-gapped mode with Policy=never.
+          ./foremanctl pull-images ${{ matrix.mode == 'air-gapped' && '--add-feature foreman-proxy' || '' }}
       - name: Run deployment
         run: |
           ./foremanctl deploy \
+            ${{ matrix.mode == 'air-gapped' && '--air-gapped' || '' }} \
             --flavor satellite \
             --initial-admin-password=changeme \
             --initial-organization "Foreman CI" \
             --initial-location "Internet" \
             --tuning development
+      - name: Verify air-gapped parameter persistence
+        if: matrix.mode == 'air-gapped'
+        run: |
+          grep -q '^air_gapped: true' .var/lib/foremanctl/parameters.yaml
       - name: Deploy features
         run: |
           ./foremanctl deploy \
@@ -538,7 +551,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v7
         with:
-          name: smoker-satellite
+          name: smoker-satellite-${{ matrix.mode }}
           path: "/home/runner/smoker/report/"
       - name: Generate sos reports
         if: ${{ always() }}
@@ -547,7 +560,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v7
         with:
-          name: sosreport-satellite
+          name: sosreport-satellite-${{ matrix.mode }}
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}

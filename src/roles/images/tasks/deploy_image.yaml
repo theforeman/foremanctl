@@ -7,7 +7,7 @@
     quadlet_filename: "{{ images_definition.name }}"
     quadlet_file_mode: "0644"
     quadlet_options:
-      - "Policy=missing"
+      - "Policy={{ images_pull_policy }}"
       - |
         [Service]
         Environment=REGISTRY_AUTH_FILE={{ images_registry_auth_file }}
@@ -17,6 +17,13 @@
     path: "{{ images_quadlet_dir }}/{{ images_definition.name }}.image.d"
     state: directory
     mode: "0755"
+
+- name: Remove stale force-pull override for {{ images_definition.name }}
+  ansible.builtin.file:
+    path: >-
+      {{ images_quadlet_dir }}/{{ images_definition.name }}.image.d/00-pull-always.conf
+    state: absent
+  when: images_air_gapped
 
 - name: Register deployed image name
   ansible.builtin.set_fact:
