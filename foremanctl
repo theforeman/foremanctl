@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 OBSAH_NAME=foremanctl
-OBSAH_BASE=$(dirname $(readlink -f $0))
+OBSAH_BASE=$(dirname "$(readlink -f "$0")")
 OBSAH_DATA=${OBSAH_BASE}/src
 OBSAH_INVENTORY=${OBSAH_BASE}/inventories
 OBSAH_STATE=${OBSAH_BASE}/.var/lib/foremanctl
