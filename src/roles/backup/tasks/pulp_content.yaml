@@ -2,7 +2,42 @@
 - name: Backup pulp content
   when: not skip_pulp_content | default(false)
   block:
-    - name: Backup pulp content directory with encryption keys  # noqa: command-instead-of-module
+    - name: Validate tar_volume_size format
+      ansible.builtin.fail:
+        msg: "Invalid tar_volume_size format '{{ tar_volume_size }}'. Use format like '5G', '100M' (see 'man split' SIZE argument)"
+      when:
+        - tar_volume_size is defined
+        - tar_volume_size | length > 0
+        - tar_volume_size is not match('^[1-9]\d*[bBcGKkMPTw]?$')
+
+    - name: Remove existing pulp content volume files
+      ansible.builtin.shell:
+        cmd: rm -f "{{ backup_dir_full }}/pulp-content.tar.gz.part"*
+      when:
+        - tar_volume_size is defined
+        - tar_volume_size | length > 0
+      changed_when: true
+
+    - name: Backup pulp content directory with encryption keys (compressed multi-volume)  # noqa: risky-shell-pipe command-instead-of-module
+      ansible.builtin.shell:
+        cmd: >
+          tar -czf -
+          --listed-incremental="{{ backup_dir_full }}/.pulp.snar"
+          --directory="{{ backup_pulp_storage_path }}"
+          --exclude=media/exports
+          --exclude=media/imports
+          --exclude=media/sync_imports
+          media
+          database_fields.symmetric.key
+          django_secret_key
+          | split -b {{ tar_volume_size }} -d --suffix-length=4 - "{{ backup_dir_full }}/pulp-content.tar.gz.part"
+      register: backup_pulp_content_archive
+      changed_when: true
+      when:
+        - tar_volume_size is defined
+        - tar_volume_size | length > 0
+
+    - name: Backup pulp content directory with encryption keys (single archive)  # noqa: command-instead-of-module
       ansible.builtin.command:
         cmd: >
           tar -czf "{{ backup_dir_full }}/pulp-content.tar.gz"
@@ -16,16 +51,50 @@
           django_secret_key
       register: backup_pulp_content_archive
       changed_when: true
+      when: tar_volume_size is not defined or tar_volume_size | length == 0
 
-    - name: Get pulp content archive info
+    - name: Get pulp content archive info (single volume)
       ansible.builtin.stat:
         path: "{{ backup_dir_full }}/pulp-content.tar.gz"
       register: backup_pulp_content_archive_stat
-      when: backup_pulp_content_archive is succeeded
+      when:
+        - backup_pulp_content_archive is succeeded
+        - tar_volume_size is not defined or tar_volume_size | length == 0
 
-    - name: Display pulp content backup completion
+    - name: Display pulp content backup completion (single volume)
       ansible.builtin.debug:
         msg: >-
           Pulp content backup completed: {{ backup_dir_full }}/pulp-content.tar.gz
           ({{ (backup_pulp_content_archive_stat.stat.size / 1024 / 1024) | round(2) }} MB)
-      when: backup_pulp_content_archive_stat.stat.exists
+      when:
+        - tar_volume_size is not defined or tar_volume_size | length == 0
+        - backup_pulp_content_archive_stat is defined
+        - backup_pulp_content_archive_stat.stat.exists
+
+    - name: Find all pulp content volume files
+      ansible.builtin.find:
+        paths: "{{ backup_dir_full }}"
+        patterns: "pulp-content.tar.gz.part*"
+      register: backup_pulp_volumes
+      when:
+        - tar_volume_size is defined
+        - tar_volume_size | length > 0
+
+    - name: Calculate total volume size
+      ansible.builtin.set_fact:
+        backup_total_volume_size: "{{ backup_pulp_volumes.files | map(attribute='size') | sum }}"
+      when:
+        - tar_volume_size is defined
+        - tar_volume_size | length > 0
+        - backup_pulp_volumes.matched > 0
+
+    - name: Display multi-volume pulp content backup completion
+      ansible.builtin.debug:
+        msg: >-
+          Pulp content backup completed in {{ backup_pulp_volumes.matched }} compressed volumes
+          ({{ (backup_total_volume_size | int / 1024 / 1024) | round(2) }} MB total):
+          {{ backup_dir_full }}/pulp-content.tar.gz.part0000 - part{{ '%04d' | format(backup_pulp_volumes.matched - 1) }}
+      when:
+        - tar_volume_size is defined
+        - tar_volume_size | length > 0
+        - backup_pulp_volumes.matched > 0
