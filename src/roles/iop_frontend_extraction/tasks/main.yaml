@@ -1,0 +1,81 @@
+---
+- name: Generate image-backed frontend source volume
+  ansible.builtin.copy:
+    dest: "/etc/containers/systemd/{{ iop_frontend_extraction_source_volume }}.volume"
+    mode: "0644"
+    content: |
+      [Volume]
+      Driver=image
+      Image={{ iop_frontend_extraction_image_unit }}.image
+      VolumeName={{ iop_frontend_extraction_source_volume }}
+
+- name: Reload systemd after source volume generation
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Stop existing frontend source volume service
+  ansible.builtin.systemd:
+    name: "{{ iop_frontend_extraction_source_volume }}-volume.service"
+    state: stopped
+
+- name: Remove previous frontend source volume
+  containers.podman.podman_volume:
+    name: "{{ iop_frontend_extraction_source_volume }}"
+    state: absent
+
+- name: Recreate frontend source volume from effective image
+  ansible.builtin.systemd:
+    name: "{{ iop_frontend_extraction_source_volume }}-volume.service"
+    state: restarted
+
+- name: Mount and extract frontend assets
+  block:
+    - name: Mount frontend source volume
+      ansible.builtin.command:
+        argv:
+          - podman
+          - volume
+          - mount
+          - "{{ iop_frontend_extraction_source_volume }}"
+      register: iop_frontend_extraction_mount
+      changed_when: true
+
+    - name: Copy frontend assets from mounted image filesystem
+      ansible.builtin.command:
+        argv:
+          - cp
+          - -a
+          - "{{ iop_frontend_extraction_mount.stdout | trim }}{{ iop_frontend_extraction_source_path }}"
+          - "{{ iop_frontend_extraction_assets_path }}/"
+      changed_when: true
+
+  always:
+    - name: Unmount frontend source volume
+      ansible.builtin.command:
+        argv:
+          - podman
+          - volume
+          - unmount
+          - "{{ iop_frontend_extraction_source_volume }}"
+      when: iop_frontend_extraction_mount is defined and iop_frontend_extraction_mount.rc == 0
+      changed_when: true
+
+    - name: Stop frontend source volume service after extraction
+      ansible.builtin.systemd:
+        name: "{{ iop_frontend_extraction_source_volume }}-volume.service"
+        state: stopped
+
+    - name: Remove frontend source volume after extraction
+      containers.podman.podman_volume:
+        name: "{{ iop_frontend_extraction_source_volume }}"
+        state: absent
+
+    - name: Restore SELinux context for frontend assets
+      ansible.builtin.command:
+        argv:
+          - restorecon
+          - -R
+          - -F
+          - "{{ iop_frontend_extraction_assets_path }}"
+      when: ansible_facts['selinux']['status'] == "enabled"
+      changed_when: false

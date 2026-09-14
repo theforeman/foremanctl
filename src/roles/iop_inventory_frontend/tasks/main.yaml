@@ -27,29 +27,14 @@
     group: root
     mode: '0755'
 
-- name: Create temporary container for asset extraction
-  containers.podman.podman_container:
-    name: iop-inventory-frontend-temp
-    image: "{{ iop_inventory_frontend_container_image }}:{{ iop_inventory_frontend_container_tag }}"
-    state: created
-
-- name: Extract inventory frontend assets from container
-  containers.podman.podman_container_copy:
-    container: iop-inventory-frontend-temp
-    src: "{{ iop_inventory_frontend_source_path }}"
-    dest: "{{ iop_inventory_frontend_assets_path }}"
-    from_container: true
-
-- name: Restore SELinux context for inventory frontend assets
-  ansible.builtin.command:
-    cmd: restorecon -R "{{ iop_inventory_frontend_assets_path }}"
-  when: ansible_facts['selinux']['status'] == "enabled"
-  changed_when: false
-
-- name: Remove temporary container
-  containers.podman.podman_container:
-    name: iop-inventory-frontend-temp
-    state: absent
+- name: Extract inventory frontend assets from effective image volume
+  ansible.builtin.include_role:
+    name: iop_frontend_extraction
+  vars:
+    iop_frontend_extraction_image_unit: iop-host-inventory-frontend
+    iop_frontend_extraction_source_volume: iop-host-inventory-frontend-assets-source
+    iop_frontend_extraction_source_path: "{{ iop_inventory_frontend_source_path }}"
+    iop_frontend_extraction_assets_path: "{{ iop_inventory_frontend_assets_path }}"
 
 - name: Set ownership of inventory frontend assets
   ansible.builtin.file:
