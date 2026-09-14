@@ -145,7 +145,7 @@ Server and client (leaf) certificates with non-RSA keys only carry the `digitalS
 > [!NOTE]
 > The `ML-DSA-87` algorithm needs `community.crypto` 3.3.0 to generate the keys and `python-cryptography` 49.0.0 to sign certificates and CSRs with them. CentOS Stream 10 ships a suitable `python-cryptography`; CentOS Stream 9 ships 36.0.1, on which selecting `ML-DSA-87` fails at key generation.
 
-Changing the algorithm does not re-issue existing certificates. Combine it with `--certificate-renew` and `--certificate-ca-renew` to replace a certificate set that already exists.
+Changing `--certificate-algorithm` on an existing deployment re-issues the server and client (leaf) certificates automatically: their keys are regenerated with the new algorithm and re-signed by the CA, no `--certificate-renew` needed. The CA itself is never changed silently. If the new algorithm also differs from the CA key, the deploy fails and asks you to pass `--certificate-ca-renew`, which reissues the CA and every certificate it signed with the new algorithm.
 
 ### Renewing certificates
 
