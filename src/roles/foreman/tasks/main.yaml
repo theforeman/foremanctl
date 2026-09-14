@@ -108,6 +108,13 @@
     group: root
     mode: "0755"
 
+- name: Create RH Cloud inventory directory
+  when: enabled_features | has_feature('rh-cloud')
+  ansible.builtin.file:
+    path: /var/lib/foreman/red_hat_inventory
+    state: directory
+    mode: "0755"
+
 - name: Deploy Foreman socket
   ansible.builtin.template:
     src: foreman.socket.j2
@@ -123,9 +130,7 @@
     sdnotify: true
     network: "{{ foreman_networks }}"
     hostname: "{{ ansible_facts['hostname'] }}.local"
-    volume:
-      - 'foreman-data-run:/var/run/foreman:rw,z,U'
-      - '/var/lib/foreman:/var/lib/foreman:rw,z,U'
+    volume: "{{ foreman_volumes }}"
     secrets: "{{ foreman_secrets }}"
     env: "{{ foreman_env }}"
     quadlet_options:
@@ -159,9 +164,7 @@
     sdnotify: true
     network: "{{ foreman_networks }}"
     hostname: "{{ ansible_facts['hostname'] }}.local"
-    volume:
-      - 'foreman-data-run:/var/run/foreman:rw,z,U'
-      - '/var/lib/foreman:/var/lib/foreman:rw,z,U'
+    volume: "{{ foreman_volumes }}"
     secrets: "{{ foreman_dynflow_secrets }}"
     env: "{{ foreman_dynflow_env }}"
     command: "/usr/libexec/foreman/sidekiq-selinux -e production -r ./extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yml"
