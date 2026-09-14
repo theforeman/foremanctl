@@ -262,13 +262,14 @@ Inventory, advisor, and vulnerability frontend assets are extracted from contain
 The extraction process for each frontend:
 
 1. Pull image via quadlet image unit
-2. Create a temporary container from the image
-3. Copy assets from the container to the host path
-4. Restore SELinux context
-5. Remove the temporary container
-6. Configure Apache alias and caching
+2. Generate and recreate an image-backed source volume referencing the frontend `.image` unit
+3. Mount the source volume and copy `/srv/dist/.` to the host asset path from Ansible
+4. Unmount the source volume
+5. Restore SELinux context and preserve ownership handling
+6. Stop and remove the disposable source volume; keep the `.volume` definition installed
+7. Configure Apache alias and caching
 
-No frontend containers remain running after deployment.
+Frontend images are never started as application containers, and source volumes are always unmounted and removed after extraction. The `.image` unit remains the image source of truth, so `.image.d` overrides are honored on the next volume recreation.
 
 ### Content for Vulnerability Evaluation
 
