@@ -9,9 +9,7 @@
 # ML-DSA-87 needs community.crypto 3.3.0 to generate the keys and
 # python-cryptography 49.0.0 to sign certificates and CSRs with them. On a
 # platform whose python-cryptography is older, selecting ML-DSA-87 fails at key
-# generation. Candlepin is a further caveat: it is handed this CA and its legacy
-# crypto scheme signs with SHA256withRSA, so a deployment that runs Candlepin
-# still needs an RSA CA.
+# generation.
 _certificates_key_parameters: >-
   {{
     {'type': certificates_algorithm_type}

@@ -143,7 +143,7 @@ foremanctl deploy --certificate-algorithm=ML-DSA-87
 Server and client (leaf) certificates with non-RSA keys only carry the `digitalSignature` key usage, because those keys cannot perform key encipherment. RSA leaf certificates keep both `digitalSignature` and `keyEncipherment`. The CA certificate is signed for `keyCertSign`, `cRLSign` and `digitalSignature` regardless of the algorithm, since those usages do not depend on key encipherment.
 
 > [!NOTE]
-> The `ML-DSA-87` algorithm needs `community.crypto` 3.3.0 to generate the keys and `python-cryptography` 49.0.0 to sign certificates and CSRs with them. CentOS Stream 10 ships a suitable `python-cryptography`; CentOS Stream 9 ships 36.0.1, on which selecting `ML-DSA-87` fails at key generation. Candlepin is a further caveat: it is handed this CA and its legacy crypto scheme signs with `SHA256withRSA`, so a deployment that runs Candlepin still needs an RSA CA.
+> The `ML-DSA-87` algorithm needs `community.crypto` 3.3.0 to generate the keys and `python-cryptography` 49.0.0 to sign certificates and CSRs with them. CentOS Stream 10 ships a suitable `python-cryptography`; CentOS Stream 9 ships 36.0.1, on which selecting `ML-DSA-87` fails at key generation.
 
 Changing the algorithm does not re-issue existing certificates. Combine it with `--certificate-renew` and `--certificate-ca-renew` to replace a certificate set that already exists.
 
