@@ -7,6 +7,7 @@ pytestmark = pytest.mark.feature("rh-cloud")
 FOREMAN_STORAGE_PATH = "/var/lib/foreman"
 INVENTORY_PATH = f"{FOREMAN_STORAGE_PATH}/red_hat_inventory"
 GENERATED_REPORTS_PATH = f"{INVENTORY_PATH}/generated_reports"
+INVENTORY_VOLUME = "foreman-rh-cloud-inventory"
 
 FOREMAN_AND_DYNFLOW_CONTAINERS = [
     "foreman",
@@ -24,9 +25,10 @@ def test_foreman_storage_directory(server):
     assert directory.mode == 0o755
 
 
-def test_foreman_inventory_directory(server):
-    directory = server.file(INVENTORY_PATH)
-    assert directory.is_directory
+def test_foreman_inventory_volume(server):
+    result = server.run("podman volume ls --format '{{.Name}}'")
+    assert result.succeeded
+    assert INVENTORY_VOLUME in result.stdout
 
 
 @pytest.mark.parametrize("container", FOREMAN_AND_DYNFLOW_CONTAINERS)
@@ -34,10 +36,14 @@ def test_foreman_inventory_volume_mount(server, container):
     result = server.run(f"podman inspect {container} --format '{{{{json .Mounts}}}}'")
     assert result.succeeded, result.stderr
     mounts = json.loads(result.stdout)
-    destinations = [mount["Destination"] for mount in mounts]
-    assert INVENTORY_PATH in destinations, (
-        f"expected {INVENTORY_PATH} to be mounted in {container}, got {destinations}"
+    inventory_mounts = [mount for mount in mounts if mount.get("Destination") == INVENTORY_PATH]
+    assert inventory_mounts, (
+        f"expected {INVENTORY_PATH} to be mounted in {container}, "
+        f"got {[mount.get('Destination') for mount in mounts]}"
     )
+    mount = inventory_mounts[0]
+    assert mount.get("Type", "volume") == "volume"
+    assert mount.get("Name") == INVENTORY_VOLUME
 
 
 @pytest.mark.parametrize("container", FOREMAN_AND_DYNFLOW_CONTAINERS)
@@ -47,9 +53,10 @@ def test_foreman_inventory_writable(server, container):
     try:
         result = server.run(f"podman exec {container} touch {path}")
         assert result.succeeded, result.stderr
-        assert server.file(path).exists
+        result = server.run(f"podman exec {container} test -f {path}")
+        assert result.succeeded, result.stderr
     finally:
-        server.run(f"rm -f {path}")
+        server.run(f"podman exec {container} rm -f {path}")
 
 
 def test_foreman_inventory_shared_between_foreman_and_dynflow(server):
@@ -60,7 +67,7 @@ def test_foreman_inventory_shared_between_foreman_and_dynflow(server):
         result = server.run(f"podman exec foreman test -f {path}")
         assert result.succeeded, result.stderr
     finally:
-        server.run(f"rm -f {path}")
+        server.run(f"podman exec dynflow-sidekiq-worker rm -f {path}")
 
 
 def test_foreman_inventory_generated_reports_writable_from_foreman_and_dynflow(server):
@@ -72,6 +79,5 @@ def test_foreman_inventory_generated_reports_writable_from_foreman_and_dynflow(s
         assert result.succeeded, result.stderr
         result = server.run(f"podman exec foreman test -f {path}")
         assert result.succeeded, result.stderr
-        assert server.file(path).exists
     finally:
-        server.run(f"rm -f {path}")
+        server.run(f"podman exec dynflow-sidekiq-worker rm -f {path}")

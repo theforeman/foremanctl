@@ -67,9 +67,10 @@ foreman_dynflow_env: "{{ foreman_env | ansible.builtin.combine(foreman_dynflow_e
 foreman_base_volumes:
   - 'foreman-data-run:/var/run/foreman:rw,z,U'
 
-# Narrower than /var/lib/foreman: the image keeps public/ and db/ there.
+# Named volume at the plugin path so Foreman and Dynflow share reports.
+foreman_rh_cloud_inventory_volume: foreman-rh-cloud-inventory
 foreman_rh_cloud_volumes:
-  - '/var/lib/foreman/red_hat_inventory:/var/lib/foreman/red_hat_inventory:rw,z,U'
+  - 'foreman-rh-cloud-inventory:/var/lib/foreman/red_hat_inventory:rw,z,U'
 
 foreman_volumes: "{{ foreman_base_volumes + (foreman_rh_cloud_volumes if enabled_features | has_feature('rh-cloud') else []) }}"
 
