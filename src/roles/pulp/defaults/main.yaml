@@ -13,7 +13,8 @@ pulp_volumes: >-
   {{
     [pulp_storage_path ~ ':' ~ pulp_storage_path ~ ':rw'] +
     (pulp_import_paths | map('regex_replace', '^(.+)$', '\1:\1:rw') | list) +
-    (pulp_export_paths | map('regex_replace', '^(.+)$', '\1:\1:rw') | list)
+    (pulp_export_paths | map('regex_replace', '^(.+)$', '\1:\1:rw') | list) +
+    ['/etc/crypto-policies:/etc/crypto-policies:ro']
   }}
 
 pulp_api_container_name: pulp-api

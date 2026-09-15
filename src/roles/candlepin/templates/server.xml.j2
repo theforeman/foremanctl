@@ -22,6 +22,19 @@
                protocol="org.apache.coyote.http11.Http11NioProtocol"
                SSLEnabled="true"
                maxThreads="150" scheme="https" secure="true">
+{% if _candlepin_ca_key_algorithm == 'ML-DSA-87' %}
+        {# ML-DSA keys only work over TLS 1.3, and Tomcat's FFM OpenSSL bridge
+           does not pick up the system crypto policy's signature algorithms, so
+           the ML-DSA signature algorithm must be advertised explicitly here. #}
+        <SSLHostConfig certificateVerification="optional"
+                       protocols="TLSv1.3"
+                       caCertificateFile="/etc/candlepin/certs/candlepin-ca.crt">
+            <Certificate certificateFile="/etc/candlepin/certs/tomcat.crt"
+                         certificateKeyFile="/etc/candlepin/certs/tomcat.key" />
+            <OpenSSLConfCmd name="SignatureAlgorithms"
+                            value="mldsa87:ECDSA+SHA256:ECDSA+SHA384:rsa_pss_rsae_sha256:rsa_pss_rsae_sha384:RSA+SHA256:RSA+SHA384" />
+        </SSLHostConfig>
+{% else %}
         <SSLHostConfig certificateVerification="optional"
                        protocols="{{ candlepin_tls_versions | join(',') }}"
                        caCertificateFile="/etc/candlepin/certs/candlepin-ca.crt"
@@ -29,6 +42,7 @@
             <Certificate certificateFile="/etc/candlepin/certs/tomcat.crt"
                          certificateKeyFile="/etc/candlepin/certs/tomcat.key" />
         </SSLHostConfig>
+{% endif %}
     </Connector>
 
     <Engine name="Catalina" defaultHost="localhost">
