@@ -1,0 +1,41 @@
+---
+# Candlepin signs the entitlement and identity certificates it issues with the
+# deployment CA key. It describes the key and signature algorithms it may use
+# through a named crypto "scheme"; the built-in "legacy" scheme assumes RSA
+# (SHA256withRSA), so Candlepin refuses to start when handed a non-RSA CA key
+# unless the scheme is redefined. We override the legacy scheme in
+# candlepin.conf.j2 using the values below.
+#
+# The algorithm is derived from the CA key that was actually deployed (inspected
+# in certs.yml) rather than from the requested certificate algorithm, so custom
+# and migrated CAs are handled the same way as generated ones.
+
+# openssl_privatekey_info reports the CA key type as RSA, ECC or ML-DSA-87.
+_candlepin_ca_key_algorithm: "{{ _candlepin_ca_key_info.type }}"
+
+# JCA (BouncyCastle) signature algorithm name Candlepin must use to sign with a
+# CA key of each type.
+_candlepin_scheme_signature_algorithms:
+  RSA: SHA256withRSA
+  ECC: SHA256withECDSA
+  ML-DSA-87: ML-DSA-87
+
+# JCA KeyPairGenerator algorithm name for the keys Candlepin issues under each
+# CA type.
+_candlepin_scheme_key_algorithms:
+  RSA: RSA
+  ECC: EC
+  ML-DSA-87: ML-DSA-87
+
+# EC keys are sized in Candlepin by bit length; map the curves we offer to the
+# matching NIST key size so Candlepin issues keys on the same curve as the CA.
+_candlepin_ec_curve_key_sizes:
+  secp256r1: 256
+  secp384r1: 384
+  secp521r1: 521
+
+_candlepin_scheme_signature_algorithm: "{{ _candlepin_scheme_signature_algorithms[_candlepin_ca_key_algorithm] }}"
+_candlepin_scheme_key_algorithm: "{{ _candlepin_scheme_key_algorithms[_candlepin_ca_key_algorithm] }}"
+_candlepin_scheme_key_size: >-
+  {{ _candlepin_ec_curve_key_sizes[_candlepin_ca_key_info.public_data.curve | default('')] | default('')
+     if _candlepin_ca_key_algorithm == 'ECC' else '' }}
