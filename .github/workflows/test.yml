@@ -142,11 +142,6 @@ jobs:
         if: matrix.security != 'none'
         run: |
           ./forge security --mode ${{ matrix.security }}
-      - name: Apply fapolicyd workaround
-        if: matrix.security == 'fapolicyd'
-        run: |
-          vagrant ssh --command "echo 'allow perm=any all : dir=/home/vagrant/.ansible/tmp/' | sudo tee -a /etc/fapolicyd/rules.d/15-foremanctl.rules" quadlet
-          vagrant ssh quadlet -- sudo systemctl restart fapolicyd
       - name: Run image pull
         run: |
           ./foremanctl pull-images ${{ matrix.database == 'external' && '--database-mode=external' || '' }}
