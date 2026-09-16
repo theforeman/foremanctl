@@ -73,7 +73,7 @@ The `foreman_core_network` role creates the network early in both `foremanctl de
 | Gateway | `10.130.0.1` |
 
 The subnet matches the former `iop-core-network`. The IOP gateway image uses `10.130.0.1` as its nginx resolver; that address is the bridge gateway, where aardvark-dns answers container-name lookups.
-On upgrade, the role stops containers still on a leftover `iop-core-network`, removes that network, deletes any orphan `podman*` bridge still holding the subnet when `foreman-core-network` is not present yet, then creates `foreman-core-network`.
+On upgrade, the role stops containers still on a leftover `iop-core-network`, removes that network, then deletes any `podman*` host bridge that still holds the gateway address only if that interface is not claimed as `NetworkInterface` by any remaining Podman network (so a live `foreman-core-network` bridge is left alone on re-deploy). It then creates `foreman-core-network`.
 
 Containers on this network talk by **container name**, not by published host ports. Examples:
 
