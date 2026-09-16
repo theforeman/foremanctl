@@ -2,6 +2,7 @@
 - name: Configure FIPS and fapolicyd
   hosts:
     - quadlet
+    - proxy
   become: true
   tasks:
     - name: Setup FIPS

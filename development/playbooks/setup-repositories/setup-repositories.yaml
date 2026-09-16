@@ -2,6 +2,7 @@
 - name: Configure Puppet and Foreman repositories
   hosts:
     - quadlet
+    - proxy
   become: true
   roles:
     - setup_repositories
