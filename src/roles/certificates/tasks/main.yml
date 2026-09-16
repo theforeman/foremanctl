@@ -6,9 +6,11 @@
     state: present
 
 # ML-DSA certificates can only be negotiated over TLS when the system crypto
-# policy advertises post-quantum signature algorithms. The default policy does
-# not, so switch the host to DEFAULT:PQ; the containers bind-mount
-# /etc/crypto-policies from the host to inherit it.
+# policy advertises post-quantum signature algorithms. Where a dedicated PQ
+# crypto-policy module ships (e.g. RHEL 9), switch the host to DEFAULT:PQ so the
+# containers, which bind-mount /etc/crypto-policies, inherit it. Distributions
+# that already enable ML-DSA in their default policy (e.g. CentOS Stream 10) do
+# not ship that module, so the switch is skipped there.
 - name: 'Enable post-quantum algorithms in the host crypto policy'
   when:
     - certificates_algorithm_type is defined
@@ -19,9 +21,16 @@
       register: _certificates_crypto_policy
       changed_when: false
 
+    - name: 'Check for a post-quantum crypto-policy module'
+      ansible.builtin.stat:
+        path: /usr/share/crypto-policies/policies/modules/PQ.pmod
+      register: _certificates_pq_module
+
     - name: 'Set the system crypto policy to DEFAULT:PQ'
       ansible.builtin.command: update-crypto-policies --set DEFAULT:PQ
-      when: "'PQ' not in _certificates_crypto_policy.stdout"
+      when:
+        - _certificates_pq_module.stat.exists
+        - "'PQ' not in _certificates_crypto_policy.stdout"
       changed_when: true
 
 - name: 'Create base directory'
