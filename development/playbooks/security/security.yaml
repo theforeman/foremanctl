@@ -15,3 +15,9 @@
         name: theforeman.forklift.fapolicyd
       when:
         - security_mode == 'fapolicyd'
+
+    - name: Install foreman-fapolicyd
+      ansible.builtin.package:
+        name: foreman-fapolicyd
+      when:
+        - security_mode == 'fapolicyd'
