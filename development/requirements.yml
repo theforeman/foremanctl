@@ -1,12 +1,16 @@
 ---
 collections:
-  - ansible.posix
-  - community.crypto
-  - community.general
-  - community.postgresql
-  - name: containers.podman
-    version: ">=1.16.4"
+  - name: https://github.com/ansible-collections/ansible.posix
+    type: git
+  - name: https://github.com/ansible-collections/community.crypto
+    type: git
+  - name: https://github.com/ansible-collections/community.general
+    type: git
+  - name: https://github.com/ansible-collections/community.postgresql
+    type: git
+  - name: https://github.com/containers/ansible-podman-collections
+    type: git
   - name: https://github.com/theforeman/forklift
     type: git
-  - name: theforeman.foreman
-    version: ">=5.11.0"
+  - name: https://github.com/theforeman/foreman-ansible-modules/releases/download/v5.12.0/theforeman-foreman-5.12.0.tar.gz
+    type: url
