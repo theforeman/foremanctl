@@ -1,6 +1,13 @@
 ---
+- name: Check for leftover IOP network
+  containers.podman.podman_network_info:
+  register: _foreman_core_network_legacy_networks
+
 - name: Clean up leftover IOP network from previous deploys
   ansible.builtin.include_tasks: cleanup_legacy_iop_network.yaml
+  when: >-
+    foreman_core_network_legacy_iop_network_name
+    in (_foreman_core_network_legacy_networks.networks | map(attribute='name') | list)
 
 - name: Create foreman-core-network
   containers.podman.podman_network:
