@@ -42,17 +42,6 @@
     state: absent
     force: true
 
-- name: Check if foreman-core-network already exists
-  ansible.builtin.command:
-    argv:
-      - podman
-      - network
-      - exists
-      - "{{ foreman_core_network_name }}"
-  register: _foreman_core_network_exists
-  changed_when: false
-  failed_when: false
-
 - name: Check for leftover IOP subnet on the host
   ansible.builtin.command:
     argv:
@@ -67,6 +56,26 @@
   changed_when: false
   failed_when: false
 
+- name: List Podman networks
+  ansible.builtin.command:
+    argv:
+      - podman
+      - network
+      - ls
+      - --format
+      - "{{ '{{.Name}}' }}"
+  register: _foreman_core_network_network_names
+  changed_when: false
+
+- name: List Podman network interfaces
+  vars:
+    _foreman_core_network_inspect_format: "{{ '{{.NetworkInterface}}' }}"
+  ansible.builtin.command:
+    argv: "{{ ['podman', 'network', 'inspect', '--format', _foreman_core_network_inspect_format] + _foreman_core_network_network_names.stdout_lines }}"
+  register: _foreman_core_network_interfaces
+  changed_when: false
+  when: _foreman_core_network_network_names.stdout_lines | length > 0
+
 - name: Remove leftover host bridge still holding the IOP subnet
   ansible.builtin.command:
     argv:
@@ -75,7 +84,9 @@
       - delete
       - "{{ _foreman_core_network_legacy_addr.stdout.split()[1] }}"
   when:
-    - _foreman_core_network_exists.rc != 0
     - _foreman_core_network_legacy_addr.stdout | length > 0
     - _foreman_core_network_legacy_addr.stdout.split()[1] is match('^podman[0-9]+$')
+    - >-
+      _foreman_core_network_legacy_addr.stdout.split()[1]
+      not in (_foreman_core_network_interfaces.stdout_lines | default([]))
   changed_when: true
