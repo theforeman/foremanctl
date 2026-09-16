@@ -31,8 +31,10 @@
                        caCertificateFile="/etc/candlepin/certs/candlepin-ca.crt">
             <Certificate certificateFile="/etc/candlepin/certs/tomcat.crt"
                          certificateKeyFile="/etc/candlepin/certs/tomcat.key" />
-            <OpenSSLConfCmd name="SignatureAlgorithms"
-                            value="mldsa87:ECDSA+SHA256:ECDSA+SHA384:rsa_pss_rsae_sha256:rsa_pss_rsae_sha384:RSA+SHA256:RSA+SHA384" />
+            <OpenSSLConf>
+                <OpenSSLConfCmd name="SignatureAlgorithms"
+                                value="mldsa87:ECDSA+SHA256:ECDSA+SHA384:rsa_pss_rsae_sha256:rsa_pss_rsae_sha384:RSA+SHA256:RSA+SHA384" />
+            </OpenSSLConf>
         </SSLHostConfig>
 {% else %}
         <SSLHostConfig certificateVerification="optional"
