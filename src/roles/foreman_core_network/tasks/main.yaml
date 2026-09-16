@@ -1,4 +1,7 @@
 ---
+- name: Clean up leftover IOP network from previous deploys
+  ansible.builtin.include_tasks: cleanup_legacy_iop_network.yaml
+
 - name: Create foreman-core-network
   containers.podman.podman_network:
     name: "{{ foreman_core_network_name }}"
