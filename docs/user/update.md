@@ -50,7 +50,7 @@ All steps must be run as root user.
     - Copy the mirrored directory to a stable location (e.g., `/var/repos/foreman`).
     - Redirect the existing repository configuration to use your local mirror:
       - `dnf config-manager --setopt=foreman.baseurl=file:///var/repos/foreman --save`
-    - Verify the mirror is serving the correct package version with `dnf info foremanctl`. This version should match step 5.
+    - Verify the mirror is serving the correct package version with `dnf info foremanctl`. This version should match step 6.
 10. On the disconnected environment, stage the updated container images:
     - `podman load -i <filename>.tar`
 11. On the disconnected environment, run dnf upgrade:
