@@ -1,6 +1,6 @@
-# Updating foremanctl 
+# Updating foremanctl
 
-Foremanctl releases are locked to specific Foreman images with version-compatible dependencies and plugins. Your system's installed `foreman-release` repository configuration RPM locks your system to the correct foremanctl version, which in turn will pull the correct Foreman images. For nearly all install situations, upgrading your Foreman server should be approached through upgrading `foreman-release` and/or `foremanctl`.
+Foremanctl releases are locked to specific Foreman images with version-compatible dependencies and plugins. Your system's installed `foreman-release` repository configuration RPM locks your system to the correct foremanctl version, which in turn will pull the correct Foreman images. For nearly all install situations, upgrading your Foreman server should be approached through upgrading `foremanctl`.
 
 Scroll to the correct procedure below which matches your installation environment type (RPM and disconnected RPM).
 
