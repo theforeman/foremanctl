@@ -16,10 +16,10 @@ All steps must be run as root user.
 2. Consider backing up your Foreman environment before upgrade. See [Backup and Restore](backup-restore.md).
 3. Manually update your Foreman Release repository to the next Foreman Y release:
     - `dnf upgrade https://yum.theforeman.org/releases/<next-version>/el9/x86_64/foreman-release.rpm`
-    - Example: Foreman 3.19 -> 3.20 upgrades would use `dnf upgrade https://yum.theforeman.org/releases/3.20/el9/x86_64/foreman-release.rpm`.
+    - Example: Foreman 3.19 -> 5.0 upgrades would use `dnf upgrade https://yum.theforeman.org/releases/5.0/el9/x86_64/foreman-release.rpm`.
 4. Run dnf upgrade:
     - `dnf upgrade`
-5. (Optional) Pre-pull container images to reduce downtime during deploy:
+5. Optional Pre-pull container images to reduce downtime during deploy:
     - `foremanctl pull-images`
     - This step is optional but recommended. Services can continue running while images are pulled, reducing the downtime window during the deploy.
 6. Stop the existing Foreman services:
@@ -37,7 +37,7 @@ All steps must be run as root user.
 2. Consider backing up your Foreman environment before upgrade. See [Backup and Restore](backup-restore.md).
 3. On a connected machine, install the same Foreman Release repository as your disconnected environment:
     - `dnf install https://yum.theforeman.org/releases/<current-version>/el9/x86_64/foreman-release.rpm`
-    - This installs the `foreman` and `foreman-plugin` repositories.
+    - This installs and enables `foreman` and `foreman-plugins` repositories.
 4. On a connected machine install katello. This can be skipped if you would like Foreman only:
     - `dnf install https://yum.theforeman.org/katello/<current-version>/katello/el9/x86_64/katello-repos-latest.rpm`
 5. On a connected machine, create a local mirror of the Foreman repository:
