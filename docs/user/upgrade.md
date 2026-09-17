@@ -38,11 +38,11 @@ All steps must be run as root user.
 3. On a connected machine, install the same Foreman Release repository as your disconnected environment:
     - `dnf install https://yum.theforeman.org/releases/<current-version>/el9/x86_64/foreman-release.rpm`
     - This installs and enables `foreman` and `foreman-plugins` repositories.
-4. On a connected machine install katello. This can be skipped if you would like Foreman only:
+4. If using `hammer` feature: On a connected machine, install the Katello repository:
     - `dnf install https://yum.theforeman.org/katello/<current-version>/katello/el9/x86_64/katello-repos-latest.rpm`
 5. On a connected machine, create a local mirror of the Foreman repository:
-    - `reposync -n -p /path/to/mirror --download-metadata --an-plugins --repoid=katello`
-    - If Katello was skipped in step 4 omit `--repoid=katello`
+    - `reposync -n -p /path/to/mirror --download-metadata --repoid=foreman`
+    - If using the `hammer` feature, add `--repoid=foreman-plugins --repoid=katello` to the previous command.
 6. On a connected machine, install foremanctl and configure it identically to your disconnected environment:
     - `dnf install foremanctl`
     - Note the version of foremanctl which installed.
@@ -52,13 +52,14 @@ All steps must be run as root user.
     - Confirm the correct images were downloaded by running `podman images`. All images from your previous-version disconnected environment should be present on the connected environment. If images are missing, ensure foremanctl features parameters are identical between machines.
     - Run `podman save $(podman images --format "{{.Repository}}:{{.Tag}}" | tr '\n' ' ') -o <filename>.tar` to export all downloaded images as a tarball.
 8. Using an available transport mechanism, move the following to your disconnected environment:
-    - The foreman repo mirror and contents (contains the updated foremanctl).
+    - The `foreman` repo mirror and contents (contains the upgraded foremanctl package).
     - The foremanctl container image tarball.
 9. On the disconnected environment, set up the repository mirrors:
     - Copy the mirrored directory to a stable location (e.g., `/var/repos/foreman`).
     - Redirect the existing repository configuration to use your local mirror:
       - `dnf config-manager --setopt=foreman.baseurl=file:///var/repos/foreman --save`
     - Verify the mirror is serving the correct package version with `dnf info foremanctl`. This version should match step 6.
+    - If applicable, repeat for `foreman-plugins` and `katello`.
 10. On the disconnected environment, stage the updated container images:
     - `podman load -i <filename>.tar`
 11. On the disconnected environment, run dnf upgrade:
