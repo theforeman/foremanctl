@@ -100,20 +100,6 @@
     - Restart foreman
     - Restart dynflow-sidekiq@
 
-- name: Create Foreman storage directory
-  ansible.builtin.file:
-    path: /var/lib/foreman
-    state: directory
-    owner: root
-    group: root
-    mode: "0755"
-
-- name: Create RH Cloud inventory volume
-  when: enabled_features | has_feature('rh-cloud')
-  containers.podman.podman_volume:
-    name: "{{ foreman_rh_cloud_inventory_volume }}"
-    state: present
-
 - name: Deploy Foreman socket
   ansible.builtin.template:
     src: foreman.socket.j2

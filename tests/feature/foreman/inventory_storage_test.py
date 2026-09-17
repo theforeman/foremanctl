@@ -6,7 +6,7 @@ pytestmark = pytest.mark.feature("rh-cloud")
 
 FOREMAN_STORAGE_PATH = "/var/lib/foreman"
 INVENTORY_PATH = f"{FOREMAN_STORAGE_PATH}/red_hat_inventory"
-GENERATED_REPORTS_PATH = f"{INVENTORY_PATH}/generated_reports"
+UPLOADS_PATH = f"{INVENTORY_PATH}/uploads"
 INVENTORY_VOLUME = "foreman-rh-cloud-inventory"
 
 FOREMAN_AND_DYNFLOW_CONTAINERS = [
@@ -15,14 +15,6 @@ FOREMAN_AND_DYNFLOW_CONTAINERS = [
     "dynflow-sidekiq-worker",
     "dynflow-sidekiq-worker-hosts-queue",
 ]
-
-
-def test_foreman_storage_directory(server):
-    directory = server.file(f"{FOREMAN_STORAGE_PATH}/")
-    assert directory.is_directory
-    assert directory.user == "root"
-    assert directory.group == "root"
-    assert directory.mode == 0o755
 
 
 def test_foreman_inventory_volume(server):
@@ -70,10 +62,10 @@ def test_foreman_inventory_shared_between_foreman_and_dynflow(server):
         server.run(f"podman exec dynflow-sidekiq-worker rm -f {path}")
 
 
-def test_foreman_inventory_generated_reports_writable_from_foreman_and_dynflow(server):
-    path = f"{GENERATED_REPORTS_PATH}/foremanctl-generated-reports-test"
+def test_foreman_inventory_uploads_writable_from_foreman_and_dynflow(server):
+    path = f"{UPLOADS_PATH}/foremanctl-uploads-test"
     try:
-        result = server.run(f"podman exec dynflow-sidekiq-worker mkdir -p {GENERATED_REPORTS_PATH}")
+        result = server.run(f"podman exec dynflow-sidekiq-worker mkdir -p {UPLOADS_PATH}")
         assert result.succeeded, result.stderr
         result = server.run(f"podman exec dynflow-sidekiq-worker touch {path}")
         assert result.succeeded, result.stderr

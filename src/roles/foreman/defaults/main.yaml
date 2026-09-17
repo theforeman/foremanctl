@@ -70,7 +70,7 @@ foreman_base_volumes:
 # Named volume at the plugin path so Foreman and Dynflow share reports.
 foreman_rh_cloud_inventory_volume: foreman-rh-cloud-inventory
 foreman_rh_cloud_volumes:
-  - 'foreman-rh-cloud-inventory:/var/lib/foreman/red_hat_inventory:rw,z,U'
+  - '{{ foreman_rh_cloud_inventory_volume }}:/var/lib/foreman/red_hat_inventory:rw,z,U'
 
 foreman_volumes: "{{ foreman_base_volumes + (foreman_rh_cloud_volumes if enabled_features | has_feature('rh-cloud') else []) }}"
 
