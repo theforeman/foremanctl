@@ -398,19 +398,34 @@ jobs:
       matrix:
         certificate_source:
           - default
-          - custom_server
         security:
           - none
+        box:
+          - centos/stream9
+          - centos/stream10
         include:
+          - certificate_source: custom_server
+            security: none
+            box: centos/stream10
           - certificate_source: default
             security: fapolicyd
+            box: centos/stream9
+          - certificate_source: default
+            security: fapolicyd
+            box: centos/stream10
           - certificate_source: default
             security: fips
+            box: centos/stream9
+          - certificate_source: default
+            security: fips
+            box: centos/stream10
+    env:
+      FOREMANCTL_BASE_BOX: ${{ matrix.box }}
     runs-on: ubuntu-24.04
     name: "Tests Proxy Deployment"
     steps:
       - name: generate artifact suffix
-        run: echo "ARTIFACT_SUFFIX=$(echo '${{ matrix.certificate_source }}-${{ matrix.security }}' | tr -cd '[:alnum:]-')" >> "${GITHUB_ENV}"
+        run: echo "ARTIFACT_SUFFIX=$(echo '${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.box }}' | tr -cd '[:alnum:]-')" >> "${GITHUB_ENV}"
       - uses: actions/checkout@v7
       - name: Set up Python
         uses: actions/setup-python@v7
