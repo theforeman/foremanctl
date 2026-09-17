@@ -34,6 +34,26 @@
     path: "{{ certificates_ca_directory_keys }}/ca.pwd"
     state: absent
 
+- name: 'Inspect the existing CA key algorithm'
+  community.crypto.openssl_privatekey_info:
+    path: "{{ certificates_ca_directory_keys }}/ca.key"
+  register: _certificates_existing_ca_key_info
+  when:
+    - _certificates_existing_ca_key.stat.exists
+    - not certificates_ca_renew
+
+- name: 'Fail when the requested algorithm differs from the existing CA key'
+  ansible.builtin.fail:
+    msg: >-
+      The existing CA key uses {{ _certificates_existing_ca_key_info.type }}, but
+      --certificate-algorithm requested {{ certificates_algorithm_type }}. Changing
+      the CA algorithm reissues the CA and invalidates every certificate it signed.
+      Pass --certificate-ca-renew to reissue the CA and all certificates.
+  when:
+    - _certificates_existing_ca_key.stat.exists
+    - not certificates_ca_renew
+    - _certificates_existing_ca_key_info.type != certificates_algorithm_type
+
 - name: 'Generate CA'
   when:
     - (not _certificates_ca_cert.stat.exists or certificates_ca_renew)
@@ -41,8 +61,10 @@
     - name: 'Create CA private key'
       community.crypto.openssl_privatekey:
         path: "{{ certificates_ca_directory_keys }}/ca.key"
-        type: "{{ certificates_algorithm_type }}"
-        size: "{{ certificates_algorithm_size }}"
+        type: "{{ _certificates_key_parameters.type }}"
+        size: "{{ _certificates_key_parameters.size | default(omit) }}"
+        curve: "{{ _certificates_key_parameters.curve | default(omit) }}"
+        format: "{{ _certificates_key_parameters.format | default(omit) }}"
         owner: root
         group: root
         mode: '0600'

@@ -404,8 +404,16 @@ jobs:
         certificate_source:
           - default
           - custom_server
+        certificate_algorithm:
+          - RSA
+        # Exercise a Candlepin (Katello) deployment with a non-RSA CA to confirm
+        # entitlement-certificate signing works. The default box is stream10,
+        # which ships a python-cryptography new enough to generate ML-DSA keys.
+        include:
+          - certificate_source: default
+            certificate_algorithm: ML-DSA-87
     runs-on: ubuntu-24.04
-    name: "Tests Proxy Deployment"
+    name: "Tests Proxy Deployment (certificates: ${{ matrix.certificate_source }}, algorithm: ${{ matrix.certificate_algorithm }})"
     steps:
       - uses: actions/checkout@v7
       - name: Set up Python
@@ -435,6 +443,7 @@ jobs:
         run: |
           ./foremanctl deploy \
             --certificate-source=${{ matrix.certificate_source }} \
+            --certificate-algorithm=${{ matrix.certificate_algorithm }} \
             ${{ matrix.certificate_source == 'custom_server' && '--certificate-server-certificate /root/custom-certificates/certs/quadlet.example.com.crt --certificate-server-key /root/custom-certificates/private/quadlet.example.com.key --certificate-server-ca-certificate /root/custom-certificates/certs/ca.crt' || '' }} \
             --initial-admin-password=changeme \
             --tuning development \
@@ -471,7 +480,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v7
         with:
-          name: sosreport-proxy-content-${{ matrix.certificate_source }}
+          name: sosreport-proxy-content-${{ matrix.certificate_source }}-${{ matrix.certificate_algorithm }}
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}

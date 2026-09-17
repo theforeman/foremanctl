@@ -1,0 +1,31 @@
+---
+# Private key parameters derived from the selected algorithm, shaped for the
+# arguments community.crypto.openssl_privatekey expects: RSA takes a size, ECC
+# takes a curve, and ML-DSA takes neither. The accepted algorithms and the
+# rule that size only applies to RSA and curve only to ECC are enforced by the
+# choices and forbidden_if constraints in _certificate_algorithm's metadata;
+# here we just hand the module the parameter that matches and omit the rest.
+#
+# ECC additionally forces the PKCS#8 key format. community.crypto defaults ECC
+# keys to the legacy SEC1 encoding (-----BEGIN EC PRIVATE KEY-----), which
+# Candlepin's key reader does not recognize (it only accepts RSA and PKCS#8
+# PRIVATE KEY headers), so it fails to start. RSA is left on its default format
+# for stability, and ML-DSA already defaults to PKCS#8.
+#
+# ML-DSA-87 needs community.crypto 3.3.0 to generate the keys and
+# python-cryptography 49.0.0 to sign certificates and CSRs with them. On a
+# platform whose python-cryptography is older, selecting ML-DSA-87 fails at key
+# generation.
+_certificates_key_parameters: >-
+  {{
+    {'type': certificates_algorithm_type}
+    | combine({'size': certificates_algorithm_rsa_size} if certificates_algorithm_type == 'RSA' else {})
+    | combine({'curve': certificates_algorithm_ecc_curve} if certificates_algorithm_type == 'ECC' else {})
+    | combine({'format': 'pkcs8'} if certificates_algorithm_type == 'ECC' else {})
+  }}
+
+# Key encipherment is an RSA-only capability. Non-RSA keys can only sign, so
+# their leaf certificates must not request it. The CA certificate is a separate
+# case handled in ca.yml, where every algorithm additionally carries
+# keyCertSign and cRLSign.
+_certificates_key_usage: "{{ ['digitalSignature'] + (['keyEncipherment'] if certificates_algorithm_type == 'RSA' else []) }}"

@@ -200,13 +200,23 @@ function check-cert-san () {
     fi
 }
 
-function check-cert-usage-key-encipherment () {
-    printf "Checking Key Usage extension on certificate for Key Encipherment "
-    CHECK=$(openssl x509 -noout -text -in $CERT_FILE | grep -A1 'X509v3 Key Usage:' | grep 'Key Encipherment')
-    if [[ $? == "0" ]]; then
+function check-cert-key-usage () {
+    KEY_ALGORITHM=$(openssl x509 -noout -text -in $CERT_FILE | grep -m1 'Public Key Algorithm:' | sed -e 's/.*Public Key Algorithm: //' -e 's/[[:space:]]*$//')
+    KEY_USAGE=$(openssl x509 -noout -text -in $CERT_FILE | grep -A1 'X509v3 Key Usage' | tail -n 1)
+
+    # Only RSA keys can perform key encipherment. EC and ML-DSA certificates
+    # carry Digital Signature instead.
+    if [[ "$KEY_ALGORITHM" == "rsaEncryption" ]]; then
+        REQUIRED_USAGE="Key Encipherment"
+    else
+        REQUIRED_USAGE="Digital Signature"
+    fi
+
+    printf "Checking Key Usage extension on certificate for %s " "$REQUIRED_USAGE"
+    if grep -q "$REQUIRED_USAGE" <<< "$KEY_USAGE"; then
         success
     else
-        error 4 "The $CERT_FILE does not allow for the 'Key Encipherment' key usage."
+        error 4 "The $CERT_FILE does not allow for the '$REQUIRED_USAGE' key usage."
     fi
 }
 
@@ -235,8 +245,24 @@ function check-shortname () {
 
 function check-ca-signing-algorithm () {
     printf "Checking CA signing algorithm for sha1: "
-    CHECK=$(openssl crl2pkcs7 -nocrl -certfile "$CA_BUNDLE_FILE" | openssl pkcs7 -print | grep algorithm | grep -q 'sha1WithRSAEncryption')
-    if [[ $? == "0" ]]; then
+
+    # The signature algorithm is named after the key type that signed the
+    # certificate (sha1WithRSAEncryption, ecdsa-with-SHA1, ...), so match on the
+    # digest rather than on the RSA spelling of it.
+    SHA1_CERTS=0
+    CERT=""
+    while IFS= read -r LINE; do
+        CERT+="${LINE}"$'\n'
+        [[ $LINE == *"END CERTIFICATE"* ]] || continue
+
+        ALGORITHM=$(printf '%s' "$CERT" | openssl x509 -noout -text 2>/dev/null | grep -m1 'Signature Algorithm:')
+        CERT=""
+        if grep -qi 'sha1' <<< "$ALGORITHM"; then
+            SHA1_CERTS=$((SHA1_CERTS + 1))
+        fi
+    done <"$CA_BUNDLE_FILE"
+
+    if [[ $SHA1_CERTS -gt 0 ]]; then
         error 4 "The file '$CA_BUNDLE_FILE' contains a certificate signed with sha1 and will break installation. Update the server CA certificate and its chain with one signed by sha256 or stronger."
     else
         success
@@ -253,7 +279,7 @@ check-ca-bundle
 check-ca-bundle-size
 check-ca-bundle-trust-rules
 check-cert-san
-check-cert-usage-key-encipherment
+check-cert-key-usage
 check-shortname
 check-ca-signing-algorithm
 
