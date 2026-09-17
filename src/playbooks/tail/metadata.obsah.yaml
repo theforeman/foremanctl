@@ -1,0 +1,13 @@
+---
+help: |
+  Show recent logs from Foreman services (similar to foreman-tail)
+variables:
+  services:
+    parameter: --service
+    help: Specific service to tail. Can be specified multiple times. Defaults to all services.
+    action: append
+    persist: false
+  lines:
+    help: Number of recent log lines to show per service.
+    default: 50
+    persist: false
