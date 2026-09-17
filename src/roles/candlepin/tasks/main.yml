@@ -87,8 +87,6 @@
       - 'candlepin-tomcat-logging-properties,target=/etc/tomcat/logging.properties,{{ candlepin_secret_mount_opts }}'
       - 'candlepin-logback-xml,target=/var/lib/tomcat/webapps/candlepin/WEB-INF/classes/logback.xml,{{ candlepin_secret_mount_opts }}'
       - 'candlepin-db-ca,target={{ candlepin_database_ssl_ca_path }},{{ candlepin_secret_mount_opts }}'
-    volume:
-      - '/etc/crypto-policies:/etc/crypto-policies:ro'
     quadlet_options:
       - |
         [Install]
