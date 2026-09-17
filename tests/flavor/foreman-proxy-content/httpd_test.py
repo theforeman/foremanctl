@@ -26,12 +26,12 @@ def test_https_redhat_access_proxy(curl_request):
 
 
 def test_rhsm_proxy_timeout(server):
-    vhost = server.file("/etc/httpd/conf.d/foreman-ssl.conf")
+    vhost = server.file("/etc/httpd/conf.d/pulpcore-ssl.conf")
     assert vhost.contains(r"ProxyPass /rhsm .* timeout=180")
 
 
 def test_redhat_access_proxy_timeout(server):
-    vhost = server.file("/etc/httpd/conf.d/foreman-ssl.conf")
+    vhost = server.file("/etc/httpd/conf.d/pulpcore-ssl.conf")
     assert vhost.contains(r"ProxyPass /redhat_access .* timeout=120")
 
 
