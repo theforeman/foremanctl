@@ -4,6 +4,7 @@ from foremanctl import foreman_plugins
 from foremanctl import foreman_proxy_plugins
 from foremanctl import hammer_plugins
 from foremanctl import list_all_features
+from foremanctl import unsatisfied_dependencies
 
 
 def _asymmetric_conflicts():
@@ -66,6 +67,38 @@ def test_list_all_features_marks_dependency_as_enabled(monkeypatch):
     output = list_all_features(['test-parent'])
     child_line = next(line for line in output.splitlines() if line.startswith('test-child'))
     assert 'enabled' in child_line
+
+
+def test_unsatisfied_dependencies_none_when_nothing_removed():
+    assert unsatisfied_dependencies(['foreman', 'katello'], []) == []
+
+
+def test_unsatisfied_dependencies_ignores_transitive_deps():
+    # httpd/valkey/dynflow/tasks are never listed explicitly; with no removals
+    # requested this must not report them as missing.
+    assert unsatisfied_dependencies(['foreman', 'katello', 'pulp']) == []
+
+
+def test_unsatisfied_dependencies_detects_removed_dependency(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-parent', {'dependencies': ['test-child']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-child', {})
+    result = unsatisfied_dependencies(['test-parent'], ['test-child'])
+    assert result == ["Cannot remove 'test-child' — it is required by enabled feature 'test-parent'"]
+
+
+def test_unsatisfied_dependencies_detects_transitively_removed_dependency(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-parent', {'dependencies': ['test-mid']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-mid', {'dependencies': ['test-leaf']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-leaf', {})
+    result = unsatisfied_dependencies(['test-parent'], ['test-leaf'])
+    assert any("Cannot remove 'test-leaf'" in error for error in result)
+
+
+def test_unsatisfied_dependencies_allows_unrelated_removal(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-parent', {'dependencies': ['test-child']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-child', {})
+    monkeypatch.setitem(FEATURE_MAP, 'test-other', {})
+    assert unsatisfied_dependencies(['test-parent'], ['test-other']) == []
 
 
 def test_foreman_plugins_deduplicates(monkeypatch):

@@ -6,6 +6,6 @@ variables:
     action: append_unique
   remove_features:
     parameter: --remove-feature
-    help: Additional features to disable in this deployment.
-    action: remove
-    dest: features
+    help: Features to remove from this deployment.
+    action: append_unique
+    persist: false
