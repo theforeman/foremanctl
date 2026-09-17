@@ -87,6 +87,28 @@
   notify:
     - Restart httpd
 
+- name: Enable registration admission control modules
+  when: httpd_registration_admission_max | int > 0
+  notify:
+    - Restart httpd
+  block:
+    - name: Configure proxy balancer modules
+      ansible.builtin.template:
+        src: proxy-balancer.conf.j2
+        dest: /etc/httpd/conf.modules.d/proxy-balancer.conf
+        mode: "0644"
+        setype: httpd_config_t
+
+- name: Disable registration admission control modules
+  when: httpd_registration_admission_max | int == 0
+  notify:
+    - Restart httpd
+  block:
+    - name: Remove proxy balancer modules
+      ansible.builtin.file:
+        path: /etc/httpd/conf.modules.d/proxy-balancer.conf
+        state: absent
+
 - name: Configure external authentication
   ansible.builtin.include_tasks: "external_auth/{{ httpd_external_authentication }}.yml"
   when:
