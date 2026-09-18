@@ -121,6 +121,8 @@ Deploy using the custom Pulp container image:
 ```
 ## Plugin Management
 
+Each enabled plugin is cloned into its own directory alongside the Foreman checkout (for example `/home/vagrant/katello`) and wired in as a local path gem, so edits to the plugin source are picked up by the development server.
+
 ### Enabled Plugins (Default)
 
 - `katello`
@@ -193,7 +195,6 @@ Run all the steps as the root user in the foremanctl source directory unless oth
 
 This final deploy command will pull new images and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
 
-
 ## Architecture
 
 ### Service Integration
@@ -218,3 +219,28 @@ Development certificates are copied to `/home/vagrant/foreman-certs/`:
 
 - **Backup/Restore with Multiple Nodes**: When running both quadlet and proxy nodes with the same controller, ensure you're switching to the correct `obsah_state` context before performing backup or restore operations. On user installs, foreman quadlet and smart proxy map to localhost (same machine). In the development environment, these are separate VMs which alters behavior.
 - **BACKUP_DIR Location**: The `BACKUP_DIR` argument in backup/restore commands refers to a directory on the target node (the VM running quadelt/proxy), not the controller node running foremanctl.
+
+### Verifying the Deployment (Optional)
+
+After deployment, verify the Foreman service and API on the target host:
+
+```bash
+systemctl status foreman-development
+curl -sk http://$(hostname -f):3000/api/v2/ping
+```
+
+If the API does not respond, inspect the service log and restart the service:
+
+```bash
+journalctl -u foreman-development -n 100 --no-pager
+sudo systemctl restart foreman-development
+```
+
+For container and systemd health checks, inspect the services with:
+
+```bash
+sudo podman ps -a
+systemctl list-units --type=service --all --no-pager \\
+  | grep -E '(foreman|pulp|candlepin|httpd|postgres|valkey)'
+systemctl --failed --no-pager
+```
