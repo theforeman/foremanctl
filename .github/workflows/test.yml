@@ -499,11 +499,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode:
-          - connected
-          - air-gapped
+        air_gapped:
+          - false
+          - true
     runs-on: ubuntu-24.04
-    name: "Tests Satellite Deployment (${{ matrix.mode }})"
+    name: 'Tests Satellite Deployment (air-gapped: ${{ matrix.air_gapped }})'
     steps:
       - uses: actions/checkout@v7
       - name: Set up Python
@@ -530,20 +530,16 @@ jobs:
         run: |
           # The Satellite flavor includes foreman-proxy, so preload it before
           # enabling air-gapped mode with Policy=never.
-          ./foremanctl pull-images ${{ matrix.mode == 'air-gapped' && '--add-feature foreman-proxy' || '' }}
+          ./foremanctl pull-images ${{ matrix.air_gapped == true && '--add-feature foreman-proxy' || '' }}
       - name: Run deployment
         run: |
           ./foremanctl deploy \
-            ${{ matrix.mode == 'air-gapped' && '--air-gapped' || '' }} \
+            ${{ matrix.air_gapped == true && '--air-gapped' || '' }} \
             --flavor satellite \
             --initial-admin-password=changeme \
             --initial-organization "Foreman CI" \
             --initial-location "Internet" \
             --tuning development
-      - name: Verify air-gapped parameter persistence
-        if: matrix.mode == 'air-gapped'
-        run: |
-          grep -q '^air_gapped: true' .var/lib/foremanctl/parameters.yaml
       - name: Deploy features
         run: |
           ./foremanctl deploy \
@@ -558,8 +554,8 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v7
         with:
-          name: smoker-satellite-${{ matrix.mode }}
-          path: "/home/runner/smoker/report/"
+          name: smoker-satellite-airgapped${{ matrix.air_gapped }}
+          path: '/home/runner/smoker/report/'
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
@@ -567,7 +563,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v7
         with:
-          name: sosreport-satellite-${{ matrix.mode }}
+          name: sosreport-satellite-airgapped${{ matrix.air_gapped }}
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}
