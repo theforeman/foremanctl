@@ -21,7 +21,7 @@
   :request_timeout: 120
 
 
-{% if hammer_ca_certificate is defined and hammer_ca_certificate != "" %}
+{% if hammer_ca_certificate is defined %}
 :ssl:
-  :ssl_ca_file: '{{ hammer_ca_certificate }}'
+  :ssl_ca_file: '/etc/hammer/server-ca.crt'
 {% endif %}
