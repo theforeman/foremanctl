@@ -166,7 +166,7 @@ jobs:
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
-          ./forge test
+          ./forge test --pytest-args="--featureset=${{ matrix.iop == 'enabled' && 'default-iop' || 'default' }}"
       - name: Run smoker
         run: |
           ./forge smoker
@@ -276,6 +276,7 @@ jobs:
             --add-feature hammer \
             --add-feature foreman-proxy \
             --add-feature azure-rm \
+            --add-feature bmc \
             --add-feature google \
             --add-feature remote-execution
       - name: Stop services
@@ -296,7 +297,7 @@ jobs:
           ./foremanctl health
       - name: Run tests
         run: |
-          ./forge test
+          ./forge test --pytest-args="--featureset=upgrade"
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
@@ -360,13 +361,15 @@ jobs:
             --tuning development \
             --add-feature hammer \
             --add-feature foreman-proxy \
+            --add-feature ansible \
             --add-feature azure-rm \
+            --add-feature bmc \
             --add-feature google \
             --add-feature remote-execution \
             --add-feature webhooks
       - name: Run tests
         run: |
-          ./forge test
+          ./forge test --pytest-args="--featureset=migration"
       - name: Run smoker
         run: |
           ./forge smoker
@@ -490,7 +493,7 @@ jobs:
             --add-feature bmc
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--server-hostname=proxy"
+          ./forge test --pytest-args="--server-hostname=proxy --featureset=proxy"
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
@@ -549,7 +552,7 @@ jobs:
             --add-feature bmc
       - name: Run tests
         run: |
-          ./forge test
+          ./forge test --pytest-args="--featureset=satellite"
       - name: Run smoker
         run: |
           ./forge smoker
@@ -625,10 +628,11 @@ jobs:
             --auth-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
             --foreman-fqdn quadlet.example.com \
             --templates-url http://proxy.example.com:8000 \
-            --registration-url https://loadbalancer.example.com:8443
+            --registration-url https://loadbalancer.example.com:8443 \
+            --add-feature bmc
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--server-hostname=proxy"
+          ./forge test --pytest-args="--server-hostname=proxy --featureset=capsule"
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
