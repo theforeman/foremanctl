@@ -197,11 +197,11 @@ No user action required beyond installing the RPM and logging into the product r
 podman login --authfile=/etc/foreman/registry-auth.json registry.example.com
 ```
 
-##### Disconnected install from local media
+##### Air-gapped install from local media
 
-In air-gapped environments, container images must be brought in without network access. Images are loaded directly into Podman's container storage using `skopeo copy` before running `foremanctl deploy`.
+In fully air-gapped environments, all container images required by the selected flavor and enabled features must be loaded into local Podman storage before running `foremanctl deploy`.
 
-For each image, run:
+Product-provided offline-media tooling can preload these images automatically. For manual development or testing, an image can be imported with:
 
 ```bash
 skopeo copy \
@@ -209,9 +209,22 @@ skopeo copy \
   containers-storage:{pullspec}
 ```
 
-Where `{pullspec}` matches the effective image reference for each unit — the value from `src/vars/images.yml` (e.g. `quay.io/foreman/foreman:nightly`), or the overriding `Image=` from any drop-in present (e.g. a product RPM's `10-product.conf`). The pullspec used for `containers-storage:` must match what the merged quadlet unit will resolve to, or the image will not be found at deploy time. Once all images are loaded, run `foremanctl deploy` — the `.image` units start with `Policy=missing`, find the images already in storage, and do not attempt registry pulls.
+The destination `{pullspec}` must exactly match the effective image reference used by the generated Quadlet unit, including any `Image=` override provided by a drop-in.
 
-Do not run `foremanctl pull-images` in a disconnected environment. That command adds a `Policy=always` drop-in and restarts image services to force a registry pull, which will fail without network access.
+After all required images are available locally, enable air-gapped mode:
+
+```bash
+./foremanctl deploy --air-gapped
+```
+
+When `--air-gapped` is enabled:
+1. Generated image units use `Policy=never`.
+2. Existing `00-pull-always.conf` overrides are removed.
+3. Missing images cause deployment to fail instead of triggering a registry pull.
+4. `foremanctl pull-images` is rejected without contacting a registry.
+5. Katello’s `subscription_connection_enabled` setting is configured as read-only `false`
+
+The `air_gapped` value is persisted in `/var/lib/foremanctl/parameters.yaml` and reused by subsequent foremanctl commands. Offline-media tooling may also persist this value before the first deployment.
 
 ##### User's own registry
 
@@ -284,7 +297,7 @@ The `foremanctl pull-images` command is an optional pre-deployment step that pul
 
 Because the pull goes through the image services, any `.image.d` drop-ins already in place (e.g., from a product RPM) are respected — the image is pulled from whatever source the merged configuration specifies.
 
-`pull-images` requires network access to the configured registry. For disconnected installs where images have been pre-loaded into container storage via `skopeo copy`, run `foremanctl deploy` directly instead.
+`pull-images` requires access to the configured container registry. It is rejected whenever air-gapped mode is active. For air-gapped installations, preload all required images into local container storage before running `foremanctl deploy --air-gapped`.
 
 ## Deployer Stages
 

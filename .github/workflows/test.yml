@@ -98,13 +98,19 @@ jobs:
             database: internal
             box: centos/stream10
             iop: disabled
+          - certificate_source: default
+            security: none
+            database: internal
+            box: centos/stream9
+            iop: disabled
+            air_gapped: true
     runs-on: ubuntu-24.04
     env:
       FOREMANCTL_BASE_BOX: ${{ matrix.box }}
-    name: "Tests (certificates: ${{ matrix.certificate_source }}, database: ${{ matrix.database }}, security: ${{ matrix.security }}, box: ${{ matrix.box }}, iop: ${{ matrix.iop }})"
+    name: "Tests (certificates: ${{ matrix.certificate_source }}, database: ${{ matrix.database }}, security: ${{ matrix.security }}, box: ${{ matrix.box }}, iop: ${{ matrix.iop }}, air-gapped: ${{ matrix.air_gapped == true }})"
     steps:
       - name: generate artifact suffix
-        run: echo "ARTIFACT_SUFFIX=$(echo '${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.database }}-${{ matrix.box }}-iop${{ matrix.iop }}' | tr -cd '[:alnum:]-')" >> "${GITHUB_ENV}"
+        run: echo "ARTIFACT_SUFFIX=$(echo '${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.database }}-${{ matrix.box }}-iop${{ matrix.iop }}-airgapped${{ matrix.air_gapped == true }}' | tr -cd '[:alnum:]-')" >> "${GITHUB_ENV}"
       - uses: actions/checkout@v7
       - name: Set up Python
         uses: actions/setup-python@v7
@@ -139,11 +145,12 @@ jobs:
           ./forge security --mode ${{ matrix.security }}
       - name: Run image pull
         run: |
-          ./foremanctl pull-images ${{ matrix.database == 'external' && '--database-mode=external' || '' }}
+          ./foremanctl pull-images ${{ matrix.database == 'external' && '--database-mode=external' || '' }} ${{ matrix.air_gapped == true && '--add-feature foreman-proxy' || '' }}
       - name: Run deployment
         run: |
           ./foremanctl deploy \
             --certificate-source=${{ matrix.certificate_source }} \
+            ${{ matrix.air_gapped == true && '--air-gapped' || '' }} \
             ${{ matrix.database == 'external' && '--database-mode=external --database-host=database.example.com --database-ssl-ca $(pwd)/.var/lib/foremanctl/db-ca.crt --database-ssl-mode verify-full' || '' }} \
             ${{ matrix.certificate_source == 'custom_server' && '--certificate-server-certificate /root/custom-certificates/certs/quadlet.example.com.crt --certificate-server-key /root/custom-certificates/private/quadlet.example.com.key --certificate-server-ca-certificate /root/custom-certificates/certs/ca.crt' || '' }} \
             --initial-admin-password=changeme \
@@ -508,8 +515,14 @@ jobs:
           wait-timeout-minutes: 5
 
   satellite-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        mode:
+          - connected
+          - air-gapped
     runs-on: ubuntu-24.04
-    name: "Tests Satellite Deployment"
+    name: "Tests Satellite Deployment (${{ matrix.mode }})"
     steps:
       - uses: actions/checkout@v7
       - name: Set up Python
@@ -534,10 +547,13 @@ jobs:
           ./forge setup-repositories
       - name: Run image pull
         run: |
-          ./foremanctl pull-images
+          # The Satellite flavor includes foreman-proxy, so preload it before
+          # enabling air-gapped mode with Policy=never.
+          ./foremanctl pull-images ${{ matrix.mode == 'air-gapped' && '--add-feature foreman-proxy' || '' }}
       - name: Run deployment
         run: |
           ./foremanctl deploy \
+            ${{ matrix.mode == 'air-gapped' && '--air-gapped' || '' }} \
             --flavor satellite \
             --initial-admin-password=changeme \
             --initial-organization "Foreman CI" \
@@ -557,7 +573,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v7
         with:
-          name: smoker-satellite
+          name: smoker-satellite-${{ matrix.mode }}
           path: "/home/runner/smoker/report/"
       - name: Generate sos reports
         if: ${{ always() }}
@@ -566,7 +582,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v7
         with:
-          name: sosreport-satellite
+          name: sosreport-satellite-${{ matrix.mode }}
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}
