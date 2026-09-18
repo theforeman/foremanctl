@@ -6,7 +6,7 @@ description: >-
 
 # Foremanctl Dev Setup
 
-Set up a Foreman/Katello development environment via `forge deploy-dev`. Foreman is installed from git and runs directly on the VM as a Rails server. Backend services (PostgreSQL, Valkey, Candlepin, Pulp, HTTPD) run in containers.
+Set up a Foreman/Katello development environment via `forge deploy-dev`. See the [development environment overview](../../../docs/developer/development-environment.md#overview) for the architecture and service layout.
 
 **Always use this skill** for foremanctl dev environment tasks — including partial workflows. Do not reimplement steps manually via ad-hoc commands when this skill covers the task.
 
@@ -19,44 +19,21 @@ Steps are composable. Ask what the user already has, then run only the matching 
 | Full environment from scratch | Nothing yet | Steps 1 → 2 → 3 → 4 → (optional 5) |
 | VMs already running, deploy Foreman | Vagrant VMs up, inventory exists | Step 3 → 4 → (optional 5) |
 | Re-deploy with different plugins | Vagrant VMs up | Step 3 (re-run with new plugin selection) → 4 |
-| Add hammer to existing deployment | Deployed environment | Step 5 |
+| Add features to existing deployment | Deployed environment | Step 5 |
 | Verify deployment health | Deployed environment | Step 4 |
 | Provision VMs only | Vagrant + libvirt installed | Steps 1 → 2 |
 
-When the user asks for a single step (e.g. "just run tests"), use the matching row above — do not skip the skill.
+When the user asks for a single step (e.g. "verify my deployment"), use the matching row above — do not skip the skill.
 
 ## Prerequisites
 
-Before starting, verify the following are installed on the local machine:
+Before starting, follow the [development prerequisites](../../../DEVELOPMENT.md#requirements).
 
-- **Python 3** — virtualenv and dependencies
-- **Ansible 2.14+** — automation runtime
-- **Vagrant 2.2+** — VM lifecycle management
-- **vagrant-libvirt** — Vagrant plugin for libvirt/KVM backend
-- **libvirt** — hypervisor for local VMs
-- **Virtualization** — enabled in BIOS/UEFI
-
-Follow [instructions](https://github.com/theforeman/forklift/blob/master/docs/vagrant.md) to install Vagrant and libvirt.
-
-Check with:
-```bash
-command -v python3 && command -v vagrant && vagrant plugin list | grep -q vagrant-libvirt && echo "All prerequisites met"
-```
+For Vagrant and libvirt installation, see the [Vagrant and libvirt instructions](https://github.com/theforeman/forklift/blob/master/docs/vagrant.md).
 
 ## Step 1 — Set up environment
 
-Set up the Python virtualenv and build Ansible collections.
-
-Run from the project root:
-
-```bash
-./setup-environment
-source .venv/bin/activate
-```
-
-Validate that `build/collections/foremanctl` and `build/collections/forge` directories exist. Report Python and Ansible versions.
-
-`./setup-environment` is idempotent — safe to re-run if `.venv` already exists.
+Follow the [development environment prerequisites and setup instructions](../../../DEVELOPMENT.md#development-environment-setup). Run `./setup-environment` from the project root and activate `.venv`; the setup script is idempotent and safe to re-run.
 
 ## Step 2 — Provision VMs
 
@@ -80,27 +57,9 @@ Validate that `inventories/local_vagrant` was generated — show its contents.
 
 Deploy Foreman and all supporting services to the target VM.
 
-**Plugins** — each selected plugin is git-cloned into its own directory under the deployment dir (`/home/<dev-user>/`, e.g. `/home/vagrant/katello/`, `/home/vagrant/foreman_remote_execution/`). Plugins are local path gems — source edits are picked up immediately by the Rails server. Ask the user to select using `AskUserQuestion` with `multiSelect: true`:
+**Plugins** — follow the [plugin management documentation](../../../docs/developer/development-environment.md#plugin-management) for the available plugins and their behavior. Ask the user which plugins to enable, allowing multiple selections. The default plugins are `katello` and `foreman_remote_execution`.
 
-- `foreman_remote_execution` — Remote Execution
-- `foreman_ansible` — Ansible integration
-- `foreman_rh_cloud` — Red Hat Cloud
-- `foreman_discovery` — Bare-metal host discovery
-- `foreman_openscap` — OpenSCAP security audits
-- `foreman_bootdisk` — Boot disk provisioning
-- `foreman_theme_satellite` — Satellite theme
-- `foreman_tasks` — Task management
-- `foreman_webhooks` — Webhook notifications
-- `foreman_templates` — Template sync
-- `foreman_leapp` — RHEL in-place upgrades (Leapp)
-- `foreman_puppet` — Puppet integration
-
-Default plugins (always included): `katello`, `foreman_remote_execution`. Make this clear in the question.
-
-**Features** — enable additional infrastructure services. Ask if the user wants any:
-
-- `hammer` — Foreman CLI (git checkout of hammer-cli + plugins)
-- `foreman-proxy` — Smart Proxy (git checkout, registered into Foreman)
+**Features** — enable additional infrastructure services. Follow the [feature management documentation](../../../docs/developer/development-environment.md#feature-management) for the available features and their behavior. Ask if the user wants `hammer` or `foreman-proxy`.
 
 Then ask (skip if user provides no input):
 - **GitHub username** — for additional git remotes on checkouts
@@ -119,58 +78,28 @@ Build the `./forge deploy-dev` command:
 **SSH authentication** — when `--target-host` is set (non-Vagrant), test SSH key auth before deploying:
 
 ```bash
-ssh -o BatchMode=yes -o ConnectTimeout=5 <user>@<host> "echo OK" 2>/dev/null
+ssh -o BatchMode=yes -o ConnectTimeout=5 <user>@<host> "echo OK"
 ```
 
 - If this succeeds, key-based auth works — no password needed.
-- If this fails, the host requires password authentication. Show the full command prefixed with `ANSIBLE_ASK_PASS=true` and tell the user to run it themselves using the `!` prefix so the interactive password prompt works within this session. Do NOT attempt to run `ANSIBLE_ASK_PASS=true` commands directly — the password prompt requires an interactive terminal.
+- If this fails, preserve and show the SSH diagnostic; do not assume that password authentication is required. Suggest `ANSIBLE_ASK_PASS=true` only when the diagnostic clearly indicates that password authentication is applicable. Tell the user to run the full command themselves using the `!` prefix so the interactive password prompt works within this session. Otherwise, ask the user to correct the SSH connection issue before deployment. Do NOT attempt to run `ANSIBLE_ASK_PASS=true` commands directly — the password prompt requires an interactive terminal.
 
 Example:
 ```
-! source .venv/bin/activate && ANSIBLE_ASK_PASS=true ./forge deploy-dev [args...]
+! ANSIBLE_ASK_PASS=true ./forge deploy-dev [args...]
 ```
 
 ## Step 4 — Verify deployment
 
-Verify SSH access, container health, systemd services, and Foreman API on the deployed host.
+If deployment completed successfully, confirm that the Foreman API responds on the deployed host. Report the result.
 
-Determine the host and SSH details: if Vagrant was used, extract from `inventories/local_vagrant`; if `--target-host` was used, use that value directly.
-
-```bash
-python3 -c "
-import yaml
-with open('inventories/local_vagrant') as f:
-    inv = yaml.safe_load(f)
-host = inv['all']['hosts']['quadlet']
-print(host.get('ansible_host', ''))
-print(host.get('ansible_ssh_private_key_file', ''))
-"
-```
-
-Run these checks and report results:
-
-1. **SSH**: `ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 <user>@<host> "echo OK"`
-2. **Containers**: `ssh ... "sudo podman ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"`
-3. **Systemd**: `ssh ... "systemctl list-units --type=service --state=running --no-pager | grep -E '(foreman|pulp|candlepin|httpd|postgres|valkey)'"`
-4. **Foreman API**: `curl -sk http://<host>:3000/api/v2/ping`
-
-If Foreman is not reachable (deploy-dev stops the service after initial setup), start it:
-```
-ssh <user>@<host> "sudo systemctl start foreman-development"
-```
-
-**Troubleshooting:**
-- **SSH connection refused** — VM may still be booting; wait and retry.
-- **Containers not running** — check `sudo podman ps -a` for exited containers and `journalctl -u quadlet-*` for errors.
-- **Foreman not ready** — webpack compilation can take 60-120s. Check `tail -50 /tmp/foreman.log` on the VM.
-- **API returns 401** — credentials may differ from the default `admin:changeme`. Verify with `curl -sk -u admin:changeme http://<host>:3000/api/v2/status`.
+Only perform container, systemd, or log checks if deployment failed or the API does not respond. See the [deployment verification instructions](../../../docs/developer/development-environment.md#verifying-the-deployment) for troubleshooting.
 
 ## Step 5 — Add features to existing deployment (optional)
 
 Re-run deploy-dev with `--add-feature` to add `hammer` or `foreman-proxy` after initial deployment:
 
 ```bash
-source .venv/bin/activate
 ./forge deploy-dev --add-feature hammer --add-feature foreman-proxy
 ```
 
@@ -179,7 +108,6 @@ source .venv/bin/activate
 Stop and destroy the Vagrant VMs. Only run when the user explicitly asks to tear down:
 
 ```bash
-source .venv/bin/activate
 ./forge vms stop
 ```
 
