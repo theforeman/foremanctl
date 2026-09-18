@@ -3,6 +3,15 @@
   ansible.builtin.package:
     name: "{{ hammer_packages }}"
 
+- name: Deploy CA file
+  ansible.builtin.copy:
+    src: "{{ hammer_ca_certificate }}"
+    dest: "/etc/hammer/server-ca.crt"
+    remote_src: true
+    mode: "0644"
+  when:
+    - hammer_ca_certificate is defined
+
 - name: Configure Hammer Foreman plugin
   ansible.builtin.template:
     src: cli.modules.d-foreman.yml.j2
