@@ -19,6 +19,22 @@ def test_https_rhsm_proxy(curl_request):
     assert cmd.stdout == '200'
 
 
+def test_https_redhat_access_proxy(curl_request):
+    cmd = curl_request("redhat_access")
+    assert cmd.succeeded
+    assert cmd.stdout not in ('502', '503')
+
+
+def test_rhsm_proxy_timeout(server):
+    vhost = server.file("/etc/httpd/conf.d/pulpcore-ssl.conf")
+    assert vhost.contains(r"ProxyPass /rhsm .* timeout=180\b")
+
+
+def test_redhat_access_proxy_timeout(server):
+    vhost = server.file("/etc/httpd/conf.d/pulpcore-ssl.conf")
+    assert vhost.contains(r"ProxyPass /redhat_access .* timeout=120\b")
+
+
 def test_https_pulp_content_proxy(curl_request):
     cmd = curl_request("pulp/content/")
     assert cmd.succeeded
