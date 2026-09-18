@@ -7,6 +7,11 @@ variables:
     help: Base flavor to use in this deployment.
     choices:
       - katello
+  httpd_registration_admission_max:
+    help: >-
+      Max concurrent /rhsm and /register requests through Apache.
+      Defaults to 150, scaled by tuning profiles. 0 to disable.
+    parameter: --registration-admission-max
   external_authentication:
     help: External authentication method to use
     choices:
