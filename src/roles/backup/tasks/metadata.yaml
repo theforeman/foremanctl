@@ -23,10 +23,17 @@
   when: backup_container_images_result is succeeded
   no_log: true
 
-- name: Check if pulp content was backed up
+- name: Check if pulp content was backed up (single volume)
   ansible.builtin.stat:
     path: "{{ backup_dir_full }}/pulp-content.tar.gz"
   register: backup_pulp_content_backup_check
+  failed_when: false
+
+- name: Check if pulp content was backed up (multi-volume)
+  ansible.builtin.find:
+    paths: "{{ backup_dir_full }}"
+    patterns: "pulp-content.tar.gz.part*"
+  register: backup_pulp_content_volumes_check
   failed_when: false
 
 - name: Write metadata file
@@ -56,7 +63,12 @@
             'databases',
             'container_images',
             'foremanctl_state'
-          ] + (['pulp_content'] if backup_pulp_content_backup_check.stat.exists | default(false) else [])
+          ] + (
+            ['pulp_content']
+            if (backup_pulp_content_backup_check.stat.exists | default(false))
+               or (backup_pulp_content_volumes_check.matched | default(0) > 0)
+            else []
+          )
         }}
 
 - name: Display metadata location

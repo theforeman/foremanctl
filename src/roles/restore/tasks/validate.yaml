@@ -230,12 +230,23 @@
   register: restore_pulp_space
   changed_when: false
 
-- name: Get Pulp content archive size
+- name: Get Pulp content archive size (single volume)
   ansible.builtin.stat:
     path: "{{ restore_backup_dir }}/pulp-content.tar.gz"
   register: restore_pulp_archive
 
-- name: Fail if insufficient Pulp disk space
+- name: Find Pulp content volume files (multi-volume)
+  ansible.builtin.find:
+    paths: "{{ restore_backup_dir }}"
+    patterns: "pulp-content.tar.gz.part*"
+  register: restore_pulp_volumes
+
+- name: Calculate total volume size (multi-volume)
+  ansible.builtin.set_fact:
+    restore_pulp_volumes_size: "{{ restore_pulp_volumes.files | map(attribute='size') | sum }}"
+  when: restore_pulp_volumes.matched > 0
+
+- name: Fail if insufficient Pulp disk space (single volume)
   ansible.builtin.fail:
     msg: >-
       Insufficient disk space for Pulp content restore:
@@ -244,7 +255,19 @@
       at /var/lib/pulp
   when:
     - restore_pulp_archive.stat.exists | default(false)
+    - restore_pulp_volumes.matched == 0
     - restore_pulp_space.stdout | int < (restore_pulp_archive.stat.size / 1024 / 1024 / 1024) | int + 1
+
+- name: Fail if insufficient Pulp disk space (multi-volume)
+  ansible.builtin.fail:
+    msg: >-
+      Insufficient disk space for Pulp content restore:
+      {{ restore_pulp_space.stdout }}GB available,
+      {{ (restore_pulp_volumes_size | int / 1024 / 1024 / 1024) | int + 1 }}GB required
+      at /var/lib/pulp ({{ restore_pulp_volumes.matched }} volume files)
+  when:
+    - restore_pulp_volumes.matched > 0
+    - restore_pulp_space.stdout | int < (restore_pulp_volumes_size | int / 1024 / 1024 / 1024) | int + 1
 
 - name: Check database mode matches backup
   ansible.builtin.debug:
