@@ -189,6 +189,15 @@ def test_ingress_http_endpoint(server):
     # ...
 ```
 
+#### Feature sets
+
+To avoid skipping of tests that are feature-guarded when a feature is accidentally disabled in a run, the `test_enabled_features` test validates the list of enabled features against a pre-defined feature set.
+CI passes `--featureset <set name>` when it runs, thus allowing for different sets to be tested depending on the CI job (Satellite has other features enabled than Katello, Upgrades might have different features, etc).
+
+To avoid noise when developing, the test is skipped if no `--featureset` parameter was provided to `pytest`.
+
+When you change the features, adjust the `EXPECTED_FEATURES` dict to match your change.
+
 ### Flavor-specific tests
 
 Some assertions only apply to a particular deployment flavor (for example, Katello expects `candlepin` and `pulp` databases; but a content proxy does not). Put flavor specific tests under `tests/flavor/<flavor>/`. Tests outside that tree always run regardless of flavor.
