@@ -1,0 +1,92 @@
+---
+- name: List containers still using leftover IOP network
+  ansible.builtin.command:
+    argv:
+      - podman
+      - ps
+      - --all
+      - --format
+      - "{{ '{{.Names}}\t{{.Networks}}' }}"
+  register: _foreman_core_network_legacy_ps
+  changed_when: false
+
+- name: Collect leftover IOP network container names
+  vars:
+    _foreman_core_network_legacy_network_token: "(?:^|,){{ foreman_core_network_legacy_iop_network_name | regex_escape }}(?:,|$)"
+  ansible.builtin.set_fact:
+    _foreman_core_network_legacy_container_names: "{{ _foreman_core_network_legacy_ps.stdout_lines
+      | reject('equalto', '')
+      | map('split', '\t', 1)
+      | selectattr('1', 'defined')
+      | selectattr('1', 'search', _foreman_core_network_legacy_network_token)
+      | map('first')
+      | list }}"
+
+- name: Stop leftover IOP network systemd units
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+  loop: "{{ _foreman_core_network_legacy_container_names }}"
+  failed_when: false
+
+- name: Stop leftover IOP network containers
+  containers.podman.podman_container:
+    name: "{{ item }}"
+    state: stopped
+  loop: "{{ _foreman_core_network_legacy_container_names }}"
+  failed_when: false
+
+- name: Remove leftover IOP network from previous deploys
+  containers.podman.podman_network:
+    name: "{{ foreman_core_network_legacy_iop_network_name }}"
+    state: absent
+    force: true
+
+- name: Check for leftover IOP subnet on the host
+  ansible.builtin.command:
+    argv:
+      - ip
+      - "-4"
+      - "-o"
+      - addr
+      - show
+      - to
+      - "{{ foreman_core_network_gateway }}"
+  register: _foreman_core_network_legacy_addr
+  changed_when: false
+  failed_when: false
+
+- name: List Podman networks
+  ansible.builtin.command:
+    argv:
+      - podman
+      - network
+      - ls
+      - --format
+      - "{{ '{{.Name}}' }}"
+  register: _foreman_core_network_network_names
+  changed_when: false
+
+- name: List Podman network interfaces
+  vars:
+    _foreman_core_network_inspect_format: "{{ '{{.NetworkInterface}}' }}"
+  ansible.builtin.command:
+    argv: "{{ ['podman', 'network', 'inspect', '--format', _foreman_core_network_inspect_format] + _foreman_core_network_network_names.stdout_lines }}"
+  register: _foreman_core_network_interfaces
+  changed_when: false
+  when: _foreman_core_network_network_names.stdout_lines | length > 0
+
+- name: Remove leftover host bridge still holding the IOP subnet
+  ansible.builtin.command:
+    argv:
+      - ip
+      - link
+      - delete
+      - "{{ _foreman_core_network_legacy_addr.stdout.split()[1] }}"
+  when:
+    - _foreman_core_network_legacy_addr.stdout | length > 0
+    - _foreman_core_network_legacy_addr.stdout.split()[1] is match('^podman[0-9]+$')
+    - >-
+      _foreman_core_network_legacy_addr.stdout.split()[1]
+      not in (_foreman_core_network_interfaces.stdout_lines | default([]))
+  changed_when: true
