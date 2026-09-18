@@ -68,6 +68,7 @@ class UserParameters:
 
 def pytest_addoption(parser):
     parser.addoption("--server-hostname", action="store", default="quadlet", help="Hostname of the server VM to test against")
+    parser.addoption("--featureset", action="store", default="default", help="Which featureset should be tested against")
 
 
 @pytest.fixture(scope="module")
