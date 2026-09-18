@@ -119,9 +119,9 @@
 
   ## Proxy rules
   ProxyRequests Off
+  ProxyAddHeaders On
   ProxyPreserveHost {{ 'On' if httpd_with_foreman else 'Off' }}
 {% if httpd_with_foreman %}
-  ProxyAddHeaders On
   ProxyPass /pulp !
   ProxyPass /pub !
   ProxyPass /icons !
@@ -139,7 +139,6 @@
   ProxyPass /index/ {{ foreman_proxy_url }}/container_gateway/index/
   ProxyPassReverse /index/ {{ foreman_proxy_url }}/container_gateway/index/
 {% endif %}
-
   ProxyPass /rhsm {{ httpd_foreman_url }}/rhsm disablereuse=on retry=0
   ProxyPassReverse /rhsm {{ httpd_foreman_url }}/rhsm
   ProxyPass /redhat_access {{ httpd_foreman_url }}/redhat_access disablereuse=on retry=0
