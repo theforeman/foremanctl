@@ -64,6 +64,16 @@ foreman_dynflow_extra_env:
 
 foreman_dynflow_env: "{{ foreman_env | ansible.builtin.combine(foreman_dynflow_extra_env) }}"
 
+foreman_base_volumes:
+  - 'foreman-data-run:/var/run/foreman:rw,z,U'
+
+# Named volume at the plugin path so Foreman and Dynflow share reports.
+foreman_rh_cloud_inventory_volume: foreman-rh-cloud-inventory
+foreman_rh_cloud_volumes:
+  - '{{ foreman_rh_cloud_inventory_volume }}:/var/lib/foreman/red_hat_inventory:rw,z,U'
+
+foreman_volumes: "{{ foreman_base_volumes + (foreman_rh_cloud_volumes if enabled_features | has_feature('rh-cloud') else []) }}"
+
 foreman_secrets:
   - 'foreman-database-url,type=env,target=DATABASE_URL'
   - 'foreman-encryption-key,type=env,target=ENCRYPTION_KEY'
