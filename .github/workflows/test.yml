@@ -540,10 +540,6 @@ jobs:
             --initial-organization "Foreman CI" \
             --initial-location "Internet" \
             --tuning development
-      - name: Verify air-gapped parameter persistence
-        if: matrix.mode == 'air-gapped'
-        run: |
-          grep -q '^air_gapped: true' .var/lib/foremanctl/parameters.yaml
       - name: Deploy features
         run: |
           ./foremanctl deploy \

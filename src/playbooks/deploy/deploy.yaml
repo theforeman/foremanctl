@@ -5,7 +5,6 @@
   become: true
   vars:
     flavor: katello
-    images_air_gapped: "{{ air_gapped | bool }}"
   vars_files:
     - "../../vars/defaults.yml"
     - "../../vars/flavors/{{ flavor }}.yml"
@@ -43,8 +42,6 @@
     - role: foreman
       when:
         - "enabled_features | has_feature('foreman')"
-      vars:
-        foreman_air_gapped: "{{ air_gapped | bool }}"
     - role: pulp
       when:
         - "enabled_features | has_feature('pulp')"
