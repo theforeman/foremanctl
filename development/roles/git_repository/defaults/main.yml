@@ -1,2 +1,3 @@
 git_repository_remote_name: "origin"
 git_repository_revision: "HEAD"
+git_repository_depth: 1
