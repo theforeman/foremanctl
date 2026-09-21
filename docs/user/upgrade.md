@@ -4,7 +4,7 @@ Foremanctl releases are locked to specific Foreman images with version-compatibl
 
 Foreman MUST be upgraded one release at a time (e.g. 3.19 -> 3.20).
 
-Scroll to the correct procedure below which matches your installation environment type (RPM and disconnected RPM).
+Scroll to the correct procedure below which matches your installation environment type ([RPM](#upgrading-foremanctl-from-rpm-install) and [disconnected RPM](#upgrading-foremanctl-from-disconnected-rpm-install)).
 
 # Upgrading foremanctl y-stream (ex. x.1 to x.2)
 
@@ -35,21 +35,21 @@ All steps must be run as root user.
 
 1. Optional: On your disconnected environment, run `foremanctl health` to ensure your existing Foreman server is healthy. Correct any issues before continuing.
 2. Consider backing up your Foreman environment before upgrade. See [Backup and Restore](backup-restore.md).
-3. On a connected machine, install the same Foreman Release repository as your disconnected environment:
+3. On a internet connected environment, install the same Foreman Release repository as your disconnected environment:
     - `dnf install https://yum.theforeman.org/releases/<current-version>/el9/x86_64/foreman-release.rpm`
     - This installs and enables `foreman` and `foreman-plugins` repositories.
-4. If using `hammer` feature: On a connected machine, install the Katello repository:
+4. If using `hammer` feature: On a connected environment, install the Katello repository:
     - `dnf install https://yum.theforeman.org/katello/<current-version>/katello/el9/x86_64/katello-repos-latest.rpm`
-5. On a connected machine, create a local mirror of the Foreman repository:
+5. On a internet connected environment, create a local mirror of the Foreman repository:
     - `reposync -n -p /path/to/mirror --download-metadata --repoid=foreman`
     - If using the `hammer` feature, add `--repoid=foreman-plugins --repoid=katello` to the previous command.
-6. On a connected machine, install foremanctl and configure it identically to your disconnected environment:
+6. On a internet connected environment, install foremanctl and configure it identically to your disconnected environment:
     - `dnf install foremanctl`
     - Note the version of foremanctl which installed.
-    - Configure your connected foremanctl to use the same features as your disconnected environment.
-7. On a connected machine, pull updated container images:
+    - Configure your internet connected foremanctl to use the same features as your disconnected environment.
+7. On a internet connected environment, pull updated container images:
     - `foremanctl pull-images`
-    - Confirm the correct images were downloaded by running `podman images`. All images from your previous-version disconnected environment should be present on the connected environment. If images are missing, ensure foremanctl features parameters are identical between machines.
+    - Confirm the correct images were downloaded by running `podman images`. All images from your previous-version disconnected environment should be present on the internet connected environment. If images are missing, ensure foremanctl features parameters are identical between environments.
     - Run `podman save $(podman images --format "{{.Repository}}:{{.Tag}}" | tr '\n' ' ') -o <filename>.tar` to export all downloaded images as a tarball.
 8. Using an available transport mechanism, move the following to your disconnected environment:
     - The `foreman` repo mirror and contents (contains the upgraded foremanctl package).
