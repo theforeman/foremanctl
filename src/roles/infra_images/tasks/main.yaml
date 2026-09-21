@@ -94,11 +94,10 @@
 - name: Query the container registry catalog
   ansible.builtin.uri:
     url: "{{ foreman_url }}/v2/_catalog"
-    method: GET
-    user: "{{ foreman_initial_admin_username }}"
-    password: "{{ foreman_initial_admin_password }}"
-    force_basic_auth: true
-    validate_certs: false
+    client_cert: "{{ client_certificate }}"
+    client_key: "{{ client_key }}"
+    ca_path: "{{ ca_bundle }}"
+    validate_certs: true
   register: infra_images_catalog
 
 - name: Confirm each repository is published in the registry catalog

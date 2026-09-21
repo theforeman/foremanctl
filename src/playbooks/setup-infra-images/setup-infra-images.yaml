@@ -5,6 +5,7 @@
   vars_files:
     - "../../vars/images.yml"
     - "../../vars/foreman.yml"
+    - "../../vars/certificates.yml"
     - "../../vars/base.yaml"
     - "../../vars/infra-registry-images.yml"
 
