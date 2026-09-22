@@ -49,6 +49,8 @@ foreman_recurring_tasks:
 
 foreman_plugins: []
 
+foreman_air_gapped: false
+
 foreman_env:
   SEED_ORGANIZATION: "{{ foreman_initial_organization }}"
   SEED_LOCATION: "{{ foreman_initial_location }}"
