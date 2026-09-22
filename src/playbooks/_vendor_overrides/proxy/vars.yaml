@@ -1,0 +1,3 @@
+---
+# Vendors can replace this file to select the default proxy flavor.
+flavor: foreman-proxy-content

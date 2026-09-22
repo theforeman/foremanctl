@@ -1,0 +1,3 @@
+---
+# Vendors can replace this file to select the default server flavor.
+flavor: katello

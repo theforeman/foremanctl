@@ -2,10 +2,9 @@
 - name: Pull images
   hosts:
     - quadlet
-  vars:
-    flavor: katello
   vars_files:
     - "../../vars/defaults.yml"
+    - "../_vendor_overrides/server/vars.yaml"
     - "../../vars/flavors/{{ flavor }}.yml"
     - "../../vars/images.yml"
     - "../../vars/base.yaml"

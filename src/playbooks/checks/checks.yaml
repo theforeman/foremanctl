@@ -2,10 +2,9 @@
 - name: Run preflight checks
   hosts: quadlet
   gather_facts: true
-  vars:
-    flavor: katello
   vars_files:
     - "../../vars/defaults.yml"
+    - "../_vendor_overrides/server/vars.yaml"
     - "../../vars/flavors/{{ flavor }}.yml"
     - "../../vars/database.yml"
   roles:

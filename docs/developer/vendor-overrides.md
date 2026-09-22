@@ -5,7 +5,7 @@ Here's how.
 
 ## Parameters
 
-If you want to override parameters, ship a playbook definition that overrides the parameter you want and add it to the `includes` of the command you want to alter.
+If you want to override parameters, ship a playbook definition that overrides the parameter you want and add it to the `includes` of the command you want to alter. To change the default server flavor, provide `_vendor_overrides/server/vars.yaml`; use `_vendor_overrides/proxy/vars.yaml` for the default proxy flavor. The explicit `--flavor` parameter still takes precedence over these defaults.
 
 Example:
 `src/playbooks/_vendor_overrides/deploy/metadata.obsah.yaml`:
@@ -15,6 +15,12 @@ variables:
   flavor:
     choices:
       - satellite
+```
+
+`src/playbooks/_vendor_overrides/server/vars.yaml`:
+```yaml
+---
+flavor: satellite
 ```
 
 `src/playbooks/deploy/metadata.obsah.yaml`:

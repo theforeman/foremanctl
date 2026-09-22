@@ -528,7 +528,9 @@ jobs:
       - name: Setup environment
         run: ./setup-environment
       - name: Apply vendor overrides
-        run: cp -a vendor_overrides/satellite src/playbooks/_vendor_overrides
+        run: |
+          mkdir -p src/playbooks/_vendor_overrides
+          cp -a vendor_overrides/satellite/. src/playbooks/_vendor_overrides/
       - name: Start VMs
         run: |
           ./forge vms start --vms "quadlet client"
@@ -541,7 +543,6 @@ jobs:
       - name: Run deployment
         run: |
           ./foremanctl deploy \
-            --flavor satellite \
             --initial-admin-password=changeme \
             --initial-organization "Foreman CI" \
             --initial-location "Internet" \
@@ -596,7 +597,9 @@ jobs:
       - name: Setup environment
         run: ./setup-environment
       - name: Apply vendor overrides
-        run: cp -a vendor_overrides/satellite src/playbooks/_vendor_overrides
+        run: |
+          mkdir -p src/playbooks/_vendor_overrides
+          cp -a vendor_overrides/satellite/. src/playbooks/_vendor_overrides/
       - name: Start VMs
         run: |
           ./forge vms start --vms "quadlet proxy"
@@ -609,7 +612,6 @@ jobs:
       - name: Deploy Satellite
         run: |
           ./foremanctl deploy \
-            --flavor satellite \
             --initial-admin-password=changeme \
             --tuning development
       - name: Generate auth bundle on quadlet
@@ -624,7 +626,6 @@ jobs:
       - name: Deploy capsule
         run: |
           ./foremanctl deploy-proxy \
-            --flavor capsule \
             --auth-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
             --foreman-fqdn quadlet.example.com \
             --templates-url http://proxy.example.com:8000 \

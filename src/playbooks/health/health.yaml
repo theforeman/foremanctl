@@ -3,10 +3,9 @@
   hosts: quadlet
   become: true
   gather_facts: true
-  vars:
-    flavor: katello
   vars_files:
     - "../../vars/defaults.yml"
+    - "../_vendor_overrides/server/vars.yaml"
     - "../../vars/flavors/{{ flavor }}.yml"
     - "../../vars/base.yaml"
     - "../../vars/database.yml"
