@@ -17,28 +17,6 @@
   notify:
     - Restart candlepin
 
-# Tomcat's FFM OpenSSL bridge does not pick up the system crypto policy's
-# signature algorithms on its own, so the ML-DSA connector in server.xml must
-# advertise them explicitly. Rather than hardcode the list, read it back from
-# the crypto policy's OpenSSL backend, which is the authoritative source and
-# already lists mldsa87 in the EL10 default policy. This keeps the connector in
-# sync with the host policy (including FIPS or custom policies) instead of a
-# frozen list. Only the ML-DSA CA needs it; RSA and ECC use the cipher-based
-# connector.
-- name: Derive the TLS signature algorithms from the system crypto policy
-  when: _candlepin_ca_key_algorithm == 'ML-DSA-87'
-  block:
-    - name: Read the system crypto policy OpenSSL configuration
-      ansible.builtin.slurp:
-        src: /etc/crypto-policies/back-ends/opensslcnf.config
-      register: _candlepin_opensslcnf
-
-    - name: Extract the SignatureAlgorithms for the Candlepin TLS connector
-      ansible.builtin.set_fact:
-        _candlepin_signature_algorithms: >-
-          {{ _candlepin_opensslcnf.content | b64decode
-             | regex_search('(?m)^SignatureAlgorithms\s*=\s*(.+)$', '\1') | first }}
-
 - name: Create Tomcat server.xml
   containers.podman.podman_secret:
     state: present
