@@ -21,6 +21,7 @@ All steps must be run as root user.
     - `dnf upgrade`
 5. Optional Pre-pull container images to reduce downtime during deploy:
     - `foremanctl pull-images`
+    - Container image tags are updated over time for a given Foreman X.Y release to include the bug fixes and security patches.
     - This step is optional but recommended. Services can continue running while images are pulled, reducing the downtime window during the deploy.
 6. Stop the existing Foreman services:
     - `systemctl stop foreman.target`
@@ -49,6 +50,7 @@ All steps must be run as root user.
     - Configure your internet connected foremanctl to use the same features as your disconnected environment.
 7. On an internet connected environment, pull updated container images:
     - `foremanctl pull-images`
+    - Container image tags are updated over time for a given Foreman X.Y release to include the bug fixes and security patches.
     - Confirm the correct images were downloaded by running `podman images`. All images from your previous-version disconnected environment should be present on the internet connected environment. If images are missing, ensure foremanctl features parameters are identical between environments.
     - Run `podman save $(podman images --format "{{.Repository}}:{{.Tag}}" | tr '\n' ' ') -o <filename>.tar` to export all downloaded images as a tarball.
 8. Using an available transport mechanism, move the following to your disconnected environment:
