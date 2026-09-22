@@ -1,21 +1,11 @@
 ---
-# Private key parameters derived from the selected algorithm, shaped for the
-# arguments community.crypto.openssl_privatekey expects: RSA takes a size, ECC
-# takes a curve, and ML-DSA takes neither. The accepted algorithms and the
-# rule that size only applies to RSA and curve only to ECC are enforced by the
-# choices and forbidden_if constraints in _certificate_algorithm's metadata;
-# here we just hand the module the parameter that matches and omit the rest.
+# Private key parameters for community.crypto.openssl_privatekey, shaped by the
+# selected algorithm: RSA takes a size, ECC takes a curve, ML-DSA takes neither.
 #
-# ECC additionally forces the PKCS#8 key format. community.crypto defaults ECC
-# keys to the legacy SEC1 encoding (-----BEGIN EC PRIVATE KEY-----), which
-# Candlepin's key reader does not recognize (it only accepts RSA and PKCS#8
-# PRIVATE KEY headers), so it fails to start. RSA is left on its default format
-# for stability, and ML-DSA already defaults to PKCS#8.
-#
-# ML-DSA-87 needs community.crypto 3.3.0 to generate the keys and
-# python-cryptography 49.0.0 to sign certificates and CSRs with them. On a
-# platform whose python-cryptography is older, selecting ML-DSA-87 fails at key
-# generation.
+# ECC also forces the PKCS#8 key format: community.crypto defaults ECC keys to
+# the legacy SEC1 encoding (-----BEGIN EC PRIVATE KEY-----), which Candlepin's
+# key reader rejects (it accepts only RSA and PKCS#8 headers). RSA keeps its
+# default format; ML-DSA already defaults to PKCS#8.
 _certificates_key_parameters: >-
   {{
     {'type': certificates_algorithm_type}

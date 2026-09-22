@@ -22,10 +22,6 @@
                protocol="org.apache.coyote.http11.Http11NioProtocol"
                SSLEnabled="true"
                maxThreads="150" scheme="https" secure="true">
-        {# ML-DSA keys only work over TLS 1.3 (_candlepin_tls_protocols handles
-           that). The FFM OpenSSL connector picks up the system crypto policy's
-           signature algorithms (including mldsa87 on EL10) from PROFILE=SYSTEM,
-           so no explicit advertisement is needed. #}
         <SSLHostConfig certificateVerification="optional"
                        protocols="{{ _candlepin_tls_protocols }}"
                        caCertificateFile="/etc/candlepin/certs/candlepin-ca.crt"
