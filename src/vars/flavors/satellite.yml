@@ -34,3 +34,7 @@ health_checks_to_execute:
   - check_duplicate_permissions
 
 post_install_message_enabled: true
+
+iop_engine_extra_packages:
+  - "prodsec.rules"
+  - "telemetry.rules.plugins"

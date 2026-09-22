@@ -7,6 +7,13 @@ def test_pulpcore_vhost_exists(server):
     assert conf.is_file
 
 
+def test_pulpcore_ssl_proxy_add_headers(server):
+    conf = server.file("/etc/httpd/conf.d/pulpcore-ssl.conf")
+    assert conf.exists
+    assert conf.is_file
+    assert "ProxyAddHeaders On" in conf.content_string
+
+
 def test_https_pulp_api_with_client_cert(curl_request):
     cmd = curl_request("pulp/api/v3/smart_proxy/v2/features")
     assert cmd.succeeded

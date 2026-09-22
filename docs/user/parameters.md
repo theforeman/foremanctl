@@ -33,7 +33,7 @@ There are multiple use cases from the users perspective that dictate what parame
 | Parameter | Description | foreman-installer Parameters |
 | ----------| ----------- | ---------------------------- |
 | `--database-mode` | Denotes if the database is internally or externally managed | `--foreman-db-manage`<br/> `--katello-candlepin-db-manage`<br/> `--foreman-proxy-content-pulpcore-manage-postgresql` |
-| `--database-host` | Location to connect to the database | `--foreman-db-host`<br/> `--katello-candlepin-db-host`<br/> `--foreman-proxy-content-pulpcore-postgresql-host` |
+| `--database-host` | Hostname application containers use to reach PostgreSQL (`postgresql` internal; remote host external) | `--foreman-db-host`<br/> `--katello-candlepin-db-host`<br/> `--foreman-proxy-content-pulpcore-postgresql-host` |
 | `--database-port` | Port to connect to the database | `--foreman-db-port`<br/> `--katello-candlepin-db-port`<br/> `--foreman-proxy-content-pulpcore-postgresql-port` |
 | `--database-ssl-mode` | SSL verification mode to use | `--foreman-db-sslmode` <br/> `--katello-candlepin-db-ssl-verify` <br/> `--katello-candlepin-db-ssl` <br/> `--foreman-proxy-content-pulpcore-postgresql-ssl`|
 | `--database-ssl-ca` | Path to the database CA certificate | `--foreman-db-root-cert` <br/> `--katello-candlepin-db-ssl-ca` <br/> `--foreman-proxy-content-pulpcore-db-ssl-root-ca` |
@@ -58,6 +58,9 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--content-export-path` | Extra file path that Pulp can use for content exports | |
 | `--external-authentication={ipa,ipa_with_api}` | Enable configuration for external authentication via IPA for web UI (or webUI and API for `ipa_with_api`), expects the target machine to [be enrolled into FreeIPA/IDM](https://docs.theforeman.org/3.16/Configuring_User_Authentication/index-katello.html#enrolling-foreman-server-in-freeipa-domain) | `--foreman-ipa-authentication`<br/> `--foreman-ipa-authentication-api` |
 | `--external-authentication-pam-service` | PAM service used for host-based access control in IPA | `--foreman-pam-service` |
+| `--foreman-trusted-proxy` | Add an IPv4/IPv6 address or CIDR that Foreman trusts for `X-Forwarded-For` (for example a Foreman Proxy or load balancer in front of Foreman). Invalid hostnames and malformed values are rejected at the CLI. May be specified multiple times; values are persisted in `parameters.yaml`. Localhost ranges (`127.0.0.0/8` and `::1`) are always included in Foreman settings and are not controlled by this flag. Example: `--foreman-trusted-proxy 10.10.10.20`. | `--foreman-trusted-proxies` |
+| `--foreman-trusted-proxy-remove` | Remove an IPv4/IPv6 address or CIDR from the persisted trusted proxy list (same format as `--foreman-trusted-proxy`). May be specified multiple times. Does not remove the localhost ranges `127.0.0.0/8` and `::1`. | |
+| `--reset-foreman-trusted-proxy` | Clear the entire persisted trusted proxy list for this deployment (Obsah reset flag; hidden from the main option list—see `foremanctl deploy --help` epilog). Use with repeated `--foreman-trusted-proxy` to replace the list, for example: `foremanctl deploy --reset-foreman-trusted-proxy --foreman-trusted-proxy 10.0.0.1 --foreman-trusted-proxy 10.0.0.2`. | |
 
 #### Certs
 
@@ -130,7 +133,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-oauth-map-users` | | |
 | `--foreman-plugin-remote-execution-cockpit-ensure` | | |
 | `--foreman-telemetry-prometheus-enabled` | | |
-| `--foreman-trusted-proxies` | | |
 
 
 ## Smart Proxy

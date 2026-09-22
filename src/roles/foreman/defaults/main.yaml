@@ -5,13 +5,17 @@ foreman_container_name: foreman
 
 foreman_database_name: foreman
 foreman_database_user: foreman
-foreman_database_host: localhost
+# On the shared network, reach Postgres by container name (not host loopback).
+foreman_database_host: postgresql
 foreman_database_port: 5432
 foreman_database_pool: 9
 foreman_database_ssl_mode: disable
 foreman_database_ssl_ca: # noqa: no-empty-defaults
 foreman_database_ssl_ca_path: /etc/foreman/db-ca.crt
 
+
+foreman_networks:
+  - foreman-core-network
 foreman_name: "{{ ansible_facts['fqdn'] }}"
 foreman_listen_stream: localhost:3000
 foreman_url: "http://{{ ansible_facts['fqdn'] }}:3000"
@@ -55,7 +59,7 @@ foreman_env:
   FOREMAN_PUMA_WORKERS: "{{ foreman_puma_workers }}"
 
 foreman_dynflow_extra_env:
-  DYNFLOW_REDIS_URL: "redis://localhost:6379/6"
+  DYNFLOW_REDIS_URL: "redis://valkey:6379/6"
   REDIS_PROVIDER: "DYNFLOW_REDIS_URL"
 
 foreman_dynflow_env: "{{ foreman_env | ansible.builtin.combine(foreman_dynflow_extra_env) }}"

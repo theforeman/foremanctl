@@ -114,12 +114,7 @@ jobs:
         uses: voxpupuli/setup-vagrant@v0
         with:
           configure_dns: true
-      - name: Patch Vagrant not to use ed25519 keys
-        # Vagrant tries to use ed25519 over rsa, but ed25519 is not allowed when we run in FIPS mode
-        # As we enable FIPS *after* the initial VM start, Vagrant has already decided to use ed25519
-        if: matrix.security == 'fips'
-        run:
-          sudo sed -i '/PREFER_KEY_TYPES/ s/"ssh-ed25519".freeze => :ed25519, //' /usr/lib/x86_64-linux-gnu/rubygems-integration/*/gems/vagrant-*/lib/vagrant/util/keypair.rb
+          fips_workaround: ${{ matrix.security == 'fips' }}
       - name: Install Ansible
         run: pip install --upgrade ansible-core
       - name: Setup environment
@@ -142,14 +137,6 @@ jobs:
         if: matrix.security != 'none'
         run: |
           ./forge security --mode ${{ matrix.security }}
-      - name: Apply fapolicyd workarounds
-        # https://access.redhat.com/solutions/7072618 / https://issues.redhat.com/browse/RHEL-37912
-        # https://github.com/theforeman/foreman-fapolicyd/blob/develop/15-foreman-container.rules
-        if: matrix.security == 'fapolicyd'
-        run: |
-          vagrant ssh --command "echo 'allow perm=any pattern=ld_so exe=/usr/bin/crun : path=/usr/lib64/libsystemd.so.0' | sudo tee -a /etc/fapolicyd/rules.d/15-foremanctl.rules" quadlet
-          vagrant ssh --command "echo 'allow perm=any all : dir=/home/vagrant/.ansible/tmp/' | sudo tee -a /etc/fapolicyd/rules.d/15-foremanctl.rules" quadlet
-          vagrant ssh quadlet -- sudo systemctl restart fapolicyd
       - name: Run image pull
         run: |
           ./foremanctl pull-images ${{ matrix.database == 'external' && '--database-mode=external' || '' }}
@@ -179,7 +166,7 @@ jobs:
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
-          ./forge test
+          ./forge test --pytest-args="--featureset=${{ matrix.iop == 'enabled' && 'default-iop' || 'default' }}"
       - name: Run smoker
         run: |
           ./forge smoker
@@ -289,6 +276,7 @@ jobs:
             --add-feature hammer \
             --add-feature foreman-proxy \
             --add-feature azure-rm \
+            --add-feature bmc \
             --add-feature google \
             --add-feature remote-execution
       - name: Stop services
@@ -309,7 +297,7 @@ jobs:
           ./foremanctl health
       - name: Run tests
         run: |
-          ./forge test
+          ./forge test --pytest-args="--featureset=upgrade"
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
@@ -373,13 +361,15 @@ jobs:
             --tuning development \
             --add-feature hammer \
             --add-feature foreman-proxy \
+            --add-feature ansible \
             --add-feature azure-rm \
+            --add-feature bmc \
             --add-feature google \
             --add-feature remote-execution \
             --add-feature webhooks
       - name: Run tests
         run: |
-          ./forge test
+          ./forge test --pytest-args="--featureset=migration"
       - name: Run smoker
         run: |
           ./forge smoker
@@ -411,18 +401,49 @@ jobs:
       matrix:
         certificate_source:
           - default
-          - custom_server
         certificate_algorithm:
           - RSA
+        security:
+          - none
+        box:
+          - centos/stream9
+          - centos/stream10
         # Exercise a Candlepin (Katello) deployment with a non-RSA CA to confirm
-        # entitlement-certificate signing works. The default box is stream10,
-        # which ships a python-cryptography new enough to generate ML-DSA keys.
+        # entitlement-certificate signing works. ML-DSA certificates require the
+        # post-quantum algorithms shipped in the EL10 default crypto policy, so
+        # that leg runs on stream10 only.
         include:
+          - certificate_source: custom_server
+            certificate_algorithm: RSA
+            security: none
+            box: centos/stream10
+          - certificate_source: default
+            certificate_algorithm: RSA
+            security: fapolicyd
+            box: centos/stream9
+          - certificate_source: default
+            certificate_algorithm: RSA
+            security: fapolicyd
+            box: centos/stream10
+          - certificate_source: default
+            certificate_algorithm: RSA
+            security: fips
+            box: centos/stream9
+          - certificate_source: default
+            certificate_algorithm: RSA
+            security: fips
+            box: centos/stream10
           - certificate_source: default
             certificate_algorithm: ML-DSA-87
+            security: none
+            box: centos/stream10
+    env:
+      FOREMANCTL_BASE_BOX: ${{ matrix.box }}
     runs-on: ubuntu-24.04
-    name: "Tests Proxy Deployment (certificates: ${{ matrix.certificate_source }}, algorithm: ${{ matrix.certificate_algorithm }})"
+    name: "Tests Proxy Deployment"
     steps:
+      - name: generate artifact suffix
+        run: echo "ARTIFACT_SUFFIX=$(echo '${{ matrix.certificate_source }}-${{ matrix.certificate_algorithm }}-${{ matrix.security }}-${{ matrix.box }}' | tr -cd '[:alnum:]-')" >> "${GITHUB_ENV}"
       - uses: actions/checkout@v7
       - name: Set up Python
         uses: actions/setup-python@v7
@@ -432,6 +453,7 @@ jobs:
         uses: voxpupuli/setup-vagrant@v0
         with:
           configure_dns: true
+          fips_workaround: ${{ matrix.security == 'fips' }}
       - name: Install Ansible
         run: pip install --upgrade ansible-core
       - name: Setup environment
@@ -439,6 +461,13 @@ jobs:
       - name: Start VMs
         run: |
           ./forge vms start --vms "quadlet proxy"
+      - name: Configure repositories
+        run: |
+          ./forge setup-repositories
+      - name: Setup security mode ${{ matrix.security }}
+        if: matrix.security != 'none'
+        run: |
+          ./forge security --mode ${{ matrix.security }}
       - name: Run image pull
         run: |
           ./foremanctl pull-images
@@ -480,7 +509,7 @@ jobs:
             --add-feature bmc
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--server-hostname=proxy"
+          ./forge test --pytest-args="--server-hostname=proxy --featureset=proxy"
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
@@ -488,7 +517,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v7
         with:
-          name: sosreport-proxy-content-${{ matrix.certificate_source }}-${{ matrix.certificate_algorithm }}
+          name: sosreport-proxy-content-${{ env.ARTIFACT_SUFFIX }}
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}
@@ -539,7 +568,7 @@ jobs:
             --add-feature bmc
       - name: Run tests
         run: |
-          ./forge test
+          ./forge test --pytest-args="--featureset=satellite"
       - name: Run smoker
         run: |
           ./forge smoker
@@ -615,10 +644,11 @@ jobs:
             --auth-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
             --foreman-fqdn quadlet.example.com \
             --templates-url http://proxy.example.com:8000 \
-            --registration-url https://loadbalancer.example.com:8443
+            --registration-url https://loadbalancer.example.com:8443 \
+            --add-feature bmc
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--server-hostname=proxy"
+          ./forge test --pytest-args="--server-hostname=proxy --featureset=capsule"
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos

@@ -2,6 +2,7 @@
 - name: Configure FIPS and fapolicyd
   hosts:
     - quadlet
+    - proxy
   become: true
   tasks:
     - name: Setup FIPS
@@ -13,5 +14,11 @@
     - name: Setup fapolicyd
       ansible.builtin.include_role:
         name: theforeman.forklift.fapolicyd
+      when:
+        - security_mode == 'fapolicyd'
+
+    - name: Install foreman-fapolicyd
+      ansible.builtin.package:
+        name: foreman-fapolicyd
       when:
         - security_mode == 'fapolicyd'

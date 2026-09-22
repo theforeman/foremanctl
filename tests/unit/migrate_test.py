@@ -24,7 +24,7 @@ class TestParameterMapping:
 
         result = migrate_answers.apply_mappings(old_config)
 
-        assert result['mapped']['database_host'] == 'localhost'
+        assert 'database_host' not in result['mapped']
         assert result['mapped']['database_port'] == 5432
         assert result['unmappable'] == []
 
@@ -57,7 +57,7 @@ class TestParameterMapping:
 
         assert 'db_manage_rake' not in result['mapped']
         assert 'db_manage_rake' not in str(result['unmappable'])
-        assert result['mapped']['database_host'] == 'localhost'
+        assert 'database_host' not in result['mapped'] 
 
     def test_certificate_parameters_ignored(self):
         """Test that certificate path parameters are ignored (handled by migration role)"""
@@ -76,7 +76,7 @@ class TestParameterMapping:
         assert 'server_key' not in result['mapped']
         assert 'ca_certificate' not in result['mapped']
         assert not any('ssl' in p for p in result['unmappable'])
-        assert result['mapped']['database_host'] == 'localhost'
+        assert 'database_host' not in result['mapped']
 
     def test_unmappable_parameters(self):
         """Test that unmappable parameters are reported"""
@@ -136,7 +136,7 @@ class TestParameterMapping:
 
         result = migrate_answers.apply_mappings(old_config)
 
-        assert result['mapped']['database_host'] == 'localhost'
+        assert 'database_host' not in result['mapped']
         assert 'foreman::unknown_param' not in result['unmappable']
         assert 'foreman::another_unknown' in result['unmappable']
         assert len(result['unmappable']) == 1

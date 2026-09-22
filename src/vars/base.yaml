@@ -2,6 +2,13 @@
 certificates_hostnames:
   - "{{ ansible_facts['fqdn'] }}"
   - localhost
+  - candlepin
+  - iop-core-gateway
+certificates_hostname_extra_sans:
+  candlepin:
+    - localhost
+  iop-core-gateway:
+    - localhost
 
 oauth_directory: "{{ obsah_state_path }}/oauth"
 
@@ -13,8 +20,6 @@ certificates_oauth_directory: /var/lib/foremanctl/oauth
 
 candlepin_ca_key: "{{ ca_key }}"
 candlepin_ca_certificate: "{{ ca_certificate }}"
-candlepin_tomcat_key: "{{ localhost_key }}"
-candlepin_tomcat_certificate: "{{ localhost_certificate }}"
 candlepin_client_key: "{{ client_key }}"
 candlepin_client_certificate: "{{ client_certificate }}"
 
@@ -24,6 +29,8 @@ foreman_client_certificate: "{{ client_certificate }}"
 foreman_plugins: "{{ enabled_features | features_to_foreman_plugins }}"
 foreman_name: "{{ ansible_facts['fqdn'] }}"
 foreman_url: "https://{{ foreman_name }}"
+foreman_trusted_proxies: []
+
 
 foreman_listen_stream: /run/httpd.foreman.sock
 httpd_foreman_backend: "unix://{{ foreman_listen_stream }}|http://foreman"

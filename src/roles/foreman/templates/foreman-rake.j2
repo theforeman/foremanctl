@@ -50,10 +50,13 @@ fi
 
 validate_actions "$@"
 
-# Use an array to avoid shell expansion issues
-TTY_ARGS=()
+# Use an array to avoid shell expansion issues.
+# Always keep stdin attached (-i) so piped input reaches the container;
+# only allocate a TTY (-t) when stdin is an interactive terminal, since
+# allocating one over a pipe fails with "the input device is not a TTY".
+TTY_ARGS=(-i)
 if [ -t 0 ]; then
-    TTY_ARGS=(-it)
+    TTY_ARGS+=(-t)
 fi
 
 exec podman exec "${TTY_ARGS[@]}" {{ foreman_container_name }} foreman-rake "$@"

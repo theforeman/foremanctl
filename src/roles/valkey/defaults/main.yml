@@ -1,3 +1,6 @@
 ---
 valkey_container_image: quay.io/sclorg/valkey-8-c10s
 valkey_container_tag: "latest"
+
+valkey_networks:
+  - foreman-core-network

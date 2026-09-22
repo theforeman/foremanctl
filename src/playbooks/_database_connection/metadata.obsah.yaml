@@ -1,7 +1,7 @@
 ---
 variables:
   database_host:
-    help: Host of the PostgreSQL database.
+    help: Hostname application containers use to reach PostgreSQL (`postgresql` when the database runs locally; the remote host in external mode).
   database_port:
     help: Port of the PostgreSQL database.
 

@@ -1,5 +1,0 @@
----
-variables:
-  flavor:
-    choices:
-      - satellite

@@ -4,6 +4,7 @@
   when:
     - certificates_source == 'custom_server'
     - certificates_custom_server_certificate is defined
+    - certificates_hostname not in (certificates_internal_hostnames | list)
 
 - name: Issue certificates
   ansible.builtin.include_tasks: issue.yml

@@ -27,20 +27,33 @@ def test_candlepin_runs_as_tomcat(server):
 
 
 def test_candlepin_port(server):
-    candlepin = server.addr("localhost")
-    assert candlepin.port("23443").is_reachable
+    ports = server.run("podman port candlepin")
+    assert '127.0.0.1:23443' not in ports.stdout
+    assert '0.0.0.0:23443' not in ports.stdout
 
 
-def test_candlepin_status(server, certificates):
-    status = server.run(f"curl --cacert {certificates['ca_certificate']} --silent --output /dev/null --write-out '%{{http_code}}' https://localhost:23443/candlepin/status")
+def test_candlepin_certificate_san(server, certificates):
+    san = server.run(
+        f"openssl x509 -in {certificates['candlepin_tomcat_certificate']} -noout -ext subjectAltName"
+    )
+    assert san.succeeded
+    assert 'DNS:candlepin' in san.stdout
+
+
+def test_candlepin_status(server):
+    status = server.run(
+        "podman exec foreman curl --cacert /etc/foreman/katello-default-ca.crt "
+        "--silent --output /dev/null --write-out '%{http_code}' "
+        "https://candlepin:23443/candlepin/status"
+    )
     assert status.succeeded
     assert status.stdout == '200'
 
 
-def test_candlepin_logs_in_journal(server, certificates):
+def test_candlepin_logs_in_journal(server):
     server.run(
-        f"curl --cacert {certificates['ca_certificate']} --silent --output /dev/null "
-        f"https://localhost:23443/candlepin/status"
+        "podman exec foreman curl --cacert /etc/foreman/katello-default-ca.crt "
+        "--silent --output /dev/null https://candlepin:23443/candlepin/status"
     )
 
     journal = server.run("journalctl -u candlepin --since '2 min ago' --no-pager").stdout
@@ -48,10 +61,10 @@ def test_candlepin_logs_in_journal(server, certificates):
     assert 'LoggingFilter' in journal
 
 
-def test_candlepin_tomcat_logs_in_journal(server, certificates):
+def test_candlepin_tomcat_logs_in_journal(server):
     server.run(
-        f"curl --cacert {certificates['ca_certificate']} --silent --output /dev/null "
-        f"https://localhost:23443/candlepin/status"
+        "podman exec foreman curl --cacert /etc/foreman/katello-default-ca.crt "
+        "--silent --output /dev/null https://candlepin:23443/candlepin/status"
     )
 
     journal = server.run("journalctl -u candlepin --no-pager").stdout
@@ -60,7 +73,10 @@ def test_candlepin_tomcat_logs_in_journal(server, certificates):
 
 
 def test_tls(server):
-    result = server.run('nmap --script +ssl-enum-ciphers localhost -p 23443')
+    result = server.run('podman inspect -f \'{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}\' candlepin')
+
+    candlepin_ip = result.stdout.strip()
+    result = server.run(f'nmap -sT --script +ssl-enum-ciphers -p 23443 {candlepin_ip}')
     result = result.stdout
     assert "TLSv1.3" in result
     assert "TLSv1.2" in result
