@@ -9,7 +9,7 @@ import yaml
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 ROLE_DIR = os.path.abspath(os.path.join(TEST_DIR, '..', '..', 'src', 'roles', 'certificates'))
 DEFAULTS_FILE = os.path.join(ROLE_DIR, 'defaults', 'main.yml')
-VARS_FILE = os.path.join(ROLE_DIR, 'vars', 'main.yml')
+VARS_DIR = os.path.join(ROLE_DIR, 'vars')
 
 PLAYBOOK = """
 - hosts: localhost
@@ -21,7 +21,7 @@ PLAYBOOK = """
         file: "{defaults}"
     - name: Load role vars
       ansible.builtin.include_vars:
-        file: "{vars}"
+        file: "{vars_dir}/{{{{ certificates_algorithm_type }}}}.yml"
     - name: Write resolved algorithm variables
       ansible.builtin.copy:
         content: "{{{{ {{'key_parameters': _certificates_key_parameters, 'key_usage': _certificates_key_usage}} | to_json }}}}"
@@ -38,7 +38,7 @@ def resolve_algorithm(tmp_path, algorithm=None):
 
     output = tmp_path / 'algorithm.json'
     playbook = tmp_path / 'playbook.yml'
-    playbook.write_text(PLAYBOOK.format(defaults=DEFAULTS_FILE, vars=VARS_FILE, output=output))
+    playbook.write_text(PLAYBOOK.format(defaults=DEFAULTS_FILE, vars_dir=VARS_DIR, output=output))
 
     command = [ansible_playbook, '-i', 'localhost,', str(playbook)]
     if algorithm is not None:

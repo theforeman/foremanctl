@@ -1,4 +1,7 @@
 ---
+- name: 'Load key parameters for the selected algorithm'
+  ansible.builtin.include_vars: "{{ certificates_algorithm_type }}.yml"
+
 - name: 'Check if CA certificate exists'
   ansible.builtin.stat:
     path: "{{ certificates_ca_directory_certs }}/ca.crt"

@@ -1,4 +1,7 @@
 ---
+- name: 'Load key parameters for the selected algorithm'
+  ansible.builtin.include_vars: "{{ certificates_algorithm_type }}.yml"
+
 - name: Issue server certificate
   when:
     - (certificates_source != 'custom_server') or (certificates_hostname in (certificates_internal_hostnames | list))
