@@ -15,6 +15,9 @@
       deploy on RHEL 10 or later.
     quiet: true
 
+- name: 'Load key parameters for the selected algorithm'
+  ansible.builtin.include_vars: "{{ certificates_algorithm_type }}.yml"
+
 - name: 'Install crypto dependencies'
   ansible.builtin.package:
     name:
