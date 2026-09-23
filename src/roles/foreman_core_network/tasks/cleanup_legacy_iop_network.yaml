@@ -10,7 +10,6 @@
       | selectattr('NetworkSettings.Networks', 'defined')
       | selectattr('NetworkSettings.Networks', 'contains', foreman_core_network_legacy_iop_network_name)
       | map(attribute='Name')
-      | map('regex_replace', '^/', '')
       | list
     }}"
   ansible.builtin.systemd:
