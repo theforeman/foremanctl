@@ -9,7 +9,7 @@ def set_centos_box_url(vm)
   stream = vm.box[/^centos\/stream(\d+)$/, 1]
   return unless stream
 
-  vm.box_url = "https://cloud.centos.org/centos/#{stream}-stream/x86_64/images/CentOS-Stream-Vagrant-#{stream}-latest.x86_64.vagrant-libvirt.box"
+  vm.box_url = "https://cloud.centos.org/centos/#{stream}-stream/x86_64/images/CentOS-Stream-Vagrant-Libvirt-#{stream}-latest.x86_64.vagrant-libvirt.box"
 end
 
 Vagrant.configure("2") do |config|
