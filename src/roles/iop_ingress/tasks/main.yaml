@@ -2,6 +2,54 @@
 - name: Deploy iop-ingress image
   ansible.builtin.include_tasks: image.yaml
 
+- name: Create Ingress archive volume
+  containers.podman.podman_volume:
+    name: "{{ iop_ingress_archive_volume }}"
+    state: present
+
+- name: Install Ingress archive cleanup script
+  ansible.builtin.copy:
+    src: iop-ingress-archive-cleanup
+    dest: /usr/local/bin/iop-ingress-archive-cleanup
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Create Ingress archive cleanup service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/iop-core-ingress-archive-cleanup.service
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=Remove expired IOP Ingress archives
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/iop-ingress-archive-cleanup \
+        '{{ iop_ingress_archive_volume }}' \
+        '{{ iop_ingress_archive_retention_minutes }}'
+
+- name: Create Ingress archive cleanup timer
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/iop-core-ingress-archive-cleanup.timer
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=Timer for IOP Ingress archive cleanup
+
+      [Timer]
+      OnCalendar={{ iop_ingress_archive_cleanup_schedule }}
+      Persistent=true
+      RandomizedDelaySec=300
+
+      [Install]
+      WantedBy=timers.target
+  notify: Restart ingress archive cleanup timer
+
 - name: Deploy Ingress container
   containers.podman.podman_container:
     name: iop-core-ingress
@@ -12,12 +60,14 @@
       INGRESS_KAFKABROKERS: "iop-core-kafka:9092"
       BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
       INGRESS_STAGERIMPLEMENTATION: "filebased"
-      INGRESS_STORAGEFILESYSTEMPATH: "/var/tmp"
+      INGRESS_STORAGEFILESYSTEMPATH: "{{ iop_ingress_archive_path }}"
       INGRESS_SERVICEBASEURL: "http://iop-core-ingress:8080"
       INGRESS_WEBPORT: "8080"
       INGRESS_METRICSPORT: "3001"
     network:
       - foreman-core-network
+    volumes:
+      - "{{ iop_ingress_archive_volume }}:{{ iop_ingress_archive_path }}:rw"
     quadlet_options:
       - |
         [Unit]
@@ -27,6 +77,7 @@
         Restart=on-failure
         [Install]
         WantedBy=default.target foreman.target
+  notify: Restart ingress
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
@@ -38,4 +89,10 @@
 - name: Start Ingress service
   ansible.builtin.systemd:
     name: iop-core-ingress
+    state: started
+
+- name: Enable and start Ingress archive cleanup timer
+  ansible.builtin.systemd:
+    name: iop-core-ingress-archive-cleanup.timer
+    enabled: true
     state: started

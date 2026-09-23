@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -euo pipefail
+
+VOLUME_NAME="${1:-}"
+RETENTION_MINUTES="${2:-}"
+
+if [[ -z "$VOLUME_NAME" || ! "$RETENTION_MINUTES" =~ ^[0-9]+$ ]]; then
+    echo "Usage: $0 VOLUME_NAME RETENTION_MINUTES" >&2
+    exit 2
+fi
+
+VOLUME_PATH=$(podman volume inspect --format '{{.Mountpoint}}' "$VOLUME_NAME")
+
+if [[ -z "$VOLUME_PATH" || "$VOLUME_PATH" == "/" || ! -d "$VOLUME_PATH" ]]; then
+    echo "Unable to resolve a safe mount point for volume $VOLUME_NAME" >&2
+    exit 1
+fi
+
+find "$VOLUME_PATH" \
+    -mindepth 1 \
+    -maxdepth 1 \
+    -type f \
+    -name '*.tar.gz' \
+    -mmin "+$RETENTION_MINUTES" \
+    -print \
+    -delete

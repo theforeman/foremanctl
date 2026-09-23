@@ -1,3 +1,7 @@
 ---
 iop_ingress_container_image: "quay.io/iop/ingress"
 iop_ingress_container_tag: "foreman-5.0"
+iop_ingress_archive_volume: "iop-core-ingress-archives"
+iop_ingress_archive_path: "/var/tmp/insights-archives"
+iop_ingress_archive_retention_minutes: 1440
+iop_ingress_archive_cleanup_schedule: "hourly"
