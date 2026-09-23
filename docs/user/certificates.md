@@ -274,7 +274,7 @@ All certificate sources use the same paths. For custom server certificates, `ser
 In `src/playbooks/deploy/deploy.yaml`:
 
 1. **Variable Loading**: Loads certificate variables from `src/vars/certificates.yml`
-2. **Certificate Generation**: Runs `certificates` role when `certificate_source == 'default'`
+2. **Certificate Generation**: Runs the `certificates` role, which handles certificate generation and custom server certificates according to `certificates_source` and `certificates_generate`
 3. **Certificate Validation**: Runs `certificate_checks` role for all sources
 4. **Service Configuration**: Passes certificate paths to dependent roles
 
