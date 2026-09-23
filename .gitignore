@@ -48,6 +48,9 @@ foremanctl-*.tar.gz
 .var
 .tmp
 
+# custom certs
+/custom_server*
+
 # AI
 .agents/settings.local.json
 .agents/settings.json
