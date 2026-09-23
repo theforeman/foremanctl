@@ -17,15 +17,18 @@ All steps must be run as root user.
 3. Manually update your Foreman Release repository to the next Foreman Y release:
     - `dnf upgrade https://yum.theforeman.org/releases/<next-version>/el9/x86_64/foreman-release.rpm`
     - Example: Foreman 3.19 -> 5.0 upgrades would use `dnf upgrade https://yum.theforeman.org/releases/5.0/el9/x86_64/foreman-release.rpm`.
-4. Update all packages to their latest versions:
+5. If using `hammer` feature: install the Katello repository:
+    - `dnf install https://yum.theforeman.org/katello/<current-version>/katello/el9/x86_64/katello-repos-latest.rpm`
+    - This installs the `katello`, `candlepin`, and `pulpcore` repositories.
+6. Update all packages to their latest versions:
     - `dnf upgrade`
-5. Optional Pre-pull container images to reduce downtime during deploy:
+7. Optional Pre-pull container images to reduce downtime during deploy:
     - `foremanctl pull-images`
     - Container image tags are updated over time for a given Foreman X.Y release to include the bug fixes and security patches.
     - This step is optional but recommended. Services can continue running while images are pulled, reducing the downtime window during the deploy.
-6. Stop the existing Foreman services:
+8. Stop the existing Foreman services:
     - `systemctl stop foreman.target`
-7. Run upgrade tasks by re-deploying your Foreman environment: 
+9. Run upgrade tasks by re-deploying your Foreman environment: 
     - `foremanctl deploy` 
     - Please see [Parameters](parameters.md) for additional deployment options.
     - This deploy command will pull new images (if not already pulled in the previous step) and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
