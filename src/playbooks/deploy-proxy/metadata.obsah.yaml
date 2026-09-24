@@ -17,10 +17,8 @@ variables:
     help: FQDN of the Foreman server this proxy connects to.
 
 constraints:
-  required_together:
-    - [auth_bundle, foreman_name]
   required_one_of:
-    - [auth_bundle, foreman_name]
+    - [foreman_name]
 
 include:
   - _flavor_features
