@@ -77,6 +77,7 @@
     - name: Wait for PostgreSQL to fully stop
       ansible.builtin.systemd:
         name: postgresql.service
+      become: false
       register: backup_postgres_status
       until: backup_postgres_status.status.ActiveState in ['inactive', 'failed']
       retries: "{{ backup_postgresql_stop_retries }}"
