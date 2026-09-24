@@ -29,3 +29,21 @@ def test_check_foreman_api_has_feature_guards():
 
 def test_check_foreman_tasks_has_feature_guards():
     ensure_role_has_feature_guards('check_foreman_tasks', ['tasks'])
+
+
+def test_check_features_does_not_persist_parameters():
+    role_path = os.path.join(ROLES_DIR, 'check_features', 'tasks', 'main.yaml')
+    with open(role_path, 'r') as role_file:
+        role_text = role_file.read()
+
+    assert 'parameters.yaml' not in role_text
+    assert 'ansible.builtin.slurp' not in role_text
+
+
+def test_pull_images_validates_feature_changes_before_pre_install():
+    playbook_path = os.path.join(SRC_DIR, 'playbooks', 'pull-images', 'pull-images.yaml')
+    with open(playbook_path, 'r') as playbook_file:
+        roles = yaml.safe_load(playbook_file)[0]['roles']
+
+    role_names = [role if isinstance(role, str) else role['role'] for role in roles]
+    assert role_names.index('check_features') < role_names.index('pre_install')

@@ -135,12 +135,15 @@ There are multiple use cases from the users perspective that dictate what parame
 | Parameter | Description | foreman-installer Parameters |
 | --------- | ----------- | ---------------------------- |
 | `--add-feature bmc` | Enable BMC feature | `--foreman-proxy-bmc` |
+| `--remove-feature bmc` | Remove BMC from the persisted user feature list | N/A |
 | `--add-feature content/ostree` | Enable OSTree content type | `--foreman-proxy-content-enable-ostree` |
 | `--bmc-ipmi-implementation` | IPMI implementation to use for BMC | `--foreman-proxy-bmc-default-provider` |
 | `--bmc-redfish-verify-ssl` | Verify SSL certificates for Redfish BMC connections | `--foreman-proxy-bmc-redfish-verify-ssl` |
 | `--add-feature templates` | Enable Templates feature on Smart Proxy | `--foreman-proxy-templates` |
+| `--remove-feature templates` | Remove Templates when it is not a protected flavor feature | N/A |
 | `--templates-url` | URL that hosts will use to contact the proxy for provisioning templates | `--foreman-proxy-templates-url` |
 | `--add-feature registration` | Enable Registration feature | `--foreman-proxy-registration` |
+| `--remove-feature registration` | Remove Registration when it is not a protected flavor feature | N/A |
 | `--registration-url` | URL that hosts use to reach the registration endpoint | `--foreman-proxy-registration-url` |
 
 ### Unmapped
