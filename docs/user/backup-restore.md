@@ -166,6 +166,7 @@ Before starting the backup, the following checks are performed:
 ### Running Tasks
 
 The backup fails if any Foreman or Pulp tasks are running (unless `--wait-for-tasks` is used).
+Foreman tasks are checked only when backing up a Foreman server; content proxy backups check only Pulp tasks.
 
 If `--wait-for-tasks` is specified:
 
