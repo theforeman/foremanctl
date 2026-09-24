@@ -1,0 +1,6 @@
+---
+variables:
+  flavor:
+    choices:
+      - satellite
+      - capsule
