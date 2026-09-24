@@ -43,18 +43,23 @@ Before running the proxy deployment, an auth bundle must be generated on the For
 > [!NOTE]
 > The bundle includes the proxy's certificates and OAuth credentials needed for the proxy to communicate with the Foreman server.
 
-2. Copy the bundle to the **control node**:
+2. In a development checkout on the **control node**, fetch the bundle with the
+   development helper:
 
    ```bash
-   vagrant ssh quadlet -- sudo cat /var/lib/foremanctl/certs/bundles/proxy.example.com.tar.gz > proxy.example.com.tar.gz
+   ./forge fetch-bundle proxy.example.com
    ```
 
-3. On the **control node** (where foremanctl is installed), run the deployment remotely via SSH:
+   The helper uses Ansible privilege escalation on the server VM, so root SSH
+   login does not need to be enabled. It stores the bundle at
+   `.var/lib/foremanctl/proxy.example.com.tar.gz` in the checkout.
 
-   ```console
-   # foremanctl deploy-proxy \
+3. On the **control node**, run the deployment remotely via SSH:
+
+   ```bash
+   ./foremanctl deploy-proxy \
      --flavor foreman-proxy-content \
-     --auth-bundle $(pwd)/proxy.example.com.tar.gz \
+     --auth-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
      --foreman-fqdn quadlet.example.com
    ```
 
