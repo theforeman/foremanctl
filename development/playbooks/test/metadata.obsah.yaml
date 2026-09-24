@@ -5,3 +5,7 @@ help: |
 variables:
   pytest_args:
     help: Pass arguments to pytest.
+  fast:
+    help: Skip tests marked as slow.
+    parameter: --fast
+    action: store_true

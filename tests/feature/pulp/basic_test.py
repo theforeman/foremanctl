@@ -1,9 +1,34 @@
 import json
+import textwrap
 
 import pytest
 
+from tests.pulp_helpers import parse_pulp_mounts
+
 PULP_API_SOCKET = '/run/httpd.pulp-api.sock'
 PULP_CONTENT_SOCKET = '/run/httpd.pulp-content.sock'
+PULP_CONTAINERS = ('pulp-api', 'pulp-content', 'pulp-worker-1')
+
+
+# Run check --deploy and settings inspection in a single Django startup.
+# Passed via heredoc to avoid shell quoting issues with multi-line Python.
+_PULP_MANAGER_SCRIPT = textwrap.dedent("""\
+    import json
+    from django.conf import settings
+    from django.core.management import call_command
+    from django.core.management.base import SystemCheckError
+    check_ok = True
+    try:
+        call_command('check', '--deploy', verbosity=0)
+    except SystemCheckError:
+        check_ok = False
+    print(json.dumps({
+        'check_ok': check_ok,
+        'import': sorted(settings.ALLOWED_IMPORT_PATHS),
+        'export': sorted(settings.ALLOWED_EXPORT_PATHS),
+        'rhsm_url': settings.SMART_PROXY_RHSM_URL,
+    }))
+""")
 
 
 @pytest.fixture(scope="module")
@@ -22,12 +47,33 @@ def pulp_import_export_paths(obsah_params):
 
 
 @pytest.fixture(scope="module")
-def pulp_smart_proxy_settings(server):
-    py = (
-        'from django.conf import settings; import json; '
-        'print(json.dumps({"rhsm_url": settings.SMART_PROXY_RHSM_URL}))'
+def pulp_manager_info(server):
+    result = server.run(
+        "podman exec -i pulp-api pulpcore-manager shell <<'PYEOF'\n"
+        + _PULP_MANAGER_SCRIPT
+        + "PYEOF"
     )
-    return json.loads(server.check_output(f"podman exec pulp-api pulpcore-manager shell -c '{py}'"))
+    if not result.succeeded:
+        pytest.fail(f"Pulp manager inspection failed: rc={result.rc}, stdout={result.stdout!r}, stderr={result.stderr!r}")
+    try:
+        return json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        pytest.fail(f"Pulp manager inspection returned invalid JSON: {exc}; stdout={result.stdout!r}, stderr={result.stderr!r}")
+
+
+@pytest.fixture(scope="module")
+def pulp_container_mounts(server):
+    result = server.run(f"podman inspect {' '.join(PULP_CONTAINERS)}")
+    if not result.succeeded:
+        pytest.fail(f"Pulp container inspection failed: rc={result.rc}, stdout={result.stdout!r}, stderr={result.stderr!r}")
+    try:
+        mounts = parse_pulp_mounts(result.stdout)
+    except (json.JSONDecodeError, KeyError, TypeError) as exc:
+        pytest.fail(f"Pulp container inspection returned invalid JSON: {exc}; stdout={result.stdout!r}, stderr={result.stderr!r}")
+    missing = set(PULP_CONTAINERS) - mounts.keys()
+    if missing:
+        pytest.fail(f"Pulp container inspection omitted {sorted(missing)}; stdout={result.stdout!r}")
+    return mounts
 
 
 def test_pulp_api_service(server):
@@ -93,21 +139,16 @@ def test_pulp_worker_target(server):
     assert pulp_worker_target.is_enabled
 
 
-def test_pulp_manager_check(server):
-    result = server.run("podman exec -ti pulp-api pulpcore-manager check --deploy")
-    assert result.succeeded
+def test_pulp_manager_check(pulp_manager_info):
+    assert pulp_manager_info['check_ok'], f"Pulp manager check failed: {pulp_manager_info}"
 
 
-def test_pulp_import_export_settings(server, pulp_import_export_paths):
+def test_pulp_import_export_settings(pulp_manager_info, pulp_import_export_paths):
     expected_import_paths, expected_export_paths = pulp_import_export_paths
-    py = 'from django.conf import settings; import json; print(json.dumps({"import": list(settings.ALLOWED_IMPORT_PATHS), "export": list(settings.ALLOWED_EXPORT_PATHS)}))'
-    result = server.run(f"podman exec pulp-api pulpcore-manager shell -c '{py}'")
-    assert result.succeeded
-    data = json.loads(result.stdout)
     for path in expected_import_paths:
-        assert path in data['import'], f"expected {path} in Pulp ALLOWED_IMPORT_PATHS"
+        assert path in pulp_manager_info['import'], f"expected {path} in Pulp ALLOWED_IMPORT_PATHS"
     for path in expected_export_paths:
-        assert path in data['export'], f"expected {path} in Pulp ALLOWED_EXPORT_PATHS"
+        assert path in pulp_manager_info['export'], f"expected {path} in Pulp ALLOWED_EXPORT_PATHS"
 
 
 def test_pulp_import_directories(server, pulp_import_export_paths):
@@ -122,21 +163,18 @@ def test_pulp_export_directories(server, pulp_import_export_paths):
         assert server.file(path).is_directory
 
 
-@pytest.mark.parametrize("container", ["pulp-api", "pulp-content", "pulp-worker-1"])
-def test_pulp_import_export_volume_mounts(server, container, pulp_import_export_paths):
+@pytest.mark.parametrize("container", PULP_CONTAINERS)
+def test_pulp_import_export_volume_mounts(pulp_container_mounts, container, pulp_import_export_paths):
     import_paths, export_paths = pulp_import_export_paths
-    result = server.run(f"podman inspect {container} --format '{{{{json .Mounts}}}}'")
-    assert result.succeeded
-    mounts = json.loads(result.stdout)
-    destinations = [mount['Destination'] for mount in mounts]
+    destinations = pulp_container_mounts[container]
 
     for path in import_paths + export_paths:
         mounted = path in destinations or any(path.startswith(d + '/') for d in destinations)
         assert mounted, f"expected {path} to be mounted as a volume in {container}"
 
 
-def test_pulp_rhsm_url_empty_on_server(pulp_smart_proxy_settings, obsah_params):
+def test_pulp_rhsm_url_empty_on_server(pulp_manager_info, obsah_params):
     if obsah_params.get('flavor') in ('foreman-proxy-content', 'capsule'):
         pytest.skip("content proxy deployments set PULP_SMART_PROXY_RHSM_URL")
 
-    assert pulp_smart_proxy_settings["rhsm_url"] == ""
+    assert pulp_manager_info["rhsm_url"] == ""
