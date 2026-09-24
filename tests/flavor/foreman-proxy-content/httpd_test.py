@@ -29,7 +29,7 @@ def test_https_rhsm_proxy(curl_request):
 def test_https_redhat_access_proxy(curl_request):
     cmd = curl_request("redhat_access")
     assert cmd.succeeded
-    assert cmd.stdout not in ('502', '503')
+    assert cmd.stdout not in ('502', '503', '504')
 
 
 def test_rhsm_proxy_timeout(server):
