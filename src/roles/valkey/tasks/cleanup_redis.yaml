@@ -13,24 +13,14 @@
     name: redis
     state: absent
 
-- name: Remove Redis image
-  ansible.builtin.file:
-    path: /etc/containers/systemd/redis.image
+- name: Remove Redis image and container definitions
+  containers.podman.podman_quadlet:
     state: absent
+    name:
+      - redis.image
+      - redis.container
 
 - name: Remove Redis image drop-in directory
   ansible.builtin.file:
     path: /etc/containers/systemd/redis.image.d
     state: absent
-
-- name: Remove Redis container
-  ansible.builtin.file:
-    path: /etc/containers/systemd/redis.container
-    state: absent
-  register: _valkey_remove_redis_container
-
-- name: Run daemon reload # noqa: no-handler
-  ansible.builtin.systemd:
-    daemon_reload: true
-  when:
-    - _valkey_remove_redis_container is changed
