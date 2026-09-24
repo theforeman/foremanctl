@@ -21,3 +21,14 @@ You can also use the [Foreman community forum](https://community.theforeman.org/
 For setting up a foremanctl development environment, see the [Developer setup](DEVELOPMENT.md) guide.
 
 If you are looking to develop Foreman, checkout the [Foreman Development Environment](docs/developer/development-environment.md) guide.
+
+### CodeRabbit Reviews
+
+CodeRabbit automatically reviews pull requests in this repository.
+
+For small or trivial changes where an automated review is not needed, you can skip it using either of the following options:
+
+- Add the `skip-coderabbit` label when creating the pull request.
+- Add `@coderabbitai ignore` to the pull request description.
+
+CodeRabbit reviews are intended to assist contributors.
