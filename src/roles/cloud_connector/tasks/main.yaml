@@ -46,6 +46,14 @@
     daemon_reload: true
   when: ansible_facts['distribution_major_version'] | int >= 10
 
+- name: Republish yggdrasil connection status
+  ansible.builtin.file:
+    path: /var/lib/yggdrasil/canonical-facts.json
+    state: touch
+    modification_time: preserve
+    access_time: now
+  when: ansible_facts['distribution_major_version'] | int >= 10
+
 - name: Read client ID from consumer certificate
   community.crypto.x509_certificate_info:
     path: /etc/pki/consumer/cert.pem
