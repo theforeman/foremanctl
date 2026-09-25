@@ -2,6 +2,7 @@ FRONTENDS = [
     ("iop-advisor-frontend-assets-source", "iop-advisor-frontend"),
     ("iop-host-inventory-frontend-assets-source", "iop-host-inventory-frontend"),
     ("iop-vulnerability-frontend-assets-source", "iop-vulnerability-frontend"),
+    ("iop-compliance-frontend-assets-source", "iop-compliance-frontend"),
 ]
 
 
