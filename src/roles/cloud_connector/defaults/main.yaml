@@ -2,3 +2,8 @@
 cloud_connector_url: "https://{{ ansible_facts['fqdn'] }}"
 cloud_connector_service_user: cloud_connector_user
 cloud_connector_config_file: /etc/rhc/workers/foreman_rh_cloud.toml
+# yggdrasil dispatcher service name: rhcd on EL <= 9, yggdrasil on EL 10+
+cloud_connector_dispatcher_service: >-
+  {{ 'yggdrasil' if (ansible_facts['distribution_major_version'] | int >= 10) else 'rhcd' }}
+# D-Bus activated worker unit
+cloud_connector_worker_service: com.redhat.Yggdrasil1.Worker1.foreman_rh_cloud
