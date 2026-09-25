@@ -3,6 +3,7 @@
 foremanctl is a deployment tool for Foreman and Katello using Podman quadlets and Ansible, wrapping `obsah` for managed containerized deployments.
 
 Two entry points:
+
 - `foremanctl` — production deployment; uses `src/` as its data directory
 - `forge` — development and testing; uses `development/` as its data directory
 
@@ -30,6 +31,7 @@ Production playbooks (`src/playbooks/`): `deploy/`, `checks/`, `features/`, `pul
 Development playbooks (`development/playbooks/`): `vms/`, `test/`, `smoker/`, `deploy-dev/`, and utilities.
 
 Configuration lookup:
+
 - `src/vars/defaults.yml` — base defaults
 - `src/vars/flavors/` — base feature sets per deployment flavor (e.g. `katello.yml`)
 - `src/vars/tuning/` — resource profiles (development, medium, large, extra-large, extra-extra-large)
@@ -56,6 +58,7 @@ Developer docs:
 - [Testing](docs/developer/testing.md) - Additional info on test infrastructure, fixtures, patterns
 
 User docs:
+
 - [Backup](docs/user/backup.md) - How to back up your data
 - [Certificates](docs/user/certificates.md) - Overview of certificate sources
 - [Parameters](docs/user/parameters.md) - Map of Foreman installation parameters; update as parameters are created/modified

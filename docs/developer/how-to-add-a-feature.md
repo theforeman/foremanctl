@@ -4,7 +4,8 @@ This guide covers what you need to do to add a feature to foremanctl, using Remo
 
 ## What is a feature?
 
-A feature in foremanctl extends the functionality the deployment by installing and configuring the additional components. The foremanctl tool automatically resolves dependencies, installs packages, and deploys configuration based on what you define in `src/features.yaml`.
+A feature in foremanctl extends the functionality the deployment by installing and configuring the additional components.
+The foremanctl tool automatically resolves dependencies, installs packages, and deploys configuration based on what you define in `src/features.yaml`.
 
 ## Prerequisites
 
@@ -12,7 +13,8 @@ Before adding a feature, you should:
 
 - Know which components your plugin extends (does it add a Foreman plugin, a Smart Proxy plugin, a Hammer CLI plugin, or some combination?)
 - Know what configuration the plugin needs (settings files, credentials, extra mounts, etc.)
-- Be aware that Smart Proxy plugins only take effect when `foreman-proxy` is an enabled feature, and Hammer plugins only when `hammer` is enabled. Depending on the deployment's flavor, these may already be included, see [Deployment Design](deployment.md) for details.
+- Be aware that Smart Proxy plugins only take effect when `foreman-proxy` is an enabled feature, and Hammer plugins only when `hammer` is enabled.
+  Depending on the deployment's flavor, these may already be included, see [Deployment Design](deployment.md) for details.
 
 ## Step 1: Register the Feature
 
@@ -54,7 +56,8 @@ Plugin names must match what the ecosystem expects:
 
 ### Dependencies
 
-Use `dependencies` to pull in dependencies automatically(which are required for a feature to work). Mark these non-user facing dependencies with `internal: true` to hide them from users:
+Use `dependencies` to pull in dependencies automatically(which are required for a feature to work).
+Mark these non-user facing dependencies with `internal: true` to hide them from users:
 
 ```yaml
 dynflow:
@@ -65,7 +68,8 @@ dynflow:
 
 ### Conflicts
 
-Use `conflicts` to declare that two features are mutually exclusive and cannot both be enabled in the same deployment. Conflicts must be declared on both sides:
+Use `conflicts` to declare that two features are mutually exclusive and cannot both be enabled in the same deployment.
+Conflicts must be declared on both sides:
 
 ```yaml
 cloud-connector:
@@ -89,7 +93,9 @@ When a user tries to enable both conflicting features, the deploy will fail earl
 
 If the feature has no `foreman_proxy` section, skip to Step 3.
 
-Every Smart Proxy plugin needs a settings template. If the plugin also requires custom setup/configurations (generating credentials, mounting extra files), you add an additional tasks file. Both are keyed by `foreman_proxy.plugin_name`.
+Every Smart Proxy plugin needs a settings template.
+If the plugin also requires custom setup/configurations (generating credentials, mounting extra files), you add an additional tasks file.
+Both are keyed by `foreman_proxy.plugin_name`.
 
 ### Settings Template (required for Smart Proxy plugins)
 
@@ -99,8 +105,9 @@ Create a Jinja2 template at:
 src/roles/foreman_proxy/templates/settings.d/<plugin_name>.yml.j2
 ```
 
-The filename must exactly match `foreman_proxy.plugin_name`. The template must start with `:enabled: {{ feature_enabled }}` -- the system sets this to `"true"` or `"false"` automatically. Add any plugin-specific settings after that using Ruby symbol notation (`:key: value`).
-
+The filename must exactly match `foreman_proxy.plugin_name`.
+The template must start with `:enabled: {{ feature_enabled }}` -- the system sets this to `"true"` or `"false"` automatically.
+Add any plugin-specific settings after that using Ruby symbol notation (`:key: value`).
 
 Example: REX needs additional settings:
 
@@ -122,7 +129,9 @@ If the plugin needs addtional setup beyond the settings file, create a feature s
 src/roles/foreman_proxy/tasks/feature/<plugin_name>.yaml
 ```
 
-The filename must exactly match `foreman_proxy.plugin_name` with `.yaml` extension. These tasks only run when the feature is enabled. If the file doesn't exist, nothing happens.
+The filename must exactly match `foreman_proxy.plugin_name` with `.yaml` extension.
+These tasks only run when the feature is enabled.
+If the file doesn't exist, nothing happens.
 
 For example, REX needs SSH keys generated and mounted into the container, see [`remote_execution_ssh.yaml`](../src/roles/foreman_proxy/tasks/feature/remote_execution_ssh.yaml).
 

@@ -16,12 +16,13 @@ This guide helps you set up foremanctl development enviornment.
 - Ansible - 2.14+
 - [Vagrant Libvirt provider plugin](https://github.com/vagrant-libvirt/vagrant-libvirt)
 - Virtualization enabled in BIOS
+- Node.js and npm
 
 Follow [instructions](https://github.com/theforeman/forklift/blob/master/docs/vagrant.md) to install Vagrant and Libvirt.
 
 ### Development environment
 
-To setup the environment, run the setup script which will create a virtualenv and populate all of the dependencies:
+To setup the environment, run the setup script which will create a virtualenv and populate all of the dependencies, including the transient Markdown linting rule:
 
 ```
 ./setup-environment
@@ -33,21 +34,25 @@ source .venv/bin/activate
 VMs can be customized via environment variables:
 
 **Quadlet VM (main Foreman server):**
+
 - `FOREMANCTL_QUADLET_MEMORY` - Memory in MB (default: 10240)
 - `FOREMANCTL_QUADLET_CPUS` - Number of CPUs (default: 4)
 - `FOREMANCTL_QUADLET_DISK` - Disk size in GB (default: 50)
 
 **Client VM:**
+
 - `FOREMANCTL_CLIENT_MEMORY` - Memory in MB (default: 1024)
 - `FOREMANCTL_CLIENT_CPUS` - Number of CPUs (default: 1)
 - `FOREMANCTL_CLIENT_DISK` - Disk size in GB (default: 20)
 
 **Database VM:**
+
 - `FOREMANCTL_DATABASE_MEMORY` - Memory in MB (default: 2048)
 - `FOREMANCTL_DATABASE_CPUS` - Number of CPUs (default: 1)
 - `FOREMANCTL_DATABASE_DISK` - Disk size in GB (default: 30)
 
 **Proxy VM:**
+
 - `FOREMANCTL_PROXY_MEMORY` - Memory in MB (default: 4096)
 - `FOREMANCTL_PROXY_CPUS` - Number of CPUs (default: 4)
 - `FOREMANCTL_PROXY_DISK` - Disk size in GB (default: 40)
@@ -81,7 +86,8 @@ To teardown the environment:
 
 ## Testing
 
-Ensure you have a deployment. Now run the tests:
+Ensure you have a deployment.
+Now run the tests:
 
 ```
 ./forge test
@@ -105,7 +111,8 @@ Additonally, you can run [smoker](https://github.com/theforeman/smoker) based te
 
 ## Service Configuration
 
-Configuration files for services are stored as [podman secrets](https://docs.podman.io/en/latest/markdown/podman-secret-create.1.html) and mounted into the container at the expected locations. These configuration files can be listed:
+Configuration files for services are stored as [podman secrets](https://docs.podman.io/en/latest/markdown/podman-secret-create.1.html) and mounted into the container at the expected locations.
+These configuration files can be listed:
 
 ```
 podman secret ls

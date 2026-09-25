@@ -18,20 +18,24 @@ feature_two:
 ```
 
 The following properties are defined:
+
 * `description` (_String_): A human-readable description of the feature, can be used in documentation/help output.
 * `internal` (_Boolean_): Whether the feature is user visible (shows up in documentation/help) or internal (just to perform additional configuration without user interaction).
 * `foreman` (_Hash_): How this feature should be applied on the "main" system that offers the main user interaction via UI/API.
   * `plugin_name` (_String_): The name of the Foreman plugin to be enabled (via `FOREMAN_ENABLED_PLUGINS`).
      If `roles/foreman/tasks/feature/{{ foreman_plugin }}.yaml` exists, it will be executed to perform any plugin-specific setup.
-      * **FIXME**: task file not implemented yet
+    * **FIXME**: task file not implemented yet
   * `role` (_String_): The name of the Ansible role to be executed if the feature to be placed on the main system but is not implemented as a Foreman plugin.
 * `foreman_proxy` (_Hash_): How this feature should be applied to a secondary system that is connected using the Proxy API to the main system.
   * `plugin_name` (_String_): The name of the Foreman Proxy plugin to be enabled (by deploying `roles/foreman_proxy/templates/settings.d/{{ foreman_proxy_plugin }}.yml.j2` to `/etc/foreman-proxy/settings.d`).
     If `roles/foreman/tasks/feature/{{ foreman_proxy_plugin }}.yaml` exists, it will be executed to perform any plugin-specific setup.
   * `role` (_String_): The name of the Ansible role to be executed if the feature is not implemented as a Foreman Proxy plugin.
 * `hammer` (_String_): The name of the Hammer plugin to be enabled (the package installed will be `hammer-cli-plugin-{{ hammer }}`).
-* `dependencies` (_Array_ of _String_): List of features that are automatically enabled when the user requests this feature. Usually will point at features with `internal: true`.
-* `conflicts` (_Array_ of _String_): List of features that are mutually exclusive with this feature. If both are enabled, deployment will fail with an error. Conflicts must be declared on both sides — if feature A lists B in its conflicts, B must also list A.
+* `dependencies` (_Array_ of _String_): List of features that are automatically enabled when the user requests this feature.
+  Usually will point at features with `internal: true`.
+* `conflicts` (_Array_ of _String_): List of features that are mutually exclusive with this feature.
+  If both are enabled, deployment will fail with an error.
+  Conflicts must be declared on both sides — if feature A lists B in its conflicts, B must also list A.
 
 Properties can be omitted.
 
@@ -56,6 +60,7 @@ The `remote_execution` feature will enable the `foreman_remote_execution` plugin
 The `dynflow` feature is hidden from the user and only present so that `remote_execution` can pull it in.
 
 ### RH Cloud + Katello
+
 ```yaml
 katello:
   description: Katello
@@ -71,6 +76,7 @@ rh_cloud:
 The `rh_cloud` feature can't be enabled unless the `katello` feature is also present in the deployment.
 
 ### Katello + tasks
+
 ```yaml
 foreman-tasks:
   foreman: foreman-tasks

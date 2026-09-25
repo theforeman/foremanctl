@@ -4,7 +4,8 @@
 
 When upgrading from foreman-installer to foremanctl, the `foremanctl migrate` command helps convert your existing configuration to the new format.
 
-By default, `foremanctl migrate` previews the migration without making any changes. Use `--apply` to perform the actual migration.
+By default, `foremanctl migrate` previews the migration without making any changes.
+Use `--apply` to perform the actual migration.
 
 ## Prerequisites
 
@@ -13,6 +14,7 @@ Before migrating, ensure the following:
 1. **Foreman deployment using foreman-installer** - You should have an existing Foreman deployment has been installed using foreman-installer and has an answers file to migrate from.
 
 2. **foremanctl is installed** on the system:
+
    ```bash
    # Enable the foremanctl repository
    dnf copr enable @theforeman/foremanctl rhel-9-x86_64
@@ -26,6 +28,7 @@ Before migrating, ensure the following:
 ## Migration Workflow
 
 1. **Preview the migration** (no changes are made):
+
    ```bash
    foremanctl migrate
    ```
@@ -33,11 +36,13 @@ Before migrating, ensure the following:
 2. **Review the output** for any warnings about unmapped parameters
 
 3. **Apply the migration** when satisfied:
+
    ```bash
    foremanctl migrate --apply
    ```
 
 4. **Deploy using foremanctl**:
+
    ```bash
    foremanctl deploy
    ```
@@ -47,11 +52,13 @@ Before migrating, ensure the following:
 ### Preview Migration
 
 Preview the migrated configuration without making any changes:
+
 ```bash
 foremanctl migrate
 ```
 
 This shows:
+
 - Mapped answer file parameters and their new values
 - Unmappable parameters that need manual review
 - Certificate state detected on the system
@@ -59,11 +66,13 @@ This shows:
 ### Apply Migration
 
 Perform the actual migration:
+
 ```bash
 foremanctl migrate --apply
 ```
 
 This:
+
 - Writes migrated parameters to the foremanctl configuration
 - Normalizes installer certificates into `/var/lib/foremanctl/certs/`
 - Backs up the original `/root/ssl-build/` directory to `/root/ssl-build.bak/`
@@ -71,6 +80,7 @@ This:
 ### Custom Answer File
 
 Migrate from a specific answer file:
+
 ```bash
 foremanctl migrate --answer-file /path/to/custom-answers.yaml
 foremanctl migrate --apply --answer-file /path/to/custom-answers.yaml
@@ -79,22 +89,28 @@ foremanctl migrate --apply --answer-file /path/to/custom-answers.yaml
 ### Write to a Custom Path
 
 Write the migrated parameters to a specific file for inspection:
+
 ```bash
 foremanctl migrate --output /tmp/migrated.yaml
 ```
 
 ## Command Options
 
-- `--apply` - Perform the migration. Without this flag, only previews what would happen.
-- `--answer-file PATH` - Path to the foreman-installer answer file. If not specified, reads the currently active scenario and extracts the answer file path from it.
-- `--output PATH` - Path for the migrated configuration. If not specified and `--apply` is used, writes to the foremanctl configuration.
+- `--apply` - Perform the migration.
+  Without this flag, only previews what would happen.
+- `--answer-file PATH` - Path to the foreman-installer answer file.
+  If not specified, reads the currently active scenario and extracts the answer file path from it.
+- `--output PATH` - Path for the migrated configuration.
+  If not specified and `--apply` is used, writes to the foremanctl configuration.
 
 > [!NOTE]
-> Unlike other `foremanctl` commands, migrate does not persist parameters between runs. Each migration is independent.
+> Unlike other `foremanctl` commands, migrate does not persist parameters between runs.
+> Each migration is independent.
 
 ## Parameter Mappings
 
-The migrate command automatically maps foreman-installer parameters to foremanctl parameters. For a complete list of all parameter mappings, see the [Parameters documentation](user/parameters.md#mapping).
+The migrate command automatically maps foreman-installer parameters to foremanctl parameters.
+For a complete list of all parameter mappings, see the [Parameters documentation](user/parameters.md#mapping).
 
 ## Example
 
@@ -133,16 +149,19 @@ When the migration completes, you may see warnings like:
 
 > [!WARNING]  
 > The following parameters could not be mapped:
->  - katello::enable_ostree
+>
+> - katello::enable_ostree
 > - foreman::some_other_param
 
-These parameters need to be manually reviewed and added to the new configuration if needed. Check the [parameters documentation](user/parameters.md) for equivalent foremanctl parameters.
+These parameters need to be manually reviewed and added to the new configuration if needed.
+Check the [parameters documentation](user/parameters.md) for equivalent foremanctl parameters.
 
 ## Using the Migrated Configuration
 
 Once you've applied the migration:
 
 1. **Deploy using foremanctl**:
+
    ```bash
    foremanctl deploy
    ```

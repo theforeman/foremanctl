@@ -4,7 +4,8 @@ This document covers how playbooks and roles are organized, named, and wired up 
 
 ## How CLI Commands Map to Playbook Directories
 
-`foremanctl` (production deployment tool) and `forge` (development and testing tool) are both wrappers around [Obsah](https://github.com/theforeman/obsah). Each wrapper sets the `OBSAH_DATA` environment variable, which tells Obsah where to discover playbook directories and expose them as CLI subcommands.
+`foremanctl` (production deployment tool) and `forge` (development and testing tool) are both wrappers around [Obsah](https://github.com/theforeman/obsah).
+Each wrapper sets the `OBSAH_DATA` environment variable, which tells Obsah where to discover playbook directories and expose them as CLI subcommands.
 
 - `foremanctl` → playbooks in `src/playbooks/`
 - `forge` → playbooks in `development/playbooks/`
@@ -17,7 +18,6 @@ Here are a few examples:
 | `src/playbooks/features/`           | `foremanctl features`    |
 | `development/playbooks/vms/`        | `forge vms`              |
 | `development/playbooks/deploy-dev/` | `forge deploy-dev`       |
-
 
 ## Naming Conventions
 
@@ -38,7 +38,8 @@ Roles live under `src/roles/` (production) and `development/roles/` (development
 
 ## Shared Metadata Fragments
 
-Directories prefixed with `_` (underscore) contain reusable metadata that can be included by subcommands via the `include` field. They are **not** exposed as CLI commands.
+Directories prefixed with `_` (underscore) contain reusable metadata that can be included by subcommands via the `include` field.
+They are **not** exposed as CLI commands.
 
 - Use the `_` prefix to indicate the directory is a fragment, not a standalone command.
 - Fragment directories contain only a `metadata.obsah.yaml` — no playbook YAML file.
@@ -55,14 +56,15 @@ Here are a few examples:
 | `_tuning`              | Performance tuning profile                    |
 | `_flavor_features`     | `--add-feature`, `--remove-feature`, `flavor` |
 
-
 ## metadata.obsah.yaml Reference
 
-The general `metadata.obsah.yaml` format is documented in the [Obsah playbook metadata guide](https://github.com/theforeman/obsah/blob/master/docs/source/development.rst#exposing-playbooks-using-metadata). Below is a quick reference followed by patterns specific to foremanctl.
+The general `metadata.obsah.yaml` format is documented in the [Obsah playbook metadata guide](https://github.com/theforeman/obsah/blob/master/docs/source/development.rst#exposing-playbooks-using-metadata).
+Below is a quick reference followed by patterns specific to foremanctl.
 
 ### `help`
 
-Short description shown in `--help` output. Required for every subcommand.
+Short description shown in `--help` output.
+Required for every subcommand.
 
 ```yaml
 help: |
@@ -71,8 +73,8 @@ help: |
 
 ### `variables`
 
-Each key becomes an Ansible variable passed to the playbook. Obsah auto-converts `snake_case` names to `--hyphen-case` CLI flags (e.g. `foreman_initial_admin_password` becomes `--foreman-initial-admin-password`) unless overridden with `parameter`.
-
+Each key becomes an Ansible variable passed to the playbook.
+Obsah auto-converts `snake_case` names to `--hyphen-case` CLI flags (e.g. `foreman_initial_admin_password` becomes `--foreman-initial-admin-password`) unless overridden with `parameter`.
 
 | Property    | Description                                                                                                                                          | Example                                         |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
@@ -84,9 +86,7 @@ Each key becomes an Ansible variable passed to the playbook. Obsah auto-converts
 | `persist`   | Whether Obsah saves the value parameter to its answers file so it is reused on subsequent runs. Defaults to `true`. Set `false` to avoid persistance | `false`                                         |
 | `dest`      | It controls which attribute name the parsed value is stored under. By default argparse uses the variable name, but dest overrides it.                                   | `features`                                      |
 
-
 **Actions:**
-
 
 | Action          | Behavior                                                              |
 | --------------- | --------------------------------------------------------------------- |
@@ -95,7 +95,6 @@ Each key becomes an Ansible variable passed to the playbook. Obsah auto-converts
 | `append`        | Collect multiple values into a list. Can be specified multiple times. |
 | `append_unique` | Like `append`, but deduplicates values.                               |
 | `remove`        | Remove a value from the list variable specified by `dest`.            |
-
 
 **Examples:**
 
@@ -174,7 +173,8 @@ include:
 
 ## Secret Management
 
-Secrets (passwords, tokens, OAuth secrets) must never be hardcoded. Use the `ansible.builtin.password` lookup to auto-generate secrets and persist them to files under `obsah_state_path`.
+Secrets (passwords, tokens, OAuth secrets) must never be hardcoded.
+Use the `ansible.builtin.password` lookup to auto-generate secrets and persist them to files under `obsah_state_path`.
 
 ### Pattern
 
@@ -185,7 +185,8 @@ example_database_password_file: "{{ obsah_state_path }}/example-db-password"
 example_database_password: "{{ lookup('ansible.builtin.password', example_database_password_file, chars=['ascii_letters', 'digits']) }}"
 ```
 
-The `lookup` generates a random password on first run and writes it to the file. On subsequent runs, it reads the existing value, ensuring the secret is stable across deploys.
+The `lookup` generates a random password on first run and writes it to the file.
+On subsequent runs, it reads the existing value, ensuring the secret is stable across deploys.
 
 ### Parameters
 
@@ -196,10 +197,11 @@ The `lookup` generates a random password on first run and writes it to the file.
 
 ### Where to define secrets
 
-Define secrets in `src/vars/` files, not in role `defaults/`. Vars files have higher Ansible precedence and are the effective source of truth at deploy time.
+Define secrets in `src/vars/` files, not in role `defaults/`.
+Vars files have higher Ansible precedence and are the effective source of truth at deploy time.
 
 | Secret type | Define in |
-|-------------|-----------|
+| ------------- | ----------- |
 | Database passwords | `src/vars/database.yml` |
 | IOP database passwords | `src/vars/database_iop.yml` |
 | general passwords/secrets | `src/vars/base.yaml` |
@@ -213,12 +215,13 @@ Define secrets in `src/vars/` files, not in role `defaults/`. Vars files have hi
 
 ## Foreman API Authentication
 
-Tasks that call `theforeman.foreman.*` modules must authenticate with OAuth (`oauth1_consumer_key`/`oauth1_consumer_secret`), never with `username`/`password`. The custom ansible-lint rule `foreman-oauth-only` enforces this.
+Tasks that call `theforeman.foreman.*` modules must authenticate with OAuth (`oauth1_consumer_key`/`oauth1_consumer_secret`), never with `username`/`password`.
+The custom ansible-lint rule `foreman-oauth-only` enforces this.
 
 The OAuth credentials are defined in `src/vars/foreman.yml` and aliased per-service in `src/vars/base.yaml`:
 
 | Service | Key variable | Secret variable |
-|---------|-------------|----------------|
+| --------- | ------------- | ---------------- |
 | Foreman (base) | `foreman_oauth_consumer_key` | `foreman_oauth_consumer_secret` |
 | Foreman Proxy | `foreman_proxy_oauth_consumer_key` | `foreman_proxy_oauth_consumer_secret` |
 | Pulp | `pulp_foreman_oauth_consumer_key` | `pulp_foreman_oauth_consumer_secret` |
@@ -240,13 +243,13 @@ Example:
 
 ## How to Add a New Command
 
+> [!NOTE]
+> This test suite only covers `src/playbooks/` (it sets `OBSAH_DATA=src`).
+
 1. Create a directory under `src/playbooks/<command-name>/` (or `development/playbooks/` for dev tools).
 2. Add `<command-name>.yaml` playbook file — the filename must match the directory name.
 3. Add `metadata.obsah.yaml` with at least a `help` field.
 4. If the command shares options with existing commands, use `include` to reference `_`-prefixed fragments rather than duplicating variable definitions.
 5. Add roles to `src/roles/` or `development/roles/` as needed, using `snake_case` names.
 6. Run `pytest tests/playbooks_test.py` to verify the playbook is discoverable, documented, and correctly named.
-  > [!NOTE]
-  > This test suite only covers `src/playbooks/` (it sets `OBSAH_DATA=src`).
 7. Run `ansible-lint` to check for linting issues in your playbook and roles.
-
