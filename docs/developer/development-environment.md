@@ -5,6 +5,7 @@ This document describes how to set up and use the Foreman development environmen
 ## Overview
 
 The development environment provides:
+
 - Git-based Foreman installation (cloned from GitHub)
 - Containerized backend services (PostgreSQL, Valkey, Candlepin, Pulp, Apache HTTP Server)
 - Plugin support with registry system
@@ -13,9 +14,11 @@ The development environment provides:
 
 ## Prerequisites
 
-- A running EL9 virtual machine, and inventory that contains knowledge of the VM. For example, using `./forge vms start`.
+- A running EL9 virtual machine, and inventory that contains knowledge of the VM.
+  For example, using `./forge vms start`.
   - CentOS Stream 9 is recommended and tested
-  - Other EL9 variants should work too. Please report if they do not.
+  - Other EL9 variants should work too.
+    Please report if they do not.
 - Run `./setup-environment` and activate the virtual environment
 
 ## Quick Start
@@ -23,6 +26,7 @@ The development environment provides:
 ### Using Vagrant VMs (Default)
 
 1. **Start the development environment:**
+
    ```bash
    ./forge deploy-dev
    ```
@@ -37,7 +41,9 @@ The development environment provides:
    - Production-style UI: `https://$(hostname -f)` (via Apache proxy)
 
 > [!NOTE]
-> Do not run `./foremanctl` or `./forge` from inside the VM. These commands should be run on the **control node** (where foremanctl source is cloned) and use the `--target-host` parameter to deploy to the VM remotely via SSH. See [Deploying to a Remote Host](#deploying-to-a-remote-host) for details.
+> Do not run `./foremanctl` or `./forge` from inside the VM.
+> These commands should be run on the **control node** (where foremanctl source is cloned) and use the `--target-host` parameter to deploy to the VM remotely via SSH.
+> See [Deploying to a Remote Host](#deploying-to-a-remote-host) for details.
 
 ### Deploying to a Remote Host
 
@@ -72,7 +78,8 @@ katello-production:
 
 ### DNS
 
-This repository does not use the `vagrant-hostmanager` plugin; instead, it automatically configures `/etc/hosts` inside all VMs during provisioning. However, to enable host-to-VM communication (e.g., using `ssh` or `scp` from your host, which is required for proxy/capsule node deployments), you need a working DNS resolution of the libvirt VMs.
+This repository does not use the `vagrant-hostmanager` plugin; instead, it automatically configures `/etc/hosts` inside all VMs during provisioning.
+However, to enable host-to-VM communication (e.g., using `ssh` or `scp` from your host, which is required for proxy/capsule node deployments), you need a working DNS resolution of the libvirt VMs.
 
 This can be configured by editing the default libvirt network on your host:
 
@@ -107,9 +114,11 @@ ANSIBLE_ASK_PASS=true ./forge deploy-dev --target-host=192.168.1.100
 
 ## Feature Management
 
-Similarly to production deployments with `foremanctl`, using `forge` there is support for enabling `hammer` and `foreman-proxy` as features. Features can be enabled with `--add-feature=$feature`, which can be used multiple times.
+Similarly to production deployments with `foremanctl`, using `forge` there is support for enabling `hammer` and `foreman-proxy` as features.
+Features can be enabled with `--add-feature=$feature`, which can be used multiple times.
 
-By default `hammer` feature will set up `hammer-cli` and `hammer-cli-foreman`, `foreman-proxy` will set up `smart-proxy` itself. If any plugins are enabled, they're respective hammer or smart-proxy plugins will be set up as well.
+By default `hammer` feature will set up `hammer-cli` and `hammer-cli-foreman`, `foreman-proxy` will set up `smart-proxy` itself.
+If any plugins are enabled, they're respective hammer or smart-proxy plugins will be set up as well.
 
 All the projects set up as part of the feature are deployed as git checkouts.
 
@@ -120,6 +129,7 @@ All the projects set up as part of the feature are deployed as git checkouts.
 The Foreman development environment uses official Pulp containers from [pulp-oci-images](https://github.com/theforeman/pulp-oci-images) which include all necessary plugins including `pulp-smart-proxy` by default.
 
 The official containers provide:
+
 - All Katello-supported Pulp plugins (ansible, container, deb, ostree, rpm, python, smart_proxy)
 - Proper service wrapper scripts and configuration
 
@@ -148,6 +158,7 @@ Deploy using the custom Pulp container image:
     --extra-vars pulp_container_tag="latest" \
     --add-feature=foreman-proxy
 ```
+
 ## Plugin Management
 
 Each enabled plugin is cloned into its own directory alongside the Foreman checkout (for example `/home/vagrant/katello`) and wired in as a local path gem, so edits to the plugin source are picked up by the development server.
@@ -160,6 +171,7 @@ Each enabled plugin is cloned into its own directory alongside the Foreman check
 ### Plugin Registry
 
 The system includes a plugin registry with predefined configurations:
+
 - `katello` - Katello subscription management
 - `foreman_remote_execution` - Remote execution plugin
 - `foreman_ansible` - Ansible integration
@@ -197,6 +209,7 @@ Use the `--foreman-development-enabled-plugin` parameter (can be used multiple t
 ### Initial Setup
 
 After deployment, the environment includes:
+
 - Cloned Foreman repository
 - Installed Ruby and Node.js dependencies
 - Database migrations and seeding
@@ -211,7 +224,8 @@ After deployment, the environment includes:
 
 This section is intended for users with foremanctl source cloned onto the same machine where foreman is being deployed on.
 
-In a source install, git branches control versioning instead of RPM packages. Stable branches (e.g. `2.y-stable`) track a specific Foreman Y-stream, while the `master` branch tracks nightly changes (most recent).
+In a source install, git branches control versioning instead of RPM packages.
+Stable branches (e.g. `2.y-stable`) track a specific Foreman Y-stream, while the `master` branch tracks nightly changes (most recent).
 
 Run all the steps as the root user in the foremanctl source directory unless otherwise specified.
 
@@ -220,15 +234,18 @@ Run all the steps as the root user in the foremanctl source directory unless oth
 3. Switch to the preferred target branch:
     - Switch to a stable Y-stream: `git fetch origin && git checkout origin/X.y-stable`
     - Switch to nightly: `git fetch origin && git checkout origin/master`
-4. Run upgrade tasks by re-deploying foremanctl with your customized deploy command: `foremanctl deploy [...]`. Please see [Parameters](../user/parameters.md) for available deploy options.
+4. Run upgrade tasks by re-deploying foremanctl with your customized deploy command: `foremanctl deploy [...]`.
+  Please see [Parameters](../user/parameters.md) for available deploy options.
 
-This final deploy command will pull new images and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
+This final deploy command will pull new images and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins.
+Expect this deploy to take longer than typical deploys.
 
 ## Architecture
 
 ### Service Integration
 
 The development environment integrates:
+
 - **Apache HTTP Server**: Provides HTTPS proxy to the Rails development server
 - **Backend Services**: All services (PostgreSQL, Valkey, Candlepin, Pulp) run in containers
 - **Rails Development Server**: Runs directly on the VM for live debugging and development
@@ -246,7 +263,9 @@ Development certificates are copied to `/home/vagrant/foreman-certs/`:
 
 ## Backup/Restore in Development Environment
 
-- **Backup/Restore with Multiple Nodes**: When running both quadlet and proxy nodes with the same controller, ensure you're switching to the correct `obsah_state` context before performing backup or restore operations. On user installs, foreman quadlet and smart proxy map to localhost (same machine). In the development environment, these are separate VMs which alters behavior.
+- **Backup/Restore with Multiple Nodes**: When running both quadlet and proxy nodes with the same controller, ensure you're switching to the correct `obsah_state` context before performing backup or restore operations.
+  On user installs, foreman quadlet and smart proxy map to localhost (same machine).
+  In the development environment, these are separate VMs which alters behavior.
 - **BACKUP_DIR Location**: The `BACKUP_DIR` argument in backup/restore commands refers to a directory on the target node (the VM running quadelt/proxy), not the controller node running foremanctl.
 
 ### Verifying the Deployment (Optional)

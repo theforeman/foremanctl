@@ -4,7 +4,8 @@ This guide covers the test infrastructure, how to run tests, and how to write ne
 
 ## Overview
 
-Tests live under `tests/` and use [pytest](https://pytest.org/) with [testinfra](https://testinfra.readthedocs.io/). Most tests are integration tests that SSH into deployed VMs and assert against real services.
+Tests live under `tests/` and use [pytest](https://pytest.org/) with [testinfra](https://testinfra.readthedocs.io/).
+Most tests are integration tests that SSH into deployed VMs and assert against real services.
 
 ## Test infrastructure
 
@@ -30,7 +31,8 @@ Testinfra fixtures in `tests/conftest.py` open Paramiko sessions through that SS
 
 ### CI
 
-GitHub Actions mirrors the same workflow: start VMs, deploy, run tests. The [`.github/workflows/test.yml`](../../.github/workflows/test.yml) matrix covers combinations of certificate source, database mode, security profile, and base box.
+GitHub Actions mirrors the same workflow: start VMs, deploy, run tests.
+The [`.github/workflows/test.yml`](../../.github/workflows/test.yml) matrix covers combinations of certificate source, database mode, security profile, and base box.
 
 #### Two-step deploy pattern
 
@@ -49,7 +51,9 @@ CI workflows must separate the base deployment from feature addition into two di
       --add-feature foreman-proxy
 ```
 
-Do not combine `--add-feature` flags into the initial deploy step. The base deploy establishes the core system; features are layered on afterward with a second deploy invocation. This mirrors how users add features to an existing deployment and ensures that code path is tested.
+Do not combine `--add-feature` flags into the initial deploy step.
+The base deploy establishes the core system; features are layered on afterward with a second deploy invocation.
+This mirrors how users add features to an existing deployment and ensures that code path is tested.
 
 ## Running tests
 
@@ -66,14 +70,16 @@ pytest tests/postgresql_test.py
 pytest tests/foreman_test.py::test_foreman_service
 ```
 
-You can also run tests with [markers](#markers). To skip all tests marked as slow:
+You can also run tests with [markers](#markers).
+To skip all tests marked as slow:
 
 ```bash
 pytest -m "not slow"
 ```
 
 > [!NOTE]
-> Running `pytest` directly requires `.tmp/ssh-config` to exist. Run `./forge test` at least once to generate it.
+> Running `pytest` directly requires `.tmp/ssh-config` to exist.
+> Run `./forge test` at least once to generate it.
 
 Pass options to match your deployment:
 
@@ -86,11 +92,13 @@ pytest tests/ --certificate-source=installer
 ```
 
 > [!NOTE]
-> `./forge test` runs the full suite. Tests that depend on optional features (e.g. hammer) will fail unless those features are deployed.
+> `./forge test` runs the full suite.
+> Tests that depend on optional features (e.g. hammer) will fail unless those features are deployed.
 
 ### Smoker
 
-`./forge smoker` runs the [forklift smoker](https://github.com/theforeman/forklift) role against the Foreman HTTPS endpoint. It is a separate browser-based smoke test, not part of the pytest suite.
+`./forge smoker` runs the [forklift smoker](https://github.com/theforeman/forklift) role against the Foreman HTTPS endpoint.
+It is a separate browser-based smoke test, not part of the pytest suite.
 
 ## Fixtures
 
@@ -152,14 +160,18 @@ def test_service_port(server):
 
 ### Markers
 
-Pytest's [markers](https://docs.pytest.org/en/stable/how-to/mark.html) are powerful tools. Especially when using the [custom markers](https://docs.pytest.org/en/stable/example/markers.html#mark-examples).
+Pytest's [markers](https://docs.pytest.org/en/stable/how-to/mark.html) are powerful tools.
+Especially when using the [custom markers](https://docs.pytest.org/en/stable/example/markers.html#mark-examples).
 
 List all available markers:
+
 ```bash
 pytest --markers
 ```
 
-The `slow` mark can be used to mark tests that take a non-trivial amount of time. While slow is always subjective, it can mean more than a few seconds to some. Certainly more than a minute.
+The `slow` mark can be used to mark tests that take a non-trivial amount of time.
+While slow is always subjective, it can mean more than a few seconds to some.
+Certainly more than a minute.
 
 A more advanced use is [feature guarding](#feature-guarding).
 
@@ -200,18 +212,22 @@ When you change the features, adjust the `EXPECTED_FEATURES` dict to match your 
 
 ### Flavor-specific tests
 
-Some assertions only apply to a particular deployment flavor (for example, Katello expects `candlepin` and `pulp` databases; but a content proxy does not). Put flavor specific tests under `tests/flavor/<flavor>/`. Tests outside that tree always run regardless of flavor.
+Some assertions only apply to a particular deployment flavor (for example, Katello expects `candlepin` and `pulp` databases; but a content proxy does not).
+Put flavor specific tests under `tests/flavor/<flavor>/`.
+Tests outside that tree always run regardless of flavor.
 
 #### How tests are selected
 
-During collection, `pytest_collection_modifyitems` in `tests/conftest.py` reads the active flavor from the foremanctl parameters file (`.var/lib/foremanctl/parameters.yaml`). It defaults to `katello`.
+During collection, `pytest_collection_modifyitems` in `tests/conftest.py` reads the active flavor from the foremanctl parameters file (`.var/lib/foremanctl/parameters.yaml`).
+It defaults to `katello`.
 
 For each collected test:
 
 - If the test file is **not** under `tests/flavor/`, it is kept.
 - If it **is** under `tests/flavor/`, it is kept only when it lives in `tests/flavor/<active_flavor>/`; tests in sibling flavor directories are deselected.
 
-So a Katello deployment runs `tests/flavor/katello/` plus all shared tests, but skips `tests/flavor/foreman-proxy-content/`. After `./foremanctl deploy-proxy --flavor foreman-proxy-content`, the opposite applies.
+So a Katello deployment runs `tests/flavor/katello/` plus all shared tests, but skips `tests/flavor/foreman-proxy-content/`.
+After `./foremanctl deploy-proxy --flavor foreman-proxy-content`, the opposite applies.
 
 This is separate from [feature guarding](#feature-guarding): feature marks skip tests at runtime based on enabled features; flavor selection happens at collection time from the deployed flavor.
 
@@ -234,7 +250,8 @@ Use feature marks when behavior depends on an optional add-on feature; use `test
 
 ### API test
 
-The `foremanapi` fixture is an [apypie](https://github.com/Apipie/apypie) `ForemanApi` client that connects to the deployed Foreman instance(authenticated as `admin`/`changeme`). It maps directly to the Foreman REST API — each method takes a resource name that corresponds to an API endpoint:
+The `foremanapi` fixture is an [apypie](https://github.com/Apipie/apypie) `ForemanApi` client that connects to the deployed Foreman instance(authenticated as `admin`/`changeme`).
+It maps directly to the Foreman REST API — each method takes a resource name that corresponds to an API endpoint:
 
 Here are few examples:
 A typical test that reads a setting:
@@ -285,7 +302,8 @@ def test_dynflow_service_instances(server, instance):
 
 ## Where to add new tests
 
-The directory `tests/feature` is special. Any subdirectory automatically applies the feature marker. `tests/feature/foreman/api_test.py` is equivalent to `tests/foreman_api_test.py` with `pytestmark = pytest.mark.feature("foreman")`.
+The directory `tests/feature` is special.
+Any subdirectory automatically applies the feature marker. `tests/feature/foreman/api_test.py` is equivalent to `tests/foreman_api_test.py` with `pytestmark = pytest.mark.feature("foreman")`.
 
 | What you're testing | File |
 | --- | --- |
