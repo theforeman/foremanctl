@@ -81,7 +81,7 @@ def test_with_password_on_key(command, ca_bundle, password_protected_key, certs_
 
     assert result.returncode == 2
     expected_error_part = f"The {password_protected_key} contains a passphrase"
-    assert expected_error_part in result.stderr
+    assert expected_error_part in result.stdout
 
 
 def test_fails_if_purpose_not_sslserver(command, ca_bundle, certs_directory):
@@ -91,7 +91,7 @@ def test_fails_if_purpose_not_sslserver(command, ca_bundle, certs_directory):
     result = run_script(command, args)
 
     assert result.returncode != 0
-    assert 'does not verify' in result.stderr
+    assert 'does not verify' in result.stdout
 
 
 def test_fails_with_invalid_san(command, ca_bundle, certs_directory):
@@ -101,8 +101,8 @@ def test_fails_with_invalid_san(command, ca_bundle, certs_directory):
     result = run_script(command, args)
 
     assert result.returncode == 11
-    expected_error_part = 'does not have a Subject Alt Name matching the Subject CN'
-    assert expected_error_part in result.stderr
+    expected_error_part = 'which is not present in its DNS names'
+    assert expected_error_part in result.stdout
 
 
 def test_wildcard_certificate(command, certs_directory, ca_bundle):
@@ -114,7 +114,7 @@ def test_wildcard_certificate(command, certs_directory, ca_bundle):
     assert result.returncode == 0
     assert result.stderr == ""
     assert "Validation succeeded" in result.stdout
-    assert "Checking CA bundle size:" in result.stdout
+    assert "[OK] CA bundle size is supported" in result.stdout
 
 
 def test_fails_on_shortname(command, ca_bundle, certs_directory):
@@ -124,8 +124,8 @@ def test_fails_on_shortname(command, ca_bundle, certs_directory):
     result = run_script(command, args)
 
     assert result.returncode == 1
-    assert f"The {os.path.basename(cert)} is using a shortname for Common Name" in result.stderr
-    assert f"The {os.path.basename(cert)} is using only shortnames for Subject Alt Name" in result.stderr
+    assert f"{os.path.basename(cert)} is using a shortname for Common Name" in result.stdout
+    assert f"{os.path.basename(cert)} is using only shortnames for Subject Alternative Name" in result.stdout
 
 
 def test_fails_with_bundle_containing_trust_rules(command, certs_directory):
@@ -136,9 +136,9 @@ def test_fails_with_bundle_containing_trust_rules(command, certs_directory):
     result = run_script(command, args)
 
     assert result.returncode == 10
-    expected_error_part = 'The CA bundle contains 1 certificate(s) with trust rules.'
-    assert expected_error_part in result.stderr
-    
+    expected_error_part = 'contains 1 certificate(s) with trust rules'
+    assert expected_error_part in result.stdout
+
 
 @pytest.mark.parametrize("ca_bundle_file", ["ca-sha1.crt", "ca-sha1-bundle.crt"])
 def test_fails_with_sha1_ca_certificate(command, certs_directory, ca_bundle_file):
@@ -149,6 +149,5 @@ def test_fails_with_sha1_ca_certificate(command, certs_directory, ca_bundle_file
     result = run_script(command, args)
 
     assert result.returncode == 4
-    expected_error_part = f"The file '{ca_sha1}' contains a certificate signed with sha1"
-    assert expected_error_part in result.stderr
-
+    expected_error_part = f"{ca_sha1} contains 1 certificate(s) signed with SHA-1"
+    assert expected_error_part in result.stdout

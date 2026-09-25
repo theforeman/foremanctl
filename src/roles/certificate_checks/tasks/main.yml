@@ -5,7 +5,7 @@
       - openssl
     state: present
 
-- name: Install foreman-certificate-check
+- name: Install certificate checker
   ansible.builtin.copy:
     src: foreman-certificate-check
     dest: /usr/local/bin/foreman-certificate-check
