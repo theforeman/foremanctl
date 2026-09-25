@@ -15,6 +15,7 @@ IOP_IMAGES = [
     "iop-advisor-frontend",
     "iop-host-inventory-frontend",
     "iop-vulnerability-frontend",
+    "iop-compliance-frontend",
 ]
 
 
