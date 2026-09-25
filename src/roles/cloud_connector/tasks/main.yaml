@@ -4,6 +4,7 @@
     name:
       - rhc
       - yggdrasil-worker-forwarder
+  ignore_errors: true  # TODO: remove once yggdrasil-worker-forwarder RPM is available
 
 - name: Create cloud connector service user
   theforeman.foreman.user:
@@ -27,24 +28,31 @@
     owner: root
     group: root
     mode: '0640'
-  notify: Restart rhcd
+  notify:
+    - Restart cloud connector dispatcher
+    - Restart cloud connector worker
 
-- name: Create rhcd worker script
-  ansible.builtin.copy:
-    dest: /usr/libexec/rhc/foreman-rh-cloud-worker
-    content: |
-      #!/bin/bash
-
-      CONFIG_FILE="{{ cloud_connector_config_file }}" exec /usr/libexec/yggdrasil-worker-forwarder
-    owner: root
-    group: root
-    mode: '0755'
-
-- name: Ensure rhcd started and enabled
+- name: Ensure cloud connector dispatcher started and enabled
   ansible.builtin.service:
-    name: rhcd
+    name: "{{ cloud_connector_dispatcher_service }}"
     state: started
     enabled: true
+
+- name: Ensure cloud connector worker started and enabled
+  ansible.builtin.systemd_service:
+    name: "{{ cloud_connector_worker_service }}"
+    state: started
+    enabled: true
+    daemon_reload: true
+  when: ansible_facts['distribution_major_version'] | int >= 10
+
+- name: Republish yggdrasil connection status
+  ansible.builtin.file:
+    path: /var/lib/yggdrasil/canonical-facts.json
+    state: touch
+    modification_time: preserve
+    access_time: now
+  when: ansible_facts['distribution_major_version'] | int >= 10
 
 - name: Read client ID from consumer certificate
   community.crypto.x509_certificate_info:
@@ -59,5 +67,5 @@
     ca_path: "{{ cloud_connector_foreman_ca_certificate | default(omit) }}"
     instance_id: "{{ cloud_connector_cert_info.subject.commonName }}"
 
-- name: Configure HTTP proxy for rhcd
+- name: Configure HTTP proxy for cloud connector dispatcher
   ansible.builtin.include_tasks: http_proxy.yaml
