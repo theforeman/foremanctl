@@ -2,49 +2,92 @@
 - name: Deploy pulp image
   ansible.builtin.include_tasks: image.yaml
 
+- name: Capture Pulp storage ownership
+  ansible.builtin.stat:
+    path: "{{ item | split(':') | first }}"
+  loop: "{{ pulp_volumes }}"
+  register: pulp_storage_ownership
+
 - name: Create Pulp storage
   ansible.builtin.file:
     path: "{{ item | split(':') | first }}"
     state: directory
     mode: "0755"
-    owner: "700"
-    group: "700"
-    recurse: true
+    owner: "{{ pulp_container_uid }}"
+    group: "{{ pulp_container_gid }}"
+    recurse: >-
+      {{ pulp_storage_ownership.results[ansible_loop.index0].stat.uid | default(-1) == 0 and
+         pulp_storage_ownership.results[ansible_loop.index0].stat.gid | default(-1) == 0 }}
   loop: "{{ pulp_volumes }}"
+  loop_control:
+    extended: true
+
+- name: Capture Pulp storage subdirectories ownership
+  ansible.builtin.stat:
+    path: "{{ pulp_storage_path }}/{{ item }}"
+  loop:
+    - tmp
+    - assets
+    - media
+  register: pulp_storage_subdirs_ownership
 
 - name: Create Pulp storage subdirs
   ansible.builtin.file:
     path: "{{ pulp_storage_path }}/{{ item }}"
     state: directory
     mode: "0755"
-    owner: "700"
-    group: "700"
-    recurse: true
+    owner: "{{ pulp_container_uid }}"
+    group: "{{ pulp_container_gid }}"
+    recurse: >-
+      {{ pulp_storage_subdirs_ownership.results[ansible_loop.index0].stat.uid | default(-1) == 0 and
+         pulp_storage_subdirs_ownership.results[ansible_loop.index0].stat.gid | default(-1) == 0 }}
   loop:
     - tmp
     - assets
     - media
+  loop_control:
+    extended: true
+
+- name: Capture Pulp import directories ownership
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop: "{{ pulp_default_import_paths + pulp_import_paths }}"
+  register: pulp_import_directories_ownership
 
 - name: Create import directories
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: "0755"
-    owner: "700"
-    group: "700"
-    recurse: true
+    owner: "{{ pulp_container_uid }}"
+    group: "{{ pulp_container_gid }}"
+    recurse: >-
+      {{ pulp_import_directories_ownership.results[ansible_loop.index0].stat.uid | default(-1) == 0 and
+         pulp_import_directories_ownership.results[ansible_loop.index0].stat.gid | default(-1) == 0 }}
   loop: "{{ pulp_default_import_paths + pulp_import_paths }}"
+  loop_control:
+    extended: true
   when: not pulp_mirror
+
+- name: Capture Pulp export directories ownership
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop: "{{ pulp_default_export_paths + pulp_export_paths }}"
+  register: pulp_export_directories_ownership
 
 - name: Create export directories
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: "0755"
-    owner: "700"
-    group: "700"
-    recurse: true
+    owner: "{{ pulp_container_uid }}"
+    group: "{{ pulp_container_gid }}"
+    recurse: >-
+      {{ pulp_export_directories_ownership.results[ansible_loop.index0].stat.uid | default(-1) == 0 and
+         pulp_export_directories_ownership.results[ansible_loop.index0].stat.gid | default(-1) == 0 }}
   loop: "{{ pulp_default_export_paths + pulp_export_paths }}"
+  loop_control:
+    extended: true
   when: not pulp_mirror
 
 - name: Create DB password secret
@@ -75,8 +118,8 @@
 - name: Set secret key file permissions
   ansible.builtin.file:
     path: "{{ pulp_storage_path }}/django_secret_key"
-    owner: "700"
-    group: "700"
+    owner: root
+    group: root
     mode: '0600'
 
 - name: Create django pulp secret key secret
@@ -93,6 +136,13 @@
   ansible.builtin.command: "bash -c 'openssl rand -base64 32 | tr \"+/\" \"-_\" > {{ pulp_storage_path }}/database_fields.symmetric.key'"
   args:
     creates: "{{ pulp_storage_path }}/database_fields.symmetric.key"
+
+- name: Set database symmetric key file permissions
+  ansible.builtin.file:
+    path: "{{ pulp_storage_path }}/database_fields.symmetric.key"
+    owner: root
+    group: root
+    mode: '0600'
 
 - name: Create database symmetric key secret
   containers.podman.podman_secret:
