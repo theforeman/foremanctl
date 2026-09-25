@@ -23,11 +23,17 @@ jobs:
     job: copr_build
     trigger: pull_request
     targets:
-      - rhel-9
       - rhel-10
+      - centos-stream-10
 
   - <<: *copr
     trigger: commit
     branch: master
     owner: '@theforeman'
     project: develop
+
+  - <<: *copr
+    job: tests
+    targets:
+      # No RHEL in testing farm's public ranch
+      - centos-stream-10

@@ -1,0 +1,30 @@
+summary: Installation
+provision:
+  hardware:
+    memory: ">= 8 GB"
+prepare:
+  # Work around packit builds being installed unconditionally
+  - how: install
+    exclude:
+      - ".*"
+  - how: shell
+    script: |
+      # Work around default chroot guessing
+      # https://github.com/rpm-software-management/dnf-plugins-core/pull/586
+      if [ -f /etc/centos-release ] ; then
+        . /etc/os-release
+        chroot=rhel-$VERSION_ID-$(uname -m)
+      fi
+      # manually enables the runtime dependency because packit can't
+      # https://github.com/packit/packit/issues/2744
+      for copr in @theforeman/develop $PACKIT_COPR_PROJECT ; do
+        sudo dnf copr enable -y $copr $chroot
+      done
+  - how: install
+    package: foremanctl
+execute:
+  how: tmt
+  script:
+    - foremanctl --help
+    - foremanctl pull-images
+    - foremanctl deploy
