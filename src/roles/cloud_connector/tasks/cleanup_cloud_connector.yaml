@@ -1,0 +1,6 @@
+---
+- name: Remove obsolete rhcd worker script
+  ansible.builtin.file:
+    path: /usr/libexec/rhc/foreman-rh-cloud-worker
+    state: absent
+  when: cloud_connector_uses_dbus | bool
