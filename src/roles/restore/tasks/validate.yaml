@@ -230,21 +230,74 @@
   register: restore_pulp_space
   changed_when: false
 
-- name: Get Pulp content archive size
+- name: Get Pulp content archive size (single volume)
   ansible.builtin.stat:
     path: "{{ restore_backup_dir }}/pulp-content.tar.gz"
   register: restore_pulp_archive
+
+- name: Find Pulp content volume files (multi-volume)
+  ansible.builtin.find:
+    paths: "{{ restore_backup_dir }}"
+    patterns: "pulp-content.tar.gz.part*"
+  register: restore_pulp_volumes
+
+- name: Validate multi-volume archive completeness
+  when: restore_pulp_volumes.matched > 0
+  block:
+    - name: Set expected volume count from metadata
+      ansible.builtin.set_fact:
+        restore_expected_volume_count: "{{ restore_backup_metadata.pulp_volume_count | default(0) | int }}"
+
+    - name: Fail if volume count mismatch
+      ansible.builtin.fail:
+        msg: >-
+          INCOMPLETE MULTI-VOLUME BACKUP:
+          Expected {{ restore_expected_volume_count }} volume files, but found {{ restore_pulp_volumes.matched }}.
+          You may be missing volume files. All volumes must be present for restore.
+          Expected files: pulp-content.tar.gz.part000000 through part{{ '%06d' | format(restore_expected_volume_count - 1) }}
+          Found files: {{ restore_pulp_volumes.files | map(attribute='path') | map('basename') | sort | join(', ') }}
+      when:
+        - restore_expected_volume_count | int > 0
+        - restore_pulp_volumes.matched != restore_expected_volume_count | int
+
+    - name: Check for sequential volume numbering
+      ansible.builtin.fail:
+        msg: >-
+          INCOMPLETE OR CORRUPTED MULTI-VOLUME BACKUP:
+          Volume files are not sequential. You may be missing volume files.
+          Expected sequential numbering from 0 to {{ restore_pulp_volumes.matched - 1 }}.
+          Found volume numbers:
+          {{
+            restore_pulp_volumes.files
+            | map(attribute='path')
+            | map('basename')
+            | map('regex_replace', '^.*\\.part(\\d+)$', '\\1')
+            | map('int')
+            | sort
+            | join(', ')
+          }}
+          All volume files must be present and numbered sequentially for restore to work.
+      when: >-
+        (restore_pulp_volumes.files
+        | map(attribute='path')
+        | map('basename')
+        | map('regex_replace', '^.*\\.part(\\d+)$', '\\1')
+        | map('int')
+        | sort)
+        != range(0, restore_pulp_volumes.matched) | list
 
 - name: Fail if insufficient Pulp disk space
   ansible.builtin.fail:
     msg: >-
       Insufficient disk space for Pulp content restore:
       {{ restore_pulp_space.stdout }}GB available,
-      {{ (restore_pulp_archive.stat.size / 1024 / 1024 / 1024) | int + 1 }}GB required
+      {{ (restore_backup_metadata.pulp_storage_size_bytes | default(0) | int / 1024 / 1024 / 1024) | int + 1 }}GB required
       at /var/lib/pulp
   when:
-    - restore_pulp_archive.stat.exists | default(false)
-    - restore_pulp_space.stdout | int < (restore_pulp_archive.stat.size / 1024 / 1024 / 1024) | int + 1
+    - (restore_pulp_archive.stat.exists | default(false)) or (restore_pulp_volumes.matched > 0)
+    - restore_backup_metadata.pulp_storage_size_bytes is defined
+    - restore_backup_metadata.pulp_storage_size_bytes | int > 0
+    - restore_pulp_space.stdout | int < (restore_backup_metadata.pulp_storage_size_bytes | default(0) | int / 1024 / 1024 / 1024) | int + 1
 
 - name: Check database mode matches backup
   ansible.builtin.debug:

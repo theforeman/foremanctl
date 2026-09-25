@@ -32,3 +32,11 @@ variables:
       the base backup. Requires .snar files from base backup.
     type: AbsolutePath
     persist: false
+
+  tar_volume_size:
+    parameter: --tar-volume-size
+    help: |
+      Split tar archives into volumes of specified size (e.g., '5G', '100M').
+      Creates multi-volume archives: pulp-content.tar.gz.part000000, .part000001, etc.
+      See 'man split' SIZE format for valid values.
+    persist: false
