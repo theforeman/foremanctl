@@ -1,0 +1,2 @@
+---
+certificate_checks_expected_names: "{{ ([ansible_facts['fqdn']] + (server_aliases | default([]))) | unique }}"
