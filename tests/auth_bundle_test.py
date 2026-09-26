@@ -7,6 +7,7 @@ pytestmark = pytest.mark.feature('katello')
 
 HOSTNAME = 'proxy.example.com'
 TARBALL = f'/var/lib/foremanctl/certs/bundles/{HOSTNAME}.tar.gz'
+LEGACY_TARBALL = f'/var/lib/foremanctl/certs/bundles/{HOSTNAME}-certs.tar.gz'
 
 ALIAS = 'loadbalancer.example.com'
 
@@ -29,6 +30,20 @@ EXPECTED_CLIENT_FILES = [
 EXPECTED_OAUTH_FILES = [
     'oauth/foreman-oauth-consumer-key',
     'oauth/foreman-oauth-consumer-secret',
+]
+
+EXPECTED_LEGACY_FILES = [
+    'ssl-build/katello-default-ca.crt',
+    'ssl-build/katello-server-ca.crt',
+    'ssl-build/ca-bundle.crt',
+    f'ssl-build/{HOSTNAME}/{HOSTNAME}-apache.crt',
+    f'ssl-build/{HOSTNAME}/{HOSTNAME}-apache.key',
+    f'ssl-build/{HOSTNAME}/{HOSTNAME}-foreman-proxy.crt',
+    f'ssl-build/{HOSTNAME}/{HOSTNAME}-foreman-proxy.key',
+    f'ssl-build/{HOSTNAME}/{HOSTNAME}-foreman-proxy-client.crt',
+    f'ssl-build/{HOSTNAME}/{HOSTNAME}-foreman-proxy-client.key',
+    f'ssl-build/{HOSTNAME}/{HOSTNAME}-puppet-client.crt',
+    f'ssl-build/{HOSTNAME}/{HOSTNAME}-puppet-client.key',
 ]
 
 
@@ -87,6 +102,41 @@ def test_tarball_contains_client_certificate(tarball_members, expected_file):
 @pytest.mark.parametrize("expected_file", EXPECTED_OAUTH_FILES)
 def test_tarball_contains_oauth_credentials(tarball_members, expected_file):
     assert expected_file in tarball_members
+
+
+@pytest.fixture(scope="module")
+def generate_legacy_bundle(server, certificate_source, generate_custom_proxy_certs):
+    command = ['./foremanctl', 'auth-bundle', '--legacy']
+    if certificate_source == 'custom_server':
+        command.extend([
+            '--certificate-server-certificate', f'/root/custom-certificates/certs/{HOSTNAME}.crt',
+            '--certificate-server-key', f'/root/custom-certificates/private/{HOSTNAME}.key',
+        ])
+    command.append(HOSTNAME)
+
+    result = subprocess.run(command, capture_output=True, text=True)
+    assert result.returncode == 0, f'legacy auth-bundle failed: {result.stdout}\n{result.stderr}'
+
+
+@pytest.fixture(scope="module")
+def legacy_tarball_members(server, generate_legacy_bundle):
+    result = server.run(f'tar tzf {LEGACY_TARBALL}')
+    assert result.succeeded, f'Legacy tarball {LEGACY_TARBALL} not found.'
+    return result.stdout.strip().splitlines()
+
+
+def test_legacy_tarball_created(server, generate_legacy_bundle):
+    assert server.file(LEGACY_TARBALL).exists
+
+
+@pytest.mark.parametrize("expected_file", EXPECTED_LEGACY_FILES)
+def test_legacy_tarball_matches_ssl_build_layout(legacy_tarball_members, expected_file):
+    assert expected_file in legacy_tarball_members
+
+
+def test_legacy_tarball_excludes_new_auth_bundle_layout(legacy_tarball_members):
+    assert not any(member.startswith('oauth/') for member in legacy_tarball_members)
+    assert 'certs/ca.crt' not in legacy_tarball_members
 
 
 def test_proxy_certs_stored_in_hosts_subdirectory(server, generate_bundle):
