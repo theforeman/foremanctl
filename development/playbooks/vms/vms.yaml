@@ -12,7 +12,20 @@
             cmd: "vagrant up {{ vms | default('quadlet client') }}"
           args:
             chdir: "{{ inventory_dir }}/../"
+          register: vagrant_up
           changed_when: false
+          until: >-
+            vagrant_up.rc == 0 or
+            'The requested URL returned error: 502' not in
+            (vagrant_up.stdout ~ vagrant_up.stderr) or
+            (
+              'There was an error while downloading the metadata for this box.' not in
+              (vagrant_up.stdout ~ vagrant_up.stderr) and
+              'There was an error downloading the file from the given URL.' not in
+              (vagrant_up.stdout ~ vagrant_up.stderr)
+            )
+          retries: 2
+          delay: 15
 
         - name: Force vagrant provision
           ansible.builtin.command:
