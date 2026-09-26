@@ -11,7 +11,7 @@ def webhook_listener(server):
     """Start a netcat listener that captures one request."""
     output_file = f"/tmp/webhook-test-{uuid.uuid4()}"
     # Just listen and dump to file - no HTTP response needed
-    server.run(f"nohup nc -l {LISTENER_PORT} > {output_file} 2>&1 &")
+    server.run(f"nohup nc -l -p {LISTENER_PORT} > {output_file} 2>&1 &")
     time.sleep(1)
 
     yield output_file

@@ -209,7 +209,7 @@ def test_httpd_vhost_error_logs_in_journal(server):
         "printf 'GET /http-error-test HTTP/1.0\\r\\n\\r\\n' | nc -w 2 127.0.0.1 80 >/dev/null 2>&1 || true"
     )
     server.run(
-        "(echo -e 'GET /ssl-error-test HTTP/1.0\\r\\n\\r\\n'; sleep 1) | "
+        "(printf 'GET /ssl-error-test HTTP/1.0\\r\\n\\r\\n'; sleep 1) | "
         "openssl s_client -connect 127.0.0.1:443 -quiet >/dev/null 2>&1 || true"
     )
 
