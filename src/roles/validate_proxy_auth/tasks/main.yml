@@ -14,30 +14,12 @@
     - auth_bundle is defined
     - not (_validate_proxy_auth_bundle.stat.exists | default(false))
 
-- name: Validate existing proxy authentication state
-  when: auth_bundle is not defined
-  block:
-    - name: Check existing proxy authentication files
-      ansible.builtin.stat:
-        path: "{{ item }}"
-      loop: "{{ validate_proxy_auth_files }}"
-      register: _validate_proxy_auth_files
-
-    - name: Require auth bundle for an uninitialized proxy
-      ansible.builtin.assert:
-        that:
-          - >-
-            _validate_proxy_auth_files.results
-            | selectattr('stat.exists')
-            | list
-            | length == _validate_proxy_auth_files.results | length
-        fail_msg: >-
-          An auth bundle is required because this proxy has not been initialized.
-          Missing authentication files: {{
-            _validate_proxy_auth_files.results
-            | rejectattr('stat.exists')
-            | map(attribute='item')
-            | join(', ')
-          }}.
-          Generate a bundle on the Foreman server with foremanctl auth-bundle,
-          then retry with --auth-bundle.
+- name: Require auth bundle for an uninitialized proxy
+  ansible.builtin.assert:
+    that:
+      - auth_bundle is defined
+    fail_msg: >-
+      An auth bundle is required because this proxy has not been initialized.
+      Generate a bundle on the Foreman server with foremanctl auth-bundle,
+      then retry with --auth-bundle.
+  when: validate_proxy_auth_installed_flag is not exists

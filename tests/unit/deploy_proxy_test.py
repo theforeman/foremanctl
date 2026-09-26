@@ -22,12 +22,11 @@ def _parse_deploy_proxy(monkeypatch, tmp_path, cli_args):
 def _run_auth_validation(tmp_path, initialized=False, auth_bundle=None):
     state_path = tmp_path / 'proxy-state'
     state_path.mkdir()
-    auth_files = [state_path / 'certificate.crt', state_path / 'oauth-key']
+    installed_flag = state_path / '.installed'
     if initialized:
-        for path in auth_files:
-            path.write_text('test', encoding='utf-8')
+        installed_flag.touch()
 
-    variables = {'validate_proxy_auth_files': [str(path) for path in auth_files]}
+    variables = {'validate_proxy_auth_installed_flag': str(installed_flag)}
     if auth_bundle is not None:
         variables['auth_bundle'] = str(auth_bundle)
 

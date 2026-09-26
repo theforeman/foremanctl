@@ -1,10 +1,2 @@
 ---
-validate_proxy_auth_files:
-  - "{{ server_certificate }}"
-  - "{{ server_key }}"
-  - "{{ server_ca_certificate }}"
-  - "{{ ca_bundle }}"
-  - "{{ client_certificate }}"
-  - "{{ client_key }}"
-  - "{{ certificates_oauth_directory }}/foreman-oauth-consumer-key"
-  - "{{ certificates_oauth_directory }}/foreman-oauth-consumer-secret"
+validate_proxy_auth_installed_flag: "{{ obsah_state_path }}/.installed"
