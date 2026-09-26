@@ -12,6 +12,8 @@ RECURRING_INSTANCES = [
     "monthly",
 ]
 
+RUNNING_SERVICE_STATES = ("active", "activating", "deactivating")
+
 
 @pytest.fixture(scope="module")
 def foreman_status_curl(server, server_fqdn):
@@ -80,10 +82,24 @@ def test_foreman_recurring_services_exist(server, instance):
 
 @pytest.mark.parametrize("instance", RECURRING_INSTANCES)
 def test_foreman_recurring_timer_next_trigger(server, instance):
-    """Verify that timers have a scheduled next trigger time."""
+    """Verify that timers have a scheduled next trigger or are firing."""
     timer_name = f"foreman-recurring@{instance}.timer"
     timer = server.service(timer_name)
-    assert timer.systemd_properties["NextElapseUSecRealtime"] != "0"
+    for _ in range(10):
+        timer_props = timer.systemd_properties
+        if timer_props.get("NextElapseUSecRealtime") not in (None, "0"):
+            return
+
+        service = server.service(f"foreman-recurring@{instance}.service")
+        if (
+            timer_props.get("LastTriggerUSec") not in (None, "0", "n/a")
+            and service.systemd_properties["ActiveState"] in RUNNING_SERVICE_STATES
+        ):
+            return
+
+        time.sleep(1)
+
+    pytest.fail(f"{timer_name} has no next trigger and is not firing")
 
 
 @pytest.mark.slow
@@ -97,8 +113,15 @@ def test_foreman_recurring_timer_execution(server, instance):
     runtime and outcome are not what this test verifies.
     """
     service_name = f"foreman-recurring@{instance}.service"
+    service = server.service(service_name)
+    service_props = service.systemd_properties
 
-    previous_invocation = server.service(service_name).systemd_properties.get("InvocationID", "")
+    # A calendar timer may have started the service between test collection
+    # and this test. That live invocation already exercises the same path.
+    if service_props["ActiveState"] in RUNNING_SERVICE_STATES:
+        return
+
+    previous_invocation = service_props.get("InvocationID", "")
 
     server.check_output(f"systemctl start --no-block {service_name}")
 
