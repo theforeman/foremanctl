@@ -1,8 +1,11 @@
+from pathlib import Path
+
 from foremanctl import FEATURE_MAP
 from foremanctl import conflicting_features
 from foremanctl import foreman_plugins
 from foremanctl import foreman_proxy_plugins
 from foremanctl import hammer_plugins
+from foremanctl import incompatible_features
 from foremanctl import list_all_features
 
 
@@ -19,6 +22,29 @@ def _asymmetric_conflicts():
 
 def test_no_conflicts():
     assert conflicting_features(['foreman', 'hammer']) == []
+
+
+def test_no_incompatible_features():
+    assert incompatible_features(['bmc', 'remote-execution'], 'foreman-proxy-content') == []
+
+
+def test_detects_incompatible_features():
+    assert incompatible_features(['katello', 'iop'], 'foreman-proxy-content') == ['katello', 'iop']
+
+
+def test_unknown_features_are_left_to_unknown_feature_validation():
+    assert incompatible_features(['does-not-exist'], 'katello') == []
+
+
+def test_all_features_declare_known_flavors():
+    known_flavors = {path.stem for path in Path('src/vars/flavors').glob('*.yml')}
+    errors = {
+        feature: set(meta.get('flavors', [])) - known_flavors
+        for feature, meta in FEATURE_MAP.items()
+        if not meta.get('flavors') or set(meta['flavors']) - known_flavors
+    }
+
+    assert errors == {}
 
 
 def test_detects_conflict(monkeypatch):
