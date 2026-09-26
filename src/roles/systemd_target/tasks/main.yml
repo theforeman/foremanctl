@@ -11,6 +11,14 @@
       [Install]
       WantedBy=default.target
 
+- name: Install Foreman log tail helper
+  ansible.builtin.copy:
+    src: foreman-tail
+    dest: /usr/local/bin/foreman-tail
+    owner: root
+    group: root
+    mode: '0755'
+
 - name: Run daemon reload to load new target
   ansible.builtin.systemd:
     daemon_reload: true
