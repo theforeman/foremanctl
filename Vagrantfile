@@ -37,7 +37,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "client" do |override|
-    override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10")
+    override.vm.box = ENV.fetch("FOREMANCTL_CLIENT_BOX") { ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10") }
     set_centos_box_url(override.vm)
     override.vm.hostname = "client.#{DOMAIN}"
 

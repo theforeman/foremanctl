@@ -164,8 +164,12 @@ def test_httpd_event_conf_contains_threads_per_child(server, httpd_paths):
     assert event_conf.contains("ThreadsPerChild")
 
 
-def test_httpd_selinux_context(server):
-    cmd = server.run("ls -1Z /etc/httpd/*.d/*.conf")
+def test_httpd_selinux_context(server, httpd_paths):
+    selinux_status = server.run("getenforce")
+    if not selinux_status.succeeded or selinux_status.stdout.strip() == "Disabled":
+        pytest.skip("SELinux is not enabled")
+
+    cmd = server.run(f"ls -1Z {httpd_paths['conf']}/*.conf {httpd_paths['modules']}/*.conf")
     assert cmd.succeeded
     incorrect = [line for line in cmd.stdout.splitlines() if line and ":httpd_config_t:" not in line]
     assert not incorrect, "Incorrect SELinux context (expected httpd_config_t):\n" + "\n".join(incorrect)
@@ -205,7 +209,7 @@ def test_httpd_vhost_error_logs_in_journal(server):
         "printf 'GET /http-error-test HTTP/1.0\\r\\n\\r\\n' | nc -w 2 127.0.0.1 80 >/dev/null 2>&1 || true"
     )
     server.run(
-        "(echo -e 'GET /ssl-error-test HTTP/1.0\\r\\n\\r\\n'; sleep 1) | "
+        "(printf 'GET /ssl-error-test HTTP/1.0\\r\\n\\r\\n'; sleep 1) | "
         "openssl s_client -connect 127.0.0.1:443 -quiet >/dev/null 2>&1 || true"
     )
 
