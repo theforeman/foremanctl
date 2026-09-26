@@ -1,0 +1,53 @@
+---
+- name: Create legacy directory structure
+  ansible.builtin.file:
+    state: directory
+    path: "{{ auth_bundle_build_directory.path }}/ssl-build/{{ auth_bundle_hostname }}"
+    mode: '0755'
+
+- name: Copy legacy CA certificates
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ auth_bundle_build_directory.path }}/ssl-build/{{ item.dest }}"
+    remote_src: true
+    mode: '0444'
+  loop:
+    - src: "{{ auth_bundle_ca_certificate }}"
+      dest: katello-default-ca.crt
+    - src: "{{ auth_bundle_server_ca_certificate }}"
+      dest: katello-server-ca.crt
+    - src: "{{ auth_bundle_ca_bundle }}"
+      dest: ca-bundle.crt
+
+- name: Copy legacy host certificates
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: >-
+      {{ auth_bundle_build_directory.path }}/ssl-build/{{ auth_bundle_hostname }}/{{ auth_bundle_hostname }}-{{ item.dest }}
+    remote_src: true
+    mode: "{{ item.mode }}"
+  loop:
+    - src: "{{ auth_bundle_server_certificate }}"
+      dest: apache.crt
+      mode: '0444'
+    - src: "{{ auth_bundle_server_key }}"
+      dest: apache.key
+      mode: '0440'
+    - src: "{{ auth_bundle_server_certificate }}"
+      dest: foreman-proxy.crt
+      mode: '0444'
+    - src: "{{ auth_bundle_server_key }}"
+      dest: foreman-proxy.key
+      mode: '0440'
+    - src: "{{ auth_bundle_client_certificate }}"
+      dest: foreman-proxy-client.crt
+      mode: '0444'
+    - src: "{{ auth_bundle_client_key }}"
+      dest: foreman-proxy-client.key
+      mode: '0440'
+    - src: "{{ auth_bundle_client_certificate }}"
+      dest: puppet-client.crt
+      mode: '0444'
+    - src: "{{ auth_bundle_client_key }}"
+      dest: puppet-client.key
+      mode: '0440'
