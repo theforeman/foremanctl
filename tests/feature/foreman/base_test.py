@@ -12,8 +12,6 @@ RECURRING_INSTANCES = [
     "monthly",
 ]
 
-RUNNING_SERVICE_STATES = ("active", "activating", "deactivating")
-
 
 @pytest.fixture(scope="module")
 def foreman_status_curl(server, server_fqdn):
@@ -80,6 +78,17 @@ def test_foreman_recurring_services_exist(server, instance):
     assert service.exists
 
 
+def _service_is_running(properties):
+    active_state = properties["ActiveState"]
+    return (
+        active_state in ("active", "activating")
+        or (
+            active_state == "deactivating"
+            and properties["Result"] == "success"
+        )
+    )
+
+
 @pytest.mark.parametrize("instance", RECURRING_INSTANCES)
 def test_foreman_recurring_timer_next_trigger(server, instance):
     """Verify that timers have a scheduled next trigger or are firing."""
@@ -93,7 +102,7 @@ def test_foreman_recurring_timer_next_trigger(server, instance):
         service = server.service(f"foreman-recurring@{instance}.service")
         if (
             timer_props.get("LastTriggerUSec") not in (None, "0", "n/a")
-            and service.systemd_properties["ActiveState"] in RUNNING_SERVICE_STATES
+            and _service_is_running(service.systemd_properties)
         ):
             return
 
@@ -118,7 +127,7 @@ def test_foreman_recurring_timer_execution(server, instance):
 
     # A calendar timer may have started the service between test collection
     # and this test. That live invocation already exercises the same path.
-    if service_props["ActiveState"] in RUNNING_SERVICE_STATES:
+    if _service_is_running(service_props):
         return
 
     previous_invocation = service_props.get("InvocationID", "")
@@ -140,7 +149,7 @@ def test_foreman_recurring_timer_execution(server, instance):
         )
 
         if invocation and invocation != previous_invocation and (
-            active_state in ("active", "activating", "deactivating")
+            _service_is_running(props)
             or (active_state == "inactive" and result == "success")
         ):
             break
