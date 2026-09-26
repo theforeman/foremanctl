@@ -26,23 +26,13 @@
       ansible.builtin.systemd:
         daemon_reload: true
 
-    - name: Pull images via image services
+    - name: Pull images serially via image services
       ansible.builtin.systemd:
         name: "{{ item }}-image.service"
         state: restarted
       loop: "{{ images_deployed_names | default([]) }}"
-      async: 600
-      poll: 0
-      register: images_pull_jobs
-
-    - name: Wait for image pulls to complete
-      ansible.builtin.async_status:
-        jid: "{{ item.ansible_job_id }}"
-      register: images_pull_result
-      until: images_pull_result is finished
-      retries: 120
-      delay: 5
-      loop: "{{ images_pull_jobs.results }}"
+      async: "{{ images_pull_timeout + 60 }}"
+      poll: 5
 
   always:
     - name: Remove Policy=always drop-ins
