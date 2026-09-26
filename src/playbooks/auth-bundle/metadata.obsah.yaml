@@ -21,6 +21,11 @@ variables:
     parameter: --certificate-renew
     action: store_true
     persist: false
+  auth_bundle_legacy:
+    help: Package certificates in the ssl-build layout used by foreman-installer.
+    parameter: --legacy
+    action: store_true
+    persist: false
 
 constraints:
   required_together:
