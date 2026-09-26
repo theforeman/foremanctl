@@ -1,0 +1,44 @@
+---
+- name: Install Pulp CLI
+  ansible.builtin.package:
+    name: "{{ pulp_cli_package }}"
+    state: present
+
+- name: Trust the Pulp server CA
+  ansible.builtin.copy:
+    src: "{{ pulp_cli_ca_certificate }}"
+    dest: /etc/pki/ca-trust/source/anchors/foremanctl-pulp-ca.crt
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Update CA trust
+
+- name: Create Pulp CLI configuration directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop:
+    - path: /etc/pulp
+      mode: "0755"
+    - path: /root/.config/pulp
+      mode: "0700"
+
+- name: Configure Pulp CLI server connection
+  ansible.builtin.template:
+    src: pulp-cli.toml.j2
+    dest: /etc/pulp/cli.toml
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Configure Pulp CLI client authentication
+  ansible.builtin.template:
+    src: pulp-cli-auth.toml.j2
+    dest: /root/.config/pulp/cli.toml
+    owner: root
+    group: root
+    mode: "0600"
