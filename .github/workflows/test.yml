@@ -432,6 +432,8 @@ jobs:
             box: centos/stream10
     env:
       FOREMANCTL_BASE_BOX: ${{ matrix.box }}
+      FOREMANCTL_QUADLET_MEMORY: 11264
+      FOREMANCTL_PROXY_MEMORY: 4096
     runs-on: ubuntu-24.04
     name: "Tests Proxy Deployment"
     steps:
