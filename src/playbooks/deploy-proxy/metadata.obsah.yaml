@@ -16,6 +16,10 @@ variables:
     parameter: --foreman-fqdn
     help: FQDN of the Foreman server this proxy connects to.
 
+constraints:
+  required_one_of:
+    - [foreman_name]
+
 include:
   - _flavor_features
   - _flavors/foreman-proxy-content
