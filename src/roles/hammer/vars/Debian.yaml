@@ -1,5 +1,2 @@
 ---
-hammer_base_package: ruby-hammer-cli
-hammer_plugin_prefix: ruby-hammer-cli-
-hammer_packages: >-
-  {{ [hammer_base_package] + (hammer_default_plugins + hammer_plugins) | map('regex_replace', '^', hammer_plugin_prefix) | list }}
+hammer_packages: "{{ (hammer_default_plugins + hammer_plugins) | debian_hammer_packages }}"

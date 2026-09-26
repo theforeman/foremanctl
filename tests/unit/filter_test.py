@@ -1,5 +1,6 @@
 from foremanctl import FEATURE_MAP
 from foremanctl import conflicting_features
+from foremanctl import debian_hammer_packages
 from foremanctl import foreman_plugins
 from foremanctl import foreman_proxy_plugins
 from foremanctl import hammer_plugins
@@ -115,6 +116,14 @@ def test_hammer_plugins_sorted(monkeypatch):
     monkeypatch.setitem(FEATURE_MAP, 'test-m', {'hammer': 'm_hammer'})
     result = hammer_plugins(['test-z', 'test-a', 'test-m'])
     assert result == ['a_hammer', 'm_hammer', 'z_hammer']
+
+
+def test_debian_hammer_packages_normalizes_plugin_names():
+    assert debian_hammer_packages(['foreman', 'foreman_tasks']) == [
+        'ruby-hammer-cli',
+        'ruby-hammer-cli-foreman',
+        'ruby-hammer-cli-foreman-tasks',
+    ]
 
 
 def test_foreman_proxy_plugins_deduplicates(monkeypatch):
