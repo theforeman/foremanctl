@@ -1,6 +1,9 @@
 ---
 foreman:
   description: Base Foreman Server
+  flavors:
+    - katello
+    - satellite
   dependencies:
     - httpd
     - valkey
@@ -10,6 +13,9 @@ foreman-proxy:
   description: Base Foreman Proxy
 hammer:
   description: Foreman CLI
+  flavors:
+    - katello
+    - satellite
 pulp:
   description: Pulp content management service
   internal: true
@@ -19,6 +25,9 @@ pulp:
 candlepin:
   description: Candlepin subscription management service
   internal: true
+  flavors:
+    - katello
+    - satellite
 httpd:
   description: Apache webserver
   internal: true
@@ -27,6 +36,9 @@ valkey:
   internal: true
 katello:
   description: Content and Subscription Management plugin for Foreman
+  flavors:
+    - katello
+    - satellite
   foreman:
     plugin_name: katello
   hammer: katello
@@ -38,16 +50,25 @@ katello:
     - valkey
 google:
   description: Google Compute Engine plugin for Foreman
+  flavors:
+    - katello
+    - satellite
   hammer: foreman_google
   foreman:
     plugin_name: foreman_google
 azure-rm:
   description: Azure Resource Manager plugin for Foreman
+  flavors:
+    - katello
+    - satellite
   hammer: foreman_azure_rm
   foreman:
     plugin_name: foreman_azure_rm
 tasks:
   description: Tasks management engine for Foreman
+  flavors:
+    - katello
+    - satellite
   foreman:
     plugin_name: foreman-tasks
   hammer: foreman_tasks
@@ -79,6 +100,9 @@ dynflow:
     plugin_name: dynflow
 rh-cloud:
   description: Connection to Red Hat Cloud
+  flavors:
+    - katello
+    - satellite
   foreman:
     plugin_name: foreman_rh_cloud
   hammer: foreman_rh_cloud
@@ -86,18 +110,27 @@ rh-cloud:
     - katello
 cloud-connector:
   description: Cloud Connector for Red Hat Hybrid Cloud Console
+  flavors:
+    - katello
+    - satellite
   dependencies:
     - rh-cloud
   conflicts:
     - iop
 iop:
   description: iop services
+  flavors:
+    - katello
+    - satellite
   dependencies:
     - rh-cloud
   conflicts:
     - cloud-connector
 container-gateway:
   description: Container registry gateway for smart proxy
+  flavors:
+    - capsule
+    - foreman-proxy-content
   foreman_proxy:
     plugin_name: container_gateway
   dependencies:
@@ -111,6 +144,9 @@ bmc:
     plugin_name: bmc
 webhooks:
   description: Webhooks plugin for Foreman
+  flavors:
+    - katello
+    - satellite
   foreman:
     plugin_name: foreman_webhooks
   hammer: foreman_webhooks
@@ -127,5 +163,7 @@ registration:
 theme-satellite:
   description: Satellite theme for Foreman
   internal: true
+  flavors:
+    - satellite
   foreman:
     plugin_name: foreman_theme_satellite

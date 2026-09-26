@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 import subprocess
@@ -45,7 +46,15 @@ class UserParameters:
 
     @cached_property
     def all_available_features(self):
-        return set(feature for feature, _status, _internal, _desc in self.features)
+        features_dir = os.path.join(self._config.rootdir, 'src')
+        feature_files = [os.path.join(features_dir, 'features.yaml')]
+        feature_files.extend(sorted(glob.glob(os.path.join(features_dir, 'features.d', '*.yaml'))))
+
+        features = set()
+        for features_file in feature_files:
+            with open(features_file) as f:
+                features.update(yaml.safe_load(f) or {})
+        return features
 
     @cached_property
     def available_features(self):
