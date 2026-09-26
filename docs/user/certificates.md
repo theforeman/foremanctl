@@ -280,11 +280,12 @@ In `src/playbooks/deploy/deploy.yaml`:
 
 #### Validation System
 
-The `certificate_checks` role uses `foreman-certificate-check` binary to validate:
+The `certificate_checks` role uses the Python-based `foreman-certificate-check` command to validate:
 - Certificate file existence and readability
 - PEM format validation
 - Private key and certificate pairing
 - Certificate chain integrity
+- Coverage of the server FQDN and every configured server alias
 
 ### Technical Specifications
 
