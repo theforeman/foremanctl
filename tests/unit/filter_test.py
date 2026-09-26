@@ -118,11 +118,35 @@ def test_hammer_plugins_sorted(monkeypatch):
     assert result == ['a_hammer', 'm_hammer', 'z_hammer']
 
 
-def test_debian_hammer_packages_normalizes_plugin_names():
-    assert debian_hammer_packages(['foreman', 'foreman_tasks']) == [
+def test_debian_hammer_packages_selects_packaged_plugins():
+    assert debian_hammer_packages([
+        'foreman',
+        'foreman_ansible',
+        'foreman_azure_rm',
+        'foreman_bootdisk',
+        'foreman_discovery',
+        'foreman_google',
+        'foreman_puppet',
+        'foreman_remote_execution',
+        'foreman_rh_cloud',
+        'foreman_salt',
+        'foreman_tasks',
+        'foreman_templates',
+        'foreman_webhooks',
+        'katello',
+    ]) == [
         'ruby-hammer-cli',
         'ruby-hammer-cli-foreman',
+        'ruby-hammer-cli-foreman-ansible',
+        'ruby-hammer-cli-foreman-bootdisk',
+        'ruby-hammer-cli-foreman-discovery',
+        'ruby-hammer-cli-foreman-google',
+        'ruby-hammer-cli-foreman-puppet',
+        'ruby-hammer-cli-foreman-remote-execution',
+        'ruby-hammer-cli-foreman-salt',
         'ruby-hammer-cli-foreman-tasks',
+        'ruby-hammer-cli-foreman-templates',
+        'ruby-hammer-cli-foreman-webhooks',
     ]
 
 

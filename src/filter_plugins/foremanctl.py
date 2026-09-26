@@ -11,6 +11,20 @@ import yaml
 
 BASE_FEATURES = ['hammer', 'foreman-proxy', 'foreman']
 
+DEBIAN_HAMMER_PLUGIN_PACKAGES = {
+    'foreman': 'ruby-hammer-cli-foreman',
+    'foreman_ansible': 'ruby-hammer-cli-foreman-ansible',
+    'foreman_bootdisk': 'ruby-hammer-cli-foreman-bootdisk',
+    'foreman_discovery': 'ruby-hammer-cli-foreman-discovery',
+    'foreman_google': 'ruby-hammer-cli-foreman-google',
+    'foreman_puppet': 'ruby-hammer-cli-foreman-puppet',
+    'foreman_remote_execution': 'ruby-hammer-cli-foreman-remote-execution',
+    'foreman_salt': 'ruby-hammer-cli-foreman-salt',
+    'foreman_tasks': 'ruby-hammer-cli-foreman-tasks',
+    'foreman_templates': 'ruby-hammer-cli-foreman-templates',
+    'foreman_webhooks': 'ruby-hammer-cli-foreman-webhooks',
+}
+
 _SRC_ROOT = pathlib.Path(__file__).parent.parent
 features_yaml = _SRC_ROOT / 'features.yaml'
 with features_yaml.open() as features_file:
@@ -120,7 +134,11 @@ def hammer_plugins(value):
 
 
 def debian_hammer_packages(plugins):
-    return ['ruby-hammer-cli'] + [f"ruby-hammer-cli-{plugin.replace('_', '-')}" for plugin in plugins]
+    return ['ruby-hammer-cli'] + [
+        DEBIAN_HAMMER_PLUGIN_PACKAGES[plugin]
+        for plugin in plugins
+        if plugin in DEBIAN_HAMMER_PLUGIN_PACKAGES
+    ]
 
 
 def foreman_proxy_plugins(value):
