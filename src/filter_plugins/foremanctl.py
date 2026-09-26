@@ -10,6 +10,11 @@ import pathlib
 import yaml
 
 BASE_FEATURES = ['hammer', 'foreman-proxy', 'foreman']
+FOREMAN_PROXY_PROTOCOLS = {
+    'both': 'true',
+    'http': 'http',
+    'https': 'https',
+}
 
 _SRC_ROOT = pathlib.Path(__file__).parent.parent
 features_yaml = _SRC_ROOT / 'features.yaml'
@@ -131,6 +136,31 @@ def available_foreman_proxy_plugins(_value):
     return compact_list(plugins)
 
 
+def foreman_proxy_feature_enabled(plugin_name):
+    """Return the Smart Proxy enabled value for a plugin."""
+    protocol = 'https'
+    for feature in FEATURE_MAP.values():
+        proxy_metadata = feature.get('foreman_proxy', {})
+        if proxy_metadata.get('plugin_name') == plugin_name:
+            protocol = proxy_metadata.get('protocol', protocol)
+            break
+
+    try:
+        return FOREMAN_PROXY_PROTOCOLS[protocol]
+    except KeyError as error:
+        raise ValueError(
+            f"Unknown protocol '{protocol}' for Foreman Proxy plugin '{plugin_name}'"
+        ) from error
+
+
+def foreman_proxy_http_enabled(plugin_names):
+    """Return whether any enabled Smart Proxy plugin needs HTTP."""
+    return any(
+        foreman_proxy_feature_enabled(plugin_name) in ('http', 'true')
+        for plugin_name in plugin_names
+    )
+
+
 def has_feature(features, feature):
     """Check if a feature is enabled - exact match, prefix (feature/), or as a transitive dependency."""
     return (feature in features
@@ -161,6 +191,8 @@ class FilterModule(object):
             'features_to_hammer_plugins': hammer_plugins,
             'features_to_foreman_proxy_plugins': foreman_proxy_plugins,
             'available_foreman_proxy_plugins': available_foreman_proxy_plugins,
+            'foreman_proxy_feature_enabled': foreman_proxy_feature_enabled,
+            'foreman_proxy_http_enabled': foreman_proxy_http_enabled,
             'list_all_features': list_all_features,
             'invalid_features': invalid_features,
             'conflicting_features': conflicting_features,
