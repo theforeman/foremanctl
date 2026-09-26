@@ -1,6 +1,9 @@
 ---
 foreman:
   description: Base Foreman Server
+  flavors:
+    - katello
+    - satellite
   dependencies:
     - httpd
     - valkey
@@ -8,25 +11,54 @@ foreman:
     - container-gateway
 foreman-proxy:
   description: Base Foreman Proxy
+  flavors:
+    - capsule
+    - foreman-proxy-content
+    - katello
+    - satellite
 hammer:
   description: Foreman CLI
+  flavors:
+    - katello
+    - satellite
 pulp:
   description: Pulp content management service
   internal: true
+  flavors:
+    - capsule
+    - foreman-proxy-content
+    - katello
+    - satellite
   dependencies:
     - httpd
     - valkey
 candlepin:
   description: Candlepin subscription management service
   internal: true
+  flavors:
+    - katello
+    - satellite
 httpd:
   description: Apache webserver
   internal: true
+  flavors:
+    - capsule
+    - foreman-proxy-content
+    - katello
+    - satellite
 valkey:
   description: Valkey key/value store
   internal: true
+  flavors:
+    - capsule
+    - foreman-proxy-content
+    - katello
+    - satellite
 katello:
   description: Content and Subscription Management plugin for Foreman
+  flavors:
+    - katello
+    - satellite
   foreman:
     plugin_name: katello
   hammer: katello
@@ -38,16 +70,25 @@ katello:
     - valkey
 google:
   description: Google Compute Engine plugin for Foreman
+  flavors:
+    - katello
+    - satellite
   hammer: foreman_google
   foreman:
     plugin_name: foreman_google
 azure-rm:
   description: Azure Resource Manager plugin for Foreman
+  flavors:
+    - katello
+    - satellite
   hammer: foreman_azure_rm
   foreman:
     plugin_name: foreman_azure_rm
 tasks:
   description: Tasks management engine for Foreman
+  flavors:
+    - katello
+    - satellite
   foreman:
     plugin_name: foreman-tasks
   hammer: foreman_tasks
@@ -56,6 +97,11 @@ tasks:
     - dynflow
 remote-execution:
   description: Remote Execution plugin for Foreman
+  flavors:
+    - capsule
+    - foreman-proxy-content
+    - katello
+    - satellite
   foreman:
     plugin_name: foreman_remote_execution
   foreman_proxy:
@@ -65,6 +111,11 @@ remote-execution:
     - tasks
 ansible:
   description: Ansible plugin for Foreman
+  flavors:
+    - capsule
+    - foreman-proxy-content
+    - katello
+    - satellite
   foreman:
     plugin_name: foreman_ansible
   foreman_proxy:
@@ -75,10 +126,18 @@ ansible:
 dynflow:
   description: dynflow
   internal: true
+  flavors:
+    - capsule
+    - foreman-proxy-content
+    - katello
+    - satellite
   foreman_proxy:
     plugin_name: dynflow
 rh-cloud:
   description: Connection to Red Hat Cloud
+  flavors:
+    - katello
+    - satellite
   foreman:
     plugin_name: foreman_rh_cloud
   hammer: foreman_rh_cloud
@@ -86,18 +145,27 @@ rh-cloud:
     - katello
 cloud-connector:
   description: Cloud Connector for Red Hat Hybrid Cloud Console
+  flavors:
+    - katello
+    - satellite
   dependencies:
     - rh-cloud
   conflicts:
     - iop
 iop:
   description: iop services
+  flavors:
+    - katello
+    - satellite
   dependencies:
     - rh-cloud
   conflicts:
     - cloud-connector
 container-gateway:
   description: Container registry gateway for smart proxy
+  flavors:
+    - capsule
+    - foreman-proxy-content
   foreman_proxy:
     plugin_name: container_gateway
   dependencies:
@@ -107,19 +175,37 @@ container-gateway:
     - foreman
 bmc:
   description: Power management for bare metal hosts (IPMI, Redfish)
+  flavors:
+    - capsule
+    - foreman-proxy-content
+    - katello
+    - satellite
   foreman_proxy:
     plugin_name: bmc
 webhooks:
   description: Webhooks plugin for Foreman
+  flavors:
+    - katello
+    - satellite
   foreman:
     plugin_name: foreman_webhooks
   hammer: foreman_webhooks
 templates:
   description: Templates feature for foreman-proxy
+  flavors:
+    - capsule
+    - foreman-proxy-content
+    - katello
+    - satellite
   foreman_proxy:
     plugin_name: templates
 registration:
   description: Host registration feature for foreman-proxy
+  flavors:
+    - capsule
+    - foreman-proxy-content
+    - katello
+    - satellite
   foreman_proxy:
     plugin_name: registration
   dependencies:
@@ -127,5 +213,7 @@ registration:
 theme-satellite:
   description: Satellite theme for Foreman
   internal: true
+  flavors:
+    - satellite
   foreman:
     plugin_name: foreman_theme_satellite

@@ -3,12 +3,25 @@
   ansible.builtin.assert:
     that:
       - found_invalid_features | length == 0
-    fail_msg: |
-      ERROR: Unknown feature(s) requested: {{ found_invalid_features | join(', ') }}
+    fail_msg: >-
+      ERROR: Unknown feature(s) requested:
+      {{ found_invalid_features | join(', ') }}
 
       Run 'foremanctl features' to list all available features.
   vars:
     found_invalid_features: "{{ features | invalid_features }}"
+  when: features | length > 0
+
+- name: Validate requested features for flavor
+  ansible.builtin.assert:
+    that:
+      - found_incompatible_features | length == 0
+    fail_msg: >-
+      ERROR: Feature(s) not supported by flavor '{{ flavor }}':
+      {{ found_incompatible_features | join(', ') }}
+  vars:
+    found_incompatible_features: >-
+      {{ features | incompatible_features(flavor) }}
   when: features | length > 0
 
 - name: Validate feature conflicts
