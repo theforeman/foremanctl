@@ -3,6 +3,7 @@ foreman_proxy_container_image: "quay.io/foreman/foreman-proxy"
 foreman_proxy_container_tag: "nightly"
 
 foreman_proxy_name: "{{ ansible_facts['fqdn'] }}"
+foreman_proxy_http_port: 8000
 foreman_proxy_https_port: 8443
 foreman_proxy_url: "https://{{ foreman_proxy_name }}:{{ foreman_proxy_https_port }}"
 
@@ -19,7 +20,8 @@ foreman_proxy_disabled_features: "{{ foreman_proxy_available_features | differen
 foreman_proxy_foreman_server_url: "https://{{ ansible_facts['fqdn'] }}"
 
 # Templates settings
-foreman_proxy_templates_url: "http://{{ foreman_proxy_name }}:8000"
+foreman_proxy_templates_url: >-
+  http://{{ foreman_proxy_name }}:{{ foreman_proxy_http_port }}
 
 # Container gateway settings (deploy playbooks override via database.yml)
 foreman_proxy_container_gateway_pulp_endpoint: "https://{{ foreman_proxy_name }}"

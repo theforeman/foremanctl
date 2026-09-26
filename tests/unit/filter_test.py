@@ -1,6 +1,9 @@
+import pytest
 from foremanctl import FEATURE_MAP
 from foremanctl import conflicting_features
 from foremanctl import foreman_plugins
+from foremanctl import foreman_proxy_feature_enabled
+from foremanctl import foreman_proxy_http_enabled
 from foremanctl import foreman_proxy_plugins
 from foremanctl import hammer_plugins
 from foremanctl import list_all_features
@@ -136,3 +139,62 @@ def test_foreman_proxy_plugins_sorted(monkeypatch):
     monkeypatch.setitem(FEATURE_MAP, 'test-m', {'foreman_proxy': {'plugin_name': 'm_proxy'}})
     result = foreman_proxy_plugins(['test-z', 'test-a', 'test-m'])
     assert result == ['a_proxy', 'm_proxy', 'z_proxy']
+
+
+@pytest.mark.parametrize(
+    ('protocol', 'expected'),
+    [
+        ('both', 'true'),
+        ('http', 'http'),
+        ('https', 'https'),
+    ],
+)
+def test_foreman_proxy_feature_enabled_protocols(monkeypatch, protocol, expected):
+    monkeypatch.setitem(FEATURE_MAP, 'test-proxy', {
+        'foreman_proxy': {
+            'plugin_name': 'test_proxy',
+            'protocol': protocol,
+        },
+    })
+
+    assert foreman_proxy_feature_enabled('test_proxy') == expected
+
+
+def test_foreman_proxy_feature_enabled_defaults_to_https(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-proxy', {
+        'foreman_proxy': {'plugin_name': 'test_proxy'},
+    })
+
+    assert foreman_proxy_feature_enabled('test_proxy') == 'https'
+    assert foreman_proxy_feature_enabled('base_proxy_plugin') == 'https'
+
+
+def test_foreman_proxy_feature_enabled_rejects_invalid_protocol(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-proxy', {
+        'foreman_proxy': {
+            'plugin_name': 'test_proxy',
+            'protocol': 'ftp',
+        },
+    })
+
+    with pytest.raises(ValueError, match="Unknown protocol 'ftp'"):
+        foreman_proxy_feature_enabled('test_proxy')
+
+
+def test_foreman_proxy_http_enabled(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-http', {
+        'foreman_proxy': {
+            'plugin_name': 'test_http',
+            'protocol': 'http',
+        },
+    })
+    monkeypatch.setitem(FEATURE_MAP, 'test-both', {
+        'foreman_proxy': {
+            'plugin_name': 'test_both',
+            'protocol': 'both',
+        },
+    })
+
+    assert foreman_proxy_http_enabled(['base_proxy_plugin']) is False
+    assert foreman_proxy_http_enabled(['base_proxy_plugin', 'test_http']) is True
+    assert foreman_proxy_http_enabled(['base_proxy_plugin', 'test_both']) is True
