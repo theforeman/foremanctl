@@ -7,6 +7,22 @@ import yaml
 BACKUP_DIR = "/tmp/foremanctl-backup-test"
 
 
+def backup_command(server_hostname):
+    return [
+        './foremanctl', 'backup', BACKUP_DIR,
+        '--target-host', server_hostname,
+        '--wait-for-tasks',
+    ]
+
+
+def test_backup_command_waits_for_tasks(server_hostname):
+    assert backup_command(server_hostname) == [
+        './foremanctl', 'backup', BACKUP_DIR,
+        '--target-host', server_hostname,
+        '--wait-for-tasks',
+    ]
+
+
 @pytest.fixture(scope="module")
 def expected_databases(enabled_features):
     """
@@ -50,10 +66,7 @@ def backup_result(server, server_hostname):
     result = server.run(f"mkdir -p {BACKUP_DIR}")
     assert result.rc == 0, f"Failed to create backup directory on VM: {result.stderr}"
 
-    result = subprocess.run(
-        ['./foremanctl', 'backup', BACKUP_DIR, '--target-host', server_hostname],
-        capture_output=True, text=True,
-    )
+    result = subprocess.run(backup_command(server_hostname), capture_output=True, text=True)
     returncode = result.returncode
 
     find_result = server.run(f"ls -1 {BACKUP_DIR}")
