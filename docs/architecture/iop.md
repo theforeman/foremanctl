@@ -102,6 +102,16 @@ Key Kafka topics:
 | `vulnerability.grouper.inventory.upload` | Vulnerability | Vulnerability grouper |
 | `vulnerability.grouper.advisor.upload` | Vulnerability | Vulnerability grouper |
 
+### Ingress Archive Storage
+
+Ingress stores uploaded archives in the `iop-core-ingress-archives`
+Podman named volume, mounted inside the container at
+`/var/tmp/insights-archives`.
+
+The named volume persists across Ingress container recreation and avoids
+using a host bind mount for the archive path. A `tmpfiles.d` rule makes
+archive contents eligible for cleanup after 24 hours.
+
 ### Services
 
 | Service | Container(s) | Port | Description |

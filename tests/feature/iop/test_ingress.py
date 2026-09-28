@@ -64,17 +64,19 @@ def test_ingress_archive_survives_container_recreation(server):
     assert result.succeeded, result.stderr
 
 
-def test_ingress_archive_cleanup_timer(server):
-    timer = server.service("iop-core-ingress-archive-cleanup.timer")
-    assert timer.is_running
-    assert timer.is_enabled
-
-    unit = server.file(
-        "/etc/systemd/system/iop-core-ingress-archive-cleanup.timer"
-    )
+def test_ingress_archive_cleanup_config(server):
+    unit = server.file("/etc/tmpfiles.d/iop-core-ingress-archives.conf")
     assert unit.exists
-    assert "OnCalendar=hourly" in unit.content_string
-    assert "Persistent=true" in unit.content_string
+
+    assert "24h" in unit.content_string
+
+    result = server.run(
+        "podman volume inspect iop-core-ingress-archives "
+        "--format '{{.Mountpoint}}'"
+    )
+    assert result.succeeded
+    mountpoint = result.stdout.strip()
+    assert mountpoint in unit.content_string
 
 
 def test_ingress_archive_cleanup(server):
@@ -84,10 +86,11 @@ def test_ingress_archive_cleanup(server):
       expired="$volume_path/sat47410-expired.tar.gz" &&
       recent="$volume_path/sat47410-recent.tar.gz" &&
       trap 'rm -f "$expired" "$recent"' EXIT &&
-      touch -d '25 hours ago' "$expired" &&
+      touch "$expired" &&
+      sleep 2 &&
       touch "$recent" &&
-      /usr/local/bin/iop-ingress-archive-cleanup \
-        iop-core-ingress-archives 1440 &&
+      printf 'e %s - - - 1s\\n' "$volume_path" |
+        systemd-tmpfiles --clean - &&
       test ! -e "$expired" &&
       test -e "$recent"
     """
