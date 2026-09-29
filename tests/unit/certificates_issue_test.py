@@ -61,12 +61,10 @@ def openssl_supports_ml_dsa():
 
 def cryptography_supports_ml_dsa():
     try:
-        import cryptography
+        from cryptography.hazmat.primitives.asymmetric import mldsa  # noqa: F401
     except ImportError:
         return False
-    # python-cryptography gained ML-DSA in 49.0.0, and it bumps the major
-    # version every release, so the major number alone settles support.
-    return int(cryptography.__version__.split('.')[0]) >= 49
+    return True
 
 
 # Generating ML-DSA keys needs a python-cryptography that understands the

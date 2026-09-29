@@ -1,18 +1,23 @@
 ---
-- name: 'Require Enterprise Linux 10 or later for ML-DSA certificates'
+- name: 'Require Enterprise Linux 10.3 or later for ML-DSA certificates'
   ansible.builtin.assert:
     that:
       - not certificates_algorithm_type.startswith('ML-DSA')
         or (
           ansible_facts['os_family'] == 'RedHat'
           and ansible_facts['distribution_major_version'] | int >= 10
+          and (
+            ansible_facts['distribution'] != 'RedHat'
+            or ansible_facts['distribution_version'] is version('10.3', '>=')
+          )
         )
     fail_msg: >-
       The {{ certificates_algorithm_type }} certificate algorithm requires
-      Enterprise Linux 10 or later, which ships post-quantum algorithms in its
-      default crypto policy. This host is {{ ansible_facts['distribution'] }}
-      {{ ansible_facts['distribution_major_version'] }}. Choose RSA or ECC, or
-      deploy on RHEL 10 or later.
+      Enterprise Linux 10.3 or later, which ships the post-quantum crypto stack
+      (python-cryptography and OpenSSL) needed to generate and sign the keys.
+      This host is {{ ansible_facts['distribution'] }}
+      {{ ansible_facts['distribution_version'] }}. Choose RSA or ECC, or deploy
+      on RHEL 10.3 or later.
     quiet: true
 
 - name: 'Install crypto dependencies'
