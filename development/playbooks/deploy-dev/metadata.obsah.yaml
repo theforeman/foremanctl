@@ -20,6 +20,7 @@ variables:
       - foreman_templates
       - foreman_leapp
       - foreman_puppet
+      - foreman_virt_who_configure
   target_host:
     help: Target hostname or IP address for deployment
     action: store
