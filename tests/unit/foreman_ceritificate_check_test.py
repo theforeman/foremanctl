@@ -60,17 +60,20 @@ def test_completes_correctly_with_valid_certs(command, certs_directory, ca_bundl
     if cert_type == "rsa":
         key = os.path.join(certs_directory, 'foreman.example.com.key')
         cert = os.path.join(certs_directory, 'foreman.example.com.crt')
+        expected_names = 'foreman.example.com'
     elif cert_type == "ecc":
         key = os.path.join(certs_directory, 'foreman-ec384.example.com.key')
         cert = os.path.join(certs_directory, 'foreman-ec384.example.com.crt')
+        expected_names = 'foreman.example.com,foreman-ec384.example.com'
     else:
         pytest.fail(f"Unknown cert_type: {cert_type}")
 
-    args = ['-b', ca_bundle, '-k', key, '-c', cert]
+    args = ['-b', ca_bundle, '-k', key, '-c', cert, '--expected-names', expected_names]
     result = run_script(command, args)
 
     assert result.returncode == 0
     assert result.stderr == ""
+    assert "[OK] Certificate covers every expected server name" in result.stdout
     assert "Validation succeeded" in result.stdout
 
 
@@ -108,13 +111,25 @@ def test_fails_with_invalid_san(command, ca_bundle, certs_directory):
 def test_wildcard_certificate(command, certs_directory, ca_bundle):
     key = os.path.join(certs_directory, 'wildcard.key')
     cert = os.path.join(certs_directory, 'wildcard.crt')
-    args = ['-b', ca_bundle, '-k', key, '-c', cert]
+    args = ['-b', ca_bundle, '-k', key, '-c', cert, '--expected-names', 'foreman.example.com,proxy.example.com']
     result = run_script(command, args)
 
     assert result.returncode == 0
     assert result.stderr == ""
     assert "Validation succeeded" in result.stdout
     assert "[OK] CA bundle size is supported" in result.stdout
+    assert "[OK] Certificate covers every expected server name" in result.stdout
+
+
+def test_fails_if_expected_name_is_missing(command, certs_directory, ca_bundle):
+    key = os.path.join(certs_directory, 'foreman.example.com.key')
+    cert = os.path.join(certs_directory, 'foreman.example.com.crt')
+    args = ['-b', ca_bundle, '-k', key, '-c', cert, '--expected-names', 'missing.example.com']
+    result = run_script(command, args)
+
+    assert result.returncode == 11
+    assert "[FAIL] Certificate covers every expected server name" in result.stdout
+    assert "missing: missing.example.com" in result.stdout
 
 
 def test_fails_on_shortname(command, ca_bundle, certs_directory):

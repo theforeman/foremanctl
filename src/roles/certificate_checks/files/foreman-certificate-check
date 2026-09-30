@@ -20,10 +20,11 @@ class ArgumentParser(argparse.ArgumentParser):
 
 
 class CertificateValidator:
-    def __init__(self, certificate, key, ca_bundle):
+    def __init__(self, certificate, key, ca_bundle, expected_names):
         self.certificate = os.path.abspath(certificate)
         self.key = os.path.abspath(key)
         self.ca_bundle = os.path.abspath(ca_bundle)
+        self.expected_names = expected_names
         self.exit_code = 0
 
     @staticmethod
@@ -185,6 +186,18 @@ class CertificateValidator:
         dns_names = re.findall(r'DNS:([^,\s]+)', san_text)
         return common_name, dns_names
 
+    @staticmethod
+    def _dns_name_matches(pattern, hostname):
+        pattern = pattern.lower().rstrip('.')
+        hostname = hostname.lower().rstrip('.')
+        if pattern == hostname:
+            return True
+        if not pattern.startswith('*.'):
+            return False
+        suffix = pattern[1:]
+        prefix = hostname[:-len(suffix)] if hostname.endswith(suffix) else ''
+        return bool(prefix) and '.' not in prefix
+
     def _check_names(self):
         common_name, dns_names = self._certificate_names()
         self._result(
@@ -205,6 +218,19 @@ class CertificateValidator:
             if not cn_matches
             else None,
         )
+
+        if self.expected_names:
+            missing = [
+                name
+                for name in self.expected_names
+                if not any(self._dns_name_matches(pattern, name) for pattern in dns_names)
+            ]
+            self._result(
+                'Certificate covers every expected server name',
+                not missing,
+                11,
+                f"missing: {', '.join(missing)}; certificate DNS names: {', '.join(dns_names)}" if missing else None,
+            )
 
         common_name_is_fqdn = '.' in common_name.rstrip('.')
         self._result(
@@ -293,15 +319,23 @@ def parse_arguments():
     parser.add_argument('-c', '--certificate', required=True, metavar='CERT_FILE', help='server certificate file')
     parser.add_argument('-k', '--key', required=True, metavar='KEY_FILE', help='server private key file')
     parser.add_argument('-b', '--ca-bundle', required=True, metavar='CA_BUNDLE_FILE', help='CA bundle file')
+    parser.add_argument(
+        '-n',
+        '--expected-names',
+        default='',
+        help='comma-separated FQDNs and aliases that the certificate must cover',
+    )
     return parser.parse_args()
 
 
 def main():
     arguments = parse_arguments()
+    expected_names = [name.strip() for name in arguments.expected_names.split(',') if name.strip()]
     validator = CertificateValidator(
         arguments.certificate,
         arguments.key,
         arguments.ca_bundle,
+        expected_names,
     )
     exit_code = validator.validate()
     if exit_code:

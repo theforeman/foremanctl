@@ -21,5 +21,7 @@
       - "{{ certificate_checks_key }}"
       - "-b"
       - "{{ certificate_checks_ca }}"
+      - "--expected-names"
+      - "{{ certificate_checks_expected_names | join(',') }}"
   changed_when: false
   check_mode: false
