@@ -8,6 +8,9 @@ foreman_proxy_url: "https://{{ foreman_proxy_name }}:{{ foreman_proxy_https_port
 
 # Settings
 foreman_proxy_trusted_hosts: []
+# Unlike trusted_hosts (authorized client machines), permitted_hosts lists the
+# proxy's own hostnames accepted in HTTP Host headers.
+foreman_proxy_permitted_hosts: "{{ [foreman_proxy_name] + (server_aliases | default([])) }}"
 
 foreman_proxy_base_features:
   - logs
