@@ -2,6 +2,21 @@
 - name: Deploy iop-ingress image
   ansible.builtin.include_tasks: image.yaml
 
+- name: Create Ingress archive volume
+  containers.podman.podman_volume:
+    name: "{{ iop_ingress_archive_volume }}"
+    state: present
+  register: iop_ingress_archive_volume_result
+
+- name: Configure Ingress archive cleanup
+  ansible.builtin.copy:
+    dest: /etc/tmpfiles.d/iop-core-ingress-archives.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      e {{ iop_ingress_archive_volume_result.volume['Mountpoint'] }} - - - {{ iop_ingress_archive_retention }}
+
 - name: Deploy Ingress container
   containers.podman.podman_container:
     name: iop-core-ingress
@@ -12,12 +27,14 @@
       INGRESS_KAFKABROKERS: "iop-core-kafka:9092"
       BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
       INGRESS_STAGERIMPLEMENTATION: "filebased"
-      INGRESS_STORAGEFILESYSTEMPATH: "/var/tmp"
+      INGRESS_STORAGEFILESYSTEMPATH: "{{ iop_ingress_archive_path }}"
       INGRESS_SERVICEBASEURL: "http://iop-core-ingress:8080"
       INGRESS_WEBPORT: "8080"
       INGRESS_METRICSPORT: "3001"
     network:
       - foreman-core-network
+    volumes:
+      - "{{ iop_ingress_archive_volume }}:{{ iop_ingress_archive_path }}:rw"
     quadlet_options:
       - |
         [Unit]
@@ -27,6 +44,7 @@
         Restart=on-failure
         [Install]
         WantedBy=default.target foreman.target
+  notify: Restart ingress
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
