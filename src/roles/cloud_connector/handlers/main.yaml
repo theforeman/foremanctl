@@ -1,6 +1,13 @@
 ---
-- name: Restart rhcd
+- name: Restart cloud connector dispatcher
   ansible.builtin.systemd_service:
-    name: rhcd
+    name: "{{ cloud_connector_dispatcher_service }}"
     state: restarted
     daemon_reload: true
+
+- name: Restart cloud connector worker
+  ansible.builtin.systemd_service:
+    name: "{{ cloud_connector_worker_service }}"
+    state: restarted
+    daemon_reload: true
+  when: ansible_facts['distribution_major_version'] | int >= 10
