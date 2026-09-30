@@ -4,12 +4,23 @@ end
 
 DOMAIN = ENV.fetch('VAGRANT_DOMAIN', 'example.com'.freeze)
 
+require 'open-uri'
+
 # Official CentOS libvirt images include swap; Vagrant Cloud boxes do not.
+# There is no "-latest" symlink, only dated composes, so pick the newest one.
+CENTOS_BOX_URLS = Hash.new do |urls, stream|
+  dir = "https://cloud.centos.org/centos/#{stream}-stream/x86_64/images/"
+  box = URI.parse(dir).read.scan(/CentOS-Stream-Vagrant-Libvirt-#{stream}-[\d.]+\.x86_64\.vagrant-libvirt\.box/).max
+  raise "No CentOS Stream #{stream} Vagrant libvirt box found at #{dir}" if box.nil?
+
+  urls[stream] = dir + box
+end
+
 def set_centos_box_url(vm)
   stream = vm.box[/^centos\/stream(\d+)$/, 1]
   return unless stream
 
-  vm.box_url = "https://cloud.centos.org/centos/#{stream}-stream/x86_64/images/CentOS-Stream-Vagrant-Libvirt-#{stream}-latest.x86_64.vagrant-libvirt.box"
+  vm.box_url = CENTOS_BOX_URLS[stream]
 end
 
 Vagrant.configure("2") do |config|
