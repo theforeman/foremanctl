@@ -11,10 +11,12 @@
   failed_when: false
   changed_when: false
   no_log: true
+  when: enabled_features | has_feature('foreman')
 
 - name: Set Foreman running tasks count
   ansible.builtin.set_fact:
     backup_foreman_running_tasks: "{{ backup_foreman_tasks_check.resources | default([]) | length }}"
+  when: enabled_features | has_feature('foreman')
 
 - name: Wait for Foreman tasks to complete (if --wait-for-tasks)
   theforeman.foreman.wait_for_task:
@@ -26,6 +28,7 @@
     timeout: "{{ task_wait_timeout | default(3600) }}"
   loop: "{{ backup_foreman_tasks_check.resources | map(attribute='id') | list }}"
   when:
+    - enabled_features | has_feature('foreman')
     - wait_for_tasks | default(false)
     - backup_foreman_running_tasks | int > 0
   changed_when: false
@@ -37,6 +40,7 @@
       There are {{ backup_foreman_running_tasks }} running Foreman task(s).
       Please wait for these to complete or use --wait-for-tasks flag.
   when:
+    - enabled_features | has_feature('foreman')
     - not (wait_for_tasks | default(false))
     - backup_foreman_running_tasks | int > 0
 
