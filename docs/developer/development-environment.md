@@ -165,7 +165,6 @@ The system includes a plugin registry with predefined configurations:
 - `foreman_ansible` - Ansible integration
 - `foreman_rh_cloud` - Red Hat Cloud integration
 - `foreman_discovery` - Host discovery
-- `foreman_openscap` - OpenSCAP compliance
 - `foreman_bootdisk` - Boot disk creation
 - `foreman_openscap` - Foreman plug-in for displaying OpenSCAP audit reports
 - `foreman_theme_satellite` - Branding for Satellite
@@ -183,13 +182,13 @@ Use the `--foreman-development-enabled-plugin` parameter (can be used multiple t
 
 ```bash
 # Enable specific plugins
-./forge deploy-dev start --foreman-development-enabled-plugin katello --foreman-development-enabled-plugin foreman_ansible --foreman-development-enabled-plugin foreman_discovery
+./forge deploy-dev start --foreman-development-enabled-plugin foreman_ansible --foreman-development-enabled-plugin foreman_discovery
 
 # Enable single plugin
-./forge deploy-dev start --foreman-development-enabled-plugin katello
+./forge deploy-dev start --foreman-development-enabled-plugin foreman_ansible
 
 # Enable all available plugins
-./forge deploy-dev start --foreman-development-enabled-plugin katello --foreman-development-enabled-plugin foreman_remote_execution --foreman-development-enabled-plugin foreman_ansible --foreman-development-enabled-plugin foreman_rh_cloud --foreman-development-enabled-plugin foreman_discovery --foreman-development-enabled-plugin foreman_openscap --foreman-development-enabled-plugin foreman_bootdisk
+./forge deploy-dev start --foreman-development-enabled-plugin foreman_ansible --foreman-development-enabled-plugin foreman_rh_cloud --foreman-development-enabled-plugin foreman_discovery --foreman-development-enabled-plugin foreman_openscap --foreman-development-enabled-plugin foreman_bootdisk
 ```
 
 ## Development Workflow

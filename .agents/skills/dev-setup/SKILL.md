@@ -1,7 +1,7 @@
 ---
 name: dev-setup
 description: >-
-  Interactive foremanctl development environment setup. Set up a Foreman/Katello development environment with abilty to enable plugins.
+  Interactive foremanctl development environment setup. Set up a Foreman/Katello development environment with ability to enable plugins.
 ---
 
 # Foremanctl Dev Setup
@@ -57,7 +57,11 @@ Validate that `inventories/local_vagrant` was generated — show its contents.
 
 Deploy Foreman and all supporting services to the target VM.
 
-**Plugins** — follow the [plugin management documentation](../../../docs/developer/development-environment.md#plugin-management) for the available plugins and their behavior. Ask the user which plugins to enable, allowing multiple selections. The default plugins are `katello` and `foreman_remote_execution`.
+**Plugins** — follow the [plugin management documentation](../../../docs/developer/development-environment.md#plugin-management) for the available plugins and their behavior.
+
+`katello` and `foreman_remote_execution` are always deployed, so do not offer them as plugin options and do not pass them on the command line.
+
+Take the selectable plugins from the `choices` list in `development/playbooks/deploy-dev/metadata.obsah.yaml` rather than hardcoding them. Show the user all of them. If the answer names a plugin that is not in `choices`, ask again instead of passing it through.
 
 **Features** — enable additional infrastructure services. Follow the [feature management documentation](../../../docs/developer/development-environment.md#feature-management) for the available features and their behavior. Ask if the user wants `hammer` or `foreman-proxy`.
 
@@ -68,7 +72,7 @@ Then ask (skip if user provides no input):
 - **Manage repos** — defaults to `true`; set to `false` to skip git cloning (useful when repos are already checked out)
 
 Build the `./forge deploy-dev` command:
-- Each plugin: `--foreman-development-enabled-plugin <name>`
+- Each plugin: `--foreman-development-enabled-plugin <name>` — omit the always-on `katello` and `foreman_remote_execution`
 - Each feature: `--add-feature <name>`
 - GitHub user: `--foreman-development-github-username <user>`
 - Target host: `--target-host <host>`
