@@ -409,26 +409,41 @@ jobs:
       matrix:
         certificate_source:
           - default
+        certificate_algorithm:
+          - RSA
         security:
           - none
         box:
           - centos/stream9
           - centos/stream10
+        # Exercise a Candlepin (Katello) deployment with a non-RSA CA to confirm
+        # entitlement-certificate signing works. ML-DSA certificates require the
+        # post-quantum algorithms shipped in the EL10 default crypto policy, so
+        # that leg runs on stream10 only.
         include:
           - certificate_source: custom_server
+            certificate_algorithm: RSA
             security: none
             box: centos/stream10
           - certificate_source: default
+            certificate_algorithm: RSA
             security: fapolicyd
             box: centos/stream9
           - certificate_source: default
+            certificate_algorithm: RSA
             security: fapolicyd
             box: centos/stream10
           - certificate_source: default
+            certificate_algorithm: RSA
             security: fips
             box: centos/stream9
           - certificate_source: default
+            certificate_algorithm: RSA
             security: fips
+            box: centos/stream10
+          - certificate_source: default
+            certificate_algorithm: ML-DSA-87
+            security: none
             box: centos/stream10
     env:
       FOREMANCTL_BASE_BOX: ${{ matrix.box }}
@@ -436,7 +451,7 @@ jobs:
     name: "Tests Proxy Deployment"
     steps:
       - name: generate artifact suffix
-        run: echo "ARTIFACT_SUFFIX=$(echo '${{ matrix.certificate_source }}-${{ matrix.security }}-${{ matrix.box }}' | tr -cd '[:alnum:]-')" >> "${GITHUB_ENV}"
+        run: echo "ARTIFACT_SUFFIX=$(echo '${{ matrix.certificate_source }}-${{ matrix.certificate_algorithm }}-${{ matrix.security }}-${{ matrix.box }}' | tr -cd '[:alnum:]-')" >> "${GITHUB_ENV}"
       - uses: actions/checkout@v7
       - name: Set up Python
         uses: actions/setup-python@v7
@@ -473,6 +488,7 @@ jobs:
         run: |
           ./foremanctl deploy \
             --certificate-source=${{ matrix.certificate_source }} \
+            --certificate-algorithm=${{ matrix.certificate_algorithm }} \
             ${{ matrix.certificate_source == 'custom_server' && '--certificate-server-certificate /root/custom-certificates/certs/quadlet.example.com.crt --certificate-server-key /root/custom-certificates/private/quadlet.example.com.key --certificate-server-ca-certificate /root/custom-certificates/certs/ca.crt' || '' }} \
             --initial-admin-password=changeme \
             --tuning development \
