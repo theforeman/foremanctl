@@ -22,6 +22,7 @@ graph TB
             InventoryFE[Inventory Frontend]
             AdvisorFE[Advisor Frontend]
             VulnFE[Vulnerability Frontend]
+            ComplianceFE[Compliance Frontend]
         end
 
         VulnMeta["Vulnerability Metadata Downloader<br/>(systemd timer + path watcher)"]
@@ -252,9 +253,9 @@ The CVE map URL is served locally at `http://iop-core-gateway:9090/pub/iop/data/
 
 ## Frontend Assets
 
-Inventory, advisor, and vulnerability frontend assets are extracted from container images and served by Apache:
+Inventory, advisor, vulnerability, and compliance frontend assets are extracted from container images and served by Apache:
 
-- Assets are deployed to `/var/www/iop/assets/apps/{inventory,advisor,vulnerability}`
+- Assets are deployed to `/var/www/iop/assets/apps/{inventory,advisor,vulnerability,compliance}`
 - Apache serves them via `Alias` directives in `/etc/httpd/conf.d/05-foreman-ssl.d/`
 - `ProxyPass ... !` prevents these paths from being proxied to Foreman
 - Assets include gzip precompression support and 1-year cache headers
