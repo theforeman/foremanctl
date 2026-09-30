@@ -24,6 +24,7 @@ FLAVOR_TESTS_DIR_OVERRIDES = {
     'satellite': 'katello',
     'capsule': 'foreman-proxy-content',
 }
+FOREMAN_PROXY_HTTP_PORT = 8000
 FOREMAN_PROXY_PORT = 8443
 
 
