@@ -11,6 +11,8 @@
       - |
         [Service]
         Environment=REGISTRY_AUTH_FILE={{ images_registry_auth_file }}
+        TimeoutStartSec={{ images_pull_timeout }}s
+        TimeoutStopSec=30s
 
 - name: Create drop-in directory for {{ images_definition.name }}
   ansible.builtin.file:
