@@ -5,9 +5,7 @@ set -euo pipefail
 target=foreman.target
 units=()
 
-while IFS= read -r unit; do
-  units+=("${unit}")
-done < <(
+unit_output=$(
   systemctl show "${target}" --property=Wants --property=Requires --value |
     tr ' ' '\n' |
     awk '
@@ -19,7 +17,13 @@ done < <(
       }
     ' |
     sort -u
-)
+) || exit $?
+
+if [[ -n ${unit_output} ]]; then
+  while IFS= read -r unit; do
+    units+=("${unit}")
+  done <<< "${unit_output}"
+fi
 
 if [[ ${#units[@]} -eq 0 ]]; then
   echo "No services found in ${target}." >&2

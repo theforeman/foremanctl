@@ -61,3 +61,19 @@ def test_fails_when_target_has_no_services(tmp_path):
 
     assert result.returncode == 1
     assert result.stderr == 'No services found in foreman.target.\n'
+
+
+def test_propagates_unit_discovery_failure(tmp_path):
+    _write_executable(tmp_path / 'systemctl', '#!/bin/sh\necho "systemctl failed" >&2\nexit 42\n')
+    _write_executable(tmp_path / 'journalctl', '#!/bin/sh\nexit 99\n')
+
+    result = subprocess.run(
+        [SCRIPT],
+        capture_output=True,
+        text=True,
+        env=os.environ | {'PATH': f'{tmp_path}:{os.environ["PATH"]}'},
+        check=False,
+    )
+
+    assert result.returncode == 42
+    assert result.stderr == 'systemctl failed\n'
