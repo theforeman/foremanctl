@@ -14,4 +14,6 @@ The service list is discovered from systemd, so it automatically matches the dep
 sudo foreman-tail --since today
 ```
 
+`foreman-tail` complements `journalctl`; it does not replace it. Use `foreman-tail` when troubleshooting the deployment as a whole without having to list every service and recurring timer. Use `journalctl --unit <unit>` when you already know which individual service you want to inspect.
+
 Press `Ctrl+C` to stop following the logs.
