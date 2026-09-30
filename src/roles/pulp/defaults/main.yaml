@@ -26,6 +26,12 @@ pulp_content_listen_stream: localhost:24816
 pulp_content_origin: "http://{{ ansible_facts['fqdn'] }}:24816"
 pulp_pulp_url: "http://{{ ansible_facts['fqdn'] }}:24817"
 
+pulp_cli_package: python3.12-pulp-cli
+pulp_cli_base_url: "https://{{ ansible_facts['fqdn'] }}"
+pulp_cli_ca_certificate: "{{ pulp_foreman_ca_certificate }}"
+pulp_cli_client_certificate: "{{ client_certificate }}"
+pulp_cli_client_key: "{{ client_key }}"
+
 pulp_enable_analytics: false
 pulp_mirror: false
 pulp_register_foreman_proxy: true
