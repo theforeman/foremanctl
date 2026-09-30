@@ -1,0 +1,259 @@
+---
+- name: Deploy iop-compliance images
+  ansible.builtin.include_tasks: image.yaml
+
+- name: Create podman secret for compliance database username
+  containers.podman.podman_secret:
+    name: iop-service-compliance-database-username
+    data: "{{ iop_compliance_database_user }}"
+  notify: Restart compliance
+
+- name: Create podman secret for compliance database password
+  containers.podman.podman_secret:
+    name: iop-service-compliance-database-password
+    data: "{{ iop_compliance_database_password }}"
+  notify: Restart compliance
+
+- name: Create podman secret for compliance database name
+  containers.podman.podman_secret:
+    name: iop-service-compliance-database-name
+    data: "{{ iop_compliance_database_name }}"
+  notify: Restart compliance
+
+- name: Create podman secret for compliance database host
+  containers.podman.podman_secret:
+    name: iop-service-compliance-database-host
+    data: "{{ iop_compliance_database_host }}"
+  notify: Restart compliance
+
+- name: Create podman secret for compliance database port
+  containers.podman.podman_secret:
+    name: iop-service-compliance-database-port
+    data: "{{ iop_compliance_database_port | string }}"
+  notify: Restart compliance
+
+- name: Create podman secret for compliance SECRET_KEY_BASE
+  containers.podman.podman_secret:
+    name: iop-service-compliance-secret-key-base
+    data: "{{ iop_compliance_secret_key_base }}"
+  notify: Restart compliance
+
+- name: Ensure pgcrypto extension exists in compliance database
+  community.postgresql.postgresql_ext:
+    name: pgcrypto
+    login_db: "{{ iop_compliance_database_name }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+    login_host: localhost
+    state: present
+  when: database_mode == 'internal'
+
+- name: Ensure dblink extension exists in compliance database
+  community.postgresql.postgresql_ext:
+    name: dblink
+    login_db: "{{ iop_compliance_database_name }}"
+    login_user: postgres
+    login_password: "{{ postgresql_admin_password }}"
+    login_host: localhost
+    state: present
+  when: database_mode == 'internal'
+
+- name: Deploy Compliance Database Upgrade Init Container
+  containers.podman.podman_container:
+    name: iop-service-compl-dbmigrate
+    image: iop-compliance.image
+    state: quadlet
+    command: sh -c "bundle exec rake db:migrate --trace"
+    network:
+      - iop-core-network
+    volumes: "{{ iop_compliance_database_volumes }}"
+    env: "{{ iop_compliance_common_env | combine({'RUBY_GC_HEAP_OLDOBJECT_LIMIT_FACTOR': '2.0'}) }}"
+    secrets: "{{ iop_compliance_common_secrets }}"
+    quadlet_options:
+      - |
+        [Unit]
+        Description=Compliance Database Upgrade Init Container
+        After=iop-core-kafka.service
+        Wants=iop-core-kafka.service
+        PartOf=foreman.target
+        [Service]
+        Type=oneshot
+        RemainAfterExit=true
+        [Install]
+        WantedBy=default.target foreman.target
+
+- name: Deploy Compliance Backend API Container
+  containers.podman.podman_container:
+    name: iop-service-compliance-backend-api
+    image: iop-compliance.image
+    state: quadlet
+    network:
+      - iop-core-network
+    volumes: "{{ iop_compliance_database_volumes }}"
+    env: >-
+      {{ iop_compliance_common_env | combine({
+        'APPLICATION_TYPE': 'compliance-backend',
+        'RAILS_LOGLEVEL': 'info',
+        'PUMA_WORKERS': '3',
+        'PUMA_MIN_THREADS': '1',
+        'PUMA_MAX_THREADS': '3',
+        'MALLOC_ARENA_MAX': '2',
+        'OLD_PATH_PREFIX': '/r/insights/platform',
+        'RUBY_GC_HEAP_OLDOBJECT_LIMIT_FACTOR': '1.2',
+      }) }}
+    secrets: "{{ iop_compliance_common_secrets }}"
+    quadlet_options:
+      - |
+        [Unit]
+        Description=Compliance Service
+        After=iop-service-compl-dbmigrate.service
+        Wants=iop-service-compl-dbmigrate.service
+        Requires=iop-service-compl-dbmigrate.service
+        PartOf=foreman.target
+        [Service]
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target foreman.target
+
+- name: Deploy Compliance SSG Container
+  containers.podman.podman_container:
+    name: iop-service-compl-ssg
+    image: iop-compliance-ssg.image
+    state: quadlet
+    network:
+      - iop-core-network
+    quadlet_options:
+      - |
+        [Unit]
+        Description=Compliance SSG Service
+        PartOf=foreman.target
+        [Service]
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target foreman.target
+
+- name: Deploy Compliance Inventory Consumer Container
+  containers.podman.podman_container:
+    name: iop-service-compl-inventory-consumer
+    image: iop-compliance.image
+    state: quadlet
+    env: >-
+      {{ iop_compliance_common_env | combine({
+        'APPLICATION_TYPE': 'compliance-inventory',
+        'MALLOC_ARENA_MAX': '2',
+      }) }}
+    secrets: "{{ iop_compliance_common_secrets }}"
+    network:
+      - iop-core-network
+    volumes: "{{ iop_compliance_database_volumes }}"
+    quadlet_options:
+      - |
+        [Unit]
+        Description=Compliance Inventory Consumer Service
+        After=iop-service-compl-dbmigrate.service iop-core-kafka.service
+        Wants=iop-service-compl-dbmigrate.service
+        Requires=iop-service-compl-dbmigrate.service
+        PartOf=foreman.target
+        [Service]
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target foreman.target
+
+- name: Deploy Compliance GoodJob Worker Container
+  containers.podman.podman_container:
+    name: iop-service-compl-goodjob
+    image: iop-compliance.image
+    state: quadlet
+    env: >-
+      {{ iop_compliance_common_env | combine({
+        'APPLICATION_TYPE': 'compliance-goodjob',
+      }) }}
+    secrets: "{{ iop_compliance_common_secrets }}"
+    network:
+      - iop-core-network
+    volumes: "{{ iop_compliance_database_volumes }}"
+    quadlet_options:
+      - |
+        [Unit]
+        Description=Compliance GoodJob Worker
+        After=iop-service-compl-dbmigrate.service
+        Wants=iop-service-compl-dbmigrate.service
+        Requires=iop-service-compl-dbmigrate.service
+        PartOf=foreman.target
+        [Service]
+        Restart=on-failure
+        [Install]
+        WantedBy=default.target foreman.target
+
+- name: Deploy Compliance Import SSG Container
+  containers.podman.podman_container:
+    name: iop-service-compl-import-ssg
+    image: iop-compliance.image
+    state: quadlet
+    env: >-
+      {{ iop_compliance_common_env | combine({
+        'APPLICATION_TYPE': 'compliance-import-ssg',
+      }) }}
+    secrets: "{{ iop_compliance_common_secrets }}"
+    network:
+      - iop-core-network
+    volumes: "{{ iop_compliance_database_volumes }}"
+    quadlet_options:
+      - |
+        [Unit]
+        Description=Compliance Import SSG Job
+        After=iop-service-compl-dbmigrate.service
+        Wants=iop-service-compl-dbmigrate.service
+        [Service]
+        Type=oneshot
+
+- name: Create Compliance Import SSG timer unit
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/iop-service-compl-import-ssg.timer
+    content: |
+      [Unit]
+      Description=Timer for Compliance Import SSG Job
+
+      [Timer]
+      OnBootSec=5min
+      OnUnitActiveSec=5min
+      Persistent=true
+
+      [Install]
+      WantedBy=timers.target
+    mode: '0644'
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Flush handlers to restart services
+  ansible.builtin.meta: flush_handlers
+
+- name: Start Compliance services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+  async: 60
+  poll: 0
+  loop:
+    - iop-service-compl-dbmigrate
+    - iop-service-compl-ssg
+    - iop-service-compliance-backend-api
+    - iop-service-compl-inventory-consumer
+    - iop-service-compl-goodjob
+  register: iop_compliance_services
+
+- name: Wait for Compliance services to start
+  ansible.builtin.async_status:
+    jid: "{{ item.ansible_job_id }}"
+  loop: "{{ iop_compliance_services.results }}"
+  register: _iop_compliance_job_result
+  until: _iop_compliance_job_result is finished
+  retries: 100
+
+- name: Enable and start Compliance Import SSG timer
+  ansible.builtin.systemd:
+    name: iop-service-compl-import-ssg.timer
+    enabled: true
+    state: started

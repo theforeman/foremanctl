@@ -64,6 +64,10 @@
   ansible.builtin.include_role:
     name: iop_vulnerability
 
+- name: Deploy IOP Compliance service
+  ansible.builtin.include_role:
+    name: iop_compliance
+
 - name: Deploy IOP Inventory Frontend
   ansible.builtin.include_role:
     name: iop_inventory_frontend
@@ -75,3 +79,7 @@
 - name: Deploy IOP Vulnerability Frontend
   ansible.builtin.include_role:
     name: iop_vulnerability_frontend
+
+- name: Deploy IOP Compliance Frontend
+  ansible.builtin.include_role:
+    name: iop_compliance_frontend
