@@ -8,7 +8,6 @@ variables:
     action: append
     parameter: --foreman-development-enabled-plugin
     choices:
-      - foreman_remote_execution
       - foreman_ansible
       - foreman_rh_cloud
       - foreman_discovery
