@@ -30,6 +30,12 @@ Deploys a Foreman server. This is the primary deployment type and the default en
 
 Deploys a Foreman Proxy node that connects to a Foreman server.
 
+The procedure below describes the split control-node and VM topology used by
+development checkouts and CI. The `forge` helper is not installed by the
+`foremanctl` RPM. In a production RPM deployment, generate the bundle on the
+Foreman server, transfer it to the proxy host with your normal secure file
+transfer mechanism, and run `foremanctl deploy-proxy` locally on the proxy.
+
 Before running the proxy deployment, an auth bundle must be generated on the Foreman server and copied to the control node:
 
 1. On the **Foreman server**, generate an auth bundle for the proxy hostname:
@@ -59,7 +65,7 @@ Before running the proxy deployment, an auth bundle must be generated on the For
    ```bash
    ./foremanctl deploy-proxy \
      --flavor foreman-proxy-content \
-     --auth-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
+     --auth-bundle "$(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz" \
      --foreman-fqdn quadlet.example.com
    ```
 
