@@ -1,5 +1,6 @@
 [Unit]
 Description=Foreman socket
+PartOf=foreman.target
 
 [Socket]
 ListenStream={{ foreman_listen_stream }}

@@ -1,5 +1,6 @@
 [Unit]
 Description=Pulp API socket
+PartOf=foreman.target
 
 [Socket]
 ListenStream={{ pulp_api_listen_stream }}
