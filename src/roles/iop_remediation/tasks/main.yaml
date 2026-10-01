@@ -42,8 +42,7 @@
     name: iop-service-remediations-api
     image: iop-remediations.image
     state: quadlet
-    network:
-      - foreman-core-network
+    network: "{{ foreman_core_network_container_networks }}"
     command: sh -c "npm run db:migrate && exec node --max-http-header-size=16384 src/app.js"
     env:
       REDIS_ENABLED: "false"

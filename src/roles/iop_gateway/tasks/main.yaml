@@ -56,8 +56,7 @@
     name: iop-core-gateway
     image: iop-gateway.image
     state: quadlet
-    network:
-      - foreman-core-network
+    network: "{{ foreman_core_network_container_networks }}"
     publish:
       - "127.0.0.1:24443:8443"
     secrets:

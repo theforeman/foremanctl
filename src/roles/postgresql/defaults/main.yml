@@ -12,8 +12,7 @@ postgresql_max_connections: 500
 postgresql_shared_buffers: 512MB
 postgresql_effective_cache_size: 1GB
 
-postgresql_networks:
-  - foreman-core-network
+postgresql_networks: "{{ foreman_core_network_container_networks }}"
 postgresql_publish:
   - "127.0.0.1:5432:5432"
 postgresql_upgrade: "hardlink"
