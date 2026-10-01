@@ -45,6 +45,11 @@ def expected_databases(enabled_features):
 
 @pytest.fixture(scope="module")
 def backup_result(server, server_hostname):
+    for executable in ('pg_dump', 'pg_isready'):
+        postgres_client = server.run(f"command -v {executable}")
+        assert postgres_client.rc != 0, \
+            f"The backup integration test must run without {executable} installed on the host"
+
     server.run(f"rm -rf {BACKUP_DIR}")
 
     result = server.run(f"mkdir -p {BACKUP_DIR}")
