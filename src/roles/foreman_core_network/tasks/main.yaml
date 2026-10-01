@@ -16,3 +16,5 @@
     driver: "{{ foreman_core_network_driver }}"
     subnet: "{{ foreman_core_network_subnet }}"
     gateway: "{{ foreman_core_network_gateway }}"
+    ipv6: "{{ foreman_core_network_ipv6 }}"
+
