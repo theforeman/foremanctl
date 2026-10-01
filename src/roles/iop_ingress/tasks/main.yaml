@@ -31,10 +31,9 @@
       INGRESS_SERVICEBASEURL: "http://iop-core-ingress:8080"
       INGRESS_WEBPORT: "8080"
       INGRESS_METRICSPORT: "3001"
-    network:
-      - foreman-core-network
     volumes:
       - "{{ iop_ingress_archive_volume }}:{{ iop_ingress_archive_path }}:rw"
+    network: "{{ foreman_core_network_container_networks }}"
     quadlet_options:
       - |
         [Unit]

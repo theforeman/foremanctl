@@ -11,8 +11,7 @@
     env:
       BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
       BYPASS_PAYLOAD_EXPIRATION: "true"
-    network:
-      - foreman-core-network
+    network: "{{ foreman_core_network_container_networks }}"
     quadlet_options:
       - |
         [Unit]
