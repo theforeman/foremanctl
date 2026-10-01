@@ -5,6 +5,7 @@
     version: "{{ git_repository_revision }}"
     force: true
     remote: "{{ git_repository_remote_name }}"
+    depth: "{{ git_repository_depth | default(omit) }}"
   become: true
   become_user: "{{ git_repository_user }}"
 
