@@ -1,0 +1,69 @@
+---
+- name: Pull updated images before stopping services
+  import_playbook: ../pull-images/pull-images.yaml
+  when: not (air_gapped | bool)
+
+- name: Stop services before update
+  hosts:
+    - quadlet
+  become: true
+  gather_facts: false
+  vars:
+    update_socket_units:
+      - foreman.socket
+      - pulp-api.socket
+      - pulp-content.socket
+  tasks:
+    - name: List services managed by foreman.target  # noqa command-instead-of-module
+      ansible.builtin.command:
+        cmd: systemctl list-dependencies --plain --no-pager --type=service foreman.target
+      register: update_target_dependencies
+      changed_when: false
+
+    - name: Record services that must stop
+      ansible.builtin.set_fact:
+        update_target_service_units: >-
+          {{ update_target_dependencies.stdout_lines
+             | map('trim')
+             | select('match', '.+\.service$')
+             | list }}
+
+    - name: Inspect socket units
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+      loop: "{{ update_socket_units }}"
+      register: update_socket_unit_states
+      changed_when: false
+      failed_when: false
+
+    - name: Stop foreman.target
+      ansible.builtin.systemd_service:
+        name: foreman.target
+        state: stopped
+
+    - name: Stop socket units
+      ansible.builtin.systemd_service:
+        name: "{{ item.item }}"
+        state: stopped
+      loop: "{{ update_socket_unit_states.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      when:
+        - item.status.LoadState | default('not-found') == 'loaded'
+
+    - name: Wait for target services to stop
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+      loop: "{{ update_target_service_units }}"
+      loop_control:
+        label: "{{ item }}"
+      register: update_target_service_state
+      until:
+        - (update_target_service_state.status.ActiveState | default('inactive')) in ['inactive', 'failed']
+      retries: 90
+      delay: 2
+      changed_when: false
+      failed_when: false
+
+- name: Deploy updated services
+  import_playbook: ../deploy/deploy.yaml
