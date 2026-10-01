@@ -41,15 +41,19 @@ def test_foreman_proxy_features(curl_request, proxy_base_url, enabled_features):
 
 def test_foreman_proxy_host_injection(curl_request):
     host = 'evil.hackers.test'
-    cmd = curl_request(
-        "v2/features",
-        base_url=f"https://{host}:{FOREMAN_PROXY_PORT}",
-        headers={"Host": host},
-        resolve=f"{host}:{FOREMAN_PROXY_PORT}:127.0.0.1",
-        insecure=True,
-    )
-    assert cmd.succeeded, f"Failed to query Foreman Proxy: {cmd.stderr}"
-    assert cmd.stdout == '403'
+    request = {
+        'base_url': f"https://{host}:{FOREMAN_PROXY_PORT}",
+        'headers': {"Host": host},
+        'resolve': f"{host}:{FOREMAN_PROXY_PORT}:127.0.0.1",
+        'insecure': True,
+    }
+    status = curl_request("v2/features", **request)
+    assert status.succeeded, f"Failed to query Foreman Proxy: {status.stderr}"
+    assert status.stdout == '403'
+
+    body = curl_request("v2/features", return_body=True, **request)
+    assert body.succeeded, f"Failed to query Foreman Proxy: {body.stderr}"
+    assert body.stdout.strip() == 'Host not permitted'
 
 
 def test_foreman_proxy_service(server):
