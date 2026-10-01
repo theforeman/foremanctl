@@ -5,8 +5,15 @@
   gather_facts: true
   vars_files:
     - "../../vars/defaults.yml"
+    - "../../vars/images.yml"
     - "../../vars/database.yml"
     - "../../vars/base.yaml"
+  pre_tasks:
+    - name: Ensure PostgreSQL client image is available
+      containers.podman.podman_image:
+        name: "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
+        state: present
+        pull: "{{ not (air_gapped | bool) }}"
   roles:
     - restore
 
