@@ -14,6 +14,8 @@
     - name: Setup fapolicyd
       ansible.builtin.include_role:
         name: theforeman.forklift.fapolicyd
+      vars:
+        fapolicyd_subj_cache_size: 65353
       when:
         - security_mode == 'fapolicyd'
 
