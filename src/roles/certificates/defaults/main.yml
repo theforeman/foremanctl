@@ -14,6 +14,8 @@ certificates_ca_subject: 'Foreman Self-signed CA'
 certificates_server_aliases: []
 certificates_hostname_extra_sans: {}
 certificates_internal_hostnames: "{{ ['localhost'] + (certificates_hostname_extra_sans.keys() | list) }}"
+certificates_client_certificate_excluded_hostnames:
+  - candlepin
 certificates_algorithm_type: RSA
 certificates_algorithm_size: 4096
 certificates_ca_validity_days: 7300
