@@ -15,7 +15,7 @@ foremanctl supports two certificate sources that determine how certificates are 
 
 **Custom Server Source (`certificate_source: custom_server`)**
 - Uses custom server certificates provided by the user (e.g., signed by your organization's CA)
-- Automatically generates an internal CA for client certificates and localhost
+- Automatically generates an internal CA for client certificates and internal service hostnames
 - Server certificate, key, and CA bundle are copied to `/var/lib/foremanctl/certs/`
 - Certificate source persists across deployments; original files only needed on first deploy or when updating certificates
 
@@ -246,7 +246,7 @@ For `certificate_source: custom_server`:
 
 1. **CA Generation**: Generate self-signed internal CA certificate and key with 20-year validity
 2. **Custom Server Certificates**: Copy the custom server cert, key, and CA bundle from user-provided paths to `/var/lib/foremanctl/certs/` (only when certificate paths are provided)
-3. **Host Certificate Issuance**: Generate client certificates for every hostname. Internally issued server certificates are still created for localhost and other internal names (`candlepin`, `iop-core-gateway`). The public FQDN server certificate is skipped (the custom cert is used instead).
+3. **Host Certificate Issuance**: Generate client certificates for every hostname. Internally issued server certificates are still created for the internal services `candlepin` and `iop-core-gateway`. The public FQDN server certificate is skipped (the custom cert is used instead).
 
 #### Auth Bundle Generation
 

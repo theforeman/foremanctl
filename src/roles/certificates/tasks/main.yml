@@ -45,6 +45,19 @@
     - "{{ certificates_output_directory_requests }}/candlepin-client.csr"
   when: auth_bundle is not defined
 
+- name: 'Remove unused localhost certificate files'
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ certificates_output_directory_certs }}/localhost.crt"
+    - "{{ certificates_output_directory_keys }}/localhost.key"
+    - "{{ certificates_output_directory_requests }}/localhost.csr"
+    - "{{ certificates_output_directory_certs }}/localhost-client.crt"
+    - "{{ certificates_output_directory_keys }}/localhost-client.key"
+    - "{{ certificates_output_directory_requests }}/localhost-client.csr"
+  when: auth_bundle is not defined
+
 - name: 'Generate certificates'
   when:
     - auth_bundle is not defined
