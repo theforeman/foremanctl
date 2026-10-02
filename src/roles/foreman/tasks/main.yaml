@@ -224,7 +224,7 @@
     state: quadlet
     image: foreman.image
     sdnotify: false
-    network: {{ foreman_network }}
+    network: "{{ foreman_networks }}"
     command: bash -c "bin/rails db:abort_if_pending_migrations"
     env: "{{ foreman_env }}"
     secrets: "{{ foreman_secrets }}"
