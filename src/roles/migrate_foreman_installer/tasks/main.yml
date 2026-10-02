@@ -126,20 +126,6 @@
         remote_src: true
         mode: '0440'
 
-    - name: Copy localhost certificate from installer
-      ansible.builtin.copy:
-        src: /root/ssl-build/localhost/localhost-tomcat.crt
-        dest: "{{ migrate_foreman_installer_ca_directory }}/certs/localhost.crt"
-        remote_src: true
-        mode: '0444'
-
-    - name: Copy localhost key from installer
-      ansible.builtin.copy:
-        src: /root/ssl-build/localhost/localhost-tomcat.key
-        dest: "{{ migrate_foreman_installer_ca_directory }}/private/localhost.key"
-        remote_src: true
-        mode: '0440'
-
     - name: Backup installer certificate directory
       ansible.builtin.copy:
         src: /root/ssl-build/
