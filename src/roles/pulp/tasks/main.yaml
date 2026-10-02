@@ -15,12 +15,21 @@
     mode: "0755"
     owner: "{{ pulp_container_uid }}"
     group: "{{ pulp_container_gid }}"
-    recurse: >-
-      {{ pulp_storage_ownership.results[ansible_loop.index0].stat.uid | default(-1) == 0 and
-         pulp_storage_ownership.results[ansible_loop.index0].stat.gid | default(-1) == 0 }}
+  loop: "{{ pulp_volumes }}"
+
+- name: Migrate ownership of root-owned Pulp storage
+  ansible.builtin.file:
+    path: "{{ item | split(':') | first }}"
+    state: directory
+    owner: "{{ pulp_container_uid }}"
+    group: "{{ pulp_container_gid }}"
+    recurse: true
   loop: "{{ pulp_volumes }}"
   loop_control:
     extended: true
+  when:
+    - pulp_storage_ownership.results[ansible_loop.index0].stat.uid | default(-1) == 0
+    - pulp_storage_ownership.results[ansible_loop.index0].stat.gid | default(-1) == 0
 
 - name: Capture Pulp storage subdirectories ownership
   ansible.builtin.stat:
@@ -38,15 +47,27 @@
     mode: "0755"
     owner: "{{ pulp_container_uid }}"
     group: "{{ pulp_container_gid }}"
-    recurse: >-
-      {{ pulp_storage_subdirs_ownership.results[ansible_loop.index0].stat.uid | default(-1) == 0 and
-         pulp_storage_subdirs_ownership.results[ansible_loop.index0].stat.gid | default(-1) == 0 }}
+  loop:
+    - tmp
+    - assets
+    - media
+
+- name: Migrate ownership of root-owned Pulp storage subdirectories
+  ansible.builtin.file:
+    path: "{{ pulp_storage_path }}/{{ item }}"
+    state: directory
+    owner: "{{ pulp_container_uid }}"
+    group: "{{ pulp_container_gid }}"
+    recurse: true
   loop:
     - tmp
     - assets
     - media
   loop_control:
     extended: true
+  when:
+    - pulp_storage_subdirs_ownership.results[ansible_loop.index0].stat.uid | default(-1) == 0
+    - pulp_storage_subdirs_ownership.results[ansible_loop.index0].stat.gid | default(-1) == 0
 
 - name: Capture Pulp import directories ownership
   ansible.builtin.stat:
@@ -61,13 +82,23 @@
     mode: "0755"
     owner: "{{ pulp_container_uid }}"
     group: "{{ pulp_container_gid }}"
-    recurse: >-
-      {{ pulp_import_directories_ownership.results[ansible_loop.index0].stat.uid | default(-1) == 0 and
-         pulp_import_directories_ownership.results[ansible_loop.index0].stat.gid | default(-1) == 0 }}
+  loop: "{{ pulp_default_import_paths + pulp_import_paths }}"
+  when: not pulp_mirror
+
+- name: Migrate ownership of root-owned Pulp import directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ pulp_container_uid }}"
+    group: "{{ pulp_container_gid }}"
+    recurse: true
   loop: "{{ pulp_default_import_paths + pulp_import_paths }}"
   loop_control:
     extended: true
-  when: not pulp_mirror
+  when:
+    - not pulp_mirror
+    - pulp_import_directories_ownership.results[ansible_loop.index0].stat.uid | default(-1) == 0
+    - pulp_import_directories_ownership.results[ansible_loop.index0].stat.gid | default(-1) == 0
 
 - name: Capture Pulp export directories ownership
   ansible.builtin.stat:
@@ -82,13 +113,23 @@
     mode: "0755"
     owner: "{{ pulp_container_uid }}"
     group: "{{ pulp_container_gid }}"
-    recurse: >-
-      {{ pulp_export_directories_ownership.results[ansible_loop.index0].stat.uid | default(-1) == 0 and
-         pulp_export_directories_ownership.results[ansible_loop.index0].stat.gid | default(-1) == 0 }}
+  loop: "{{ pulp_default_export_paths + pulp_export_paths }}"
+  when: not pulp_mirror
+
+- name: Migrate ownership of root-owned Pulp export directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ pulp_container_uid }}"
+    group: "{{ pulp_container_gid }}"
+    recurse: true
   loop: "{{ pulp_default_export_paths + pulp_export_paths }}"
   loop_control:
     extended: true
-  when: not pulp_mirror
+  when:
+    - not pulp_mirror
+    - pulp_export_directories_ownership.results[ansible_loop.index0].stat.uid | default(-1) == 0
+    - pulp_export_directories_ownership.results[ansible_loop.index0].stat.gid | default(-1) == 0
 
 - name: Create DB password secret
   containers.podman.podman_secret:
