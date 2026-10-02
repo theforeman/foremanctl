@@ -15,13 +15,10 @@ All steps must be run as root user.
 3. Update all packages to their latest versions:
     - `dnf upgrade`
     - There may not be a new release available for foremanctl; that is okay. Foreman images are updated through step 4.
-4. Pull updated container images:
-    - `foremanctl pull-images`
-    - Container image tags are updated over time for a given Foreman X.Y release to include the bug fixes and security patches.
-5. Stop the existing Foreman services:
-    - `systemctl stop foreman.target`
-6. Run update tasks by re-deploying your Foreman environment: 
-    - `foremanctl deploy` 
+4. Update the running deployment:
+    - `foremanctl update`
+    - This pre-pulls the updated container images while the existing services are still running, then stops all Foreman services and sockets and redeploys the environment using the persisted deployment parameters.
+    - If image pulling fails, the existing services remain running. If deployment fails after services are stopped, correct the reported problem and run `foremanctl deploy` to finish the update.
 
 ## Updating foremanctl from disconnected RPM install
 
@@ -60,7 +57,7 @@ All steps must be run as root user.
     - `podman load -i <filename>.tar`
 11. On the disconnected environment, update all packages to their latest versions:
     - `dnf upgrade`
-12. Stop the existing Foreman services:
-    - `systemctl stop foreman.target`
-13. Run update tasks by re-deploying your Foreman environment: 
-    - `foremanctl deploy`
+12. Update the running deployment using the preloaded images:
+    - `foremanctl update --air-gapped`
+    - Air-gapped mode skips registry access, stops all Foreman services and sockets, and redeploys the environment using the persisted deployment parameters.
+    - If deployment fails after services are stopped, correct the reported problem and run `foremanctl deploy --air-gapped` to finish the update.
