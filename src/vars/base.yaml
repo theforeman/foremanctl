@@ -1,7 +1,6 @@
 ---
 certificates_hostnames:
   - "{{ ansible_facts['fqdn'] }}"
-  - localhost
   - candlepin
   - iop-core-gateway
 certificates_hostname_extra_sans:
