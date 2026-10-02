@@ -35,6 +35,16 @@
     state: directory
     mode: '0755'
 
+- name: 'Remove unused Candlepin client certificate files'
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ certificates_output_directory_certs }}/candlepin-client.crt"
+    - "{{ certificates_output_directory_keys }}/candlepin-client.key"
+    - "{{ certificates_output_directory_requests }}/candlepin-client.csr"
+  when: auth_bundle is not defined
+
 - name: 'Generate certificates'
   when:
     - auth_bundle is not defined

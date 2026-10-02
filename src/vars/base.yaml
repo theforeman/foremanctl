@@ -20,8 +20,6 @@ certificates_oauth_directory: /var/lib/foremanctl/oauth
 
 candlepin_ca_key: "{{ ca_key }}"
 candlepin_ca_certificate: "{{ ca_certificate }}"
-candlepin_client_key: "{{ client_key }}"
-candlepin_client_certificate: "{{ client_certificate }}"
 
 foreman_ca_certificate: "{{ ca_bundle }}"
 foreman_client_key: "{{ client_key }}"
