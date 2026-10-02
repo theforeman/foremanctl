@@ -1,6 +1,8 @@
 # Upgrading foremanctl
 
-Foremanctl releases are locked to specific Foreman images with version-compatible dependencies and plugins. Your system's installed `foreman-release` repository configuration RPM locks your system to the correct foremanctl version, which in turn will pull the correct Foreman images. For nearly all install situations, upgrading your Foreman server should be approached through upgrading `foremanctl`.
+Foremanctl releases are locked to specific Foreman images with version-compatible dependencies and plugins.
+Your system's installed `foreman-release` repository configuration RPM locks your system to the correct foremanctl version, which in turn will pull the correct Foreman images.
+For nearly all install situations, upgrading your Foreman server should be approached through upgrading `foremanctl`.
 
 Foreman MUST be upgraded one release at a time (e.g. 3.19 -> 3.20).
 
@@ -12,33 +14,39 @@ Scroll to the correct procedure below which matches your installation environmen
 
 All steps must be run as root user.
 
-1. Optional: Run `foremanctl health` to ensure your existing Foreman server is healthy. Correct any issues before continuing.
-2. Consider backing up your Foreman environment before upgrade. See [Backup and Restore](backup-restore.md).
+1. Optional: Run `foremanctl health` to ensure your existing Foreman server is healthy.
+  Correct any issues before continuing.
+2. Consider backing up your Foreman environment before upgrade.
+  See [Backup and Restore](backup-restore.md).
 3. Manually update your Foreman Release repository to the next Foreman Y release:
     - `dnf upgrade https://yum.theforeman.org/releases/<next-version>/el9/x86_64/foreman-release.rpm`
     - Example: Foreman 3.19 -> 5.0 upgrades would use `dnf upgrade https://yum.theforeman.org/releases/5.0/el9/x86_64/foreman-release.rpm`.
-5. If using `hammer` feature: install the Katello repository:
+4. If using `hammer` feature: install the Katello repository:
     - `dnf install https://yum.theforeman.org/katello/<current-version>/katello/el9/x86_64/katello-repos-latest.rpm`
     - This installs the `katello`, `candlepin`, and `pulpcore` repositories.
-6. Update all packages to their latest versions:
+5. Update all packages to their latest versions:
     - `dnf upgrade`
-7. Optional Pre-pull container images to reduce downtime during deploy:
+6. Optional Pre-pull container images to reduce downtime during deploy:
     - `foremanctl pull-images`
     - Container image tags are updated over time for a given Foreman X.Y release to include the bug fixes and security patches.
-    - This step is optional but recommended. Services can continue running while images are pulled, reducing the downtime window during the deploy.
-8. Stop the existing Foreman services:
+    - This step is optional but recommended.
+      Services can continue running while images are pulled, reducing the downtime window during the deploy.
+7. Stop the existing Foreman services:
     - `systemctl stop foreman.target`
-9. Run upgrade tasks by re-deploying your Foreman environment: 
-    - `foremanctl deploy` 
+8. Run upgrade tasks by re-deploying your Foreman environment:
+    - `foremanctl deploy`
     - Please see [Parameters](parameters.md) for additional deployment options.
-    - This deploy command will pull new images (if not already pulled in the previous step) and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
+    - This deploy command will pull new images (if not already pulled in the previous step) and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins.
+      Expect this deploy to take longer than typical deploys.
 
 ## Upgrading foremanctl from disconnected RPM install
 
 All steps must be run as root user.
 
-1. Optional: On your disconnected environment, run `foremanctl health` to ensure your existing Foreman server is healthy. Correct any issues before continuing.
-2. Consider backing up your Foreman environment before upgrade. See [Backup and Restore](backup-restore.md).
+1. Optional: On your disconnected environment, run `foremanctl health` to ensure your existing Foreman server is healthy.
+  Correct any issues before continuing.
+2. Consider backing up your Foreman environment before upgrade.
+  See [Backup and Restore](backup-restore.md).
 3. On an internet connected environment, install the same Foreman Release repository as your disconnected environment:
     - `dnf install https://yum.theforeman.org/releases/<current-version>/el9/x86_64/foreman-release.rpm`
     - This installs and enables `foreman` and `foreman-plugins` repositories.
@@ -54,7 +62,9 @@ All steps must be run as root user.
 7. On an internet connected environment, pull updated container images:
     - `foremanctl pull-images`
     - Container image tags are updated over time for a given Foreman X.Y release to include the bug fixes and security patches.
-    - Confirm the correct images were downloaded by running `podman images`. All images from your previous-version disconnected environment should be present on the internet connected environment. If images are missing, ensure foremanctl features parameters are identical between environments.
+    - Confirm the correct images were downloaded by running `podman images`.
+      All images from your previous-version disconnected environment should be present on the internet connected environment.
+      If images are missing, ensure foremanctl features parameters are identical between environments.
     - Run `podman save $(podman images --format "{{.Repository}}:{{.Tag}}" | tr '\n' ' ') -o <filename>.tar` to export all downloaded images as a tarball.
 8. Using an available transport mechanism, move the following to your disconnected environment:
     - The `foreman` repo mirror and contents (contains the upgraded foremanctl package).
@@ -63,7 +73,8 @@ All steps must be run as root user.
     - Copy the mirrored directory to a stable location (e.g., `/var/repos/foreman`).
     - Redirect the existing repository configuration to use your local mirror:
       - `dnf config-manager --setopt=foreman.baseurl=file:///var/repos/foreman --save`
-    - Verify the mirror is serving the correct package version with `dnf info foremanctl`. This version should match step 6.
+    - Verify the mirror is serving the correct package version with `dnf info foremanctl`.
+      This version should match step 6.
     - If applicable, repeat for `foreman-plugins` and `katello`.
 10. On the disconnected environment, stage the updated container images:
     - `podman load -i <filename>.tar`
@@ -71,5 +82,5 @@ All steps must be run as root user.
     - `dnf upgrade`
 12. Stop the existing Foreman services:
     - `systemctl stop foreman.target`
-13. Run upgrade tasks by re-deploying your Foreman environment: 
+13. Run upgrade tasks by re-deploying your Foreman environment:
     - `foremanctl deploy`

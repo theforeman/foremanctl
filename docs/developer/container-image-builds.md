@@ -5,13 +5,13 @@ Dependent services that we do not build ourselves will have a copy of containers
 
 There will be three flavors of Foreman containers:
 
-  * Vanilla Foreman
-  * Foreman + Katello
-  * Foreman + all plugins
+* Vanilla Foreman
+* Foreman + Katello
+* Foreman + all plugins
 
 Stage versions of containers will have stage in the namespace and be published in the Foreman's quay repository:
 
-  * `quay.io/foreman/stage/$service:$tag`
+* `quay.io/foreman/stage/$service:$tag`
 
 The base image will be `quay.io/centos/centos:stream10`.
 
@@ -19,21 +19,20 @@ The base image will be `quay.io/centos/centos:stream10`.
 
 Container files will be stored in repositories for each service that mimic packaging.
 
-  * [foreman-oci-images](https://github.com/theforeman/foreman-oci-images)
-  * [pulp-oci-images](https://github.com/theforeman/pulp-oci-images)
-  * [candlepin-oci-images](https://github.com/theforeman/candlepin-oci-images)
+* [foreman-oci-images](https://github.com/theforeman/foreman-oci-images)
+* [pulp-oci-images](https://github.com/theforeman/pulp-oci-images)
+* [candlepin-oci-images](https://github.com/theforeman/candlepin-oci-images)
 
 ## Container Image Tagging
 
 The tagging rules for release containers images:
 
-  * Project version: X.Y.Z
-  * Project version: X.Y
-  * Foreman version: foreman-X.Y
-  * Foreman version: foreman-X.Y.Z
+* Project version: X.Y.Z
+* Project version: X.Y
+* Foreman version: foreman-X.Y
+* Foreman version: foreman-X.Y.Z
 
 The tagging rules for nightly container images:
 
-  * nightly
-  * Project version: X.Y.Z
-
+* nightly
+* Project version: X.Y.Z

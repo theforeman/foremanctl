@@ -52,6 +52,21 @@ jobs:
       - name: Run ruff
         run: ruff check --output-format=github tests/ src/ development/scripts/ inventories/
 
+  markdown-lint:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install custom markdownlint rule
+        run: npm install --no-save --package-lock=false markdownlint-rule-max-one-sentence-per-line@0.0.2
+      - name: Run markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@v24.2.0
+        with:
+          globs: |
+            *.md
+            docs/**/*.md
+          fix: false
+
   tests:
     strategy:
       fail-fast: false
@@ -679,6 +694,7 @@ jobs:
       - capsule-tests
       - ansible-lint
       - python-lint
+      - markdown-lint
     runs-on: ubuntu-latest
     name: Test suite
     steps:

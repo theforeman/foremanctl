@@ -1,0 +1,22 @@
+---
+- name: Run Markdown linting
+  hosts:
+    - localhost
+  gather_facts: false
+  tasks:
+    - name: Ensure the custom markdownlint rule is installed
+      ansible.builtin.command:
+        argv:
+          - npm
+          - install
+          - --no-save
+          - --package-lock=false
+          - markdownlint-rule-max-one-sentence-per-line@0.0.2
+        chdir: "{{ inventory_dir }}/../"
+      changed_when: false
+
+    - name: Run markdownlint-cli2
+      ansible.builtin.command:
+        argv: "{{ ['npx', '--yes', 'markdownlint-cli2'] + (['--fix'] if markdown_lint_fix | default(false) else []) + ['*.md', 'docs/**/*.md'] }}"
+        chdir: "{{ inventory_dir }}/../"
+      changed_when: markdown_lint_fix | default(false)

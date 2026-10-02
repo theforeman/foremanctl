@@ -38,6 +38,7 @@ packer/build.*
 # local development environment
 .env
 .venv
+node_modules/
 .python-version
 
 # mkdocs

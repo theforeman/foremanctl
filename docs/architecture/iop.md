@@ -4,15 +4,18 @@ IOP deploys the on-premise Insights services that provide advisor, vulnerability
 
 ## Enabling IOP
 
-Add `iop` to `enabled_features` in your flavor configuration. IOP requires internal database mode (`database_mode: internal`).
+Add `iop` to `enabled_features` in your flavor configuration.
+IOP requires internal database mode (`database_mode: internal`).
 
 The `iop` feature depends on `rh-cloud`, which installs the `foreman_rh_cloud` plugin into Foreman and `katello` as a transitive dependency.
 
 ## Architecture
 
-IOP runs as a set of containerized services managed via podman quadlets on the shared `foreman-core-network` (bridge, `10.130.0.0/24`), alongside Foreman, Postgres, and other co-located services. See [Network Architecture](network.md) for the host/bridge split, unix sockets, and published ports.
+IOP runs as a set of containerized services managed via podman quadlets on the shared `foreman-core-network` (bridge, `10.130.0.0/24`), alongside Foreman, Postgres, and other co-located services.
+See [Network Architecture](network.md) for the host/bridge split, unix sockets, and published ports.
 
-The subnet matches the former `iop-core-network` so the gateway image nginx resolver (`10.130.0.1`) can resolve upstream service names. The gateway is registered as a Foreman smart proxy at `https://iop-core-gateway:8443` (host publish remains `127.0.0.1:24443` for host-side tools and tests).
+The subnet matches the former `iop-core-network` so the gateway image nginx resolver (`10.130.0.1`) can resolve upstream service names.
+The gateway is registered as a Foreman smart proxy at `https://iop-core-gateway:8443` (host publish remains `127.0.0.1:24443` for host-side tools and tests).
 
 ```mermaid
 graph TB
@@ -92,7 +95,7 @@ The core pipeline processes host data through an event-driven architecture using
 Key Kafka topics:
 
 | Topic | Producer | Consumer |
-|-------|----------|----------|
+| ------- | ---------- | ---------- |
 | `platform.upload.announce` | Ingress | Puptoo, Yuptoo |
 | `platform.inventory.host-ingress` | Puptoo | Inventory |
 | `platform.inventory.events` | Inventory | Engine, Vulnerability listener |
@@ -105,7 +108,7 @@ Key Kafka topics:
 ### Services
 
 | Service | Container(s) | Port | Description |
-|---------|-------------|------|-------------|
+| --------- | ------------- | ------ | ------------- |
 | kafka | `iop-core-kafka` | 9092 (internal) | Message broker (KRaft mode, single-node) |
 | ingress | `iop-core-ingress` | 8080 (internal) | Upload ingestion endpoint |
 | puptoo | `iop-core-puptoo` | - | System facts processor |
@@ -121,7 +124,7 @@ Key Kafka topics:
 #### Vulnerability containers
 
 | Container | Type | Description |
-|-----------|------|-------------|
+| ----------- | ------ | ------------- |
 | `iop-service-vuln-dbupgrade` | oneshot | Database schema migration |
 | `iop-service-vuln-manager` | service | Main API endpoint |
 | `iop-service-vuln-taskomatic` | service | Periodic job scheduler (stale_systems, delete_systems, cacheman) |
@@ -133,11 +136,15 @@ Key Kafka topics:
 
 ### Network
 
-All IOP containers join `foreman-core-network` and reach Postgres at `postgresql:5432`. The gateway is published on host loopback as `127.0.0.1:24443` (container port `8443`) so it is not externally accessible; the Foreman container talks to it as `https://iop-core-gateway:8443`. The gateway relays to Foreman via `https://host.containers.internal` (Apache on the host). See [Network Architecture](network.md).
+All IOP containers join `foreman-core-network` and reach Postgres at `postgresql:5432`.
+The gateway is published on host loopback as `127.0.0.1:24443` (container port `8443`) so it is not externally accessible; the Foreman container talks to it as `https://iop-core-gateway:8443`.
+The gateway relays to Foreman via `https://host.containers.internal` (Apache on the host).
+See [Network Architecture](network.md).
 
 ### Smart Proxy Registration
 
-After the gateway is deployed, the `iop_core` Ansible role registers it as a Foreman smart proxy named `iop-gateway` using the `theforeman.foreman.smart_proxy` Ansible module. The Ansible role uses Foreman's OAuth consumer key and secret for this registration step.
+After the gateway is deployed, the `iop_core` Ansible role registers it as a Foreman smart proxy named `iop-gateway` using the `theforeman.foreman.smart_proxy` Ansible module.
+The Ansible role uses Foreman's OAuth consumer key and secret for this registration step.
 
 The gateway's nginx relay configuration proxies requests to `https://host.containers.internal` (the host Foreman instance), setting the `Host` header to the instance's FQDN.
 
@@ -147,14 +154,15 @@ All IOP containers are `PartOf=foreman.target`, meaning they start and stop with
 
 Patterns used:
 
-- **Init containers** (database migrations): `Type=oneshot` with `RemainAfterExit=true`. Downstream services use `Requires=` and `After=` to depend on these.
+- **Init containers** (database migrations): `Type=oneshot` with `RemainAfterExit=true`.
+  Downstream services use `Requires=` and `After=` to depend on these.
 - **Long-running services**: `Restart=on-failure` with `WantedBy=default.target foreman.target`
 - **Periodic tasks**: systemd timers with `Persistent=true` and `RandomizedDelaySec`
 
 Timers:
 
 | Timer | Interval | Purpose |
-|-------|----------|---------|
+| ------- | ---------- | --------- |
 | `iop-core-host-inventory-cleanup.timer` | 24h | Host access tags cleanup |
 | `iop-service-vuln-vmaas-sync.timer` | 4h | Vulnerability data sync from VMAAS |
 | `iop-vuln-metadata-download.timer` | 24h | Vulnerability metadata download (CPE, repo-to-CPE, CVE map) |
@@ -165,7 +173,7 @@ IOP creates five PostgreSQL databases, all accessible to containers via the
 `postgresql` container on `foreman-core-network` (`postgresql:5432`):
 
 | Database | User |
-|----------|------|
+| ---------- | ------ |
 | `inventory_db` | `inventory_admin` |
 | `advisor_db` | `advisor_user` |
 | `remediations_db` | `remediations_user` |
@@ -178,7 +186,9 @@ Passwords are auto-generated using Ansible's `password` lookup and stored as pod
 
 Advisor and vulnerability services use PostgreSQL foreign data wrappers (FDW) to query the inventory database directly, avoiding REST API overhead for bulk data access.
 
-IOP app containers still connect as `postgresql:5432` on the bridge. FDW is different: Ansible sets up the foreign server from the host (`login_host: 127.0.0.1`, the published IPv4 port), and `CREATE SERVER` stores `host=127.0.0.1`, which Postgres interprets inside its own container so advisor/vuln stay on-box instead of hairpinning through the bridge. See [PostgreSQL from three vantage points](network.md#postgresql-from-three-vantage-points).
+IOP app containers still connect as `postgresql:5432` on the bridge.
+FDW is different: Ansible sets up the foreign server from the host (`login_host: 127.0.0.1`, the published IPv4 port), and `CREATE SERVER` stores `host=127.0.0.1`, which Postgres interprets inside its own container so advisor/vuln stay on-box instead of hairpinning through the bridge.
+See [PostgreSQL from three vantage points](network.md#postgresql-from-three-vantage-points).
 
 The reusable `iop_fdw` role sets up each FDW connection:
 
@@ -189,7 +199,8 @@ The reusable `iop_fdw` role sets up each FDW connection:
 5. Creates a local `inventory.hosts` view pointing to the foreign table
 6. Grants select permissions
 
-The `inventory.hosts` view is created in the inventory database by the `iop_inventory` role. It maps HBI schema fields for use by consuming services.
+The `inventory.hosts` view is created in the inventory database by the `iop_inventory` role.
+It maps HBI schema fields for use by consuming services.
 
 ```mermaid
 graph LR
@@ -210,7 +221,9 @@ graph LR
 
 ## Vulnerability Metadata Downloader
 
-A non-containerized service that provides vulnerability metadata to the VMAAS reposcan. A single downloader (the `iop_vuln_metadata_downloader` role) fetches `cpe-dictionary.xml`, `repository-to-cpe.json`, and `cvemap.xml`. Managed by three systemd units:
+A non-containerized service that provides vulnerability metadata to the VMAAS reposcan.
+A single downloader (the `iop_vuln_metadata_downloader` role) fetches `cpe-dictionary.xml`, `repository-to-cpe.json`, and `cvemap.xml`.
+Managed by three systemd units:
 
 - `iop-vuln-metadata-download.service` - oneshot download job
 - `iop-vuln-metadata-download.timer` - runs every 24 hours
@@ -218,19 +231,24 @@ A non-containerized service that provides vulnerability metadata to the VMAAS re
 
 ### Online mode
 
-Downloads each file from `https://security.access.redhat.com/` and writes it under `/var/www/html/pub/iop/data/`. Each file is fetched conditionally (based on its current modification time), so unchanged files are not re-downloaded.
+Downloads each file from `https://security.access.redhat.com/` and writes it under `/var/www/html/pub/iop/data/`.
+Each file is fetched conditionally (based on its current modification time), so unchanged files are not re-downloaded.
 
 ### Offline mode
 
-`/var/lib/foreman` is the default manual directory; If a manual file exists on disk there (matching the target file's basename), the downloader uses it instead of fetching from the internet. The path watcher detects file changes and triggers the service automatically. This supports air-gapped deployments where the metadata is provided manually. `iop_vuln_metadata_downloader_manual_dir` controls both where the downloader looks for the file and what directory the systemd path unit watches — override it consistently, not just the file location.
+`/var/lib/foreman` is the default manual directory; If a manual file exists on disk there (matching the target file's basename), the downloader uses it instead of fetching from the internet.
+The path watcher detects file changes and triggers the service automatically.
+This supports air-gapped deployments where the metadata is provided manually. `iop_vuln_metadata_downloader_manual_dir` controls both where the downloader looks for the file and what directory the systemd path unit watches — override it consistently, not just the file location.
 
 ### Reposync trigger
 
-The reposync trigger is merged into the download script: after processing all files, it triggers a VMAAS reposync via `PUT https://localhost:24443/api/vmaas-reposcan/v1/sync` using client certificates **only if at least one file actually changed**. The trigger retries up to 5 times with exponential backoff.
+The reposync trigger is merged into the download script: after processing all files, it triggers a VMAAS reposync via `PUT https://localhost:24443/api/vmaas-reposcan/v1/sync` using client certificates **only if at least one file actually changed**.
+The trigger retries up to 5 times with exponential backoff.
 
 ## VEX Downloader
 
-A non-containerized service that provides CSAF VEX (Vulnerability Exploitability eXchange) data to the vulnerability service, following the same pattern as the CVE Map Downloader. Managed by three systemd units:
+A non-containerized service that provides CSAF VEX (Vulnerability Exploitability eXchange) data to the vulnerability service, following the same pattern as the CVE Map Downloader.
+Managed by three systemd units:
 
 - `iop-vex-download.service` - oneshot download job
 - `iop-vex-download.timer` - runs every 24 hours
@@ -242,11 +260,13 @@ Downloads the latest `vex-latest.tar.zst` archive (and its `.asc` signature) fro
 
 ### Offline mode
 
-`/var/lib/foreman` is the default manual directory; if `vex-latest.tar.zst` exists there on disk, the downloader uses it instead of fetching from the internet. The path watcher detects file changes and triggers the service automatically. `iop_vex_downloader_manual_dir` controls both where the downloader looks for the file and what directory the systemd path unit watches — override it consistently, not just the file location.
+`/var/lib/foreman` is the default manual directory; if `vex-latest.tar.zst` exists there on disk, the downloader uses it instead of fetching from the internet.
+The path watcher detects file changes and triggers the service automatically. `iop_vex_downloader_manual_dir` controls both where the downloader looks for the file and what directory the systemd path unit watches — override it consistently, not just the file location.
 
 ## VMAAS-Katello Integration
 
-VMAAS reposcan syncs its repository list from Katello (`SYNC_REPO_LIST_SOURCE=katello`) via the gateway at port 9090. VMAAS does not maintain its own repository list; it pulls from the content already managed by Katello.
+VMAAS reposcan syncs its repository list from Katello (`SYNC_REPO_LIST_SOURCE=katello`) via the gateway at port 9090.
+VMAAS does not maintain its own repository list; it pulls from the content already managed by Katello.
 
 The CVE map URL is served locally at `http://iop-core-gateway:9090/pub/iop/data/meta/v1/cvemap.xml`, provided by the vulnerability metadata downloader.
 
@@ -269,7 +289,8 @@ The extraction process for each frontend:
 6. Stop and remove the disposable source volume; keep the `.volume` definition installed
 7. Configure Apache alias and caching
 
-Frontend images are never started as application containers, and source volumes are always unmounted and removed after extraction. The `.image` unit remains the image source of truth, so `.image.d` overrides are honored on the next volume recreation.
+Frontend images are never started as application containers, and source volumes are always unmounted and removed after extraction.
+The `.image` unit remains the image source of truth, so `.image.d` overrides are honored on the next volume recreation.
 
 ### Content for Vulnerability Evaluation
 
@@ -293,7 +314,7 @@ The corresponding `*.path` systemd unit watcher triggers the downloader, which c
 As long as a manual file is present the downloader stays in offline mode and never attempts a network download.
 
 | Manual file (default) | Consumed by |
-|-----------------------|-------------|
+| ----------------------- | ------------- |
 | `/var/lib/foreman/cpe-dictionary.xml` | `iop_vuln_metadata_downloader` |
 | `/var/lib/foreman/repository-to-cpe.json` | `iop_vuln_metadata_downloader` |
 | `/var/lib/foreman/cvemap.xml` | `iop_vuln_metadata_downloader` |
@@ -304,7 +325,7 @@ As long as a manual file is present the downloader stays in offline mode and nev
 ### Foreman Connection
 
 | Variable | Default | Description |
-|----------|---------|-------------|
+| ---------- | --------- | ------------- |
 | `iop_core_foreman_url` | `https://{{ ansible_facts['fqdn'] }}` | Foreman server URL |
 | `iop_core_foreman_admin_username` | `admin` | Foreman admin username |
 | `iop_core_foreman_admin_password` | `changeme` | Foreman admin password |
@@ -316,7 +337,7 @@ As long as a manual file is present the downloader stays in offline mode and nev
 Gateway and service certificates use the default foremanctl CA infrastructure at `/var/lib/foremanctl/certs/`:
 
 | Certificate | Path |
-|-------------|------|
+| ------------- | ------ |
 | Gateway server cert | `certs/iop-core-gateway.crt` |
 | Gateway server key | `private/iop-core-gateway.key` |
 | Gateway client cert | `certs/iop-core-gateway-client.crt` |
@@ -330,7 +351,8 @@ The gateway stores its certificates as 6 podman secrets mounted into the nginx c
 
 ### Container Images
 
-All IOP images default to `quay.io/iop/<service>:foreman-3.18`. Each role exposes `iop_<role>_container_image` and `iop_<role>_container_tag` variables to override.
+All IOP images default to `quay.io/iop/<service>:foreman-3.18`.
+Each role exposes `iop_<role>_container_image` and `iop_<role>_container_tag` variables to override.
 
 Kafka uses `quay.io/strimzi/kafka:latest-kafka-4.2.0`.
 
@@ -338,7 +360,8 @@ The `pull-images` playbook pre-pulls all IOP images when the feature is enabled,
 
 ### Engine Rule Packages
 
-The engine loads Python rule packages listed in `iop_engine_packages`. A separate `iop_engine_extra_packages` list (default: `[]`) is available for downstream deployments to add packages that are not present in the community images:
+The engine loads Python rule packages listed in `iop_engine_packages`.
+A separate `iop_engine_extra_packages` list (default: `[]`) is available for downstream deployments to add packages that are not present in the community images:
 
 ```yaml
 iop_engine_extra_packages:

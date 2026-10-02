@@ -15,12 +15,13 @@ If they are not, adjust any calls to use `./foremanctl` from the Git checkout.
 
 ## Deployment Types
 
-foremanctl supports two deployment types: **server** and **proxy**. Each has its own sub-command, flavor, and set of services.
+foremanctl supports two deployment types: **server** and **proxy**.
+Each has its own sub-command, flavor, and set of services.
 
 ### Server
 
-Deploys a Foreman server. This is the primary deployment type and the default entry point.
-
+Deploys a Foreman server.
+This is the primary deployment type and the default entry point.
 
 ```console
 # foremanctl deploy
@@ -43,13 +44,13 @@ Before running the proxy deployment, an auth bundle must be generated on the For
 > [!NOTE]
 > The bundle includes the proxy's certificates and OAuth credentials needed for the proxy to communicate with the Foreman server.
 
-2. Copy the bundle to the **control node**:
+1. Copy the bundle to the **control node**:
 
    ```bash
    vagrant ssh quadlet -- sudo cat /var/lib/foremanctl/certs/bundles/proxy.example.com.tar.gz > proxy.example.com.tar.gz
    ```
 
-3. On the **control node** (where foremanctl is installed), run the deployment remotely via SSH:
+2. On the **control node** (where foremanctl is installed), run the deployment remotely via SSH:
 
    ```console
    # foremanctl deploy-proxy \
@@ -86,14 +87,17 @@ For example, pre-pulling images to reduce the core deployment utility runtime.
 To allow deployments with different sets of functionality enabled, the deployment utility supports features and flavors.
 
 - A feature is an abstract representation of "the deployed system can now do X", usually implemented by enabling a Foreman/Pulp/Hammer plugin (or a collection of these).
-- A flavor is a set of features that are enabled by default and can not be disabled. This is to allow common deployment types like "vanilla foreman", "katello", "satellite" and similar.
+- A flavor is a set of features that are enabled by default and can not be disabled.
+  This is to allow common deployment types like "vanilla foreman", "katello", "satellite" and similar.
 
 Additionally to the functionality offered by plugins, we define the following "base" features:
+
 - `foreman` to deploy the main Rails app and make the deployment a "Server"
 - `foreman-proxy` to deploy the Foreman Proxy code
 - `hammer` to deploy the base CLI
 
 These base features control which plugins are enabled when a feature is requested.
+
 - `foreman` + `remote_execution` = `foreman_remote_execution`
 - `foreman-proxy` + `remote_execution` = `smart_proxy_remote_execution_ssh`
 - `hammer` + `remote_execution` = `hammer_cli_foreman_remote_execution`
@@ -102,7 +106,8 @@ A deployment can have multiple base features enabled.
 
 ### Enabling IOP
 
-IOP (Insights Operating Platform) deploys on-premise Insights services for advisor, vulnerability, and remediation. It requires internal database mode and depends on the `rh-cloud` and `katello` features.
+IOP (Insights Operating Platform) deploys on-premise Insights services for advisor, vulnerability, and remediation.
+It requires internal database mode and depends on the `rh-cloud` and `katello` features.
 
 ```bash
 ./foremanctl deploy --add-feature iop
@@ -112,7 +117,9 @@ See [IOP Architecture](../architecture/iop.md) for details on the services deplo
 
 ### Image Management
 
-foremanctl uses Podman quadlet [`.image` units](https://docs.podman.io/en/latest/markdown/podman-image.unit.5.html) to separate image sourcing from container definitions. Each unique container image (foreman, candlepin, pulp, etc.) gets a corresponding `.image` file deployed to `/etc/containers/systemd/`. Container roles reference these by name rather than by full image URL:
+foremanctl uses Podman quadlet [`.image` units](https://docs.podman.io/en/latest/markdown/podman-image.unit.5.html) to separate image sourcing from container definitions.
+Each unique container image (foreman, candlepin, pulp, etc.) gets a corresponding `.image` file deployed to `/etc/containers/systemd/`.
+Container roles reference these by name rather than by full image URL:
 
 See the [podman-systemd.unit(5)](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html) reference for the full quadlet unit format.
 
@@ -128,11 +135,14 @@ Image=quay.io/foreman/foreman:nightly
 Image=foreman.image
 ```
 
-All containers that share a base image (e.g., foreman, dynflow-sidekiq, foreman-recurring) reference the same `.image` unit. systemd ensures the image is pulled before any dependent container starts.
+All containers that share a base image (e.g., foreman, dynflow-sidekiq, foreman-recurring) reference the same `.image` unit.
+systemd ensures the image is pulled before any dependent container starts.
 
 #### Image Overrides via Drop-ins
 
-foremanctl uses quadlet's native drop-in mechanism for image overrides. Each `.image` file has a corresponding `.image.d/` directory. Drop-in `.conf` files placed there are merged on top of the base in lexicographic order — last wins.
+foremanctl uses quadlet's native drop-in mechanism for image overrides.
+Each `.image` file has a corresponding `.image.d/` directory.
+Drop-in `.conf` files placed there are merged on top of the base in lexicographic order — last wins.
 
 The quadlet generator reads from two directory tiers, with `/etc/` taking precedence over `/usr/share/`:
 
@@ -159,9 +169,13 @@ Precedence (last wins):
 
 Both `registries.conf` and `.image.d` drop-ins can redirect where an image is pulled from, but they behave differently and suit different use cases.
 
-`registries.conf` applies a transparent redirect at pull time — the image is fetched from the `location` registry but stored in local storage under the original `prefix` name. This means `podman images` shows the upstream name (e.g., `quay.io/foreman/foreman:nightly`), and the `.image` quadlet continues to reference that same name. This works well when the private registry mirrors upstream image names and tags exactly.
+`registries.conf` applies a transparent redirect at pull time — the image is fetched from the `location` registry but stored in local storage under the original `prefix` name.
+This means `podman images` shows the upstream name (e.g., `quay.io/foreman/foreman:nightly`), and the `.image` quadlet continues to reference that same name.
+This works well when the private registry mirrors upstream image names and tags exactly.
 
-`.image.d` drop-ins directly replace the `Image=` value in the quadlet unit. The image is pulled from and stored under the new reference. This is required when the image name or tag changes completely (e.g., `quay.io/foreman/foreman:nightly` → `registry.example.com/org/foreman-rhel9:stream`), since `registries.conf` cannot remap image names — only registry/namespace locations.
+`.image.d` drop-ins directly replace the `Image=` value in the quadlet unit.
+The image is pulled from and stored under the new reference.
+This is required when the image name or tag changes completely (e.g., `quay.io/foreman/foreman:nightly` → `registry.example.com/org/foreman-rhel9:stream`), since `registries.conf` cannot remap image names — only registry/namespace locations.
 
 #### Use Cases
 
@@ -201,7 +215,8 @@ podman login --authfile=/etc/foreman/registry-auth.json registry.example.com
 
 In fully air-gapped environments, all container images required by the selected flavor and enabled features must be loaded into local Podman storage before running `foremanctl deploy`.
 
-Vendor-provided offline media, such as Satellite ISOs that bundle images in OCI archive format, can automatically preload container image archives into your environment. For manual development or testing, you can import an image directly using:
+Vendor-provided offline media, such as Satellite ISOs that bundle images in OCI archive format, can automatically preload container image archives into your environment.
+For manual development or testing, you can import an image directly using:
 
 ```bash
 skopeo copy \
@@ -218,17 +233,21 @@ After all required images are available locally, enable air-gapped mode:
 ```
 
 When `--air-gapped` is enabled:
+
 1. Generated image units use `Policy=never`.
 2. Existing `00-pull-always.conf` overrides are removed.
 3. Missing images cause deployment to fail instead of triggering a registry pull.
 4. `foremanctl pull-images` is rejected without contacting a registry.
 5. Katello’s `subscription_connection_enabled` setting is configured as read-only `false`
 
-The `air_gapped` value is persisted in `/var/lib/foremanctl/parameters.yaml` and reused by subsequent foremanctl commands. Offline-media tooling may also persist this value before the first deployment.
+The `air_gapped` value is persisted in `/var/lib/foremanctl/parameters.yaml` and reused by subsequent foremanctl commands.
+Offline-media tooling may also persist this value before the first deployment.
 
 ##### User's own registry
 
-When the private registry mirrors upstream image names and tags exactly, `registries.conf.d` handles namespace-level remapping. foremanctl images span two upstream namespaces, so two entries are needed at minimum. See [containers-registries.conf(5)](https://github.com/containers/image/blob/main/docs/containers-registries.conf.5.md) for the full format.
+When the private registry mirrors upstream image names and tags exactly, `registries.conf.d` handles namespace-level remapping.
+foremanctl images span two upstream namespaces, so two entries are needed at minimum.
+See [containers-registries.conf(5)](https://github.com/containers/image/blob/main/docs/containers-registries.conf.5.md) for the full format.
 
 ```toml
 # /etc/containers/registries.conf.d/50-foremanctl-mirror.conf
@@ -264,15 +283,19 @@ Image=quay.io/foreman/stage/foreman:pr-12345
 
 #### Authenticated Registry Handling
 
-foremanctl uses `/etc/foreman/registry-auth.json` as the default credential store. When pulling images from an authenticated registry, log in using that file:
+foremanctl uses `/etc/foreman/registry-auth.json` as the default credential store.
+When pulling images from an authenticated registry, log in using that file:
 
 ```bash
 podman login --authfile=/etc/foreman/registry-auth.json <registry>
 ```
 
-Credentials must be for the registry the image is **physically pulled from**. When using `registries.conf` redirects, that is the `location` registry. When using `.image.d` drop-ins, that is the registry in the `Image=` value.
+Credentials must be for the registry the image is **physically pulled from**.
+When using `registries.conf` redirects, that is the `location` registry.
+When using `.image.d` drop-ins, that is the registry in the `Image=` value.
 
-foremanctl sets `REGISTRY_AUTH_FILE` in the `[Service]` section of each generated `.image` file. Quadlet propagates this setting to the generated `*-image.service`, so podman uses the auth file whenever the image service runs — including during `pull-images`:
+foremanctl sets `REGISTRY_AUTH_FILE` in the `[Service]` section of each generated `.image` file.
+Quadlet propagates this setting to the generated `*-image.service`, so podman uses the auth file whenever the image service runs — including during `pull-images`:
 
 ```ini
 # /etc/containers/systemd/foreman.image (generated by foremanctl, excerpt)
@@ -284,9 +307,12 @@ If the auth file does not exist (unauthenticated registry), podman ignores it gr
 
 #### Image Pulling (pull-images)
 
-The `foremanctl pull-images` command is an optional pre-deployment step that pulls all container images before running `foremanctl deploy`. This reduces deploy time and allows pre-staging images separately from deployment.
+The `foremanctl pull-images` command is an optional pre-deployment step that pulls all container images before running `foremanctl deploy`.
+This reduces deploy time and allows pre-staging images separately from deployment.
 
-`pull-images` deploys the `.image` unit files (making them available for quadlet to merge with any existing drop-ins from installed RPMs), then starts each `*-image.service` to perform the actual pull. To ensure mutable tags (such as `nightly`, `latest`, or `stream`) are always refreshed, `pull-images` temporarily creates a `Policy=always` drop-in before starting each service and removes it afterward, restoring `Policy=missing` for normal operation. See the [`Policy` field in `podman-image.unit(5)`](https://docs.podman.io/en/latest/markdown/podman-image.unit.5.html) for the full list of pull policies.
+`pull-images` deploys the `.image` unit files (making them available for quadlet to merge with any existing drop-ins from installed RPMs), then starts each `*-image.service` to perform the actual pull.
+To ensure mutable tags (such as `nightly`, `latest`, or `stream`) are always refreshed, `pull-images` temporarily creates a `Policy=always` drop-in before starting each service and removes it afterward, restoring `Policy=missing` for normal operation.
+See the [`Policy` field in `podman-image.unit(5)`](https://docs.podman.io/en/latest/markdown/podman-image.unit.5.html) for the full list of pull policies.
 
 ```
 /etc/containers/systemd/
@@ -297,34 +323,36 @@ The `foremanctl pull-images` command is an optional pre-deployment step that pul
 
 Because the pull goes through the image services, any `.image.d` drop-ins already in place (e.g., from a product RPM) are respected — the image is pulled from whatever source the merged configuration specifies.
 
-`pull-images` requires access to the configured container registry. It is rejected whenever air-gapped mode is active. For air-gapped installations, preload all required images into local container storage before running `foremanctl deploy --air-gapped`.
+`pull-images` requires access to the configured container registry.
+It is rejected whenever air-gapped mode is active.
+For air-gapped installations, preload all required images into local container storage before running `foremanctl deploy --air-gapped`.
 
 ## Deployer Stages
 
 The deployment utility will have internal execution stages.
 Some of the stages will be made available to the user to run independently.
 
-  1. Accept input parameters
-  2. Validate input parameters
-  3. Execute pre-requisite checks
-    a. system requirements
-    b. tuning requirements
-    c. certificate requirements
-  4. Place `.image` and `.container` files
-  5. Create podman secrets
-  6. Reload systemd
-  7. (re)start services
-  8. Execute post deployment checks
-  9. Post deployment message
+1. Accept input parameters
+2. Validate input parameters
+3. Execute pre-requisite checks
+   a. system requirements
+   b. tuning requirements
+   c. certificate requirements
+4. Place `.image` and `.container` files
+5. Create podman secrets
+6. Reload systemd
+7. (re)start services
+8. Execute post deployment checks
+9. Post deployment message
 
 ## Configuration Handling
 
 When defining how a service will handle configuration there are best practices in design that should be followed.
 The best practices are listed in preferential order.
 
-  1. Use native environment variables
-  2. Rely on envsubst with default config files in the container
-  3. Mount config file from secrets
+1. Use native environment variables
+2. Rely on envsubst with default config files in the container
+3. Mount config file from secrets
 
 ## Existing deployment handling
 
@@ -348,13 +376,15 @@ The upgrade process is:
 
 ## External Database Support
 
-The deployment utility supports connecting to an external PostgreSQL database instead of deploying a local database container. This allows for shared database infrastructure, managed database services, or dedicated database servers.
+The deployment utility supports connecting to an external PostgreSQL database instead of deploying a local database container.
+This allows for shared database infrastructure, managed database services, or dedicated database servers.
 
 ### Prerequisites
 
 Before configuring external database support, ensure the following requirements are met:
 
 #### Database Server Requirements
+
 - PostgreSQL server accessible from the application server
 - Required databases: `foreman`, `candlepin`, and `pulp`
 - Database users with appropriate permissions for database creation and table management
@@ -365,6 +395,7 @@ Before configuring external database support, ensure the following requirements 
 The external database configuration is managed entirely through `foremanctl` command line parameters:
 
 #### Global Database Parameters
+
 - `--database-mode`: Set to `external` for external database deployment
 - `--database-host`: Database server hostname or IP address
 - `--database-port`: Database server port (default: 5432)
@@ -374,19 +405,23 @@ The external database configuration is managed entirely through `foremanctl` com
 - `--database-ssl-ca`: Path to SSL CA certificate file (required for `verify-ca` and `verify-full` modes)
 
 #### Per-Service Database Configuration
+
 Each service (Foreman, Candlepin, Pulp) can be configured with separate database credentials:
 
 **Foreman Database:**
+
 - `--foreman-database-name`: Database name (default: `foreman`)
 - `--foreman-database-user`: Database user (default: `foreman`)
 - `--foreman-database-password`: Database password
 
 **Candlepin Database:**
+
 - `--candlepin-database-name`: Database name (default: `candlepin`)
 - `--candlepin-database-user`: Database user (default: `candlepin`)
 - `--candlepin-database-password`: Database password
 
 **Pulp Database:**
+
 - `--pulp-database-name`: Database name (default: `pulp`)
 - `--pulp-database-user`: Database user (default: `pulp`)
 - `--pulp-database-password`: Database password
@@ -458,12 +493,14 @@ The deployment utility supports setting up necessary services to allow leveragin
 ### Prerequisites
 
 Before configuring external authentication support, ensure the following requirements are met:
+
 - the host machine is enrolled in FreeIPA/IDM or Active Directory realm
 - a keytab for the Kerberos service principal is available at the host machine
 
 ### External Database Configuration Parameters
 
 The external authentication configuration is managed through `foremanctl` command line parameters:
+
 - `--external-authentication`: Set to `ipa` to enable kerberos authentication in WebUI, set to `ipa_with_api` to enable kerberos authentication in WebUI, API and hammer CLI
 - `--external-authentication-pam-server`: PAM service name to use when authenticating users, can be changed in case a specific FreeIPA/IDM HBAC service should be used (default: `foreman`)
 

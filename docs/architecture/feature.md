@@ -2,14 +2,15 @@
 
 ## Ansible
 
-The Ansible feature sets up the integration between Foreman and Ansible. On
-Foreman side it enables the
+The Ansible feature sets up the integration between Foreman and Ansible.
+On Foreman side it enables the
 [foreman_ansible](https://github.com/theforeman/foreman_ansible) plugin.
 
 Ansible depends on Remote Execution, so enabling `ansible` implicitly enables
 `remote-execution` feature as well.
 
 ### Interaction with foreman-proxy feature
+
 When the feature is enabled on the Foreman proxy, the [`foreman_proxy`
 role](../../src/roles/foreman_proxy/tasks/feature/ansible.yaml) enables the
 [smart_proxy_ansible](https://github.com/theforeman/smart_proxy_ansible) plugin
@@ -39,7 +40,7 @@ User-provided ansible roles and collections are expected to be placed in the
 
 Proxy sources an environment file passed to the container as a secret, which
 configures the Ansible roles and collections search paths under `/etc/ansible`
-and `/usr/share`, and sets the Foreman URL and certificate paths. The Foreman
-Proxy base container mounts those certificate files as its own secrets; the
-Ansible environment file refers to those existing mounts rather than creating
-copies of the certificates.
+and `/usr/share`, and sets the Foreman URL and certificate paths.
+The Foreman Proxy base container mounts those certificate files as its own
+secrets; the Ansible environment file refers to those existing mounts rather
+than creating copies of the certificates.

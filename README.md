@@ -4,7 +4,8 @@ This repository provides tooling for a deployment of Foreman and Katello using P
 
 ## Overview
 
-**foremanctl** is a production CLI tool for deploying and managing Foreman and Katello as containerized services managed by systemd through [Podman Quadlets](https://docs.podman.io/en/latest/markdown/podman-quadlet.1.html). It is a wrapper around [Obsah](https://github.com/theforeman/obsah) and runs Ansible playbooks from `src/`.
+**foremanctl** is a production CLI tool for deploying and managing Foreman and Katello as containerized services managed by systemd through [Podman Quadlets](https://docs.podman.io/en/latest/markdown/podman-quadlet.1.html).
+It is a wrapper around [Obsah](https://github.com/theforeman/obsah) and runs Ansible playbooks from `src/`.
 
 ### Key Technologies
 
@@ -15,7 +16,9 @@ This repository provides tooling for a deployment of Foreman and Katello using P
 
 ## forge
 
-**forge** is a development CLI tool for working on foremanctl. Like `foremanctl`, it is a wrapper around [Obsah](https://github.com/theforeman/obsah) but runs playbooks from `development/`. It provides commands for managing Vagrant VMs, running tests, and setting up foreman [development environment](docs/developer/development-environment.md).
+**forge** is a development CLI tool for working on foremanctl.
+Like `foremanctl`, it is a wrapper around [Obsah](https://github.com/theforeman/obsah) but runs playbooks from `development/`.
+It provides commands for managing Vagrant VMs, running tests, and setting up foreman [development environment](docs/developer/development-environment.md).
 
 > [!NOTE]
 > `forge` is also used in CI for tests.
@@ -43,7 +46,8 @@ Foreman 3.18 (with Katello 4.20, Pulp 3.85 and Candlepin 4.6).
 
 ## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get started.
+We welcome contributions!
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get started.
 
 ## Releasing a new version
 

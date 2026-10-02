@@ -6,6 +6,13 @@ if [[ -z "${GITHUB_ACTIONS:-}" ]] && [[ -z "${VIRTUAL_ENV:-}" ]]; then
   python -m venv .venv
   source .venv/bin/activate
 fi
+
+if ! command -v npm >/dev/null 2>&1; then
+  printf 'Node.js and npm are required to set up the Markdown linting tooling.\n' >&2
+  exit 1
+fi
+npm install --no-save --package-lock=false markdownlint-rule-max-one-sentence-per-line@0.0.2
+
 pip install -r src/requirements.txt -r development/requirements.txt
 make build/collections/foremanctl build/collections/forge
 

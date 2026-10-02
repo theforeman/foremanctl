@@ -1,0 +1,33 @@
+config:
+  default: true
+  MD013: false
+  MD024: false
+  MD025: false
+  MD033: false
+  MD040: false
+  MD041: false
+  MD046: false
+  MD056: false
+  MD060: false
+  max-one-sentence-per-line:
+    ignored_words:
+      - ie
+      - i.e
+      - eg
+      - e.g
+      - etc
+      - ex
+      - a
+      - b
+      - c
+customRules:
+  - ./node_modules/markdownlint-rule-max-one-sentence-per-line/rule.js
+globs:
+  - "*.md"
+  - "docs/**/*.md"
+ignores:
+  - "**/build/collections/**"
+  - "**/.venv/**"
+  - "**/.pytest_cache/**"
+  - "**/.tmp/**"
+  - "**/node_modules/**"

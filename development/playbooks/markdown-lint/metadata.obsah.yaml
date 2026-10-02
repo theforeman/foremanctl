@@ -1,0 +1,10 @@
+---
+help: |
+  Run Markdown linting for root-level Markdown files and documentation.
+
+variables:
+  markdown_lint_fix:
+    parameter: --fix
+    help: Apply supported automatic fixes.
+    action: store_true
+    persist: false

@@ -22,20 +22,20 @@ These are parameters that are related to the install and operation of the Forema
 
 There are multiple use cases from the users perspective that dictate what parameters need to be available for user input.
 
- * The user has deployed an external database and needs to specify connection details such as host and port.
- * The user wishes to manage passwords externally to the installer and needs to specify rather than use the default randomly generated password.
- * The user has deployed an external database configured with TLS and needs to specify the CA certificate.
- * The user has to customize the database name and user connecting to each of the databases.
- * The user is encountering database pool exhaustion errors and needs to tune the value.
+* The user has deployed an external database and needs to specify connection details such as host and port.
+* The user wishes to manage passwords externally to the installer and needs to specify rather than use the default randomly generated password.
+* The user has deployed an external database configured with TLS and needs to specify the CA certificate.
+* The user has to customize the database name and user connecting to each of the databases.
+* The user is encountering database pool exhaustion errors and needs to tune the value.
 
 ##### Mapped
 
 | Parameter | Description | foreman-installer Parameters |
-| ----------| ----------- | ---------------------------- |
+| ---------- | ----------- | ---------------------------- |
 | `--database-mode` | Denotes if the database is internally or externally managed | `--foreman-db-manage`<br/> `--katello-candlepin-db-manage`<br/> `--foreman-proxy-content-pulpcore-manage-postgresql` |
 | `--database-host` | Hostname application containers use to reach PostgreSQL (`postgresql` internal; remote host external) | `--foreman-db-host`<br/> `--katello-candlepin-db-host`<br/> `--foreman-proxy-content-pulpcore-postgresql-host` |
 | `--database-port` | Port to connect to the database | `--foreman-db-port`<br/> `--katello-candlepin-db-port`<br/> `--foreman-proxy-content-pulpcore-postgresql-port` |
-| `--database-ssl-mode` | SSL verification mode to use | `--foreman-db-sslmode` <br/> `--katello-candlepin-db-ssl-verify` <br/> `--katello-candlepin-db-ssl` <br/> `--foreman-proxy-content-pulpcore-postgresql-ssl`|
+| `--database-ssl-mode` | SSL verification mode to use | `--foreman-db-sslmode` <br/> `--katello-candlepin-db-ssl-verify` <br/> `--katello-candlepin-db-ssl` <br/> `--foreman-proxy-content-pulpcore-postgresql-ssl` |
 | `--database-ssl-ca` | Path to the database CA certificate | `--foreman-db-root-cert` <br/> `--katello-candlepin-db-ssl-ca` <br/> `--foreman-proxy-content-pulpcore-db-ssl-root-ca` |
 | `--foreman-database-name` | Name of the Foreman database | `--foreman-db-database` |
 | `--foreman-database-user` | Owner of the Foreman database | `--foreman-db-username` |
@@ -68,7 +68,7 @@ There are multiple use cases from the users perspective that dictate what parame
 ##### Mapped
 
 | Parameter | Description | foreman-installer Parameter |
-| ----------| ----------- | --------------------------- |
+| ---------- | ----------- | --------------------------- |
 | `--server-alias` (on `deploy`) | Allows defining additional DNS names (SANs) for the main server's certificate | --certs-cname |
 | `--server-alias` (on `auth-bundle`) | Allows defining additional DNS names (SANs) for a secondary system's certificate, e.g. a load-balanced proxy | --foreman-proxy-cname |
 
@@ -82,27 +82,27 @@ There are multiple use cases from the users perspective that dictate what parame
 ##### New
 
 | Parameter | Description |
-| ----------| ----------- |
-| `--log-level` | Default log level for all services, unless overridden by the service-specific parameters. Accepted values: `debug`, `info`, `warn`, `error`, `fatal`. Defaults to `info`. | 
+| ---------- | ----------- |
+| `--log-level` | Default log level for all services, unless overridden by the service-specific parameters. Accepted values: `debug`, `info`, `warn`, `error`, `fatal`. Defaults to `info`. |
 | `--valkey-log-level` | Log level for Valkey. Uses Valkey's native levels. Overrides `--log-level`. Accepted values: `debug`, `verbose`, `notice`, `warning` & `nothing`. Defaults to `notice`. |
 
 ##### Mapped
 
 | Parameter | Description | foreman-installer Parameters |
-| ----------| ----------- | ---------------------------- |
+| ---------- | ----------- | ---------------------------- |
 | `--foreman-log-level` | Log level for Foreman. Overrides `--log-level` for Foreman only. | `--foreman-logging-level` |
 | `--foreman-proxy-log-level` | Log level for Foreman Proxy. Overrides `--log-level` for Foreman Proxy only. | `--foreman-proxy-log-level` |
 
 ##### New
 
 | Parameter | Description |
-| ----------| ----------- |
+| ---------- | ----------- |
 | `--pulp-log-level` | Log level for Pulp. Overrides `--log-level` for Pulp only. Accepted values: `debug`, `info`, `warning`, `error` & `critical` |
 
 #### Undetermined
 
 | foreman-installer Parameter | Description | Module | Puppet Parameter | Keep |
-| ------------------- | ----------- | ------ | ---------------- |-------------------|
+| ------------------- | ----------- | ------ | ---------------- | ------------------- |
 | `--foreman-foreman-service-puma-threads-min` | | foreman | foreman_service_puma_threads_min | `--foreman-puma-threads-min` |
 | `--foreman-foreman-service-puma-threads-max` | | foreman | foreman_service_puma_threads_max | `--foreman-puma-threads-max` |
 | `--foreman-dynflow-worker-instances` | | foreman | dynflow_worker_instances |
@@ -126,7 +126,6 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-oauth-map-users` | | |
 | `--foreman-plugin-remote-execution-cockpit-ensure` | | |
 | `--foreman-telemetry-prometheus-enabled` | | |
-
 
 ## Smart Proxy
 

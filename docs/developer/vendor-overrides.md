@@ -9,6 +9,7 @@ If you want to override parameters, ship a playbook definition that overrides th
 
 Example:
 `src/playbooks/_vendor_overrides/deploy/metadata.obsah.yaml`:
+
 ```yaml
 ---
 variables:
@@ -18,6 +19,7 @@ variables:
 ```
 
 `src/playbooks/deploy/metadata.obsah.yaml`:
+
 ```yaml
 …
 include:
@@ -34,6 +36,7 @@ Changes to features can be done by providing a (partial) feature definition in a
 If you want to add a new feature, ship its definition in a file inside `src/features.d`.
 
 Example:
+
 ```yaml
 cookies:
   description: Delicious enterprise cookies
@@ -46,6 +49,7 @@ cookies:
 If you want to hide a previously defined feature (fully removing is not possible), set it to `internal: true` in a file inside `src/features.d`.
 
 Example:
+
 ```yaml
 content/ostree:
   internal: true
@@ -56,6 +60,7 @@ content/ostree:
 If you want to update any part of a previously defined feature, provide the changes in a file inside `src/features.d`.
 
 Example:
+
 ```yaml
 iop:
   description: Lightspeed
