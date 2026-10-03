@@ -26,22 +26,17 @@ def test_foreman_lifecycle_environment(lifecycle_environment):
     assert lifecycle_environment
 
 
-def test_foreman_content_view(content_view, yum_repository, foremanapi):
+def test_foreman_content_view(content_view, content_view_repository, foremanapi):
     assert content_view
-    foremanapi.update('content_views', {'id': content_view['id'], 'repository_ids': [yum_repository['id']]})
+    foremanapi.update('content_views', {'id': content_view['id'], 'repository_ids': [content_view_repository['id']]})
     foremanapi.resource_action('content_views', 'publish', {'id': content_view['id']})
-    # do something with the published view
     versions = foremanapi.list('content_view_versions', params={'content_view_id': content_view['id']})
-    for version in versions:
-        current_environment_ids = {environment['id'] for environment in version['environments']}
-        for environment_id in current_environment_ids:
-            foremanapi.resource_action('content_views', 'remove_from_environment', params={'id': content_view['id'], 'environment_id': environment_id})
-        foremanapi.delete('content_view_versions', version)
+    assert versions
 
 
-def test_foreman_manifest(organization, foremanapi, fixture_dir):
+def test_foreman_manifest(manifest_organization, foremanapi, fixture_dir):
     manifest_path = fixture_dir / 'manifest.zip'
     with open(manifest_path, 'rb') as manifest_file:
         files = {'content': (str(manifest_path), manifest_file, 'application/zip')}
-        params = {'organization_id': organization['id']}
+        params = {'organization_id': manifest_organization['id']}
         foremanapi.resource_action('subscriptions', 'upload', params, files=files)

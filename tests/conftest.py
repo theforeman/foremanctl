@@ -206,7 +206,16 @@ def foremanapi(ssh_config, server_fqdn):
     return api
 
 
-@pytest.fixture
+def cleanup_content_view_versions(foremanapi, content_view):
+    versions = foremanapi.list('content_view_versions', params={'content_view_id': content_view['id']})
+    for version in versions:
+        for environment_id in {environment['id'] for environment in version.get('environments', [])}:
+            foremanapi.resource_action('content_views', 'remove_from_environment',
+                                       params={'id': content_view['id'], 'environment_id': environment_id})
+        foremanapi.delete('content_view_versions', version)
+
+
+@pytest.fixture(scope="module")
 def organization(foremanapi):
     org = foremanapi.create('organizations', {'name': str(uuid.uuid4())})
     yield org
@@ -214,14 +223,29 @@ def organization(foremanapi):
 
 
 @pytest.fixture
+def manifest_organization(foremanapi):
+    org = foremanapi.create('organizations', {'name': str(uuid.uuid4())})
+    yield org
+    foremanapi.delete('organizations', org)
+
+
+@pytest.fixture(scope="module")
 def product(organization, foremanapi):
     prod = foremanapi.create('products', {'name': str(uuid.uuid4()), 'organization_id': organization['id']})
     yield prod
     foremanapi.delete('products', prod)
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def yum_repository(product, organization, foremanapi):
+    repo = foremanapi.create('repositories', {'name': str(uuid.uuid4()), 'product_id': product['id'], 'content_type': 'yum', 'url': 'https://fixtures.pulpproject.org/rpm-no-comps/'})
+    wait_for_metadata_generate(foremanapi)
+    yield repo
+    foremanapi.delete('repositories', repo)
+
+
+@pytest.fixture
+def content_view_repository(product, organization, foremanapi):
     repo = foremanapi.create('repositories', {'name': str(uuid.uuid4()), 'product_id': product['id'], 'content_type': 'yum', 'url': 'https://fixtures.pulpproject.org/rpm-no-comps/'})
     wait_for_metadata_generate(foremanapi)
     yield repo
@@ -244,7 +268,7 @@ def container_repository(product, organization, foremanapi):
     foremanapi.delete('repositories', repo)
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def lifecycle_environment(organization, foremanapi):
     library = foremanapi.list('lifecycle_environments', 'name=Library', {'organization_id': organization['id']})[0]
     lce = foremanapi.create('lifecycle_environments', {'name': str(uuid.uuid4()), 'organization_id': organization['id'], 'prior_id': library['id']})
@@ -252,40 +276,60 @@ def lifecycle_environment(organization, foremanapi):
     foremanapi.delete('lifecycle_environments', lce)
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def content_view(organization, foremanapi):
     cv = foremanapi.create('content_views', {'name': str(uuid.uuid4()), 'organization_id': organization['id']})
     yield cv
+    # Remove all published versions from their environments before deleting the CV.
+    # Tests that publish versions leave cleanup to this teardown rather than the test body.
+    cleanup_content_view_versions(foremanapi, cv)
     foremanapi.delete('content_views', cv)
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def activation_key(organization, foremanapi):
     ak = foremanapi.create('activation_keys', {'name': str(uuid.uuid4()), 'organization_id': organization['id']})
     yield ak
     foremanapi.delete('activation_keys', ak)
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def client_environment(activation_key, content_view, lifecycle_environment, yum_repository, organization, foremanapi):
-    foremanapi.resource_action('repositories', 'sync', {'id': yum_repository['id']})
-    foremanapi.update('content_views', {'id': content_view['id'], 'repository_ids': [yum_repository['id']]})
-    foremanapi.resource_action('content_views', 'publish', {'id': content_view['id']})
+    try:
+        foremanapi.resource_action('repositories', 'sync', {'id': yum_repository['id']})
+        foremanapi.update('content_views', {'id': content_view['id'], 'repository_ids': [yum_repository['id']]})
+        foremanapi.resource_action('content_views', 'publish', {'id': content_view['id']})
 
-    library = foremanapi.list('lifecycle_environments', 'name=Library', {'organization_id': organization['id']})[0]
-    cve = foremanapi.list('content_view_environments', params={'organization_id': organization['id'], 'environment_id': library['id'], 'content_view_id': content_view['id']})[0]
-    foremanapi.update('activation_keys', {'id': activation_key['id'], 'organization_id': organization['id'], 'content_view_environment_ids': [cve['id']]})
+        library = foremanapi.list('lifecycle_environments', 'name=Library', {'organization_id': organization['id']})[0]
+        cve = foremanapi.list('content_view_environments', params={'organization_id': organization['id'], 'environment_id': library['id'], 'content_view_id': content_view['id']})[0]
+        foremanapi.update('activation_keys', {'id': activation_key['id'], 'organization_id': organization['id'], 'content_view_environment_ids': [cve['id']]})
 
-    yield activation_key
+        yield activation_key
+    finally:
+        # Unassign the activation key.
+        foremanapi.update('activation_keys', {'id': activation_key['id'], 'organization_id': organization['id'], 'content_view_environment_ids': []})
+        # Remove published CV versions here rather than delegating to content_view teardown.
+        # yum_repository and product tear down immediately after this fixture (before content_view),
+        # so versions must be gone before those deletions are attempted.
+        cleanup_content_view_versions(foremanapi, content_view)
 
-    foremanapi.update('activation_keys', {'id': activation_key['id'], 'organization_id': organization['id'], 'content_view_environment_ids': []})
 
-    versions = foremanapi.list('content_view_versions', params={'content_view_id': content_view['id']})
-    for version in versions:
-        current_environment_ids = {environment['id'] for environment in version['environments']}
-        for environment_id in current_environment_ids:
-            foremanapi.resource_action('content_views', 'remove_from_environment', params={'id': content_view['id'], 'environment_id': environment_id})
-        foremanapi.delete('content_view_versions', version)
+@pytest.fixture
+def client_registration(client_environment, activation_key, organization, foremanapi, client, client_fqdn):
+    try:
+        client.run('dnf install -y subscription-manager')
+        rcmd = foremanapi.create('registration_commands', {'organization_id': organization['id'], 'insecure': True, 'activation_keys': [activation_key['name']], 'force': True})
+        client.run_test(rcmd['registration_command'])
+        yield client_fqdn
+    finally:
+        try:
+            client.run('subscription-manager unregister || true')
+            client.run('subscription-manager clean || true')
+        finally:
+            try:
+                foremanapi.delete('hosts', {'id': client_fqdn})
+            except Exception:
+                pass
 
 
 def wait_for_tasks(foremanapi, search=None):
@@ -295,7 +339,7 @@ def wait_for_tasks(foremanapi, search=None):
 
 
 def wait_for_metadata_generate(foremanapi):
-    wait_for_tasks(foremanapi, 'label = Actions::Katello::Repository::MetadataGenerate')
+    wait_for_tasks(foremanapi, 'label = Actions::Katello::Repository::MetadataGenerate AND state != stopped')
 
 
 def pytest_configure(config):
