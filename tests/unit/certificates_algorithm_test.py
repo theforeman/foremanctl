@@ -21,7 +21,7 @@ PLAYBOOK = """
         file: "{defaults}"
     - name: Load role vars
       ansible.builtin.include_vars:
-        file: "{vars_dir}/{{{{ certificates_algorithm_type }}}}.yml"
+        file: "{vars_dir}/{{{{ certificates_primary_algorithm }}}}.yml"
     - name: Write resolved algorithm variables
       ansible.builtin.copy:
         content: "{{{{ {{'key_parameters': _certificates_key_parameters, 'key_usage': _certificates_key_usage}} | to_json }}}}"
@@ -42,7 +42,7 @@ def resolve_algorithm(tmp_path, algorithm=None):
 
     command = [ansible_playbook, '-i', 'localhost,', str(playbook)]
     if algorithm is not None:
-        command.extend(['-e', f'certificates_algorithm_type={algorithm}'])
+        command.extend(['-e', json.dumps({'certificates_algorithms': [algorithm]})])
 
     result = subprocess.run(command, text=True, capture_output=True)
     assert result.returncode == 0, result.stdout
@@ -52,7 +52,7 @@ def resolve_algorithm(tmp_path, algorithm=None):
 
 def test_default_algorithm_is_rsa():
     defaults = yaml.safe_load(open(DEFAULTS_FILE))
-    assert defaults['certificates_algorithm_type'] == 'RSA'
+    assert defaults['certificates_default_algorithms'] == ['RSA']
 
 
 def test_rsa_key_parameters_use_size(tmp_path):

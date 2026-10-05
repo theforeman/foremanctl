@@ -1,5 +1,6 @@
 """Generates certificates with the certificates role and inspects the result."""
 
+import json
 import os
 import shutil
 import subprocess
@@ -102,7 +103,7 @@ def issue_certificates(directory, algorithm=None):
 
     command = [ansible_playbook, '-i', 'localhost,', str(playbook)]
     if algorithm is not None:
-        command.extend(['-e', f'certificates_algorithm_type={algorithm}'])
+        command.extend(['-e', json.dumps({'certificates_algorithms': [algorithm]})])
 
     environment = dict(os.environ, ANSIBLE_ROLES_PATH=ROLES_DIR)
     if os.path.isdir(COLLECTIONS_DIR):

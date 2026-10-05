@@ -1,6 +1,6 @@
 ---
 - name: 'Load key parameters for the selected algorithm'
-  ansible.builtin.include_vars: "{{ certificates_algorithm_type }}.yml"
+  ansible.builtin.include_vars: "{{ certificates_primary_algorithm }}.yml"
 
 - name: 'Check if CA certificate exists'
   ansible.builtin.stat:
@@ -49,13 +49,13 @@
   ansible.builtin.fail:
     msg: >-
       The existing CA key uses {{ _certificates_existing_ca_key_info.type }}, but
-      --certificate-algorithm requested {{ certificates_algorithm_type }}. Changing
+      --add-certificate-algorithm requested {{ certificates_primary_algorithm }}. Changing
       the CA algorithm reissues the CA and invalidates every certificate it signed.
       Pass --certificate-ca-renew to reissue the CA and all certificates.
   when:
     - _certificates_existing_ca_key.stat.exists
     - not certificates_ca_renew
-    - _certificates_existing_ca_key_info.type != certificates_algorithm_type
+    - _certificates_existing_ca_key_info.type != certificates_primary_algorithm
 
 - name: 'Generate CA'
   when:

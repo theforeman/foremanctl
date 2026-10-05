@@ -1,8 +1,9 @@
 ---
 variables:
-  certificates_algorithm_type:
+  certificates_algorithms:
     help: Algorithm used for the keys of the generated certificates.
-    parameter: --certificate-algorithm
+    parameter: --add-certificate-algorithm
+    action: append_unique
     choices:
       - RSA
       - ECC

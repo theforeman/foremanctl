@@ -14,7 +14,13 @@ certificates_ca_subject: 'Foreman Self-signed CA'
 certificates_server_aliases: []
 certificates_hostname_extra_sans: {}
 certificates_internal_hostnames: "{{ ['localhost'] + (certificates_hostname_extra_sans.keys() | list) }}"
-certificates_algorithm_type: RSA
+certificates_algorithms: []
+certificates_default_algorithms:
+  - RSA
+certificates_enabled_algorithms: >-
+  {{ certificates_algorithms if certificates_algorithms | length > 0
+     else certificates_default_algorithms }}
+certificates_primary_algorithm: "{{ certificates_enabled_algorithms[0] }}"
 certificates_algorithm_rsa_size: 4096
 certificates_algorithm_ecc_curve: secp384r1
 certificates_ca_validity_days: 7300
