@@ -83,6 +83,26 @@ def test_pulp_status_workers(pulp_status):
     assert pulp_status['online_workers']
 
 
+def test_pulp_cli(server):
+    assert server.package("python3.12-pulp-cli").is_installed
+
+    result = server.run("pulp status")
+
+    assert result.succeeded, result.stderr
+    assert json.loads(result.stdout)['database_connection']['connected']
+
+
+def test_pulp_cli_configuration(server, server_fqdn):
+    system_config = server.file("/etc/pulp/cli.toml")
+    root_config = server.file("/root/.config/pulp/cli.toml")
+
+    assert system_config.is_file
+    assert system_config.mode == 0o644
+    assert f'base_url = "https://{server_fqdn}"' in system_config.content_string
+    assert root_config.is_file
+    assert root_config.mode == 0o600
+
+
 def test_pulp_volumes(server):
     assert server.file("/var/lib/pulp").is_directory
 
