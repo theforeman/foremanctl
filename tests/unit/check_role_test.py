@@ -29,3 +29,14 @@ def test_check_foreman_api_has_feature_guards():
 
 def test_check_foreman_tasks_has_feature_guards():
     ensure_role_has_feature_guards('check_foreman_tasks', ['tasks'])
+
+
+def test_postgresql_stop_poll_does_not_escalate_privileges():
+    main_yaml = os.path.join(ROLES_DIR, 'backup', 'tasks', 'main.yaml')
+    with open(main_yaml, 'r') as f:
+        all_tasks = yaml.safe_load(f)
+
+    backup_block = next(task['block'] for task in all_tasks if task.get('name') == 'Perform backup operations')
+    postgres_poll = next(task for task in backup_block if task.get('name') == 'Wait for PostgreSQL to fully stop')
+
+    assert postgres_poll['become'] is False
