@@ -20,6 +20,7 @@
         certificates_output_directory: "{{ certificates_ca_directory }}/hosts/{{ hostname }}"
         certificates_hostnames:
           - "{{ hostname }}"
+        certificates_server_aliases: "{{ proxy_aliases | default([]) }}"
     - role: auth_bundle
       vars:
         auth_bundle_hostname: "{{ hostname }}"

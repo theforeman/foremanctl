@@ -21,6 +21,12 @@ variables:
     parameter: --certificate-renew
     action: store_true
     persist: false
+  proxy_aliases:
+    help: Proxy alias. Used for Subject Alternative Names in generated auth bundle certificates. Can be specified multiple times.
+    parameter: --proxy-alias
+    action: append_unique
+    type: FQDN
+    persist: false
 
 constraints:
   required_together:
@@ -29,8 +35,4 @@ constraints:
     - ['certificates_source', 'custom_server', ['certificates_custom_server_certificate', 'certificates_custom_server_key']]
   forbidden_if:
     - ['certificates_source', 'default', ['certificates_custom_server_certificate', 'certificates_custom_server_key']]
-    - ['certificates_source', 'custom_server', ['server_aliases']]
-
-include:
-  - _certificate_source
-  - _server_aliases
+    - ['certificates_source', 'custom_server', ['proxy_aliases']]
