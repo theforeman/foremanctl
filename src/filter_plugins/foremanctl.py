@@ -71,13 +71,16 @@ def available_foreman_plugins(_value):
     return compact_list(plugins)
 
 
-def list_all_features(enabled_features, only_enabled=False):
+def list_all_features(enabled_features, only_enabled=False, flavor=None):
     enabled_list = []
     available_list = []
     list_internal = os.environ.get('FOREMANCTL_FEATURES_LIST_INTERNAL', '') == 'true'
     for name, meta in FEATURE_MAP.items():
         internal = meta.get('internal', False)
         if internal and not list_internal:
+            continue
+        supported_flavors = meta.get('flavors', [])
+        if flavor and supported_flavors and flavor not in supported_flavors:
             continue
         description = meta.get('description', '')
         if has_feature(enabled_features, name):
