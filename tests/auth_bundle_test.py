@@ -56,6 +56,17 @@ def generate_bundle(server, certificate_source, generate_custom_proxy_certs):
 
     result = subprocess.run(command, capture_output=True, text=True)
     assert result.returncode == 0, f'auth-bundle failed: {result.stdout}\n{result.stderr}'
+    return result
+
+
+def test_auth_bundle_reports_proxy_deployment_commands(generate_bundle):
+    source_path = f'/var/lib/foremanctl/certs/bundles/{HOSTNAME}.tar.gz'
+    target_path = f'/root/{HOSTNAME}.tar.gz'
+
+    assert f'scp {source_path} root@{HOSTNAME}:{target_path}' in generate_bundle.stdout
+    assert 'foremanctl deploy-proxy' in generate_bundle.stdout
+    assert f'--auth-bundle {target_path}' in generate_bundle.stdout
+    assert '--foreman-fqdn quadlet.example.com' in generate_bundle.stdout
 
 
 @pytest.fixture(scope="module")
