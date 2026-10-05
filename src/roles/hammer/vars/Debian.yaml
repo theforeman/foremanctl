@@ -1,0 +1,2 @@
+---
+hammer_packages: "{{ (hammer_default_plugins + hammer_plugins) | debian_hammer_packages }}"

@@ -11,6 +11,20 @@ import yaml
 
 BASE_FEATURES = ['hammer', 'foreman-proxy', 'foreman']
 
+DEBIAN_HAMMER_PLUGIN_PACKAGES = {
+    'foreman': 'ruby-hammer-cli-foreman',
+    'foreman_ansible': 'ruby-hammer-cli-foreman-ansible',
+    'foreman_bootdisk': 'ruby-hammer-cli-foreman-bootdisk',
+    'foreman_discovery': 'ruby-hammer-cli-foreman-discovery',
+    'foreman_google': 'ruby-hammer-cli-foreman-google',
+    'foreman_puppet': 'ruby-hammer-cli-foreman-puppet',
+    'foreman_remote_execution': 'ruby-hammer-cli-foreman-remote-execution',
+    'foreman_salt': 'ruby-hammer-cli-foreman-salt',
+    'foreman_tasks': 'ruby-hammer-cli-foreman-tasks',
+    'foreman_templates': 'ruby-hammer-cli-foreman-templates',
+    'foreman_webhooks': 'ruby-hammer-cli-foreman-webhooks',
+}
+
 _SRC_ROOT = pathlib.Path(__file__).parent.parent
 features_yaml = _SRC_ROOT / 'features.yaml'
 with features_yaml.open() as features_file:
@@ -119,6 +133,14 @@ def hammer_plugins(value):
     return sorted(compact_list(plugins))
 
 
+def debian_hammer_packages(plugins):
+    return ['ruby-hammer-cli'] + [
+        DEBIAN_HAMMER_PLUGIN_PACKAGES[plugin]
+        for plugin in plugins
+        if plugin in DEBIAN_HAMMER_PLUGIN_PACKAGES
+    ]
+
+
 def foreman_proxy_plugins(value):
     dependencies = list(get_dependencies(filter_features(value)))
     features = set(filter_features(value + dependencies))
@@ -159,6 +181,7 @@ class FilterModule(object):
             'features_to_foreman_plugins': foreman_plugins,
             'available_foreman_plugins': available_foreman_plugins,
             'features_to_hammer_plugins': hammer_plugins,
+            'debian_hammer_packages': debian_hammer_packages,
             'features_to_foreman_proxy_plugins': foreman_proxy_plugins,
             'available_foreman_proxy_plugins': available_foreman_proxy_plugins,
             'list_all_features': list_all_features,

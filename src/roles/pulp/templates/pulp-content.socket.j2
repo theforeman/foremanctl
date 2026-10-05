@@ -3,7 +3,7 @@ Description=Pulp Content socket
 
 [Socket]
 ListenStream={{ pulp_content_listen_stream }}
-SocketUser=apache
+SocketUser={{ httpd_user }}
 SocketMode=0600
 
 NoDelay=false
