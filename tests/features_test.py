@@ -96,6 +96,20 @@ def test_invalid_feature_rejected():
     assert "Run 'foremanctl features' to list all available features." in result.stdout
 
 
+def test_incompatible_feature_rejected(flavor):
+    if flavor in ('capsule', 'foreman-proxy-content'):
+        command = ['./foremanctl', 'deploy-proxy', '--add-feature', 'katello']
+        incompatible_feature = 'katello'
+    else:
+        command = ['./foremanctl', 'deploy', '--add-feature', 'container-gateway']
+        incompatible_feature = 'container-gateway'
+
+    result = subprocess.run(command, capture_output=True, text=True)
+
+    assert result.returncode == 2
+    assert f"Feature(s) not supported by flavor '{flavor}': {incompatible_feature}" in result.stdout
+
+
 def test_enabled_features(pytestconfig, enabled_features):
     featureset = pytestconfig.getoption("featureset")
     if featureset is None:
