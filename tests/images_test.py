@@ -31,6 +31,12 @@ def test_image_registry_auth_file(server, core_image):
     assert "REGISTRY_AUTH_FILE" in f.content_string
 
 
+def test_image_service_timeouts(server, core_image):
+    image_file = server.file(f"/etc/containers/systemd/{core_image}.image")
+    assert "TimeoutStartSec=600s" in image_file.content_string
+    assert "TimeoutStopSec=30s" in image_file.content_string
+
+
 def test_postgresql_image_file(server, database_mode):
     image_file = server.file("/etc/containers/systemd/postgresql.image")
     if database_mode == 'external':
@@ -53,4 +59,3 @@ def test_foreman_proxy_image_registry_auth_file(server, enabled_features):
         assert "REGISTRY_AUTH_FILE" in image_file.content_string
     else:
         assert not image_file.exists
-
