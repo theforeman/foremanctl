@@ -60,6 +60,7 @@
       - 'iop-service-remediations-db-host,type=env,target=DB_HOST'
       - 'iop-service-remediations-db-port,type=env,target=DB_PORT'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=Remediations API

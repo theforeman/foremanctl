@@ -68,6 +68,7 @@
       - "iop-service-vmaas-reposcan-database-host,type=env,target=POSTGRESQL_HOST"
       - "iop-service-vmaas-reposcan-database-port,type=env,target=POSTGRESQL_PORT"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=VMAAS Reposcan Service
@@ -100,6 +101,7 @@
       - "iop-service-vmaas-reposcan-database-host,type=env,target=POSTGRESQL_HOST"
       - "iop-service-vmaas-reposcan-database-port,type=env,target=POSTGRESQL_PORT"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=VMAAS Webapp-Go Service
