@@ -16,8 +16,8 @@
       ansible.builtin.include_role:
         name: theforeman.operations.foreman_repositories
       vars:
-        foreman_repositories_version: nightly
-        foreman_repositories_katello_version: nightly
+        foreman_repositories_version: "3.19"
+        foreman_repositories_katello_version: "4.21"
       when:
         - ansible_distribution_major_version == '9'
 
