@@ -19,6 +19,7 @@ variables:
     parameter: --content-export-path
 
 include:
+  - _certificate_algorithm
   - _certificate_source
   - _certificate_validity
   - _certificates_custom

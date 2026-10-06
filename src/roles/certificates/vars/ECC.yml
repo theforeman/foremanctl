@@ -1,0 +1,8 @@
+---
+# pkcs8 format: Candlepin's key reader rejects community.crypto's default SEC1 encoding.
+_certificates_key_parameters:
+  type: ECC
+  curve: "{{ certificates_algorithm_ecc_curve }}"
+  format: pkcs8
+_certificates_key_usage:
+  - digitalSignature

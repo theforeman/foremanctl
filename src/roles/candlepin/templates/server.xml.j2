@@ -23,7 +23,7 @@
                SSLEnabled="true"
                maxThreads="150" scheme="https" secure="true">
         <SSLHostConfig certificateVerification="optional"
-                       protocols="{{ candlepin_tls_versions | join(',') }}"
+                       protocols="{{ _candlepin_tls_protocols }}"
                        caCertificateFile="/etc/candlepin/certs/candlepin-ca.crt"
                        ciphers="{{ candlepin_ciphers | join(':') }}">
             <Certificate certificateFile="/etc/candlepin/certs/tomcat.crt"

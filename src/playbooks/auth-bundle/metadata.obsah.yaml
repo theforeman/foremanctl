@@ -32,5 +32,6 @@ constraints:
     - ['certificates_source', 'custom_server', ['server_aliases']]
 
 include:
+  - _certificate_algorithm
   - _certificate_source
   - _server_aliases
