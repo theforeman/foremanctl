@@ -51,6 +51,7 @@
       - 'iop-core-host-inventory-database-host,type=env,target=INVENTORY_DB_HOST'
       - 'iop-core-host-inventory-database-port,type=env,target=INVENTORY_DB_PORT'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=Database Readiness and Migration Init Container
@@ -83,6 +84,7 @@
       - 'iop-core-host-inventory-database-host,type=env,target=INVENTORY_DB_HOST'
       - 'iop-core-host-inventory-database-port,type=env,target=INVENTORY_DB_PORT'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=IOP Core Host-Based Inventory Container
@@ -116,6 +118,7 @@
       - 'iop-core-host-inventory-database-host,type=env,target=INVENTORY_DB_HOST'
       - 'iop-core-host-inventory-database-port,type=env,target=INVENTORY_DB_PORT'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=IOP Core Host-Based Inventory Web Container
@@ -147,6 +150,7 @@
       - 'iop-core-host-inventory-database-host,type=env,target=INVENTORY_DB_HOST'
       - 'iop-core-host-inventory-database-port,type=env,target=INVENTORY_DB_PORT'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=Host Inventory Access Tags Cleanup Job

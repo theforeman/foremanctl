@@ -36,6 +36,7 @@
     volumes:
       - "{{ iop_ingress_archive_volume }}:{{ iop_ingress_archive_path }}:rw"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=IOP Core Ingress Container

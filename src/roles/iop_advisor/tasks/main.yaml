@@ -65,6 +65,7 @@
       - 'iop-service-advisor-backend-database-host,type=env,target=ADVISOR_DB_HOST'
       - 'iop-service-advisor-backend-database-port,type=env,target=ADVISOR_DB_PORT'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=Advisor Backend API
@@ -95,6 +96,7 @@
       - 'iop-service-advisor-backend-database-host,type=env,target=ADVISOR_DB_HOST'
       - 'iop-service-advisor-backend-database-port,type=env,target=ADVISOR_DB_PORT'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=Advisor Backend Service

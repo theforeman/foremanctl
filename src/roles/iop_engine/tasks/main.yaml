@@ -22,6 +22,7 @@
     network:
       - foreman-core-network
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=IOP Core Engine Container
