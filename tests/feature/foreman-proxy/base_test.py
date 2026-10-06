@@ -3,6 +3,7 @@ import json
 
 import pytest
 
+from tests.conftest import FOREMAN_PROXY_HTTP_PORT
 from tests.conftest import FOREMAN_PROXY_PORT
 
 
@@ -39,6 +40,32 @@ def test_foreman_proxy_features(curl_request, proxy_base_url, enabled_features):
         assert "container_gateway" not in features
 
 
+def test_foreman_proxy_feature_protocols(proxy_v2_features):
+    https_only = {
+        'ansible',
+        'bmc',
+        'container_gateway',
+        'dynflow',
+        'logs',
+        'registration',
+        'script',
+    }
+
+    enabled_features = {
+        feature_name
+        for feature_name, feature in proxy_v2_features.items()
+        if feature['state'] != 'disabled'
+    }
+
+    for feature_name in https_only & enabled_features:
+        assert proxy_v2_features[feature_name]['http_enabled'] is False
+        assert proxy_v2_features[feature_name]['https_enabled'] is True
+
+    if 'templates' in enabled_features:
+        assert proxy_v2_features['templates']['http_enabled'] is True
+        assert proxy_v2_features['templates']['https_enabled'] is True
+
+
 def test_foreman_proxy_service(server):
     foreman_proxy = server.service("foreman-proxy")
     assert foreman_proxy.is_running
@@ -47,6 +74,12 @@ def test_foreman_proxy_service(server):
 def test_foreman_proxy_port(server):
     foreman_proxy = server.addr('localhost')
     assert foreman_proxy.port(FOREMAN_PROXY_PORT).is_reachable
+
+
+def test_foreman_proxy_http_port(server, proxy_v2_features):
+    foreman_proxy = server.addr('localhost')
+    templates_http_enabled = proxy_v2_features.get('templates', {}).get('http_enabled', False)
+    assert foreman_proxy.port(FOREMAN_PROXY_HTTP_PORT).is_reachable == templates_http_enabled
 
 
 @pytest.mark.feature('remote-execution')
@@ -105,6 +138,15 @@ def test_templates_endpoint_responds(curl_request, proxy_base_url, server_fqdn):
     data = json.loads(cmd.stdout)
     assert 'templateServer' in data
     assert server_fqdn in data['templateServer']
+
+
+@pytest.mark.feature('templates')
+def test_templates_http_endpoint_responds(curl_request, server_fqdn):
+    """Fetch templateServer data from the templates proxy HTTP endpoint"""
+    base_url = f"http://{server_fqdn}:{FOREMAN_PROXY_HTTP_PORT}"
+    cmd = curl_request("unattended/templateServer", base_url=base_url, return_body=True)
+    assert cmd.succeeded, f"Failed to query /unattended/templateServer over HTTP: {cmd.stderr}"
+    assert 'templateServer' in json.loads(cmd.stdout)
 
 
 @pytest.mark.feature('registration')

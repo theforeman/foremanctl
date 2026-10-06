@@ -6,6 +6,9 @@
   - {{ host }}
 {% endfor %}
 
+{% if foreman_proxy_features | foreman_proxy_http_enabled %}
+:http_port: {{ foreman_proxy_http_port }}
+{% endif %}
 :https_port: {{ foreman_proxy_https_port }}
 :ssl_ca_file: /etc/foreman-proxy/ssl_ca.pem
 :ssl_certificate: /etc/foreman-proxy/ssl_cert.pem
