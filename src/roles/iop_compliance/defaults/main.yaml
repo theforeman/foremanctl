@@ -20,6 +20,7 @@ iop_compliance_secret_key_base: "{{ lookup('ansible.builtin.password', iop_compl
 # additions (APPLICATION_TYPE, tuning) are merged on top in tasks/main.yaml.
 iop_compliance_common_env:
   DISABLE_RBAC: "true"
+  IOP_MODE: "true"
   RAILS_ENV: "foreman"
   RAILS_LOG_TO_STDOUT: "true"
   PATH_PREFIX: "/api"

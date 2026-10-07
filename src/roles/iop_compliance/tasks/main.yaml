@@ -73,8 +73,8 @@
       - |
         [Unit]
         Description=Compliance Database Upgrade Init Container
-        After=iop-core-kafka.service
-        Wants=iop-core-kafka.service
+        After=postgresql.service iop-core-kafka.service
+        Wants=postgresql.service iop-core-kafka.service
         PartOf=foreman.target
         [Service]
         Type=oneshot
