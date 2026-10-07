@@ -52,6 +52,13 @@ def test_compliance_api_service_dependencies(server):
     assert "iop-service-compl-dbmigrate.service" in result.stdout
 
 
+def test_compliance_dbmigrate_service_dependencies(server):
+    result = server.run("systemctl show iop-service-compl-dbmigrate --property=After")
+    assert result.succeeded
+    assert "postgresql.service" in result.stdout
+    assert "iop-core-kafka.service" in result.stdout
+
+
 def test_compliance_inventory_consumer_dependencies(server):
     result = server.run("systemctl show iop-service-compl-inventory-consumer --property=After")
     assert result.succeeded
