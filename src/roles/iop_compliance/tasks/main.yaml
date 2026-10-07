@@ -38,6 +38,29 @@
     data: "{{ iop_compliance_secret_key_base }}"
   notify: Restart compliance
 
+- name: Deploy Compliance Database Migration Check Container
+  containers.podman.podman_container:
+    name: iop-service-compl-db-migration-check
+    image: iop-compliance.image
+    state: quadlet
+    command: sh -c "bundle exec rake db:abort_if_pending_migrations"
+    network: "{{ foreman_core_network_container_networks }}"
+    volumes: "{{ iop_compliance_database_volumes }}"
+    env: "{{ iop_compliance_common_env }}"
+    secrets: "{{ iop_compliance_common_secrets }}"
+    quadlet_options:
+      - "HttpProxy=false"
+      - |
+        [Unit]
+        Description=Compliance Database Migration Check
+        After=postgresql.service iop-core-kafka.service
+        Wants=postgresql.service iop-core-kafka.service
+        [Service]
+        Type=oneshot
+        RemainAfterExit=true
+        SuccessExitStatus=1
+        TimeoutStartSec=30m
+
 - name: Deploy Compliance Database Upgrade Init Container
   containers.podman.podman_container:
     name: iop-service-compl-dbmigrate
@@ -53,14 +76,13 @@
       - |
         [Unit]
         Description=Compliance Database Upgrade Init Container
-        After=iop-core-kafka.service
-        Wants=iop-core-kafka.service
+        After=postgresql.service iop-core-kafka.service
+        Wants=postgresql.service iop-core-kafka.service
         PartOf=foreman.target
         [Service]
         Type=oneshot
         RemainAfterExit=true
-        [Install]
-        WantedBy=default.target foreman.target
+        TimeoutStartSec=30m
 
 - name: Deploy Compliance Backend API Container
   containers.podman.podman_container:
@@ -84,11 +106,8 @@
       - |
         [Unit]
         Description=Compliance Service
-        After=iop-service-compl-dbmigrate.service
-        Wants=iop-service-compl-dbmigrate.service
-        Requires=iop-service-compl-dbmigrate.service
         PartOf=foreman.target
-        After=iop-service-compliance-dbmigrate.service
+        After=iop-service-compl-dbmigrate.service
         [Service]
         Restart=on-failure
         [Install]
@@ -132,9 +151,7 @@
       - |
         [Unit]
         Description=Compliance Inventory Consumer Service
-        After=iop-service-compl-dbmigrate.service iop-core-kafka.service
-        Wants=iop-service-compl-dbmigrate.service
-        Requires=iop-service-compl-dbmigrate.service
+        After=iop-core-kafka.service
         PartOf=foreman.target
         [Service]
         Restart=on-failure
@@ -158,9 +175,6 @@
       - |
         [Unit]
         Description=Compliance GoodJob Worker
-        After=iop-service-compl-dbmigrate.service
-        Wants=iop-service-compl-dbmigrate.service
-        Requires=iop-service-compl-dbmigrate.service
         PartOf=foreman.target
         [Service]
         Restart=on-failure
@@ -192,6 +206,32 @@
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
     daemon_reload: true
+
+- name: Check for pending Compliance migrations
+  ansible.builtin.systemd:
+    name: iop-service-compl-db-migration-check.service
+    state: restarted
+
+- name: Get Compliance migration check exit status  # noqa command-instead-of-module
+  ansible.builtin.command:
+    cmd: systemctl show --property=ExecMainStatus --value iop-service-compl-db-migration-check.service
+  register: iop_compliance_migration_check_status
+  changed_when: false
+  failed_when: >-
+    iop_compliance_migration_check_status.rc != 0 or
+    (iop_compliance_migration_check_status.stdout | trim) not in ['0', '1']
+
+- name: Determine if Compliance migration is needed
+  ansible.builtin.set_fact:
+    iop_compliance_migration_needed: >-
+      {{ (iop_compliance_migration_check_status.stdout | trim | int) == 1 }}
+
+- name: Migrate the Compliance database
+  ansible.builtin.systemd:
+    name: iop-service-compl-dbmigrate.service
+    state: restarted
+  when: iop_compliance_migration_needed
+  notify: Restart compliance
 
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers
