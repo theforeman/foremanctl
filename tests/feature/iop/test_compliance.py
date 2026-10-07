@@ -26,6 +26,17 @@ def test_compliance_dbmigrate_quadlet_file(server):
     quadlet_file = server.file("/etc/containers/systemd/iop-service-compl-dbmigrate.container")
     assert quadlet_file.exists
     assert quadlet_file.is_file
+    assert "TimeoutStartSec=30m" in quadlet_file.content_string
+
+
+def test_compliance_db_migration_check_quadlet_file(server):
+    quadlet_file = server.file(
+        "/etc/containers/systemd/iop-service-compl-db-migration-check.container"
+    )
+    assert quadlet_file.exists
+    assert quadlet_file.is_file
+    assert "SuccessExitStatus=1" in quadlet_file.content_string
+    assert "TimeoutStartSec=30m" in quadlet_file.content_string
 
 
 def test_compliance_api_container(server):
@@ -46,10 +57,17 @@ def test_compliance_api_quadlet_file(server):
     assert quadlet_file.is_file
 
 
-def test_compliance_api_service_dependencies(server):
+def test_compliance_api_service_is_ordered_after_migrations(server):
     result = server.run("systemctl show iop-service-compl-backend --property=After")
     assert result.succeeded
     assert "iop-service-compl-dbmigrate.service" in result.stdout
+
+
+def test_compliance_dbmigrate_service_dependencies(server):
+    result = server.run("systemctl show iop-service-compl-dbmigrate --property=After")
+    assert result.succeeded
+    assert "postgresql.service" in result.stdout
+    assert "iop-core-kafka.service" in result.stdout
 
 
 def test_compliance_inventory_consumer_dependencies(server):
