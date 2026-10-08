@@ -1,21 +1,13 @@
-# These still need to be fixed
-EXPECTED_ROOT_IMAGES = {
-    "quay.io/iop/puptoo:foreman-5.0",
-    "quay.io/iop/yuptoo:foreman-5.0",
-}
-
-
-def test_root_containers_match_expected(server, subtests):
-    """Verify that root containers match the temporary known-broken baseline."""
+def test_all_containers_run_nonroot(server, subtests):
+    """Verify that all containers run with non-root users."""
     containers = server.podman.get_containers(status="running")
     assert containers, "No running containers found"
 
     for container in containers:
         if container.name.startswith("foreman-recurring-"):
             continue
+
         with subtests.test(container.name):
-            config = container.inspect()['Config']
-            if config['Image'] in EXPECTED_ROOT_IMAGES:
-                assert config['User'] in {"", "0", "root"}
-            else:
-                assert config['User'] not in {"", "0", "root"}
+            config = container.inspect()["Config"]
+            user = config["User"].split(":", maxsplit=1)[0].lower()
+            assert user not in {"", "0", "root"}
