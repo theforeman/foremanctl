@@ -67,6 +67,8 @@
     name: iop-core-host-inventory
     image: iop-host-inventory.image
     state: quadlet
+    # Give the worker time to finish and close its Kafka client before SIGKILL.
+    stop_timeout: 45
     command: make run_inv_mq_service
     network: "{{ foreman_core_network_container_networks }}"
     env:
@@ -89,6 +91,7 @@
         PartOf=foreman.target
         [Service]
         Restart=on-failure
+        SuccessExitStatus=143
         [Install]
         WantedBy=default.target foreman.target
 
@@ -97,6 +100,8 @@
     name: iop-core-host-inventory-api
     image: iop-host-inventory.image
     state: quadlet
+    # Exceed gunicorn's graceful timeout so workers drain before SIGKILL.
+    stop_timeout: 45
     command: python run_gunicorn.py
     network: "{{ foreman_core_network_container_networks }}"
     env:
@@ -121,6 +126,7 @@
         PartOf=foreman.target
         [Service]
         Restart=on-failure
+        SuccessExitStatus=143
         [Install]
         WantedBy=default.target foreman.target
 
