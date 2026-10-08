@@ -44,6 +44,7 @@ AI agent specifications (rules, skills, agent personas) live under `.agents/`.
 - [How to Add a Feature](docs/developer/how-to-add-a-feature.md) — end-to-end feature development
 - [Feature Metadata](docs/developer/feature-metadata.md) — YAML schema for `src/features.yaml`
 - [Check Roles](docs/developer/checks.md) — check role catalog and integration patterns
+- [Storage](docs/developer/storage.md) — persistent storage for containers; named volumes vs bind mounts
 - [Testing](docs/developer/testing.md) — test infrastructure, fixtures, patterns
 - [Parameters](docs/user/parameters.md) — installation parameter map; update when adding parameters
 Developer docs:
