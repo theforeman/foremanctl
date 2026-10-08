@@ -2,7 +2,15 @@
 help: |
   Pull necessary container images
 
+variables:
+  flavor:
+    help: Base flavor whose container images should be pulled.
+    choices:
+      - katello
+      - foreman-proxy-content
+
 include:
   - _air_gapped
   - _database_mode
   - _flavor_features
+  - _vendor_overrides/pull-images
