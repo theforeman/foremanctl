@@ -2,5 +2,11 @@
 min_cpu_cores: 4
 min_ram_mb: 10240
 
+foreman_puma_workers: 2
+
+pulp_worker_count: 2
+pulp_content_service_worker_count: 2
+pulp_api_service_worker_count: 2
+
 candlepin_java_opts_xms: 512m
 candlepin_java_opts_xmx: 2g
