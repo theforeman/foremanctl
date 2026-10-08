@@ -22,6 +22,8 @@
     name: iop-core-ingress
     image: iop-ingress.image
     state: quadlet
+    # Give the bounded in-app HTTP/telemetry shutdown headroom before SIGKILL.
+    stop_timeout: 20
     env:
       INGRESS_VALID_UPLOAD_TYPES: "advisor,compliance,qpc,rhv,tower,leapp-reporting,xavier,playbook,playbook-sat,malware-detection,tasks"
       INGRESS_KAFKABROKERS: "iop-core-kafka:9092"
