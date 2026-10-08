@@ -35,6 +35,7 @@
       - "{{ iop_ingress_archive_volume }}:{{ iop_ingress_archive_path }}:rw"
     network: "{{ foreman_core_network_container_networks }}"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=IOP Core Ingress Container

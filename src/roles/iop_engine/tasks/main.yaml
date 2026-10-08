@@ -21,6 +21,7 @@
       console.redhat.com: "127.0.0.1"
     network: "{{ foreman_core_network_container_networks }}"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=IOP Core Engine Container

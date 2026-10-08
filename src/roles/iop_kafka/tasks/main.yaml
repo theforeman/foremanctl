@@ -45,6 +45,7 @@
       - 'iop-core-kafka-server-properties,target=/opt/kafka/config/kraft/server.properties,mode=0644,type=mount'
       - 'iop-core-kafka-init,target=/opt/kafka/init.sh,mode=0755,type=mount'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=IOP Core Kafka Container

@@ -13,6 +13,7 @@
       DISABLE_S3_UPLOAD: "True"
     network: "{{ foreman_core_network_container_networks }}"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=IOP Core Puptoo Container
