@@ -40,6 +40,11 @@ Please update this file as check usage evolves.
 - **Fail state**: Fails if FQDN conditions are not met.
 - **Rationale**: Foreman requires a properly-configured server FQDN. This check ensures server hostname was modified from the default and approximates a valid FQDN.
 
+### check_ipv6_disable
+- **Description**: Checks whether IPv6 is disabled: `ipv6.disable=1` on the kernel command line (`/proc/cmdline`), or the IPv6 loopback address (`::1`) missing from the loopback interface.
+- **Fail state**: Fails if `ipv6.disable=1` is present on the kernel command line, or if `::1` is not present on the loopback interface.
+- **Rationale**: Disabling IPv6 is known to break installation and upgrade. Services bind and connect via `localhost` (for example the Foreman listen socket and Valkey), which resolves to the IPv6 loopback (`::1`); when IPv6 is disabled these bind or connect operations hang or fail with cryptic errors. The kernel-parameter assertion mirrors the equivalent `foreman-maintain` check; the `::1` loopback assertion additionally catches runtime disabling (for example `net.ipv6.conf.lo.disable_ipv6=1`), which the kernel-parameter check alone would miss.
+
 ### check_podman_network_backend
 - **Description**: Verifies the Podman network backend is `netavark`.
 - **Fail state**: Fails if the network backend is anything other than `netavark`.
