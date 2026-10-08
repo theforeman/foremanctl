@@ -1,4 +1,28 @@
 ---
+- name: Check existing Podman networks
+  containers.podman.podman_network_info:
+  register: _foreman_core_network_networks
+
+- name: Clean up leftover IOP network from previous deploys
+  ansible.builtin.include_tasks: cleanup_legacy_iop_network.yaml
+  when: >-
+    foreman_core_network_legacy_iop_network_name
+    in (_foreman_core_network_networks.networks | map(attribute='name') | list)
+
+- name: Check IPv6 support in host
+  ansible.builtin.set_fact:
+    foreman_core_network_ipv6_available: >-
+      {{ (ansible_facts['default_ipv6'] | default({})) is truthy and (ansible_facts['lo']['ipv6'] | default([])) is truthy }}
+
+- name: Define foreman core container networks
+  ansible.builtin.set_fact:
+    foreman_core_network_container_networks: >-
+      {{
+        [foreman_core_network_name]
+        +
+        ([foreman_core_network_ipv6_name] if foreman_core_network_ipv6_available else [])
+      }}
+
 - name: Create foreman-core-network
   containers.podman.podman_network:
     name: "{{ foreman_core_network_name }}"
@@ -6,3 +30,13 @@
     driver: "{{ foreman_core_network_driver }}"
     subnet: "{{ foreman_core_network_subnet }}"
     gateway: "{{ foreman_core_network_gateway }}"
+
+
+- name: Create foreman-core-network-ipv6
+  containers.podman.podman_network:
+    name: "{{ foreman_core_network_ipv6_name }}"
+    state: present
+    driver: "{{ foreman_core_network_driver }}"
+    subnet: "{{ foreman_core_network_ipv6_subnet }}"
+    gateway: "{{ foreman_core_network_ipv6_gateway }}"
+  when: foreman_core_network_ipv6_available

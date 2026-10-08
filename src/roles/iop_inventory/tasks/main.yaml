@@ -38,8 +38,7 @@
     image: iop-host-inventory.image
     state: quadlet
     command: make upgrade_db
-    network:
-      - foreman-core-network
+    network: "{{ foreman_core_network_container_networks }}"
     env:
       KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
       USE_SUBMAN_ID: "true"
@@ -69,8 +68,7 @@
     image: iop-host-inventory.image
     state: quadlet
     command: make run_inv_mq_service
-    network:
-      - foreman-core-network
+    network: "{{ foreman_core_network_container_networks }}"
     env:
       KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
       USE_SUBMAN_ID: "true"
@@ -100,8 +98,7 @@
     image: iop-host-inventory.image
     state: quadlet
     command: python run_gunicorn.py
-    network:
-      - foreman-core-network
+    network: "{{ foreman_core_network_container_networks }}"
     env:
       KAFKA_BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
       LISTEN_PORT: "8081"
@@ -133,8 +130,7 @@
     image: iop-host-inventory.image
     state: quadlet
     command: make run_host_delete_access_tags
-    network:
-      - foreman-core-network
+    network: "{{ foreman_core_network_container_networks }}"
     env:
       KAFKA_BOOTSTRAP_SERVERS: "PLAINTEXT://iop-core-kafka:9092"
       USE_SUBMAN_ID: "true"

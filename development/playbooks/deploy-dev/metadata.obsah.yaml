@@ -8,7 +8,6 @@ variables:
     action: append
     parameter: --foreman-development-enabled-plugin
     choices:
-      - foreman_remote_execution
       - foreman_ansible
       - foreman_rh_cloud
       - foreman_discovery
@@ -20,6 +19,7 @@ variables:
       - foreman_templates
       - foreman_leapp
       - foreman_puppet
+      - foreman_virt_who_configure
   target_host:
     help: Target hostname or IP address for deployment
     action: store

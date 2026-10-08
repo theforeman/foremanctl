@@ -34,8 +34,7 @@
     image: iop-kafka.image
     state: quadlet
     command: sh bin/init-start.sh
-    network:
-      - foreman-core-network
+    network: "{{ foreman_core_network_container_networks }}"
     env:
       LOG_DIR: /tmp/kafka-logs
       KAFKA_NODE_ID: "1"

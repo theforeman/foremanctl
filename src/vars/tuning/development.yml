@@ -1,3 +1,6 @@
 ---
 min_cpu_cores: 4
 min_ram_mb: 10240
+
+candlepin_java_opts_xms: 512m
+candlepin_java_opts_xmx: 2g

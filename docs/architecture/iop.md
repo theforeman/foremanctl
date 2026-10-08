@@ -10,7 +10,7 @@ The `iop` feature depends on `rh-cloud`, which installs the `foreman_rh_cloud` p
 
 ## Architecture
 
-IOP runs as a set of containerized services managed via podman quadlets on the shared `foreman-core-network` (bridge, `10.130.0.0/24`), alongside Foreman, Postgres, and other co-located services. See [Network Architecture](network.md) for the host/bridge split, unix sockets, and published ports.
+IOP runs as a set of containerized services managed via podman quadlets on the shared `foreman-core-network` IPv4 bridge (`10.130.0.0/24`), alongside Foreman, Postgres, and other co-located services. On IPv6-capable hosts, IOP containers also join the optional `foreman-core-network-ipv6` bridge. See [Network Architecture](network.md) for the host/bridge split, IPv6 detection, unix sockets, and published ports.
 
 The subnet matches the former `iop-core-network` so the gateway image nginx resolver (`10.130.0.1`) can resolve upstream service names. The gateway is registered as a Foreman smart proxy at `https://iop-core-gateway:8443` (host publish remains `127.0.0.1:24443` for host-side tools and tests).
 
@@ -27,7 +27,7 @@ graph TB
         VulnMeta["Vulnerability Metadata Downloader<br/>(systemd timer + path watcher)"]
     end
 
-    subgraph Network["foreman-core-network (10.130.0.0/24)"]
+    subgraph Network["foreman-core-network (10.130.0.0/24, optional IPv6 bridge)"]
         Foreman["Foreman<br/>(foreman_rh_cloud)"]
         PG[(PostgreSQL)]
         Kafka[Kafka]
@@ -101,6 +101,16 @@ Key Kafka topics:
 | `vulnerability.evaluator.upload` | Vulnerability | Vulnerability evaluator-upload |
 | `vulnerability.grouper.inventory.upload` | Vulnerability | Vulnerability grouper |
 | `vulnerability.grouper.advisor.upload` | Vulnerability | Vulnerability grouper |
+
+### Ingress Archive Storage
+
+Ingress stores uploaded archives in the `iop-core-ingress-archives`
+Podman named volume, mounted inside the container at
+`/var/tmp/insights-archives`.
+
+The named volume persists across Ingress container recreation and avoids
+using a host bind mount for the archive path. A `tmpfiles.d` rule makes
+archive contents eligible for cleanup after 24 hours.
 
 ### Services
 

@@ -194,7 +194,7 @@ jobs:
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}
-        uses: owenthereal/action-upterm@v1
+        uses: owenthereal/action-upterm@v2
         with:
           ## limits ssh access and adds the ssh public key for the user which triggered the workflow
           limit-access-to-actor: true
@@ -230,7 +230,7 @@ jobs:
           ./forge deploy-dev --foreman-development-enabled-plugin foreman_ansible --add-feature foreman-proxy --add-feature hammer
       - name: Setup upterm session
         if: ${{ failure() }}
-        uses: owenthereal/action-upterm@v1
+        uses: owenthereal/action-upterm@v2
         with:
           ## limits ssh access and adds the ssh public key for the user which triggered the workflow
           limit-access-to-actor: true
@@ -285,7 +285,8 @@ jobs:
             --add-feature azure-rm \
             --add-feature bmc \
             --add-feature google \
-            --add-feature remote-execution
+            --add-feature remote-execution \
+            --add-feature iop
       - name: Stop services
         run:
           vagrant ssh quadlet -- sudo systemctl stop foreman.target
@@ -316,7 +317,7 @@ jobs:
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}
-        uses: owenthereal/action-upterm@v1
+        uses: owenthereal/action-upterm@v2
         with:
           ## limits ssh access and adds the ssh public key for the user which triggered the workflow
           limit-access-to-actor: true
@@ -397,7 +398,7 @@ jobs:
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}
-        uses: owenthereal/action-upterm@v1
+        uses: owenthereal/action-upterm@v2
         with:
           limit-access-to-actor: true
           wait-timeout-minutes: 5
@@ -512,7 +513,7 @@ jobs:
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}
-        uses: owenthereal/action-upterm@v1
+        uses: owenthereal/action-upterm@v2
         with:
           limit-access-to-actor: true
           wait-timeout-minutes: 5
@@ -589,7 +590,7 @@ jobs:
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}
-        uses: owenthereal/action-upterm@v1
+        uses: owenthereal/action-upterm@v2
         with:
           limit-access-to-actor: true
           wait-timeout-minutes: 5
@@ -660,7 +661,7 @@ jobs:
           path: sos/
       - name: Setup upterm session
         if: ${{ failure() }}
-        uses: owenthereal/action-upterm@v1
+        uses: owenthereal/action-upterm@v2
         with:
           limit-access-to-actor: true
           wait-timeout-minutes: 5

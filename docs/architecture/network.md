@@ -1,6 +1,6 @@
 # Network Architecture
 
-foremanctl splits networking into two planes: the **host** (public TLS, unix sockets, and a few loopback publishes) and a **shared Podman bridge** used for container-to-container traffic. Apache httpd is the public HTTP(S) front door. Application containers do not publish their APIs on all interfaces.
+foremanctl splits networking into two planes: the **host** (public TLS, unix sockets, and a few loopback publishes) and shared **Podman bridges** used for container-to-container traffic. Apache httpd is the public HTTP(S) front door. Application containers do not publish their APIs on all interfaces.
 
 IOP service internals (Kafka topics, data flow) are covered in [IOP](iop.md). This document describes how packets move between the host, containers, and clients.
 
@@ -20,7 +20,7 @@ flowchart TB
         Apache --> Socks
     end
 
-    subgraph Bridge["foreman-core-network (bridge, 10.130.0.0/24)"]
+    subgraph Bridge["foreman-core-network (IPv4 bridge, 10.130.0.0/24)"]
         FM[foreman]
         PG[(postgresql)]
         VK[valkey]
@@ -54,6 +54,7 @@ flowchart TB
 | Host unix sockets | systemd socket units for Foreman and Pulp | Apache `ProxyPass` to `unix://...` |
 | Host loopback | Published container ports bound to `127.0.0.1` | Host-side Ansible, tests, and tools |
 | `foreman-core-network` | Foreman, Postgres, Valkey, Candlepin, Pulp, IOP | Container DNS name on `10.130.0.0/24` |
+| `foreman-core-network-ipv6` | Same container set, only when host IPv6 is available | Container DNS name on `fd00:10:130::/64` |
 
 ## Prerequisite: netavark
 
@@ -61,9 +62,11 @@ Deployments require Podman's **netavark** network backend (not CNI). `check_podm
 
 Netavark provides the bridge, gateway IP, and [aardvark-dns](https://github.com/containers/aardvark-dns) so containers resolve each other by container name.
 
-## Shared bridge: `foreman-core-network`
+## Shared bridges: `foreman-core-network` and optional IPv6
 
-The `foreman_core_network` role creates the network early in both `foremanctl deploy` and `foremanctl deploy-proxy`:
+The `foreman_core_network` role creates the shared application network early in both `foremanctl deploy` and `foremanctl deploy-proxy`.
+
+The primary network is always IPv4-only:
 
 | Setting | Value |
 |---------|-------|
@@ -72,9 +75,21 @@ The `foreman_core_network` role creates the network early in both `foremanctl de
 | Subnet | `10.130.0.0/24` |
 | Gateway | `10.130.0.1` |
 
-The subnet matches the former `iop-core-network`. The IOP gateway image uses `10.130.0.1` as its nginx resolver; that address is the bridge gateway, where aardvark-dns answers container-name lookups.
+When the host is IPv6-capable, the role also creates a separate IPv6-only network:
 
-Containers on this network talk by **container name**, not by published host ports. Examples:
+| Setting | Value |
+|---------|-------|
+| Name | `foreman-core-network-ipv6` |
+| Driver | `bridge` |
+| Subnet | `fd00:10:130::/64` |
+| Gateway | `fd00:10:130::1` |
+
+IPv6 is enabled only when Ansible facts show both an IPv6 default route and an IPv6 address on loopback. On systems where IPv6 is disabled in the kernel, the IPv6 network is not created, which avoids netavark failures when assigning an IPv6 address to the bridge.
+
+The IPv4 subnet matches the former `iop-core-network`. The IOP gateway image uses `10.130.0.1` as its nginx resolver; that address is the IPv4 bridge gateway, where aardvark-dns answers container-name lookups.
+On upgrade, the role stops containers still on a leftover `iop-core-network`, removes that network, then deletes any `podman*` host bridge that still holds the gateway address only if that interface is not claimed as `NetworkInterface` by any remaining Podman network (so a live `foreman-core-network` bridge is left alone on re-deploy). It then creates `foreman-core-network` and, when IPv6 is available, `foreman-core-network-ipv6`.
+
+Containers on these networks talk by **container name**, not by published host ports. Examples:
 
 | Client | Target | Why |
 |--------|--------|-----|
@@ -89,7 +104,7 @@ Certificates include extra DNS names for names used over TLS on the bridge (`can
 
 ### Members
 
-These containers join `foreman-core-network`:
+These containers join `foreman-core-network`. On IPv6-capable hosts they also join `foreman-core-network-ipv6`:
 
 - `postgresql` (internal database mode)
 - `valkey`

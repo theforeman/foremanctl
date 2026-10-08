@@ -29,7 +29,7 @@ DEFAULT_FEATURES = {
 EXPECTED_FEATURES = {
     'default': DEFAULT_FEATURES,
     'default-iop': DEFAULT_FEATURES | {'iop', 'rh-cloud'},
-    'upgrade': DEFAULT_FEATURES - {'ansible', 'webhooks'},
+    'upgrade': (DEFAULT_FEATURES | {'iop', 'rh-cloud'}) - {'ansible', 'webhooks'},
     'migration': DEFAULT_FEATURES,
     'proxy': {
         'bmc',

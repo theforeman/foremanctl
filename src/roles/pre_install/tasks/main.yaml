@@ -13,6 +13,14 @@
   when:
     - ansible_facts['os_family'] == 'RedHat'
     - ansible_facts['distribution_major_version'] == '9'
+  register: _pre_install_module_enable
+
+- name: Update PostgreSQL client
+  ansible.builtin.package: # noqa: package-latest
+    name: postgresql
+    state: latest
+  when:
+    - _pre_install_module_enable is changed # noqa: no-handler
 
 - name: Install podman and utilities
   ansible.builtin.package:
