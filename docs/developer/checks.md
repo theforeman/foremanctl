@@ -10,7 +10,7 @@ Please update this file as check usage evolves.
 - **Rationale**: Database access is required for many foremanctl operations; external databases must be reachable using the provided credentials.
 
 ### check_duplicate_permissions
-- **Description**: Queries the Foreman database for duplicate entries in the permissions table.
+- **Description**: Queries the authenticated Foreman API for duplicate permissions.
 - **Fail state**: Fails if duplicate permissions are detected.
 - **Rationale**: A validation was incorrectly removed which prevented users from creating duplicate Foreman permissions, causing upgrade failure. This check will need to be included until https://projects.theforeman.org/issues/38465 is addressed.
 
@@ -25,7 +25,7 @@ Please update this file as check usage evolves.
 - **Rationale**: An API connection is necessary for most Foreman operations. This check ensures there are no firewall or address issues.
 
 ### check_foreman_tasks
-- **Description**: Queries Foreman tasks for paused, errored tasks.
+- **Description**: Queries the authenticated Foreman API for paused, errored tasks.
 - **Fail state**: Fails if any errored tasks are found.
 - **Rationale**: Errored Foreman tasks indicate issues which need to be addressed by the user. This can be anything from a typo to systemic issues. Consulting https://community.theforeman.org may provide insight.
 - **Skipping**: This role can be skipped in `foremanctl health` by passing the `--skip-check-foreman-tasks` flag. Use only for operations where a failed Foreman task is expected or unavoidable.
@@ -34,6 +34,7 @@ Please update this file as check usage evolves.
 - **Description**: Ensures all hosts' facts counts are below a maximum threshold.
 - **Fail state**: Fails if facts count exceeds threshold for any host.
 - **Rationale**: Very high host facts count causes slow facts processing. See: https://access.redhat.com/solutions/4163891 for more information.
+- **API migration**: This check still uses a grouped database query because the facts API returns complete fact values rather than an efficient per-host count. Follow-up is tracked in https://github.com/theforeman/foremanctl/issues/876.
 
 ### check_hostname
 - **Description**: Validates FQDN is not 'localhost' or 'localhost.localdomain', contains at least one dot, and has no underscores.

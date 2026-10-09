@@ -1,4 +1,6 @@
 ---
+# The fact_values API returns every fact value and has no per-host aggregate.
+# Keep the grouped database query until https://github.com/theforeman/foremanctl/issues/876 is resolved.
 - name: Query hosts for facts count
   community.postgresql.postgresql_query:
     login_db: "{{ foreman_database_name }}"
