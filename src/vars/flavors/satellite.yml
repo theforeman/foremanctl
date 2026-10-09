@@ -38,3 +38,6 @@ post_install_message_enabled: true
 iop_engine_extra_packages:
   - "prodsec.rules"
   - "telemetry.rules.plugins"
+
+iop_vulnerability_taskomatic_jobs: "stale_systems:5,delete_systems:30,cacheman:5,exploit_sync:1440,rules_git_sync:1440"
+iop_vulnerability_taskomatic_startup: "cacheman,exploit_sync,rules_git_sync"
