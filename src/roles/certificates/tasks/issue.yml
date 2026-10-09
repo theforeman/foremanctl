@@ -45,32 +45,35 @@
         ownca_not_after: "+{{ certificates_validity_days }}d"
         force: "{{ (certificates_renew | bool) or (_certificates_missing_sans | length > 0) }}"
 
-- name: 'Create client private key'
-  community.crypto.openssl_privatekey:
-    path: "{{ certificates_output_directory_keys }}/{{ certificates_hostname }}-client.key"
-    type: "{{ certificates_algorithm_type }}"
-    size: "{{ certificates_algorithm_size }}"
-    mode: '0600'
+- name: 'Issue client certificate'
+  when: certificates_hostname not in (certificates_client_certificate_excluded_hostnames | default([]))
+  block:
+    - name: 'Create client private key'
+      community.crypto.openssl_privatekey:
+        path: "{{ certificates_output_directory_keys }}/{{ certificates_hostname }}-client.key"
+        type: "{{ certificates_algorithm_type }}"
+        size: "{{ certificates_algorithm_size }}"
+        mode: '0600'
 
-- name: 'Create client CSR'
-  community.crypto.openssl_csr:
-    path: "{{ certificates_output_directory_requests }}/{{ certificates_hostname }}-client.csr"
-    privatekey_path: "{{ certificates_output_directory_keys }}/{{ certificates_hostname }}-client.key"
-    common_name: "{{ certificates_hostname }}"
-    subject_alt_name:
-      - "DNS:{{ certificates_hostname }}"
-    key_usage:
-      - digitalSignature
-      - keyEncipherment
-    extended_key_usage:
-      - clientAuth
+    - name: 'Create client CSR'
+      community.crypto.openssl_csr:
+        path: "{{ certificates_output_directory_requests }}/{{ certificates_hostname }}-client.csr"
+        privatekey_path: "{{ certificates_output_directory_keys }}/{{ certificates_hostname }}-client.key"
+        common_name: "{{ certificates_hostname }}"
+        subject_alt_name:
+          - "DNS:{{ certificates_hostname }}"
+        key_usage:
+          - digitalSignature
+          - keyEncipherment
+        extended_key_usage:
+          - clientAuth
 
-- name: 'Sign client certificate'
-  community.crypto.x509_certificate:
-    path: "{{ certificates_output_directory_certs }}/{{ certificates_hostname }}-client.crt"
-    csr_path: "{{ certificates_output_directory_requests }}/{{ certificates_hostname }}-client.csr"
-    provider: ownca
-    ownca_path: "{{ certificates_ca_directory }}/certs/ca.crt"
-    ownca_privatekey_path: "{{ certificates_ca_directory }}/private/ca.key"
-    ownca_not_after: "+{{ certificates_validity_days }}d"
-    force: "{{ certificates_renew | bool }}"
+    - name: 'Sign client certificate'
+      community.crypto.x509_certificate:
+        path: "{{ certificates_output_directory_certs }}/{{ certificates_hostname }}-client.crt"
+        csr_path: "{{ certificates_output_directory_requests }}/{{ certificates_hostname }}-client.csr"
+        provider: ownca
+        ownca_path: "{{ certificates_ca_directory }}/certs/ca.crt"
+        ownca_privatekey_path: "{{ certificates_ca_directory }}/private/ca.key"
+        ownca_not_after: "+{{ certificates_validity_days }}d"
+        force: "{{ certificates_renew | bool }}"
