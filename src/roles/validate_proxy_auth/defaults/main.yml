@@ -1,0 +1,2 @@
+---
+validate_proxy_auth_installed_flag: "{{ obsah_state_path }}/.installed"
