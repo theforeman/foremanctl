@@ -134,7 +134,7 @@ archive contents eligible for cleanup after 24 hours.
 |-----------|------|-------------|
 | `iop-service-vuln-dbupgrade` | oneshot | Database schema migration |
 | `iop-service-vuln-manager` | service | Main API endpoint |
-| `iop-service-vuln-taskomatic` | service | Periodic job scheduler (stale_systems, delete_systems, cacheman) |
+| `iop-service-vuln-taskomatic` | service | Periodic job scheduler for data synchronization and maintenance tasks |
 | `iop-service-vuln-grouper` | service | Groups uploads from inventory and advisor Kafka topics |
 | `iop-service-vuln-listener` | service | Listens on `platform.inventory.events` and `platform.engine.results` |
 | `iop-service-vuln-evaluator-recalc` | service | Recalculates vulnerability scores |
