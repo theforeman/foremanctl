@@ -388,7 +388,7 @@ def curl_request(server, certificates, quadlet_client_certificate, server_fqdn):
     server.run(f"echo '{cert}' > /tmp/quadlet.crt")
     server.run(f"echo '{key}' > /tmp/quadlet.key")
 
-    def _request(path, base_url=None, method=None, data=None, headers=None, return_body=False):
+    def _request(path, base_url=None, method=None, data=None, headers=None, return_body=False, resolve=None, insecure=False):
         url = f"{base_url or f'https://{server_fqdn}'}/{path}"
         curl_opts = (
             f"--cacert {certificates['server_ca_certificate']} "
@@ -398,6 +398,10 @@ def curl_request(server, certificates, quadlet_client_certificate, server_fqdn):
         )
         if not return_body:
             curl_opts += "--write-out '%{http_code}' --output /dev/null "
+        if resolve:
+            curl_opts += f"--resolve {resolve} "
+        if insecure:
+            curl_opts += "--insecure "
         if method:
             curl_opts += f"-X {method} "
         if data:

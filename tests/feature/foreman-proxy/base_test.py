@@ -2,6 +2,7 @@ import datetime
 import json
 
 import pytest
+import yaml
 
 from tests.conftest import FOREMAN_PROXY_PORT
 
@@ -37,6 +38,49 @@ def test_foreman_proxy_features(curl_request, proxy_base_url, enabled_features):
         assert "container_gateway" in features
     else:
         assert "container_gateway" not in features
+
+
+def test_foreman_proxy_permitted_hosts_config(server, server_fqdn, obsah_params):
+    cmd = server.run(
+        "podman secret inspect "
+        "--format '{{.SecretData}}' "
+        "--showsecret foreman-proxy-settings-yml"
+    )
+    assert cmd.succeeded
+
+    settings = yaml.safe_load(cmd.stdout)
+    expected_hosts = [server_fqdn] + (obsah_params.get('server_aliases') or [])
+    assert settings[':permitted_hosts'] == expected_hosts
+
+
+def test_foreman_proxy_host_injection(curl_request, server):
+    warning = 'permitted_hosts is configured but not enforced by this Sinatra version'
+    invocation_id = server.check_output(
+        "systemctl show foreman-proxy.service --property=InvocationID --value"
+    ).strip()
+    assert invocation_id, "Could not determine the current foreman-proxy service invocation"
+
+    journal = server.run(
+        f"journalctl -u foreman-proxy _SYSTEMD_INVOCATION_ID={invocation_id} --no-pager"
+    )
+    assert journal.succeeded, f"Failed to read foreman-proxy startup journal: {journal.stderr}"
+    if warning in journal.stdout:
+        pytest.skip("Host-header rejection is not supported by the installed Sinatra version")
+
+    host = 'evil.hackers.test'
+    request = {
+        'base_url': f"https://{host}:{FOREMAN_PROXY_PORT}",
+        'headers': {"Host": host},
+        'resolve': f"{host}:{FOREMAN_PROXY_PORT}:127.0.0.1",
+        'insecure': True,
+    }
+    status = curl_request("v2/features", **request)
+    assert status.succeeded, f"Failed to query Foreman Proxy: {status.stderr}"
+    assert status.stdout.strip() == '403', f"Expected HTTP 403, got {status.stdout.strip()}"
+
+    body = curl_request("v2/features", return_body=True, **request)
+    assert body.succeeded, f"Failed to query Foreman Proxy: {body.stderr}"
+    assert body.stdout.strip() == 'Host not permitted'
 
 
 def test_foreman_proxy_service(server):

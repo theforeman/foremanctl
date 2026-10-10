@@ -78,7 +78,7 @@ There are multiple use cases from the users perspective that dictate what parame
 
 | Parameter | Description | foreman-installer Parameter |
 | ----------| ----------- | --------------------------- |
-| `--server-alias` (on `deploy`) | Allows defining additional DNS names (SANs) for the main server's certificate | --certs-cname |
+| `--server-alias` (on `deploy`) | Allows defining additional DNS names (SANs) for the main server's certificate and permitted_hosts in foreman-proxy | --certs-cname |
 | `--proxy-alias` (on `auth-bundle`) | Allows defining additional DNS names (SANs) for a secondary system's certificate, e.g. a load-balanced proxy | --foreman-proxy-cname |
 | `--certificate-server-certificate` | Path to a custom server certificate to use instead of the auto-generated one. Requires `--certificate-source=custom_server` on `deploy`. | `--certs-server-cert` |
 | `--certificate-server-key` | Path to the private key for the custom server certificate. | `--certs-server-key` |
