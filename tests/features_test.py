@@ -1,4 +1,6 @@
+import os
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -87,6 +89,9 @@ def test_foremanctl_features_list_enabled(user_enabled_features):
 
 
 def test_invalid_feature_rejected():
+    parameters_file = Path(os.environ.get('OBSAH_STATE', '.var/lib/foremanctl')) / 'parameters.yaml'
+    original_state = parameters_file.read_bytes()
+
     command = ['./foremanctl', 'deploy', '--add-feature', 'invalid-feature']
     result = subprocess.run(command, capture_output=True, text=True)
 
@@ -94,6 +99,19 @@ def test_invalid_feature_rejected():
 
     assert 'Unknown feature(s) requested: invalid-feature' in result.stdout
     assert "Run 'foremanctl features' to list all available features." in result.stdout
+    assert parameters_file.read_bytes() == original_state
+
+
+def test_invalid_feature_removal_rejected_without_persisting():
+    parameters_file = Path(os.environ.get('OBSAH_STATE', '.var/lib/foremanctl')) / 'parameters.yaml'
+    original_state = parameters_file.read_bytes()
+
+    command = ['./foremanctl', 'deploy', '--remove-feature', 'invalid-feature']
+    result = subprocess.run(command, capture_output=True, text=True)
+
+    assert result.returncode == 2
+    assert "Cannot remove unknown feature 'invalid-feature'" in result.stdout
+    assert parameters_file.read_bytes() == original_state
 
 
 def test_enabled_features(pytestconfig, enabled_features):

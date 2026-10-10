@@ -120,10 +120,13 @@ variables:
     action: append_unique
   remove_features:
     parameter: --remove-feature
-    help: Additional features to disable in this deployment.
+    help: Features to remove from the persisted user feature list.
     action: remove
     dest: features
+    persist: false
 ```
+
+`features` is the single persisted user feature list. `--remove-feature` mutates that same list during argument parsing, while the distinct `remove_features` value contains only the raw operands for playbook validation. Because it is marked `persist: false`, a removal request is never stored as a second deny-list. A successful removal is saved by the normal `obsah` persistence path; a failed playbook leaves the previous list unchanged.
 
 ### Constraints for validating flag combinations
 

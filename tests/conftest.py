@@ -31,33 +31,48 @@ class UserParameters:
     def __init__(self, config):
         self._config = config
 
+    @staticmethod
+    def _is_internal(value):
+        return value.lower() in {'1', 'true'}
+
     @cached_property
     def features(self):
         # foremanctl outputs
-        # FEATURE                   STATE               DESCRIPTION
-        # $feature                  enabled/available   $description
+        # FEATURE                   STATE               INTERNAL  REMOVABLE       DESCRIPTION
+        # $feature                  enabled/available   0/1       flavor/yes/no    $description
+        # Internal values may be rendered as either numeric or boolean strings.
         output = subprocess.check_output(['./foremanctl', 'features'], cwd=self._config.rootdir,
                                          universal_newlines=True,
                                          env=os.environ | {'FOREMANCTL_FEATURES_LIST_INTERNAL': 'true'})
         lines = output.splitlines(keepends=False)
-        # feature, status, internal, description
-        return [line.split(None, 3) for line in lines[1:]]
+        # feature, status, internal, removable, description
+        features = []
+        for line in lines[1:]:
+            fields = line.split(None, 4)
+            features.append(fields + [''] * (5 - len(fields)))
+        return features
 
     @cached_property
     def all_available_features(self):
-        return set(feature for feature, _status, _internal, _desc in self.features)
+        return set(feature for feature, _status, _internal, _removable, _desc in self.features)
 
     @cached_property
     def available_features(self):
-        return set(feature for feature, _status, internal, _desc in self.features if internal == '0')
+        return set(
+            feature for feature, _status, internal, _removable, _desc in self.features
+            if not self._is_internal(internal)
+        )
 
     @cached_property
     def enabled_features(self):
-        return set(feature for feature, status, internal, _desc in self.features if status == 'enabled')
+        return set(feature for feature, status, _internal, _removable, _desc in self.features if status == 'enabled')
 
     @cached_property
     def user_enabled_features(self):
-        return set(feature for feature, status, internal, _desc in self.features if status == 'enabled' and internal == '0')
+        return set(
+            feature for feature, status, internal, _removable, _desc in self.features
+            if status == 'enabled' and not self._is_internal(internal)
+        )
 
     @cached_property
     def flavor(self):

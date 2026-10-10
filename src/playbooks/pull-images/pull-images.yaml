@@ -11,6 +11,7 @@
     - "../../vars/base.yaml"
   become: true
   roles:
+    - role: check_features
     - role: pre_install
   post_tasks:
     - name: Deploy Foreman image units
