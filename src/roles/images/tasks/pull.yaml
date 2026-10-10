@@ -40,9 +40,23 @@
         jid: "{{ item.ansible_job_id }}"
       register: images_pull_result
       until: images_pull_result is finished
+      failed_when: false
       retries: 120
       delay: 5
       loop: "{{ images_pull_jobs.results }}"
+
+    - name: Verify image pull services completed successfully
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - is-active
+          - "{{ item }}-image.service"
+      register: images_pull_service_status
+      changed_when: false
+      until: images_pull_service_status.rc == 0
+      retries: 120
+      delay: 5
+      loop: "{{ images_deployed_names | default([]) }}"
 
   always:
     - name: Remove Policy=always drop-ins
