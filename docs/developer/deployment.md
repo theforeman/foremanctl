@@ -326,6 +326,10 @@ The best practices are listed in preferential order.
   2. Rely on envsubst with default config files in the container
   3. Mount config file from secrets
 
+## HTTP Proxy Configuration
+
+All containers have set `HttpProxy=false` to prevent containers from inheriting the host's proxy settings, which could interfere with container-to-container communication.
+
 ## Existing deployment handling
 
 When the user provides parameters to alter the deployment, the deployment utility stores these and re-uses them on the next run, even if the user did not pass in the parameter again.
