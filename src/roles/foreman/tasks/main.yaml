@@ -120,6 +120,7 @@
     secrets: "{{ foreman_secrets }}"
     env: "{{ foreman_env }}"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Requires=foreman.socket
@@ -154,6 +155,7 @@
     env: "{{ foreman_dynflow_env }}"
     command: "/usr/libexec/foreman/sidekiq-selinux -e production -r ./extras/dynflow-sidekiq.rb -C /etc/foreman/dynflow/%i.yml"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Install]
         WantedBy=default.target foreman.target
@@ -197,6 +199,7 @@
     secrets: "{{ foreman_secrets }}"
     env: "{{ foreman_env }}"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         PartOf=foreman.target
@@ -247,6 +250,7 @@
     env: "{{ foreman_env }}"
     secrets: "{{ foreman_secrets }}"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Service]
         Type=oneshot

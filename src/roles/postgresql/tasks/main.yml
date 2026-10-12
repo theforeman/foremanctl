@@ -40,6 +40,7 @@
       POSTGRESQL_SHARED_BUFFERS: "{{ postgresql_shared_buffers }}"
       POSTGRESQL_EFFECTIVE_CACHE_SIZE: "{{ postgresql_effective_cache_size }}"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Install]
         WantedBy=default.target foreman.target
