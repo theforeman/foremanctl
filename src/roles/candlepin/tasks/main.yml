@@ -89,6 +89,7 @@
       - 'candlepin-logback-xml,target=/var/lib/tomcat/webapps/candlepin/WEB-INF/classes/logback.xml,{{ candlepin_secret_mount_opts }}'
       - 'candlepin-db-ca,target={{ candlepin_database_ssl_ca_path }},{{ candlepin_secret_mount_opts }}'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Install]
         WantedBy=default.target foreman.target
