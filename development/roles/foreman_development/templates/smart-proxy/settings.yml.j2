@@ -36,6 +36,7 @@
 #:foreman_url: http://127.0.0.1:3000
 
 :foreman_url: https://{{ ansible_facts['fqdn'] }}
+:permitted_hosts: {{ ([ansible_facts['fqdn']] + (server_aliases | default([]))) | to_json }}
 
 # SSL settings for client authentication against Foreman. If undefined, the values
 # from general SSL options are used instead. Mainly useful when Foreman uses

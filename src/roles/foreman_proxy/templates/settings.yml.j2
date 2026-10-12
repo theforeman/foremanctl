@@ -1,6 +1,7 @@
 :settings_directory: /etc/foreman-proxy/settings.d
 
 :foreman_url: {{ foreman_proxy_foreman_server_url }}
+:permitted_hosts: {{ foreman_proxy_permitted_hosts | to_json }}
 :trusted_hosts:
 {% for host in foreman_proxy_trusted_hosts %}
   - {{ host }}
