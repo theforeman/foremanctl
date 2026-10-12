@@ -102,6 +102,10 @@ Containers on these networks talk by **container name**, not by published host p
 
 Certificates include extra DNS names for names used over TLS on the bridge (`candlepin`, `iop-core-gateway`). See [Certificates](../user/certificates.md).
 
+### HTTP proxy isolation                                                                                
+
+All containers have `HttpProxy=false` set in their quadlet `.container` files. This prevents containers from inheriting the host's `HTTP_PROXY` / `HTTPS_PROXY` environment variables, which would interfere with container-to-container communication.
+
 ### Members
 
 These containers join `foreman-core-network`. On IPv6-capable hosts they also join `foreman-core-network-ipv6`:
