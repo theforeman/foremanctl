@@ -25,6 +25,7 @@
       - 'foreman-proxy-foreman-ssl-cert,type=mount,target=/etc/foreman-proxy/foreman_ssl_cert.pem'
       - 'foreman-proxy-foreman-ssl-key,type=mount,target=/etc/foreman-proxy/foreman_ssl_key.pem'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Install]
         WantedBy=default.target foreman.target
