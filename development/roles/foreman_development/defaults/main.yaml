@@ -36,9 +36,12 @@ foreman_development_database_user: "foreman"
 
 foreman_development_nodejs_stream: "22"
 
+# Dependencies reference other registry entries and are resolved transitively for Foreman, Hammer, and Smart Proxy.
 foreman_development_plugin_registry:
   katello:
     name: "katello/katello"
+    dependencies:
+      - foreman_tasks
     settings_template: "katello.yaml.j2"
     manage_repo: true
     extra_gemfiles:
@@ -49,6 +52,8 @@ foreman_development_plugin_registry:
       module_config: katello.yml
   foreman_remote_execution:
     name: "theforeman/foreman_remote_execution"
+    dependencies:
+      - foreman_tasks
     manage_repo: true
     hammer:
       name: "theforeman/hammer_cli_foreman_remote_execution"
@@ -58,6 +63,8 @@ foreman_development_plugin_registry:
       module_config: remote_execution_ssh.yml
   foreman_ansible:
     name: "theforeman/foreman_ansible"
+    dependencies:
+      - foreman_remote_execution
     settings_template: "foreman_ansible.yaml.j2"
     manage_repo: true
     hammer:
@@ -69,6 +76,8 @@ foreman_development_plugin_registry:
       module_config: ansible.yml
   foreman_rh_cloud:
     name: "theforeman/foreman_rh_cloud"
+    dependencies:
+      - katello
     manage_repo: true
     hammer:
       gem: hammer_cli_foreman_rh_cloud
