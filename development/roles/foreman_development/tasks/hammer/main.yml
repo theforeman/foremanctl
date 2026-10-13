@@ -32,7 +32,7 @@
     foreman_development_plugin_module_config: "{{ foreman_development_plugin_config.module_config | default('') }}"
     foreman_development_plugin_extra_gemfiles: []
   when: foreman_development_plugin_config != {}
-  loop: "{{ foreman_development_default_plugins + foreman_development_enabled_plugins }}"
+  loop: "{{ foreman_development_resolved_plugins }}"
   loop_control:
     loop_var: plugin_item
 

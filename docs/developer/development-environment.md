@@ -109,7 +109,7 @@ ANSIBLE_ASK_PASS=true ./forge deploy-dev --target-host=192.168.1.100
 
 Similarly to production deployments with `foremanctl`, using `forge` there is support for enabling `hammer` and `foreman-proxy` as features. Features can be enabled with `--add-feature=$feature`, which can be used multiple times.
 
-By default `hammer` feature will set up `hammer-cli` and `hammer-cli-foreman`, `foreman-proxy` will set up `smart-proxy` itself. If any plugins are enabled, they're respective hammer or smart-proxy plugins will be set up as well.
+By default `hammer` feature will set up `hammer-cli` and `hammer-cli-foreman`, while `foreman-proxy` sets up the development `smart-proxy` service. When enabled, that service remains enabled and running after deployment. If any plugins are enabled, their respective Hammer or Smart Proxy plugins will be set up as well.
 
 All the projects set up as part of the feature are deployed as git checkouts.
 
@@ -152,10 +152,12 @@ Deploy using the custom Pulp container image:
 
 Each enabled plugin is cloned into its own directory alongside the Foreman checkout (for example `/home/vagrant/katello`) and wired in as a local path gem, so edits to the plugin source are picked up by the development server.
 
-### Enabled Plugins (Default)
+### Explicitly Requested Plugins (Default)
 
 - `katello`
 - `foreman_remote_execution`
+
+The plugin registry resolves dependencies transitively, so dependencies are also cloned and configured even when they are not explicitly requested. Dependencies apply across Foreman, Hammer, and Smart Proxy setup. For example, `foreman_remote_execution` depends on `foreman_tasks`, so the default Remote Execution setup also includes Foreman's task-engine plugin. When the `hammer` or `foreman-proxy` feature is enabled, the task dependency also configures the corresponding Hammer plugin and Smart Proxy `dynflow` plugin. Katello also depends on `foreman_tasks`.
 
 ### Plugin Registry
 
@@ -203,7 +205,7 @@ After deployment, the environment includes:
 - Development-specific settings
 - if `hammer` feature was enabled, `hammer-cli` and its plugins
 - if `foreman-proxy` feature was enabled
-  - `smart-proxy` and its plugins
+  - `smart-proxy` and its plugins, with the development service enabled and running
   - the development smart proxy registered into Foreman
 
 ### Upgrading from source
