@@ -155,9 +155,3 @@
       If these features come from a Smart Proxy plugin, make sure Foreman has the plugin installed too.
   when:
     - foreman_development_proxy_registration.entity.smart_proxies[0].unrecognized_features | default([]) | length > 0
-
-- name: Stop smart-proxy-development service
-  ansible.builtin.systemd:
-    name: "smart-proxy-development"
-    state: stopped
-    enabled: false
