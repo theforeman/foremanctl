@@ -25,6 +25,7 @@
     volumes:
       - /var/lib/valkey:/data:rw,Z
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Install]
         WantedBy=default.target foreman.target

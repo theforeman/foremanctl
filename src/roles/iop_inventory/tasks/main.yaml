@@ -50,6 +50,7 @@
       - 'iop-core-host-inventory-database-host,type=env,target=INVENTORY_DB_HOST'
       - 'iop-core-host-inventory-database-port,type=env,target=INVENTORY_DB_PORT'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=Database Readiness and Migration Init Container
@@ -67,6 +68,8 @@
     name: iop-core-host-inventory
     image: iop-host-inventory.image
     state: quadlet
+    # Give the worker time to finish and close its Kafka client before SIGKILL.
+    stop_timeout: 45
     command: make run_inv_mq_service
     network: "{{ foreman_core_network_container_networks }}"
     env:
@@ -81,6 +84,7 @@
       - 'iop-core-host-inventory-database-host,type=env,target=INVENTORY_DB_HOST'
       - 'iop-core-host-inventory-database-port,type=env,target=INVENTORY_DB_PORT'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=IOP Core Host-Based Inventory Container
@@ -89,6 +93,7 @@
         PartOf=foreman.target
         [Service]
         Restart=on-failure
+        SuccessExitStatus=143
         [Install]
         WantedBy=default.target foreman.target
 
@@ -97,6 +102,8 @@
     name: iop-core-host-inventory-api
     image: iop-host-inventory.image
     state: quadlet
+    # Exceed gunicorn's graceful timeout so workers drain before SIGKILL.
+    stop_timeout: 45
     command: python run_gunicorn.py
     network: "{{ foreman_core_network_container_networks }}"
     env:
@@ -113,6 +120,7 @@
       - 'iop-core-host-inventory-database-host,type=env,target=INVENTORY_DB_HOST'
       - 'iop-core-host-inventory-database-port,type=env,target=INVENTORY_DB_PORT'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=IOP Core Host-Based Inventory Web Container
@@ -121,6 +129,7 @@
         PartOf=foreman.target
         [Service]
         Restart=on-failure
+        SuccessExitStatus=143
         [Install]
         WantedBy=default.target foreman.target
 
@@ -143,6 +152,7 @@
       - 'iop-core-host-inventory-database-host,type=env,target=INVENTORY_DB_HOST'
       - 'iop-core-host-inventory-database-port,type=env,target=INVENTORY_DB_PORT'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=Host Inventory Access Tags Cleanup Job
