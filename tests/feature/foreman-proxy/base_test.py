@@ -53,6 +53,7 @@ def test_foreman_proxy_permitted_hosts_config(server, server_fqdn, obsah_params)
     assert settings[':permitted_hosts'] == expected_hosts
 
 
+@pytest.mark.xfail(reason="foreman-proxy 5.0 doesn't support permitted_hosts setting")
 def test_foreman_proxy_host_injection(curl_request, server):
     warning = 'permitted_hosts is configured but not enforced by this Sinatra version'
     invocation_id = server.check_output(
