@@ -139,9 +139,9 @@
   ProxyPass /index/ {{ foreman_proxy_url }}/container_gateway/index/
   ProxyPassReverse /index/ {{ foreman_proxy_url }}/container_gateway/index/
 {% endif %}
-  ProxyPass /rhsm {{ httpd_foreman_url }}/rhsm disablereuse=on retry=0
+  ProxyPass /rhsm {{ httpd_foreman_url }}/rhsm disablereuse=on retry=0 timeout={{ httpd_rhsm_proxy_timeout }}
   ProxyPassReverse /rhsm {{ httpd_foreman_url }}/rhsm
-  ProxyPass /redhat_access {{ httpd_foreman_url }}/redhat_access disablereuse=on retry=0
+  ProxyPass /redhat_access {{ httpd_foreman_url }}/redhat_access disablereuse=on retry=0 timeout={{ httpd_redhat_access_proxy_timeout }}
   ProxyPassReverse /redhat_access {{ httpd_foreman_url }}/redhat_access
   ProxyPass /api/lightspeed {{ httpd_foreman_url }}/api/lightspeed disablereuse=on retry=0
   ProxyPassReverse /api/lightspeed {{ httpd_foreman_url }}/api/lightspeed

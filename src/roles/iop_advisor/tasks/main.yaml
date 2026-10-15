@@ -38,8 +38,7 @@
     image: iop-advisor-backend.image
     state: quadlet
     command: sh -c "./container_init.sh && api/app.sh"
-    network:
-      - foreman-core-network
+    network: "{{ foreman_core_network_container_networks }}"
     env:
       DJANGO_SESSION_KEY: "UNUSED"
       BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
@@ -65,6 +64,7 @@
       - 'iop-service-advisor-backend-database-host,type=env,target=ADVISOR_DB_HOST'
       - 'iop-service-advisor-backend-database-port,type=env,target=ADVISOR_DB_PORT'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=Advisor Backend API
@@ -82,8 +82,7 @@
     image: iop-advisor-backend.image
     state: quadlet
     command: pipenv run python service/service.py
-    network:
-      - foreman-core-network
+    network: "{{ foreman_core_network_container_networks }}"
     env:
       BOOTSTRAP_SERVERS: "iop-core-kafka:9092"
       ADVISOR_DB_SSL_MODE: "disable"
@@ -95,6 +94,7 @@
       - 'iop-service-advisor-backend-database-host,type=env,target=ADVISOR_DB_HOST'
       - 'iop-service-advisor-backend-database-port,type=env,target=ADVISOR_DB_PORT'
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=Advisor Backend Service

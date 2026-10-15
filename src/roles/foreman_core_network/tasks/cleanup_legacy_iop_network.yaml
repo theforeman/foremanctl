@@ -1,0 +1,25 @@
+---
+- name: List containers still using leftover IOP network
+  containers.podman.podman_container_info:
+  register: _foreman_core_network_legacy_info
+
+- name: Stop leftover IOP network systemd units
+  vars:
+    _foreman_core_network_legacy_container_names: "{{
+      _foreman_core_network_legacy_info.containers
+      | selectattr('NetworkSettings.Networks', 'defined')
+      | selectattr('NetworkSettings.Networks', 'contains', foreman_core_network_legacy_iop_network_name)
+      | map(attribute='Name')
+      | list
+    }}"
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+  loop: "{{ _foreman_core_network_legacy_container_names }}"
+  failed_when: false
+
+- name: Remove leftover IOP network from previous deploys
+  containers.podman.podman_network:
+    name: "{{ foreman_core_network_legacy_iop_network_name }}"
+    state: absent
+    force: true

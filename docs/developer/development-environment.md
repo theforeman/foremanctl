@@ -28,13 +28,16 @@ The development environment provides:
    ```
 
 2. **Access the environment:**
-   - SSH into the VM: `vagrant ssh`
+   - To run commands on the VM, SSH into it: `vagrant ssh quadlet`
    - Navigate to Foreman directory: `cd /home/vagrant/foreman`
    - Start Rails server: `bundle exec foreman start`
 
 3. **Access URLs:**
    - Foreman UI: `http://$(hostname -f):3000` (development server)
    - Production-style UI: `https://$(hostname -f)` (via Apache proxy)
+
+> [!NOTE]
+> Do not run `./foremanctl` or `./forge` from inside the VM. These commands should be run on the **control node** (where foremanctl source is cloned) and use the `--target-host` parameter to deploy to the VM remotely via SSH. See [Deploying to a Remote Host](#deploying-to-a-remote-host) for details.
 
 ### Deploying to a Remote Host
 
@@ -66,6 +69,32 @@ katello-production:
   cpus: 4
   disk_size: 50
 ```
+
+### DNS
+
+This repository does not use the `vagrant-hostmanager` plugin; instead, it automatically configures `/etc/hosts` inside all VMs during provisioning. However, to enable host-to-VM communication (e.g., using `ssh` or `scp` from your host, which is required for proxy/capsule node deployments), you need a working DNS resolution of the libvirt VMs.
+
+This can be configured by editing the default libvirt network on your host:
+
+```bash
+virsh net-edit default
+```
+
+And ensuring that the domain name tag matches your `VAGRANT_DOMAIN` environment variable (which defaults to `example.com`):
+
+```xml
+<network>
+  <domain name='example.com' localOnly='yes' register='yes'/>
+</network>
+```
+
+After the network is restarted
+
+```bash
+virsh net-destroy default && virsh net-start default
+```
+
+the guest hostnames should resolve automatically on modern Linux distributions with `systemd-resolved`.
 
 ### SSH Authentication
 
@@ -121,6 +150,8 @@ Deploy using the custom Pulp container image:
 ```
 ## Plugin Management
 
+Each enabled plugin is cloned into its own directory alongside the Foreman checkout (for example `/home/vagrant/katello`) and wired in as a local path gem, so edits to the plugin source are picked up by the development server.
+
 ### Enabled Plugins (Default)
 
 - `katello`
@@ -134,7 +165,6 @@ The system includes a plugin registry with predefined configurations:
 - `foreman_ansible` - Ansible integration
 - `foreman_rh_cloud` - Red Hat Cloud integration
 - `foreman_discovery` - Host discovery
-- `foreman_openscap` - OpenSCAP compliance
 - `foreman_bootdisk` - Boot disk creation
 - `foreman_openscap` - Foreman plug-in for displaying OpenSCAP audit reports
 - `foreman_theme_satellite` - Branding for Satellite
@@ -152,13 +182,13 @@ Use the `--foreman-development-enabled-plugin` parameter (can be used multiple t
 
 ```bash
 # Enable specific plugins
-./forge deploy-dev start --foreman-development-enabled-plugin katello --foreman-development-enabled-plugin foreman_ansible --foreman-development-enabled-plugin foreman_discovery
+./forge deploy-dev start --foreman-development-enabled-plugin foreman_ansible --foreman-development-enabled-plugin foreman_discovery
 
 # Enable single plugin
-./forge deploy-dev start --foreman-development-enabled-plugin katello
+./forge deploy-dev start --foreman-development-enabled-plugin foreman_ansible
 
 # Enable all available plugins
-./forge deploy-dev start --foreman-development-enabled-plugin katello --foreman-development-enabled-plugin foreman_remote_execution --foreman-development-enabled-plugin foreman_ansible --foreman-development-enabled-plugin foreman_rh_cloud --foreman-development-enabled-plugin foreman_discovery --foreman-development-enabled-plugin foreman_openscap --foreman-development-enabled-plugin foreman_bootdisk
+./forge deploy-dev start --foreman-development-enabled-plugin foreman_ansible --foreman-development-enabled-plugin foreman_rh_cloud --foreman-development-enabled-plugin foreman_discovery --foreman-development-enabled-plugin foreman_openscap --foreman-development-enabled-plugin foreman_bootdisk
 ```
 
 ## Development Workflow
@@ -193,7 +223,6 @@ Run all the steps as the root user in the foremanctl source directory unless oth
 
 This final deploy command will pull new images and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
 
-
 ## Architecture
 
 ### Service Integration
@@ -218,3 +247,28 @@ Development certificates are copied to `/home/vagrant/foreman-certs/`:
 
 - **Backup/Restore with Multiple Nodes**: When running both quadlet and proxy nodes with the same controller, ensure you're switching to the correct `obsah_state` context before performing backup or restore operations. On user installs, foreman quadlet and smart proxy map to localhost (same machine). In the development environment, these are separate VMs which alters behavior.
 - **BACKUP_DIR Location**: The `BACKUP_DIR` argument in backup/restore commands refers to a directory on the target node (the VM running quadelt/proxy), not the controller node running foremanctl.
+
+### Verifying the Deployment (Optional)
+
+After deployment, verify the Foreman service and API on the target host:
+
+```bash
+systemctl status foreman-development
+curl -sk http://$(hostname -f):3000/api/v2/ping
+```
+
+If the API does not respond, inspect the service log and restart the service:
+
+```bash
+journalctl -u foreman-development -n 100 --no-pager
+sudo systemctl restart foreman-development
+```
+
+For container and systemd health checks, inspect the services with:
+
+```bash
+sudo podman ps -a
+systemctl list-units --type=service --all --no-pager \\
+  | grep -E '(foreman|pulp|candlepin|httpd|postgres|valkey)'
+systemctl --failed --no-pager
+```

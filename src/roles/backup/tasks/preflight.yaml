@@ -1,4 +1,14 @@
 ---
+- name: Validate tar_volume_size format
+  ansible.builtin.fail:
+    msg: >-
+      Invalid tar_volume_size format '{{ tar_volume_size }}'.
+      Use a positive byte count like '1048576' or a size like '5G', '100MB', '5GiB' (see 'man split' SIZE argument)
+  when:
+    - tar_volume_size is defined
+    - tar_volume_size | length > 0
+    - tar_volume_size is not match('^[1-9][0-9]*(b|[KMGTPEZYRQkmgtpezyrq](i?B)?)?\Z')
+
 - name: Check for running Foreman tasks
   theforeman.foreman.resource_info:
     server_url: "https://{{ ansible_facts['fqdn'] }}"

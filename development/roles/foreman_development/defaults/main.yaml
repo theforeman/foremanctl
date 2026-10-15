@@ -143,6 +143,13 @@ foreman_development_plugin_registry:
       gem: hammer_cli_foreman_puppet
       name: "theforeman/hammer-cli-foreman-puppet"
       module_config: foreman_puppet.yml
+  foreman_virt_who_configure:
+    name: "theforeman/foreman_virt_who_configure"
+    manage_repo: true
+    hammer:
+      gem: hammer_cli_foreman_virt_who_configure
+      name: "theforeman/hammer-cli-foreman-virt-who-configure"
+      module_config: foreman_virt_who_configure.yml
 
 foreman_development_default_plugins:
   - katello

@@ -130,6 +130,7 @@
       - 'pulp-django-secret-key,type=env,target=PULP_SECRET_KEY'
     env: "{{ pulp_settings_env }}"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Requires=pulp-api.socket
@@ -170,6 +171,7 @@
       - 'pulp-django-secret-key,type=env,target=PULP_SECRET_KEY'
     env: "{{ pulp_settings_env }}"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Requires=pulp-content.socket
@@ -203,6 +205,7 @@
       - 'pulp-django-secret-key,type=env,target=PULP_SECRET_KEY'
     env: "{{ pulp_settings_env }}"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Install]
         WantedBy=foreman.target pulp-worker.target
@@ -250,6 +253,7 @@
       - 'pulp-db-ca,type=mount,target={{ pulp_database_ssl_ca_path }}'
     env: "{{ pulp_settings_database_env }}"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Service]
         Type=oneshot
@@ -271,6 +275,7 @@
       - 'pulp-db-ca,type=mount,target={{ pulp_database_ssl_ca_path }}'
     env: "{{ pulp_settings_database_env }}"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Service]
         Type=oneshot

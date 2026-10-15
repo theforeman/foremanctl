@@ -38,7 +38,7 @@
     image: iop-vmaas.image
     state: quadlet
     quadlet_dir: /etc/containers/systemd
-    network: foreman-core-network
+    network: "{{ foreman_core_network_container_networks }}"
     volumes:
       - iop-service-vmaas-data:/data:rw
     command: "/vmaas/entrypoint.sh database-upgrade reposcan"
@@ -68,6 +68,7 @@
       - "iop-service-vmaas-reposcan-database-host,type=env,target=POSTGRESQL_HOST"
       - "iop-service-vmaas-reposcan-database-port,type=env,target=POSTGRESQL_PORT"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=VMAAS Reposcan Service
@@ -85,7 +86,7 @@
     image: iop-vmaas.image
     state: quadlet
     quadlet_dir: /etc/containers/systemd
-    network: foreman-core-network
+    network: "{{ foreman_core_network_container_networks }}"
     command: "/vmaas/entrypoint.sh webapp-go"
     env:
       REPOSCAN_PUBLIC_URL: "http://iop-service-vmaas-reposcan:8000"
@@ -100,6 +101,7 @@
       - "iop-service-vmaas-reposcan-database-host,type=env,target=POSTGRESQL_HOST"
       - "iop-service-vmaas-reposcan-database-port,type=env,target=POSTGRESQL_PORT"
     quadlet_options:
+      - "HttpProxy=false"
       - |
         [Unit]
         Description=VMAAS Webapp-Go Service

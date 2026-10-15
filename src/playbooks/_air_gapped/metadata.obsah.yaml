@@ -1,0 +1,8 @@
+---
+variables:
+  air_gapped:
+    help: >-
+      Enable air-gapped mode, where the system is completely disconnected
+      from the Internet and cannot fetch container images on its own. All
+      required images must already be available in local container storage.
+    action: store_true
