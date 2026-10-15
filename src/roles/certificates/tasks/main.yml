@@ -1,30 +1,55 @@
 ---
-- name: 'Require Enterprise Linux 10.3 or later for ML-DSA certificates'
-  ansible.builtin.assert:
-    that:
-      - not certificates_primary_algorithm.startswith('ML-DSA')
-        or (
-          ansible_facts['os_family'] == 'RedHat'
-          and ansible_facts['distribution_major_version'] | int >= 10
-          and (
-            ansible_facts['distribution'] != 'RedHat'
-            or ansible_facts['distribution_version'] is version('10.3', '>=')
-          )
-        )
-    fail_msg: >-
-      The {{ certificates_primary_algorithm }} certificate algorithm requires
-      Enterprise Linux 10.3 or later, which ships the post-quantum crypto stack
-      (python-cryptography and OpenSSL) needed to generate and sign the keys.
-      This host is {{ ansible_facts['distribution'] }}
-      {{ ansible_facts['distribution_version'] }}. Choose RSA or ECC, or deploy
-      on RHEL 10.3 or later.
-    quiet: true
-
 - name: 'Install crypto dependencies'
   ansible.builtin.package:
     name:
       - python3-cryptography
     state: present
+
+- name: 'Check ML-DSA crypto capabilities'
+  when: certificates_primary_algorithm.startswith('ML-DSA')
+  block:
+    - name: 'Detect community.crypto collection version'
+      ansible.builtin.set_fact:
+        certificates_community_crypto_version: "{{ lookup('community.general.collection_version', 'community.crypto') }}"
+
+    - name: 'Require community.crypto 3.3.0 or later for ML-DSA certificates'
+      ansible.builtin.assert:
+        that:
+          - certificates_community_crypto_version is not none
+          - certificates_community_crypto_version != '*'
+          - certificates_community_crypto_version is version('3.3.0', '>=')
+        fail_msg: >-
+          ML-DSA certificates require community.crypto >= 3.3.0;
+          detected version: {{ certificates_community_crypto_version
+            if certificates_community_crypto_version is not none else 'unavailable' }}.
+        quiet: true
+
+    - name: 'Gather crypto capabilities'
+      community.crypto.crypto_info:
+      register: certificates_crypto_info
+      check_mode: false
+
+    - name: 'Require python-cryptography 49.0.0 or later for ML-DSA certificates'
+      ansible.builtin.assert:
+        that:
+          - certificates_crypto_info.python_cryptography_installed is true
+          - certificates_crypto_info.python_cryptography_capabilities.version is version('49.0.0', '>=')
+        fail_msg: >-
+          ML-DSA certificates require python-cryptography >= 49.0.0;
+          detected version: {{ certificates_crypto_info.python_cryptography_capabilities.version
+            if certificates_crypto_info.python_cryptography_installed | default(false) else 'unavailable' }}.
+        quiet: true
+
+    - name: 'Require OpenSSL 3.5 or later for ML-DSA certificates'
+      ansible.builtin.assert:
+        that:
+          - certificates_crypto_info.openssl_present is true
+          - certificates_crypto_info.openssl.version is version('3.5', '>=')
+        fail_msg: >-
+          ML-DSA certificates require OpenSSL >= 3.5;
+          detected version: {{ certificates_crypto_info.openssl.version
+            if certificates_crypto_info.openssl_present | default(false) else 'unavailable' }}.
+        quiet: true
 
 - name: 'Create base directory'
   ansible.builtin.file:
