@@ -138,7 +138,7 @@ jobs:
       - name: Create custom certificates
         if: matrix.certificate_source == 'custom_server'
         run: |
-          ./forge custom-certs
+          ./forge custom-certs --intermediate-ca
       - name: Setup security mode ${{ matrix.security }}
         if: matrix.security != 'none'
         run: |
@@ -469,8 +469,8 @@ jobs:
       - name: Create custom certificates
         if: matrix.certificate_source == 'custom_server'
         run: |
-          ./forge custom-certs
-          ./forge custom-certs --hostname proxy.example.com
+          ./forge custom-certs --intermediate-ca
+          ./forge custom-certs --intermediate-ca --hostname proxy.example.com
       - name: Deploy Katello on quadlet
         run: |
           ./foremanctl deploy \

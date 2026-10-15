@@ -1,5 +1,7 @@
 import datetime
 import json
+import re
+import shlex
 
 import pytest
 import yaml
@@ -161,3 +163,37 @@ def test_registration_url(obsah_params):
 def test_registration_endpoint(proxy_v2_features):
     assert 'registration' in proxy_v2_features
     assert proxy_v2_features['registration'].get('state') == 'running'
+
+
+def test_proxy_serves_chain_with_root_only_trust(server, server_fqdn, certificates):
+    from tests.certificates_test import pem_certificates
+
+    ca_pem = server.file(certificates["server_ca_certificate"]).content_string
+    ca_blocks = re.findall(r"-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----", ca_pem, re.S)
+    # Test fixtures put the self-signed root last, including the default single-root case.
+    root = ca_blocks[-1]
+    root_path = server.check_output("mktemp /tmp/proxy-root-XXXXXX.pem").strip()
+    try:
+        write = server.run(f"printf '%s' {shlex.quote(root)} > {shlex.quote(root_path)}")
+        assert write.succeeded
+        root_info = server.check_output("openssl x509 -in %s -noout -subject -issuer -nameopt RFC2253", root_path)
+        subject, issuer = root_info.splitlines()
+        assert subject.removeprefix("subject=") == issuer.removeprefix("issuer="), "Fixture must end with the root"
+        result = server.run(
+            "openssl s_client -connect %s:%s -servername %s -showcerts "
+            "-CAfile %s -no-CApath -no-CAstore -verify_hostname %s "
+            "-verify_return_error </dev/null",
+            server_fqdn,
+            str(FOREMAN_PROXY_PORT),
+            server_fqdn,
+            root_path,
+            server_fqdn,
+        )
+        assert result.succeeded, result.stdout + result.stderr
+        expected = pem_certificates(server.file(certificates["server_certificate"]).content_string)
+        presented = pem_certificates(result.stdout)
+        # OpenSSL may omit the self-signed root; every intermediate must be sent.
+        required = expected[:-1] if len(expected) > 1 and expected[-1] == pem_certificates(root)[0] else expected
+        assert presented[: len(required)] == required
+    finally:
+        server.run("rm -f %s", root_path)
