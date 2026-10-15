@@ -3,7 +3,7 @@ import pytest
 
 def test_container_gateway_running(proxy_v2_features):
     """Verify container_gateway is loaded and running via /v2/features."""
-    assert proxy_v2_features['container_gateway']['state'] == 'running'
+    assert proxy_v2_features["container_gateway"]["state"] == "running"
 
 
 @pytest.fixture

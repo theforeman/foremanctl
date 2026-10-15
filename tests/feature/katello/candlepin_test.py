@@ -1,5 +1,5 @@
 def assert_secret_content(server, secret_name, secret_value):
-    secret = server.run(f'podman secret inspect --format {"{{.SecretData}}"} --showsecret {secret_name}')
+    secret = server.run(f"podman secret inspect --format {'{{.SecretData}}'} --showsecret {secret_name}")
     assert secret.succeeded
     assert secret.stdout.strip() == secret_value
 
@@ -10,12 +10,12 @@ def test_candlepin_service(server):
 
 
 def test_candlepin_runs_as_tomcat(server):
-    assert server.run("podman exec candlepin id -un").stdout.strip() == 'tomcat'
-    assert server.run("podman exec candlepin id -u").stdout.strip() != '0'
+    assert server.run("podman exec candlepin id -un").stdout.strip() == "tomcat"
+    assert server.run("podman exec candlepin id -u").stdout.strip() != "0"
 
     groups = server.run("podman exec candlepin id -Gn").stdout.split()
-    assert 'tomcat' in groups
-    assert 'root' not in groups
+    assert "tomcat" in groups
+    assert "root" not in groups
 
     assert server.run("podman exec candlepin test -r /etc/candlepin/certs/tomcat.key").succeeded
     assert server.run("podman exec candlepin test -r /etc/tomcat/tomcat.conf").succeeded
@@ -23,21 +23,19 @@ def test_candlepin_runs_as_tomcat(server):
     secret_ownership = server.run(
         "podman exec candlepin stat -c '%U:%G %a' /etc/candlepin/certs/tomcat.key"
     ).stdout.strip()
-    assert secret_ownership == 'root:tomcat 440'
+    assert secret_ownership == "root:tomcat 440"
 
 
 def test_candlepin_port(server):
     ports = server.run("podman port candlepin")
-    assert '127.0.0.1:23443' not in ports.stdout
-    assert '0.0.0.0:23443' not in ports.stdout
+    assert "127.0.0.1:23443" not in ports.stdout
+    assert "0.0.0.0:23443" not in ports.stdout
 
 
 def test_candlepin_certificate_san(server, certificates):
-    san = server.run(
-        f"openssl x509 -in {certificates['candlepin_tomcat_certificate']} -noout -ext subjectAltName"
-    )
+    san = server.run(f"openssl x509 -in {certificates['candlepin_tomcat_certificate']} -noout -ext subjectAltName")
     assert san.succeeded
-    assert 'DNS:candlepin' in san.stdout
+    assert "DNS:candlepin" in san.stdout
 
 
 def test_candlepin_status(server):
@@ -47,7 +45,7 @@ def test_candlepin_status(server):
         "https://candlepin:23443/candlepin/status"
     )
     assert status.succeeded
-    assert status.stdout == '200'
+    assert status.stdout == "200"
 
 
 def test_candlepin_logs_in_journal(server):
@@ -57,8 +55,8 @@ def test_candlepin_logs_in_journal(server):
     )
 
     journal = server.run("journalctl -u candlepin --since '2 min ago' --no-pager").stdout
-    assert 'candlepin/status' in journal
-    assert 'LoggingFilter' in journal
+    assert "candlepin/status" in journal
+    assert "LoggingFilter" in journal
 
 
 def test_candlepin_tomcat_logs_in_journal(server):
@@ -69,14 +67,14 @@ def test_candlepin_tomcat_logs_in_journal(server):
 
     journal = server.run("journalctl -u candlepin --no-pager").stdout
     assert '"GET /candlepin/status HTTP/1.1"' in journal
-    assert 'org.apache.catalina' in journal
+    assert "org.apache.catalina" in journal
 
 
 def test_tls(server):
-    result = server.run('podman inspect -f \'{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}\' candlepin')
+    result = server.run("podman inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' candlepin")
 
     candlepin_ip = result.stdout.strip()
-    result = server.run(f'nmap -sT --script +ssl-enum-ciphers -p 23443 {candlepin_ip}')
+    result = server.run(f"nmap -sT --script +ssl-enum-ciphers -p 23443 {candlepin_ip}")
     result = result.stdout
     assert "TLSv1.3" in result
     assert "TLSv1.2" in result

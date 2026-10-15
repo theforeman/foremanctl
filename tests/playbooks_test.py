@@ -4,12 +4,12 @@ import sys
 import obsah
 import pytest
 
-os.environ['OBSAH_DATA'] = 'src'
+os.environ["OBSAH_DATA"] = "src"
 
 
 @pytest.fixture
 def help_dir(fixture_dir):
-    return fixture_dir / 'help'
+    return fixture_dir / "help"
 
 
 def playbook_id(fixture_value):
@@ -32,19 +32,19 @@ def test_filename_matches_directory(playbook):
 
 
 def test_help(playbook, capsys, help_dir):
-    os.system(f'./foremanctl {playbook.name} --help')
+    os.system(f"./foremanctl {playbook.name} --help")
 
     captured = capsys.readouterr()
 
-    help_file = help_dir / '{}.txt'.format(playbook.name)
+    help_file = help_dir / "{}.txt".format(playbook.name)
 
     if help_file.check(exists=1):
         expected = help_file.read()
         if sys.version_info >= (3, 10, 0):
-            expected = expected.replace('optional arguments:', 'options:')
+            expected = expected.replace("optional arguments:", "options:")
         if sys.version_info >= (3, 13, 0):
-            expected = expected.replace('-e EXTRA_VARS,', '-e,')
+            expected = expected.replace("-e EXTRA_VARS,", "-e,")
         assert expected == captured.out
     else:
         help_file.write(captured.out)
-        raise pytest.skip('Written help text')
+        raise pytest.skip("Written help text")

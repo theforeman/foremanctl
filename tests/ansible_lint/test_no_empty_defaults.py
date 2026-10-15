@@ -5,7 +5,9 @@ import pytest
 RULE_ID = "no-empty-defaults"
 
 
-@pytest.mark.parametrize("ansible_lint_runner", [("tests/fixtures/ansible-lint/roles/test_empty_defaults", RULE_ID)], indirect=True)
+@pytest.mark.parametrize(
+    "ansible_lint_runner", [("tests/fixtures/ansible-lint/roles/test_empty_defaults", RULE_ID)], indirect=True
+)
 def test_empty_defaults_are_flagged(ansible_lint_runner) -> None:
     """Null and empty string defaults produce match errors."""
     assert len(ansible_lint_runner) == 4
@@ -13,7 +15,11 @@ def test_empty_defaults_are_flagged(ansible_lint_runner) -> None:
         assert result.tag == "no-empty-defaults"
 
 
-@pytest.mark.parametrize("ansible_lint_runner", [("tests/fixtures/ansible-lint/roles/test_empty_defaults/vars/main.yml", RULE_ID)], indirect=True)
+@pytest.mark.parametrize(
+    "ansible_lint_runner",
+    [("tests/fixtures/ansible-lint/roles/test_empty_defaults/vars/main.yml", RULE_ID)],
+    indirect=True,
+)
 def test_vars_file_not_checked(ansible_lint_runner) -> None:
     """Vars files are not checked, only defaults."""
     assert len(ansible_lint_runner) == 0

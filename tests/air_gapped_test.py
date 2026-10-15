@@ -16,10 +16,7 @@ def air_gapped(obsah_params: dict) -> dict:
 
 def test_air_gapped_image_policy_never(server, air_gapped):
     """Verify generated image units have Policy=never in air-gapped mode."""
-    result = server.run(
-        "find /etc/containers/systemd "
-        "-maxdepth 1 -type f -name '*.image' -print"
-    )
+    result = server.run("find /etc/containers/systemd -maxdepth 1 -type f -name '*.image' -print")
 
     assert not result.failed
 
@@ -29,9 +26,7 @@ def test_air_gapped_image_policy_never(server, air_gapped):
     for image_file in image_files:
         lines = server.file(image_file).content_string.splitlines()
 
-        assert "Policy=never" in lines, (
-            f"{image_file} does not contain Policy=never"
-        )
+        assert "Policy=never" in lines, f"{image_file} does not contain Policy=never"
         assert "Policy=missing" not in lines
 
 

@@ -3,7 +3,7 @@ import time
 
 import pytest
 
-FOREMAN_SOCKET = '/run/httpd.foreman.sock'
+FOREMAN_SOCKET = "/run/httpd.foreman.sock"
 
 RECURRING_INSTANCES = [
     "hourly",
@@ -15,7 +15,9 @@ RECURRING_INSTANCES = [
 
 @pytest.fixture(scope="module")
 def foreman_status_curl(server, server_fqdn):
-    return server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' --unix-socket {FOREMAN_SOCKET} http://{server_fqdn}/api/v2/ping")
+    return server.run(
+        f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' --unix-socket {FOREMAN_SOCKET} http://{server_fqdn}/api/v2/ping"
+    )
 
 
 @pytest.fixture(scope="module")
@@ -34,32 +36,34 @@ def test_foreman_socket(server):
 
 def test_foreman_status(foreman_status_curl):
     assert foreman_status_curl.succeeded
-    assert foreman_status_curl.stderr == '200'
+    assert foreman_status_curl.stderr == "200"
 
 
 def test_foreman_status_database(foreman_status):
-    assert foreman_status['results']['foreman']['database']['active']
+    assert foreman_status["results"]["foreman"]["database"]["active"]
 
 
 def test_foreman_status_cache(foreman_status):
-    assert foreman_status['results']['foreman']['cache']['servers']
-    assert foreman_status['results']['foreman']['cache']['servers'][0]['status'] == 'ok'
+    assert foreman_status["results"]["foreman"]["cache"]["servers"]
+    assert foreman_status["results"]["foreman"]["cache"]["servers"][0]["status"] == "ok"
 
 
-@pytest.mark.feature('katello')
-@pytest.mark.parametrize("katello_service", ['candlepin', 'candlepin_auth', 'foreman_tasks', 'katello_events', 'pulp3', 'pulp3_content'])
+@pytest.mark.feature("katello")
+@pytest.mark.parametrize(
+    "katello_service", ["candlepin", "candlepin_auth", "foreman_tasks", "katello_events", "pulp3", "pulp3_content"]
+)
 def test_katello_services_status(foreman_status, katello_service):
-    assert foreman_status['results']['katello']['services'][katello_service]['status'] == 'ok'
+    assert foreman_status["results"]["katello"]["services"][katello_service]["status"] == "ok"
 
 
-@pytest.mark.parametrize("dynflow_instance", ['orchestrator', 'worker', 'worker-hosts-queue'])
+@pytest.mark.parametrize("dynflow_instance", ["orchestrator", "worker", "worker-hosts-queue"])
 def test_foreman_dynflow_container_instances(server, dynflow_instance):
     file = server.file(f"/etc/containers/systemd/dynflow-sidekiq@{dynflow_instance}.container")
     assert file.exists
     assert file.is_symlink
 
 
-@pytest.mark.parametrize("dynflow_instance", ['orchestrator', 'worker', 'worker-hosts-queue'])
+@pytest.mark.parametrize("dynflow_instance", ["orchestrator", "worker", "worker-hosts-queue"])
 def test_foreman_dynflow_service_instances(server, dynflow_instance):
     service = server.service(f"dynflow-sidekiq@{dynflow_instance}")
     assert service.is_running
@@ -111,14 +115,15 @@ def test_foreman_recurring_timer_execution(server, instance):
         result = props["Result"]
         invocation = props.get("InvocationID", "")
 
-        assert active_state != "failed", (
-            f"{service_name} failed to start: "
-            f"ActiveState={active_state}, Result={result}"
-        )
+        assert active_state != "failed", f"{service_name} failed to start: ActiveState={active_state}, Result={result}"
 
-        if invocation and invocation != previous_invocation and (
-            active_state in ("active", "activating", "deactivating")
-            or (active_state == "inactive" and result == "success")
+        if (
+            invocation
+            and invocation != previous_invocation
+            and (
+                active_state in ("active", "activating", "deactivating")
+                or (active_state == "inactive" and result == "success")
+            )
         ):
             break
 
@@ -129,24 +134,26 @@ def test_foreman_recurring_timer_execution(server, instance):
 
 
 def test_foreman_delivery_method_setting(foremanapi):
-    delivery_method_setting = foremanapi.list('settings', search='name=delivery_method')
-    assert delivery_method_setting[0]['value'] == 'smtp'
+    delivery_method_setting = foremanapi.list("settings", search="name=delivery_method")
+    assert delivery_method_setting[0]["value"] == "smtp"
 
 
 @pytest.mark.parametrize("setting", ["foreman_url", "unattended_url"])
 def test_foreman_fqdn_in_url_settings(foremanapi, server_fqdn, setting):
-    settings = foremanapi.list('settings', search=f'name={setting}')
-    assert server_fqdn in settings[0]['value']
+    settings = foremanapi.list("settings", search=f"name={setting}")
+    assert server_fqdn in settings[0]["value"]
 
 
 @pytest.mark.parametrize("setting", ["administrator", "email_reply_address"])
 def test_foreman_domain_in_mail_settings(foremanapi, server_fqdn, setting):
-    settings = foremanapi.list('settings', search=f'name={setting}')
-    domain = str.join('.', server_fqdn.split('.')[1:])
-    assert domain in settings[0]['value']
+    settings = foremanapi.list("settings", search=f"name={setting}")
+    domain = str.join(".", server_fqdn.split(".")[1:])
+    assert domain in settings[0]["value"]
 
 
 def test_foreman_host_injection(server):
-    cmd = server.run(f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' --unix-socket {FOREMAN_SOCKET} http://evil.hackers.test/api/v2/ping")
+    cmd = server.run(
+        f"curl --header 'X-FORWARDED-PROTO: https' --silent --write-out '%{{stderr}}%{{http_code}}' --unix-socket {FOREMAN_SOCKET} http://evil.hackers.test/api/v2/ping"
+    )
     assert cmd.succeeded
-    assert cmd.stderr == '403'
+    assert cmd.stderr == "403"

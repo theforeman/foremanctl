@@ -19,15 +19,15 @@ class CallbackModule(DefaultCallbackModule):
     """Foremanctl callback."""
 
     CALLBACK_VERSION = 2.0
-    CALLBACK_TYPE = 'stdout'
-    CALLBACK_NAME = 'foremanctl'
+    CALLBACK_TYPE = "stdout"
+    CALLBACK_NAME = "foremanctl"
 
     FALLBACK_TO_DEFAULT = True
 
     def v2_playbook_on_start(self, playbook):
         plays = playbook.get_plays()
         tags = plays[0].tags
-        if 'foremanctl_suppress_default_output' in tags:
+        if "foremanctl_suppress_default_output" in tags:
             self.FALLBACK_TO_DEFAULT = False
         if self.FALLBACK_TO_DEFAULT:
             super().v2_playbook_on_start(playbook)
@@ -44,7 +44,7 @@ class CallbackModule(DefaultCallbackModule):
         if self.FALLBACK_TO_DEFAULT:
             super().v2_runner_on_ok(result)
         else:
-            if msg := result._result.get('msg'):
+            if msg := result._result.get("msg"):
                 self._display.display(msg)
 
     def v2_playbook_on_stats(self, stats):

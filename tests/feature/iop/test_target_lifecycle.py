@@ -1,8 +1,5 @@
 def test_iop_services_part_of_foreman_target(server, subtests):
-    result = server.run(
-        "systemctl list-units 'iop-core-*' 'iop-service-*'"
-        " --type=service --no-legend --all --plain"
-    )
+    result = server.run("systemctl list-units 'iop-core-*' 'iop-service-*' --type=service --no-legend --all --plain")
     assert result.succeeded
     services = [line.split()[0] for line in result.stdout.strip().splitlines()]
     assert services, "No IOP services found"

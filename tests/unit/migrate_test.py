@@ -5,7 +5,7 @@ import tempfile
 import pytest
 import yaml
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src/plugins/modules'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../src/plugins/modules"))
 
 import migrate_answers
 
@@ -15,85 +15,64 @@ class TestParameterMapping:
 
     def test_simple_parameter_mapping(self):
         """Test basic parameter translation"""
-        old_config = {
-            'foreman': {
-                'db_host': 'localhost',
-                'db_port': 5432
-            }
-        }
+        old_config = {"foreman": {"db_host": "localhost", "db_port": 5432}}
 
         result = migrate_answers.apply_mappings(old_config)
 
-        assert 'database_host' not in result['mapped']
-        assert result['mapped']['database_port'] == 5432
-        assert result['unmappable'] == []
+        assert "database_host" not in result["mapped"]
+        assert result["mapped"]["database_port"] == 5432
+        assert result["unmappable"] == []
 
     def test_parameter_transformation(self):
         """Test parameters that need value transformation"""
-        old_config = {
-            'foreman': {
-                'db_manage': True
-            }
-        }
+        old_config = {"foreman": {"db_manage": True}}
 
         result = migrate_answers.apply_mappings(old_config)
 
-        assert result['mapped']['database_mode'] == 'internal'
+        assert result["mapped"]["database_mode"] == "internal"
 
-        old_config['foreman']['db_manage'] = False
+        old_config["foreman"]["db_manage"] = False
         result = migrate_answers.apply_mappings(old_config)
-        assert result['mapped']['database_mode'] == 'external'
+        assert result["mapped"]["database_mode"] == "external"
 
     def test_ignore_parameters(self):
         """Test parameters marked as IGNORE"""
-        old_config = {
-            'foreman': {
-                'db_manage_rake': True,
-                'db_host': 'localhost'
-            }
-        }
+        old_config = {"foreman": {"db_manage_rake": True, "db_host": "localhost"}}
 
         result = migrate_answers.apply_mappings(old_config)
 
-        assert 'db_manage_rake' not in result['mapped']
-        assert 'db_manage_rake' not in str(result['unmappable'])
-        assert 'database_host' not in result['mapped'] 
+        assert "db_manage_rake" not in result["mapped"]
+        assert "db_manage_rake" not in str(result["unmappable"])
+        assert "database_host" not in result["mapped"]
 
     def test_certificate_parameters_ignored(self):
         """Test that certificate path parameters are ignored (handled by migration role)"""
         old_config = {
-            'foreman': {
-                'server_ssl_cert': '/etc/pki/katello/certs/server.crt',
-                'server_ssl_key': '/etc/pki/katello/private/server.key',
-                'server_ssl_ca': '/etc/pki/katello/certs/ca.crt',
-                'db_host': 'localhost'
+            "foreman": {
+                "server_ssl_cert": "/etc/pki/katello/certs/server.crt",
+                "server_ssl_key": "/etc/pki/katello/private/server.key",
+                "server_ssl_ca": "/etc/pki/katello/certs/ca.crt",
+                "db_host": "localhost",
             }
         }
 
         result = migrate_answers.apply_mappings(old_config)
 
-        assert 'server_certificate' not in result['mapped']
-        assert 'server_key' not in result['mapped']
-        assert 'ca_certificate' not in result['mapped']
-        assert not any('ssl' in p for p in result['unmappable'])
-        assert 'database_host' not in result['mapped']
+        assert "server_certificate" not in result["mapped"]
+        assert "server_key" not in result["mapped"]
+        assert "ca_certificate" not in result["mapped"]
+        assert not any("ssl" in p for p in result["unmappable"])
+        assert "database_host" not in result["mapped"]
 
     def test_unmappable_parameters(self):
         """Test that unmappable parameters are reported"""
-        old_config = {
-            'foreman': {
-                'unknown_param': 'value'
-            },
-            'katello': {
-                'enable_ostree': True
-            }
-        }
+        old_config = {"foreman": {"unknown_param": "value"}, "katello": {"enable_ostree": True}}
 
         result = migrate_answers.apply_mappings(old_config)
 
-        assert 'foreman::unknown_param' in result['unmappable']
-        assert 'katello::enable_ostree' in result['unmappable']
-        assert len(result['unmappable']) == 2
+        assert "foreman::unknown_param" in result["unmappable"]
+        assert "katello::enable_ostree" in result["unmappable"]
+        assert len(result["unmappable"]) == 2
 
     def test_empty_config(self):
         """Test with empty configuration"""
@@ -101,45 +80,39 @@ class TestParameterMapping:
 
         result = migrate_answers.apply_mappings(old_config)
 
-        assert result['mapped'] == {}
-        assert result['unmappable'] == []
+        assert result["mapped"] == {}
+        assert result["unmappable"] == []
 
     def test_mixed_config(self):
         """Test with mix of mappable and unmappable parameters"""
         old_config = {
-            'foreman': {
-                'db_host': 'database.example.com',
-                'db_port': 5432,
-                'unknown_param': 'test',
-                'initial_admin_username': 'admin'
+            "foreman": {
+                "db_host": "database.example.com",
+                "db_port": 5432,
+                "unknown_param": "test",
+                "initial_admin_username": "admin",
             }
         }
 
         result = migrate_answers.apply_mappings(old_config)
 
-        assert result['mapped']['database_host'] == 'database.example.com'
-        assert result['mapped']['database_port'] == 5432
-        assert result['mapped']['foreman_initial_admin_username'] == 'admin'
+        assert result["mapped"]["database_host"] == "database.example.com"
+        assert result["mapped"]["database_port"] == 5432
+        assert result["mapped"]["foreman_initial_admin_username"] == "admin"
 
-        assert 'foreman::unknown_param' in result['unmappable']
-        assert len(result['unmappable']) == 1
+        assert "foreman::unknown_param" in result["unmappable"]
+        assert len(result["unmappable"]) == 1
 
     def test_skip_none_values_in_unmappable(self):
         """Test that None values are not added to unmappable list"""
-        old_config = {
-            'foreman': {
-                'db_host': 'localhost',
-                'unknown_param': None,
-                'another_unknown': 'value'
-            }
-        }
+        old_config = {"foreman": {"db_host": "localhost", "unknown_param": None, "another_unknown": "value"}}
 
         result = migrate_answers.apply_mappings(old_config)
 
-        assert 'database_host' not in result['mapped']
-        assert 'foreman::unknown_param' not in result['unmappable']
-        assert 'foreman::another_unknown' in result['unmappable']
-        assert len(result['unmappable']) == 1
+        assert "database_host" not in result["mapped"]
+        assert "foreman::unknown_param" not in result["unmappable"]
+        assert "foreman::another_unknown" in result["unmappable"]
+        assert len(result["unmappable"]) == 1
 
 
 class TestFileOperations:
@@ -147,20 +120,20 @@ class TestFileOperations:
 
     def test_load_valid_yaml(self):
         """Test loading a valid YAML file"""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
-            yaml.dump({'foreman': {'db_host': 'localhost'}}, f)
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            yaml.dump({"foreman": {"db_host": "localhost"}}, f)
             temp_file = f.name
 
         try:
             result = migrate_answers.load_answer_file(temp_file)
-            assert result == {'foreman': {'db_host': 'localhost'}}
+            assert result == {"foreman": {"db_host": "localhost"}}
         finally:
             os.unlink(temp_file)
 
     def test_load_empty_yaml(self):
         """Test loading an empty YAML file raises ValueError"""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
-            f.write('---\n')
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            f.write("---\n")
             temp_file = f.name
 
         try:
@@ -172,12 +145,12 @@ class TestFileOperations:
     def test_load_nonexistent_file(self):
         """Test loading a file that doesn't exist"""
         with pytest.raises(FileNotFoundError):
-            migrate_answers.load_answer_file('/nonexistent/file.yaml')
+            migrate_answers.load_answer_file("/nonexistent/file.yaml")
 
     def test_load_invalid_yaml(self):
         """Test loading invalid YAML"""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
-            f.write('invalid: yaml: content: [')
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            f.write("invalid: yaml: content: [")
             temp_file = f.name
 
         try:
@@ -192,12 +165,12 @@ class TestTransformations:
 
     def test_cast_database_mode_true(self):
         """Test database mode transformation with True"""
-        assert migrate_answers.cast_database_mode(True) == 'internal'
+        assert migrate_answers.cast_database_mode(True) == "internal"
 
     def test_cast_database_mode_false(self):
         """Test database mode transformation with False"""
-        assert migrate_answers.cast_database_mode(False) == 'external'
+        assert migrate_answers.cast_database_mode(False) == "external"
 
     def test_cast_database_mode_passthrough(self):
         """Test database mode transformation with non-boolean"""
-        assert migrate_answers.cast_database_mode('already_a_string') == 'already_a_string'
+        assert migrate_answers.cast_database_mode("already_a_string") == "already_a_string"

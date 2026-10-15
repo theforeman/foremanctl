@@ -9,17 +9,17 @@ import pathlib
 
 import yaml
 
-BASE_FEATURES = ['hammer', 'foreman-proxy', 'foreman']
+BASE_FEATURES = ["hammer", "foreman-proxy", "foreman"]
 
 _SRC_ROOT = pathlib.Path(__file__).parent.parent
-features_yaml = _SRC_ROOT / 'features.yaml'
+features_yaml = _SRC_ROOT / "features.yaml"
 with features_yaml.open() as features_file:
     FEATURE_MAP = yaml.safe_load(features_file)
 
 # load additional feature files under features.d
-_features_d = _SRC_ROOT / 'features.d'
+_features_d = _SRC_ROOT / "features.d"
 if _features_d.is_dir():
-    for _overlay in sorted(_features_d.glob('*.yaml')):
+    for _overlay in sorted(_features_d.glob("*.yaml")):
         with _overlay.open() as _overlay_file:
             _extra = yaml.safe_load(_overlay_file) or {}
         FEATURE_MAP.update(_extra)
@@ -30,7 +30,7 @@ def compact_list(items):
 
 
 def filter_content(items):
-    return filter(lambda x: not x.startswith('content/'), items)
+    return filter(lambda x: not x.startswith("content/"), items)
 
 
 def filter_base_features(items):
@@ -45,7 +45,7 @@ def filter_features(items):
 
 def get_dependencies_for_feature(feature):
     dependencies = set()
-    for dependency in FEATURE_MAP.get(feature, {}).get('dependencies', []):
+    for dependency in FEATURE_MAP.get(feature, {}).get("dependencies", []):
         if dependency not in dependencies:
             dependencies.update(get_dependencies_for_feature(dependency))
         dependencies.add(dependency)
@@ -62,28 +62,28 @@ def get_dependencies(features):
 def foreman_plugins(value):
     dependencies = list(get_dependencies(filter_features(value)))
     features = set(filter_features(value + dependencies))
-    plugins = [FEATURE_MAP.get(feature, {}).get('foreman', {}).get('plugin_name') for feature in features]
+    plugins = [FEATURE_MAP.get(feature, {}).get("foreman", {}).get("plugin_name") for feature in features]
     return sorted(compact_list(plugins))
 
 
 def available_foreman_plugins(_value):
-    plugins = [FEATURE_MAP.get(feature).get('foreman', {}).get('plugin_name') for feature in FEATURE_MAP.keys()]
+    plugins = [FEATURE_MAP.get(feature).get("foreman", {}).get("plugin_name") for feature in FEATURE_MAP.keys()]
     return compact_list(plugins)
 
 
 def list_all_features(enabled_features, only_enabled=False):
     enabled_list = []
     available_list = []
-    list_internal = os.environ.get('FOREMANCTL_FEATURES_LIST_INTERNAL', '') == 'true'
+    list_internal = os.environ.get("FOREMANCTL_FEATURES_LIST_INTERNAL", "") == "true"
     for name, meta in FEATURE_MAP.items():
-        internal = meta.get('internal', False)
+        internal = meta.get("internal", False)
         if internal and not list_internal:
             continue
-        description = meta.get('description', '')
+        description = meta.get("description", "")
         if has_feature(enabled_features, name):
-            enabled_list.append((name, 'enabled', internal, description))
+            enabled_list.append((name, "enabled", internal, description))
         elif not only_enabled:
-            available_list.append((name, 'available', internal, description))
+            available_list.append((name, "available", internal, description))
 
     if not list_internal:
         output = [f"{'FEATURE':<25} {'STATE':<12} DESCRIPTION"]
@@ -106,7 +106,7 @@ def conflicting_features(features):
     """Return a list of conflict violation strings for enabled features."""
     conflicts = set()
     for feature in features:
-        for conflict in FEATURE_MAP.get(feature, {}).get('conflicts', []):
+        for conflict in FEATURE_MAP.get(feature, {}).get("conflicts", []):
             if conflict in features:
                 conflicts.add(tuple(sorted([feature, conflict])))
     return [f"{pair[0]} conflicts with {pair[1]}" for pair in conflicts]
@@ -115,57 +115,59 @@ def conflicting_features(features):
 def hammer_plugins(value):
     dependencies = list(get_dependencies(filter_features(value)))
     features = set(filter_features(value + dependencies))
-    plugins = [FEATURE_MAP.get(feature, {}).get('hammer') for feature in features]
+    plugins = [FEATURE_MAP.get(feature, {}).get("hammer") for feature in features]
     return sorted(compact_list(plugins))
 
 
 def foreman_proxy_plugins(value):
     dependencies = list(get_dependencies(filter_features(value)))
     features = set(filter_features(value + dependencies))
-    plugins = [FEATURE_MAP.get(feature, {}).get('foreman_proxy', {}).get('plugin_name') for feature in features]
+    plugins = [FEATURE_MAP.get(feature, {}).get("foreman_proxy", {}).get("plugin_name") for feature in features]
     return sorted(compact_list(plugins))
 
 
 def available_foreman_proxy_plugins(_value):
-    plugins = [FEATURE_MAP.get(feature).get('foreman_proxy', {}).get('plugin_name') for feature in FEATURE_MAP.keys()]
+    plugins = [FEATURE_MAP.get(feature).get("foreman_proxy", {}).get("plugin_name") for feature in FEATURE_MAP.keys()]
     return compact_list(plugins)
 
 
 def has_feature(features, feature):
     """Check if a feature is enabled - exact match, prefix (feature/), or as a transitive dependency."""
-    return (feature in features
-            or any(f.startswith(feature + '/') for f in features)
-            or feature in get_dependencies(list(features)))
+    return (
+        feature in features
+        or any(f.startswith(feature + "/") for f in features)
+        or feature in get_dependencies(list(features))
+    )
 
 
 def databases_for_features(databases, enabled_features):
     """Return databases whose feature gate matches enabled_features."""
-    return [db for db in databases if has_feature(enabled_features, db['feature'])]
+    return [db for db in databases if has_feature(enabled_features, db["feature"])]
 
 
 def to_postgresql_databases(databases):
-    return [{'name': db['database'], 'owner': db['user']} for db in databases]
+    return [{"name": db["database"], "owner": db["user"]} for db in databases]
 
 
 def to_postgresql_users(databases):
-    return [{'name': db['user'], 'password': db['password']} for db in databases]
+    return [{"name": db["user"], "password": db["password"]} for db in databases]
 
 
 class FilterModule(object):
-    '''foremanctl filters'''
+    """foremanctl filters"""
 
     def filters(self):
         return {
-            'features_to_foreman_plugins': foreman_plugins,
-            'available_foreman_plugins': available_foreman_plugins,
-            'features_to_hammer_plugins': hammer_plugins,
-            'features_to_foreman_proxy_plugins': foreman_proxy_plugins,
-            'available_foreman_proxy_plugins': available_foreman_proxy_plugins,
-            'list_all_features': list_all_features,
-            'invalid_features': invalid_features,
-            'conflicting_features': conflicting_features,
-            'has_feature': has_feature,
-            'databases_for_features': databases_for_features,
-            'to_postgresql_databases': to_postgresql_databases,
-            'to_postgresql_users': to_postgresql_users,
+            "features_to_foreman_plugins": foreman_plugins,
+            "available_foreman_plugins": available_foreman_plugins,
+            "features_to_hammer_plugins": hammer_plugins,
+            "features_to_foreman_proxy_plugins": foreman_proxy_plugins,
+            "available_foreman_proxy_plugins": available_foreman_proxy_plugins,
+            "list_all_features": list_all_features,
+            "invalid_features": invalid_features,
+            "conflicting_features": conflicting_features,
+            "has_feature": has_feature,
+            "databases_for_features": databases_for_features,
+            "to_postgresql_databases": to_postgresql_databases,
+            "to_postgresql_users": to_postgresql_users,
         }

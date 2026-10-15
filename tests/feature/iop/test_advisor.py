@@ -73,65 +73,81 @@ def test_advisor_api_port_configured(server):
 
 
 def test_advisor_fdw_foreign_server_exists(server):
-    result = server.run("podman exec postgresql psql advisor_db -c \"SELECT * FROM pg_foreign_server WHERE srvname = 'hbi_server';\"")
+    result = server.run(
+        "podman exec postgresql psql advisor_db -c \"SELECT * FROM pg_foreign_server WHERE srvname = 'hbi_server';\""
+    )
     assert result.succeeded
     assert "hbi_server" in result.stdout
 
 
 def test_advisor_fdw_user_mapping_exists(server):
-    result = server.run("podman exec postgresql psql advisor_db -c \"SELECT * FROM information_schema.user_mappings WHERE foreign_server_name = 'hbi_server';\"")
+    result = server.run(
+        "podman exec postgresql psql advisor_db -c \"SELECT * FROM information_schema.user_mappings WHERE foreign_server_name = 'hbi_server';\""
+    )
     assert result.succeeded
     assert "advisor_user" in result.stdout
 
 
 def test_advisor_fdw_foreign_table_exists(server):
-    result = server.run("podman exec postgresql psql advisor_db -c \"\\det inventory_source.*\"")
+    result = server.run('podman exec postgresql psql advisor_db -c "\\det inventory_source.*"')
     assert result.succeeded
     assert "hosts" in result.stdout
 
 
 def test_advisor_fdw_inventory_view_exists(server):
-    result = server.run("podman exec postgresql psql advisor_db -c \"\\dv inventory.*\"")
+    result = server.run('podman exec postgresql psql advisor_db -c "\\dv inventory.*"')
     assert result.succeeded
     assert "hosts" in result.stdout
 
 
 def test_advisor_fdw_inventory_view_queryable(server):
-    result = server.run("podman exec postgresql psql advisor_db -c \"SELECT 1 FROM inventory.hosts LIMIT 1;\"")
+    result = server.run('podman exec postgresql psql advisor_db -c "SELECT 1 FROM inventory.hosts LIMIT 1;"')
     assert result.rc == 0
 
 
 # Additional comprehensive FDW tests (beyond puppet-iop baseline)
 def test_advisor_fdw_postgres_fdw_extension(server):
-    result = server.run("podman exec postgresql psql advisor_db -c \"SELECT extname FROM pg_extension WHERE extname = 'postgres_fdw';\"")
+    result = server.run(
+        "podman exec postgresql psql advisor_db -c \"SELECT extname FROM pg_extension WHERE extname = 'postgres_fdw';\""
+    )
     assert result.succeeded
     assert "postgres_fdw" in result.stdout
 
 
 def test_advisor_fdw_postgres_user_mapping_exists(server):
-    result = server.run("podman exec postgresql psql advisor_db -c \"SELECT usename FROM pg_user_mappings WHERE srvname = 'hbi_server' AND usename = 'postgres';\"")
+    result = server.run(
+        "podman exec postgresql psql advisor_db -c \"SELECT usename FROM pg_user_mappings WHERE srvname = 'hbi_server' AND usename = 'postgres';\""
+    )
     assert result.succeeded
     assert "postgres" in result.stdout
 
 
 def test_advisor_fdw_inventory_source_schema_exists(server):
-    result = server.run("podman exec postgresql psql advisor_db -c \"SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'inventory_source';\"")
+    result = server.run(
+        "podman exec postgresql psql advisor_db -c \"SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'inventory_source';\""
+    )
     assert result.succeeded
     assert "inventory_source" in result.stdout
 
 
 def test_advisor_fdw_inventory_schema_exists(server):
-    result = server.run("podman exec postgresql psql advisor_db -c \"SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'inventory';\"")
+    result = server.run(
+        "podman exec postgresql psql advisor_db -c \"SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'inventory';\""
+    )
     assert result.succeeded
     assert "inventory" in result.stdout
 
 
 def test_advisor_fdw_permissions_on_view(server):
-    result = server.run("podman exec postgresql psql advisor_db -c \"SELECT privilege_type FROM information_schema.table_privileges WHERE grantee = 'advisor_user' AND table_schema = 'inventory' AND table_name = 'hosts';\"")
+    result = server.run(
+        "podman exec postgresql psql advisor_db -c \"SELECT privilege_type FROM information_schema.table_privileges WHERE grantee = 'advisor_user' AND table_schema = 'inventory' AND table_name = 'hosts';\""
+    )
     assert result.succeeded
     assert "SELECT" in result.stdout
 
 
 def test_advisor_api_endpoint(server, iop_image):
-    result = server.run(f"podman run --network=foreman-core-network --rm {iop_image('iop-advisor')} curl --fail -s -o /dev/null http://iop-service-advisor-backend-api:8000/api/insights/v1/status/live/")
+    result = server.run(
+        f"podman run --network=foreman-core-network --rm {iop_image('iop-advisor')} curl --fail -s -o /dev/null http://iop-service-advisor-backend-api:8000/api/insights/v1/status/live/"
+    )
     assert result.succeeded

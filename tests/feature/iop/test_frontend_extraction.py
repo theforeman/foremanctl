@@ -11,9 +11,7 @@ def test_frontend_source_volume_definitions_are_installed(server):
         assert image_quadlet.exists
         assert image_quadlet.is_file
 
-        volume_quadlet = server.file(
-            f"/etc/containers/systemd/{source_volume}.volume"
-        )
+        volume_quadlet = server.file(f"/etc/containers/systemd/{source_volume}.volume")
         assert volume_quadlet.exists
         assert volume_quadlet.is_file
         assert "Driver=image" in volume_quadlet.content_string
@@ -23,9 +21,7 @@ def test_frontend_source_volume_definitions_are_installed(server):
 
 def test_frontend_source_volume_services_are_stopped_after_extraction(server):
     for source_volume, _image_unit in FRONTENDS:
-        result = server.run(
-            f"systemctl is-active {source_volume}-volume.service"
-        )
+        result = server.run(f"systemctl is-active {source_volume}-volume.service")
         assert result.stdout.strip() == "inactive"
 
 

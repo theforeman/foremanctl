@@ -3,15 +3,17 @@ import time
 
 import pytest
 
-PULP_API_SOCKET = '/run/httpd.pulp-api.sock'
-PULP_CONTENT_SOCKET = '/run/httpd.pulp-content.sock'
+PULP_API_SOCKET = "/run/httpd.pulp-api.sock"
+PULP_CONTENT_SOCKET = "/run/httpd.pulp-content.sock"
 PULP_STATUS_POLL_INTERVAL = 5
 PULP_STATUS_POLL_TIMEOUT = 60
 
 
 @pytest.fixture(scope="module")
 def pulp_status_curl(server, server_fqdn):
-    return server.run(f"curl -k -s -w '%{{stderr}}%{{http_code}}' --unix-socket {PULP_API_SOCKET} http://{server_fqdn}/pulp/api/v3/status/")
+    return server.run(
+        f"curl -k -s -w '%{{stderr}}%{{http_code}}' --unix-socket {PULP_API_SOCKET} http://{server_fqdn}/pulp/api/v3/status/"
+    )
 
 
 @pytest.fixture(scope="module")
@@ -21,15 +23,12 @@ def pulp_status(pulp_status_curl):
 
 @pytest.fixture(scope="module")
 def pulp_import_export_paths(obsah_params):
-    return obsah_params.get('pulp_import_paths', []),  obsah_params.get('pulp_export_paths', [])
+    return obsah_params.get("pulp_import_paths", []), obsah_params.get("pulp_export_paths", [])
 
 
 @pytest.fixture(scope="module")
 def pulp_smart_proxy_settings(server):
-    py = (
-        'from django.conf import settings; import json; '
-        'print(json.dumps({"rhsm_url": settings.SMART_PROXY_RHSM_URL}))'
-    )
+    py = 'from django.conf import settings; import json; print(json.dumps({"rhsm_url": settings.SMART_PROXY_RHSM_URL}))'
     return json.loads(server.check_output(f"podman exec pulp-api pulpcore-manager shell -c '{py}'"))
 
 
@@ -44,8 +43,10 @@ def test_pulp_content_service(server):
 
 
 def test_pulp_worker_services(server):
-    result = server.run("systemctl list-units --all --type=service --no-legend 'pulp-worker@*.service' | awk '{print $1}'")
-    worker_services = [s.strip() for s in result.stdout.split('\n') if s.strip()]
+    result = server.run(
+        "systemctl list-units --all --type=service --no-legend 'pulp-worker@*.service' | awk '{print $1}'"
+    )
+    worker_services = [s.strip() for s in result.stdout.split("\n") if s.strip()]
     assert len(worker_services) > 0
 
     for worker_service in worker_services:
@@ -63,23 +64,23 @@ def test_pulp_content_socket(server):
 
 def test_pulp_status(pulp_status_curl):
     assert pulp_status_curl.succeeded
-    assert pulp_status_curl.stderr == '200'
+    assert pulp_status_curl.stderr == "200"
 
 
 def test_pulp_status_database_connection(pulp_status):
-    assert pulp_status['database_connection']['connected']
+    assert pulp_status["database_connection"]["connected"]
 
 
 def test_pulp_status_redis_connection(pulp_status):
-    assert pulp_status['redis_connection']['connected']
+    assert pulp_status["redis_connection"]["connected"]
 
 
 def test_pulp_status_api(pulp_status):
-    assert pulp_status['online_api_apps']
+    assert pulp_status["online_api_apps"]
 
 
 def test_pulp_status_content(pulp_status):
-    assert pulp_status['online_content_apps']
+    assert pulp_status["online_content_apps"]
 
 
 def _fetch_pulp_status(server, server_fqdn):
@@ -87,7 +88,7 @@ def _fetch_pulp_status(server, server_fqdn):
         f"curl -k -s -w '%{{stderr}}%{{http_code}}' --unix-socket {PULP_API_SOCKET} "
         f"http://{server_fqdn}/pulp/api/v3/status/"
     )
-    if not result.succeeded or result.stderr != '200':
+    if not result.succeeded or result.stderr != "200":
         return None
     try:
         status = json.loads(result.stdout)
@@ -102,11 +103,11 @@ def test_pulp_status_workers(server, server_fqdn):
     status = None
     while time.monotonic() < deadline:
         status = _fetch_pulp_status(server, server_fqdn)
-        if status and status.get('online_workers'):
+        if status and status.get("online_workers"):
             return
         time.sleep(PULP_STATUS_POLL_INTERVAL)
 
-    assert status and status.get('online_workers'), "Pulp workers did not appear online in status endpoint"
+    assert status and status.get("online_workers"), "Pulp workers did not appear online in status endpoint"
 
 
 def test_pulp_volumes(server):
@@ -131,9 +132,9 @@ def test_pulp_import_export_settings(server, pulp_import_export_paths):
     assert result.succeeded
     data = json.loads(result.stdout)
     for path in expected_import_paths:
-        assert path in data['import'], f"expected {path} in Pulp ALLOWED_IMPORT_PATHS"
+        assert path in data["import"], f"expected {path} in Pulp ALLOWED_IMPORT_PATHS"
     for path in expected_export_paths:
-        assert path in data['export'], f"expected {path} in Pulp ALLOWED_EXPORT_PATHS"
+        assert path in data["export"], f"expected {path} in Pulp ALLOWED_EXPORT_PATHS"
 
 
 def test_pulp_import_directories(server, pulp_import_export_paths):
@@ -154,15 +155,15 @@ def test_pulp_import_export_volume_mounts(server, container, pulp_import_export_
     result = server.run(f"podman inspect {container} --format '{{{{json .Mounts}}}}'")
     assert result.succeeded
     mounts = json.loads(result.stdout)
-    destinations = [mount['Destination'] for mount in mounts]
+    destinations = [mount["Destination"] for mount in mounts]
 
     for path in import_paths + export_paths:
-        mounted = path in destinations or any(path.startswith(d + '/') for d in destinations)
+        mounted = path in destinations or any(path.startswith(d + "/") for d in destinations)
         assert mounted, f"expected {path} to be mounted as a volume in {container}"
 
 
 def test_pulp_rhsm_url_empty_on_server(pulp_smart_proxy_settings, obsah_params):
-    if obsah_params.get('flavor') in ('foreman-proxy-content', 'capsule'):
+    if obsah_params.get("flavor") in ("foreman-proxy-content", "capsule"):
         pytest.skip("content proxy deployments set PULP_SMART_PROXY_RHSM_URL")
 
     assert pulp_smart_proxy_settings["rhsm_url"] == ""

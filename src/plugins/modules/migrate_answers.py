@@ -7,46 +7,43 @@ from ansible.module_utils.basic import AnsibleModule
 def cast_database_mode(value):
     """Convert db_manage boolean to database_mode string."""
     if isinstance(value, bool):
-        return 'internal' if value else 'external'
+        return "internal" if value else "external"
     return value
 
 
 PARAMETER_MAP = {
     # Database configuration
-    ('foreman', 'db_host'): 'database_host',
-    ('foreman', 'db_port'): 'database_port',
-    ('foreman', 'db_database'): 'foreman_database_name',
-    ('foreman', 'db_username'): 'foreman_database_user',
-    ('foreman', 'db_password'): 'foreman_database_password',
-    ('foreman', 'db_manage'): ('database_mode', cast_database_mode),
-    ('foreman', 'db_manage_rake'): 'IGNORE',  # Not needed in new format
-
+    ("foreman", "db_host"): "database_host",
+    ("foreman", "db_port"): "database_port",
+    ("foreman", "db_database"): "foreman_database_name",
+    ("foreman", "db_username"): "foreman_database_user",
+    ("foreman", "db_password"): "foreman_database_password",
+    ("foreman", "db_manage"): ("database_mode", cast_database_mode),
+    ("foreman", "db_manage_rake"): "IGNORE",  # Not needed in new format
     # Foreman configuration
-    ('foreman', 'initial_admin_username'): 'foreman_initial_admin_username',
-    ('foreman', 'initial_admin_password'): 'foreman_initial_admin_password',
-    ('foreman', 'initial_organization'): 'foreman_initial_organization',
-    ('foreman', 'initial_location'): 'foreman_initial_location',
-
+    ("foreman", "initial_admin_username"): "foreman_initial_admin_username",
+    ("foreman", "initial_admin_password"): "foreman_initial_admin_password",
+    ("foreman", "initial_organization"): "foreman_initial_organization",
+    ("foreman", "initial_location"): "foreman_initial_location",
     # Certificate paths are handled by the migrate_foreman_installer role
-    ('foreman', 'server_ssl_cert'): 'IGNORE',
-    ('foreman', 'server_ssl_key'): 'IGNORE',
-    ('foreman', 'server_ssl_ca'): 'IGNORE',
-
+    ("foreman", "server_ssl_cert"): "IGNORE",
+    ("foreman", "server_ssl_key"): "IGNORE",
+    ("foreman", "server_ssl_ca"): "IGNORE",
     # TODO: Add more mappings as discovered
 }
 
-IGNORE_PARAMS = {'IGNORE'}
+IGNORE_PARAMS = {"IGNORE"}
 
 
-def resolve_answer_file_from_scenario(scenario_file='/etc/foreman-installer/scenarios.d/last_scenario.yaml'):
+def resolve_answer_file_from_scenario(scenario_file="/etc/foreman-installer/scenarios.d/last_scenario.yaml"):
     """Read scenario file and extract answer file path from :answer_file: key."""
-    with open(scenario_file, 'r') as f:
+    with open(scenario_file, "r") as f:
         try:
             scenario_data = yaml.safe_load(f)
             if scenario_data is None:
                 raise ValueError(f"Scenario file {scenario_file} is empty")
 
-            answer_file = scenario_data.get(':answer_file')
+            answer_file = scenario_data.get(":answer_file")
             if not answer_file:
                 raise ValueError("Scenario file does not contain :answer_file: key")
 
@@ -57,7 +54,7 @@ def resolve_answer_file_from_scenario(scenario_file='/etc/foreman-installer/scen
 
 def load_answer_file(file_path):
     """Load and parse YAML answer file."""
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         try:
             data = yaml.safe_load(f)
             if data is None:
@@ -76,8 +73,7 @@ def validate_answer_file(data, file_path):
     """
     if not isinstance(data, dict):
         raise ValueError(
-            f"Answer file {file_path} has invalid structure. "
-            f"Expected a dictionary but got {type(data).__name__}"
+            f"Answer file {file_path} has invalid structure. Expected a dictionary but got {type(data).__name__}"
         )
 
     if len(data) == 0:
@@ -92,7 +88,7 @@ def validate_answer_file(data, file_path):
         )
 
 
-def flatten_nested_dict(nested_dict, parent_key=''):
+def flatten_nested_dict(nested_dict, parent_key=""):
     """
     Flatten nested dictionary structure from foreman-installer format.
 
@@ -132,7 +128,7 @@ def apply_mappings(old_config):
         if old_key in PARAMETER_MAP:
             mapping = PARAMETER_MAP[old_key]
 
-            if mapping == 'IGNORE':
+            if mapping == "IGNORE":
                 continue
 
             if isinstance(mapping, tuple):
@@ -147,25 +143,22 @@ def apply_mappings(old_config):
         else:
             if old_value is not None:
                 if isinstance(old_key, tuple):
-                    param_name = '::'.join(old_key)
+                    param_name = "::".join(old_key)
                 else:
                     param_name = str(old_key)
                 unmappable.append(param_name)
 
-    if result.get('database_mode', 'internal') == 'internal':
-        db_host = flat_config.get(('foreman', 'db_host'))
-        if db_host in ('localhost', '127.0.0.1'):
-            result.pop('database_host', None)
-            
-    return {
-        'mapped': result,
-        'unmappable': unmappable
-    }
+    if result.get("database_mode", "internal") == "internal":
+        db_host = flat_config.get(("foreman", "db_host"))
+        if db_host in ("localhost", "127.0.0.1"):
+            result.pop("database_host", None)
+
+    return {"mapped": result, "unmappable": unmappable}
 
 
 def run_module():
     module_args = dict(
-        answer_file=dict(type='str', required=False, default=None),
+        answer_file=dict(type="str", required=False, default=None),
     )
 
     result = dict(
@@ -176,13 +169,10 @@ def run_module():
         mapped={},
     )
 
-    module = AnsibleModule(
-        argument_spec=module_args,
-        supports_check_mode=True
-    )
+    module = AnsibleModule(argument_spec=module_args, supports_check_mode=True)
 
     try:
-        answer_file = module.params.get('answer_file')
+        answer_file = module.params.get("answer_file")
         if not answer_file:
             answer_file = resolve_answer_file_from_scenario()
 
@@ -191,13 +181,13 @@ def run_module():
 
         migration_result = apply_mappings(old_config)
 
-        result['mapped_count'] = len(migration_result['mapped'])
-        result['unmappable_count'] = len(migration_result['unmappable'])
-        result['unmappable'] = migration_result['unmappable']
-        result['mapped'] = migration_result['mapped']
+        result["mapped_count"] = len(migration_result["mapped"])
+        result["unmappable_count"] = len(migration_result["unmappable"])
+        result["unmappable"] = migration_result["unmappable"]
+        result["mapped"] = migration_result["mapped"]
 
-        if migration_result['unmappable']:
-            for param in migration_result['unmappable']:
+        if migration_result["unmappable"]:
+            for param in migration_result["unmappable"]:
                 module.warn(f"Parameter '{param}' could not be mapped and will need manual review")
 
         module.exit_json(**result)
@@ -212,5 +202,5 @@ def main():
     run_module()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
