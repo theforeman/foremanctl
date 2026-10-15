@@ -1,4 +1,4 @@
-VALKEY_HOST = 'localhost'
+VALKEY_HOST = "localhost"
 VALKEY_PORT = 6379
 
 
@@ -20,9 +20,9 @@ def test_valkey_port(server):
 def test_valkey_not_listening_on_all_interfaces(server):
 
     ports = server.run("podman port valkey")
-    assert f'127.0.0.1:{VALKEY_PORT}' not in ports.stdout
-    assert f'0.0.0.0:{VALKEY_PORT}' not in ports.stdout
+    assert f"127.0.0.1:{VALKEY_PORT}" not in ports.stdout
+    assert f"0.0.0.0:{VALKEY_PORT}" not in ports.stdout
 
     ss = server.run(f"ss -ltn '( sport = :{VALKEY_PORT} )'")
-    assert f'0.0.0.0:{VALKEY_PORT}' not in ss.stdout
-    assert f'[::]:{VALKEY_PORT}' not in ss.stdout
+    assert f"0.0.0.0:{VALKEY_PORT}" not in ss.stdout
+    assert f"[::]:{VALKEY_PORT}" not in ss.stdout

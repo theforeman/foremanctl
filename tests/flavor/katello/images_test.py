@@ -1,10 +1,6 @@
 import pytest
 
-FLAVOR_CORE_IMAGES = [
-    "pulp",
-    "candlepin",
-    "foreman"
-]
+FLAVOR_CORE_IMAGES = ["pulp", "candlepin", "foreman"]
 
 
 @pytest.fixture(params=FLAVOR_CORE_IMAGES)

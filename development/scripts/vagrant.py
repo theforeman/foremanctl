@@ -13,9 +13,9 @@ import yaml
 def parse_args():
     parser = argparse.ArgumentParser(description="Vagrant inventory script")
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--list', action='store_true')
-    group.add_argument('--yaml', action='store_true')
-    group.add_argument('--host')
+    group.add_argument("--list", action="store_true")
+    group.add_argument("--yaml", action="store_true")
+    group.add_argument("--host")
     return parser.parse_args()
 
 
@@ -28,13 +28,13 @@ def get_running_hosts():
     cmd = "vagrant status --machine-readable"
     status = subprocess.check_output(cmd.split(), universal_newlines=True).rstrip()
 
-    for line in status.split('\n'):
-        if len(line.split(',')) == 4:
-            (_, host, key, value) = line.split(',')
+    for line in status.split("\n"):
+        if len(line.split(",")) == 4:
+            (_, host, key, value) = line.split(",")
         else:
-            (_, host, key, value, _) = line.split(',')
+            (_, host, key, value, _) = line.split(",")
 
-        if key == 'state' and value in ('active', 'running'):
+        if key == "state" and value in ("active", "running"):
             yield host
 
 
@@ -53,7 +53,7 @@ def list_running_hosts():
 
 
 def get_ssh_configs(hosts):
-    cmd = ['vagrant', 'ssh-config'] + hosts
+    cmd = ["vagrant", "ssh-config"] + hosts
     try:
         output = subprocess.check_output(cmd, universal_newlines=True, stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError:
@@ -67,7 +67,7 @@ def get_ssh_configs(hosts):
         if not line:
             continue
         key, value = line.split(None, 1)
-        if key == 'Host':
+        if key == "Host":
             host = value
         elif host:
             config[host][key.lower()] = value
@@ -77,10 +77,12 @@ def get_ssh_configs(hosts):
 
 def get_host_ssh_config(config, host):
     ssh = config.get(host)
-    return {'ansible_host': ssh['hostname'],
-            'ansible_port': ssh['port'],
-            'ansible_user': ssh['user'],
-            'ansible_ssh_private_key_file': ssh['identityfile']}
+    return {
+        "ansible_host": ssh["hostname"],
+        "ansible_port": ssh["port"],
+        "ansible_user": ssh["user"],
+        "ansible_ssh_private_key_file": ssh["identityfile"],
+    }
 
 
 def get_configs(hosts):
@@ -120,5 +122,5 @@ def main():
         json.dump(details[args.host], sys.stdout)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

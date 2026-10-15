@@ -16,11 +16,7 @@ def test_kafka_topics_initialized(server):
 
 
 def test_kafka_secrets(server):
-    secrets = [
-        'iop-core-kafka-init-start',
-        'iop-core-kafka-server-properties',
-        'iop-core-kafka-init'
-    ]
+    secrets = ["iop-core-kafka-init-start", "iop-core-kafka-server-properties", "iop-core-kafka-init"]
 
     result = server.run("podman secret ls --format '{{.Name}}'")
     assert result.succeeded
@@ -56,10 +52,12 @@ def test_kafka_topic_creation(server):
         "vulnerability.evaluator.recalc",
         "vulnerability.evaluator.upload",
         "vulnerability.grouper.inventory.upload",
-        "vulnerability.grouper.advisor.upload"
+        "vulnerability.grouper.advisor.upload",
     ]
 
-    result = server.run("podman exec iop-core-kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server iop-core-kafka:9092 --list")
+    result = server.run(
+        "podman exec iop-core-kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server iop-core-kafka:9092 --list"
+    )
     assert result.succeeded
 
     for topic in topics:

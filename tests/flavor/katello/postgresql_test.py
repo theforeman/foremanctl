@@ -1,4 +1,3 @@
-
 def test_postgresql_databases(database):
     result = database.run("podman exec postgresql psql -U postgres -c '\\l'")
     assert "foreman" in result.stdout

@@ -16,14 +16,14 @@ from jinja2 import FileSystemLoader
 from jinja2 import select_autoescape
 from requests.adapters import HTTPAdapter
 
-SSH_CONFIG = './.tmp/ssh-config'
-OBSAH_STATE = os.environ.get('OBSAH_STATE', '.var/lib/foremanctl')
-OBSAH_INVENTORY = os.environ.get('OBSAH_INVENTORY', 'inventories/')
-PARAMETERS_FILE = os.path.join(OBSAH_STATE, 'parameters.yaml')
-FLAVOR_TESTS_DIR = py.path.local(__file__).dirpath() / 'flavor'
+SSH_CONFIG = "./.tmp/ssh-config"
+OBSAH_STATE = os.environ.get("OBSAH_STATE", ".var/lib/foremanctl")
+OBSAH_INVENTORY = os.environ.get("OBSAH_INVENTORY", "inventories/")
+PARAMETERS_FILE = os.path.join(OBSAH_STATE, "parameters.yaml")
+FLAVOR_TESTS_DIR = py.path.local(__file__).dirpath() / "flavor"
 FLAVOR_TESTS_DIR_OVERRIDES = {
-    'satellite': 'katello',
-    'capsule': 'foreman-proxy-content',
+    "satellite": "katello",
+    "capsule": "foreman-proxy-content",
 }
 FOREMAN_PROXY_PORT = 8443
 
@@ -37,9 +37,12 @@ class UserParameters:
         # foremanctl outputs
         # FEATURE                   STATE               DESCRIPTION
         # $feature                  enabled/available   $description
-        output = subprocess.check_output(['./foremanctl', 'features'], cwd=self._config.rootdir,
-                                         universal_newlines=True,
-                                         env=os.environ | {'FOREMANCTL_FEATURES_LIST_INTERNAL': 'true'})
+        output = subprocess.check_output(
+            ["./foremanctl", "features"],
+            cwd=self._config.rootdir,
+            universal_newlines=True,
+            env=os.environ | {"FOREMANCTL_FEATURES_LIST_INTERNAL": "true"},
+        )
         lines = output.splitlines(keepends=False)
         # feature, status, internal, description
         return [line.split(None, 3) for line in lines[1:]]
@@ -50,25 +53,29 @@ class UserParameters:
 
     @cached_property
     def available_features(self):
-        return set(feature for feature, _status, internal, _desc in self.features if internal == '0')
+        return set(feature for feature, _status, internal, _desc in self.features if internal == "0")
 
     @cached_property
     def enabled_features(self):
-        return set(feature for feature, status, internal, _desc in self.features if status == 'enabled')
+        return set(feature for feature, status, internal, _desc in self.features if status == "enabled")
 
     @cached_property
     def user_enabled_features(self):
-        return set(feature for feature, status, internal, _desc in self.features if status == 'enabled' and internal == '0')
+        return set(
+            feature for feature, status, internal, _desc in self.features if status == "enabled" and internal == "0"
+        )
 
     @cached_property
     def flavor(self):
         with open(PARAMETERS_FILE) as f:
             params = yaml.safe_load(f)
-        return params.get('flavor', 'katello')
+        return params.get("flavor", "katello")
 
 
 def pytest_addoption(parser):
-    parser.addoption("--server-hostname", action="store", default="quadlet", help="Hostname of the server VM to test against")
+    parser.addoption(
+        "--server-hostname", action="store", default="quadlet", help="Hostname of the server VM to test against"
+    )
     parser.addoption("--featureset", action="store", help="Which featureset should be tested against")
 
 
@@ -98,19 +105,21 @@ def generate_ssh_config():
         return
     try:
         result = subprocess.run(
-            ['ansible-inventory', '--list', '--inventory', OBSAH_INVENTORY],
-            capture_output=True, text=True, check=True,
+            ["ansible-inventory", "--list", "--inventory", OBSAH_INVENTORY],
+            capture_output=True,
+            text=True,
+            check=True,
         )
     except (subprocess.CalledProcessError, FileNotFoundError):
         return
     inv = json.loads(result.stdout)
-    hostvars = inv.get('_meta', {}).get('hostvars', {})
+    hostvars = inv.get("_meta", {}).get("hostvars", {})
     if not hostvars:
         return
     os.makedirs(os.path.dirname(SSH_CONFIG), exist_ok=True)
-    with open(SSH_CONFIG, 'w') as f:
+    with open(SSH_CONFIG, "w") as f:
         for host, vars in hostvars.items():
-            if vars.get('ansible_connection') == 'local':
+            if vars.get("ansible_connection") == "local":
                 continue
             f.write(f"Host {host}\n")
             f.write(f"  HostName {vars.get('ansible_host', host)}\n")
@@ -119,7 +128,7 @@ def generate_ssh_config():
             f.write("  UserKnownHostsFile /dev/null\n")
             f.write("  StrictHostKeyChecking no\n")
             f.write("  PasswordAuthentication no\n")
-            if key := vars.get('ansible_ssh_private_key_file'):
+            if key := vars.get("ansible_ssh_private_key_file"):
                 f.write(f"  IdentityFile {key}\n")
             f.write("  IdentitiesOnly yes\n")
             f.write("  LogLevel FATAL\n\n")
@@ -127,7 +136,7 @@ def generate_ssh_config():
 
 @pytest.fixture(scope="module")
 def fixture_dir():
-    return py.path.local(__file__).realpath() / '..' / 'fixtures'
+    return py.path.local(__file__).realpath() / ".." / "fixtures"
 
 
 @pytest.fixture(scope="module")
@@ -137,24 +146,24 @@ def server_hostname(pytestconfig):
 
 @pytest.fixture(scope="module")
 def server_fqdn(server):
-    return server.check_output('hostname -f')
+    return server.check_output("hostname -f")
 
 
 @pytest.fixture(scope="module")
 def client_hostname():
-    return 'client'
+    return "client"
 
 
 @pytest.fixture(scope="module")
 def client_fqdn(client):
-    return client.check_output('hostname -f')
+    return client.check_output("hostname -f")
 
 
 @pytest.fixture(scope="module")
 def certificates(server_fqdn):
     env = Environment(loader=FileSystemLoader("."), autoescape=select_autoescape())
     template = env.get_template("./src/vars/certificates.yml")
-    context = {'ansible_facts': {'fqdn': server_fqdn}}
+    context = {"ansible_facts": {"fqdn": server_fqdn}}
     # we have vars that refer to other vars, so load them once and then re-render the template
     context.update(yaml.safe_load(template.render(context)))
     return yaml.safe_load(template.render(context))
@@ -169,18 +178,18 @@ def obsah_params():
 
 @pytest.fixture(scope="module")
 def certificate_source(obsah_params):
-    return obsah_params.get('certificates_source', 'default')
+    return obsah_params.get("certificates_source", "default")
 
 
 @pytest.fixture(scope="module")
 def custom_certificates(certificate_source):
-    if certificate_source != 'custom_server':
+    if certificate_source != "custom_server":
         pytest.skip("Only applies to custom certificate deployments")
 
 
 @pytest.fixture(scope="module")
 def default_certificates(certificate_source):
-    if certificate_source == 'custom_server':
+    if certificate_source == "custom_server":
         pytest.skip("Only applies to non-custom certificate deployments")
 
 
@@ -188,7 +197,7 @@ def default_certificates(certificate_source):
 def quadlet_client_certificate():
     # this intentionally uses get_paramiko_host directly, as we want the cert of the quadlet box
     # not the one "server" points at, as that can be the proxy
-    quadlet = get_paramiko_host('quadlet')
+    quadlet = get_paramiko_host("quadlet")
     hostname = quadlet.run("hostname -f").stdout.strip()
     cert = quadlet.file(f"/var/lib/foremanctl/certs/certs/{hostname}-client.crt").content_string
     key = quadlet.file(f"/var/lib/foremanctl/certs/private/{hostname}-client.key").content_string
@@ -197,11 +206,11 @@ def quadlet_client_certificate():
 
 @pytest.fixture(scope="module")
 def database_mode(obsah_params):
-    return obsah_params.get('database_mode', 'internal')
+    return obsah_params.get("database_mode", "internal")
 
 
 def get_paramiko_host(hostname):
-    return testinfra.get_host(f'paramiko://{hostname}', sudo=True, ssh_config=SSH_CONFIG)
+    return testinfra.get_host(f"paramiko://{hostname}", sudo=True, ssh_config=SSH_CONFIG)
 
 
 @pytest.fixture(scope="module")
@@ -216,8 +225,8 @@ def client(client_hostname):
 
 @pytest.fixture(scope="module")
 def database(database_mode, server):
-    if database_mode == 'external':
-        yield get_paramiko_host('database')
+    if database_mode == "external":
+        yield get_paramiko_host("database")
     else:
         yield server
 
@@ -231,105 +240,154 @@ def ssh_config(server_hostname):
 @pytest.fixture(scope="module")
 def foremanapi(ssh_config, server_fqdn):
     api = apypie.ForemanApi(
-        uri=f'https://{ssh_config["hostname"]}',
-        username='admin',
-        password='changeme',
+        uri=f"https://{ssh_config['hostname']}",
+        username="admin",
+        password="changeme",
         verify_ssl=False,
     )
-    api._session.headers['Host'] = server_fqdn
+    api._session.headers["Host"] = server_fqdn
     return api
 
 
 @pytest.fixture
 def organization(foremanapi):
-    org = foremanapi.create('organizations', {'name': str(uuid.uuid4())})
+    org = foremanapi.create("organizations", {"name": str(uuid.uuid4())})
     yield org
-    foremanapi.delete('organizations', org)
+    foremanapi.delete("organizations", org)
 
 
 @pytest.fixture
 def product(organization, foremanapi):
-    prod = foremanapi.create('products', {'name': str(uuid.uuid4()), 'organization_id': organization['id']})
+    prod = foremanapi.create("products", {"name": str(uuid.uuid4()), "organization_id": organization["id"]})
     yield prod
-    foremanapi.delete('products', prod)
+    foremanapi.delete("products", prod)
 
 
 @pytest.fixture
 def yum_repository(product, organization, foremanapi):
-    repo = foremanapi.create('repositories', {'name': str(uuid.uuid4()), 'product_id': product['id'], 'content_type': 'yum', 'url': 'https://fixtures.pulpproject.org/rpm-no-comps/'})
+    repo = foremanapi.create(
+        "repositories",
+        {
+            "name": str(uuid.uuid4()),
+            "product_id": product["id"],
+            "content_type": "yum",
+            "url": "https://fixtures.pulpproject.org/rpm-no-comps/",
+        },
+    )
     wait_for_metadata_generate(foremanapi)
     yield repo
-    foremanapi.delete('repositories', repo)
+    foremanapi.delete("repositories", repo)
 
 
 @pytest.fixture
 def file_repository(product, organization, foremanapi):
-    repo = foremanapi.create('repositories', {'name': str(uuid.uuid4()), 'product_id': product['id'], 'content_type': 'file', 'url': 'https://fixtures.pulpproject.org/file/'})
+    repo = foremanapi.create(
+        "repositories",
+        {
+            "name": str(uuid.uuid4()),
+            "product_id": product["id"],
+            "content_type": "file",
+            "url": "https://fixtures.pulpproject.org/file/",
+        },
+    )
     wait_for_metadata_generate(foremanapi)
     yield repo
-    foremanapi.delete('repositories', repo)
+    foremanapi.delete("repositories", repo)
 
 
 @pytest.fixture
 def container_repository(product, organization, foremanapi):
-    repo = foremanapi.create('repositories', {'name': str(uuid.uuid4()), 'product_id': product['id'], 'content_type': 'docker', 'url': 'https://quay.io/', 'docker_upstream_name': 'foreman/busybox-test'})
+    repo = foremanapi.create(
+        "repositories",
+        {
+            "name": str(uuid.uuid4()),
+            "product_id": product["id"],
+            "content_type": "docker",
+            "url": "https://quay.io/",
+            "docker_upstream_name": "foreman/busybox-test",
+        },
+    )
     wait_for_metadata_generate(foremanapi)
     yield repo
-    foremanapi.delete('repositories', repo)
+    foremanapi.delete("repositories", repo)
 
 
 @pytest.fixture
 def lifecycle_environment(organization, foremanapi):
-    library = foremanapi.list('lifecycle_environments', 'name=Library', {'organization_id': organization['id']})[0]
-    lce = foremanapi.create('lifecycle_environments', {'name': str(uuid.uuid4()), 'organization_id': organization['id'], 'prior_id': library['id']})
+    library = foremanapi.list("lifecycle_environments", "name=Library", {"organization_id": organization["id"]})[0]
+    lce = foremanapi.create(
+        "lifecycle_environments",
+        {"name": str(uuid.uuid4()), "organization_id": organization["id"], "prior_id": library["id"]},
+    )
     yield lce
-    foremanapi.delete('lifecycle_environments', lce)
+    foremanapi.delete("lifecycle_environments", lce)
 
 
 @pytest.fixture
 def content_view(organization, foremanapi):
-    cv = foremanapi.create('content_views', {'name': str(uuid.uuid4()), 'organization_id': organization['id']})
+    cv = foremanapi.create("content_views", {"name": str(uuid.uuid4()), "organization_id": organization["id"]})
     yield cv
-    foremanapi.delete('content_views', cv)
+    foremanapi.delete("content_views", cv)
 
 
 @pytest.fixture
 def activation_key(organization, foremanapi):
-    ak = foremanapi.create('activation_keys', {'name': str(uuid.uuid4()), 'organization_id': organization['id']})
+    ak = foremanapi.create("activation_keys", {"name": str(uuid.uuid4()), "organization_id": organization["id"]})
     yield ak
-    foremanapi.delete('activation_keys', ak)
+    foremanapi.delete("activation_keys", ak)
 
 
 @pytest.fixture
 def client_environment(activation_key, content_view, lifecycle_environment, yum_repository, organization, foremanapi):
-    foremanapi.resource_action('repositories', 'sync', {'id': yum_repository['id']})
-    foremanapi.update('content_views', {'id': content_view['id'], 'repository_ids': [yum_repository['id']]})
-    foremanapi.resource_action('content_views', 'publish', {'id': content_view['id']})
+    foremanapi.resource_action("repositories", "sync", {"id": yum_repository["id"]})
+    foremanapi.update("content_views", {"id": content_view["id"], "repository_ids": [yum_repository["id"]]})
+    foremanapi.resource_action("content_views", "publish", {"id": content_view["id"]})
 
-    library = foremanapi.list('lifecycle_environments', 'name=Library', {'organization_id': organization['id']})[0]
-    cve = foremanapi.list('content_view_environments', params={'organization_id': organization['id'], 'environment_id': library['id'], 'content_view_id': content_view['id']})[0]
-    foremanapi.update('activation_keys', {'id': activation_key['id'], 'organization_id': organization['id'], 'content_view_environment_ids': [cve['id']]})
+    library = foremanapi.list("lifecycle_environments", "name=Library", {"organization_id": organization["id"]})[0]
+    cve = foremanapi.list(
+        "content_view_environments",
+        params={
+            "organization_id": organization["id"],
+            "environment_id": library["id"],
+            "content_view_id": content_view["id"],
+        },
+    )[0]
+    foremanapi.update(
+        "activation_keys",
+        {
+            "id": activation_key["id"],
+            "organization_id": organization["id"],
+            "content_view_environment_ids": [cve["id"]],
+        },
+    )
 
     yield activation_key
 
-    foremanapi.update('activation_keys', {'id': activation_key['id'], 'organization_id': organization['id'], 'content_view_environment_ids': []})
+    foremanapi.update(
+        "activation_keys",
+        {"id": activation_key["id"], "organization_id": organization["id"], "content_view_environment_ids": []},
+    )
 
-    versions = foremanapi.list('content_view_versions', params={'content_view_id': content_view['id']})
+    versions = foremanapi.list("content_view_versions", params={"content_view_id": content_view["id"]})
     for version in versions:
-        current_environment_ids = {environment['id'] for environment in version['environments']}
+        current_environment_ids = {environment["id"] for environment in version["environments"]}
         for environment_id in current_environment_ids:
-            foremanapi.resource_action('content_views', 'remove_from_environment', params={'id': content_view['id'], 'environment_id': environment_id})
-        foremanapi.delete('content_view_versions', version)
+            foremanapi.resource_action(
+                "content_views",
+                "remove_from_environment",
+                params={"id": content_view["id"], "environment_id": environment_id},
+            )
+        foremanapi.delete("content_view_versions", version)
 
 
 def wait_for_tasks(foremanapi, search=None):
-    tasks = foremanapi.list('foreman_tasks', search=search)
+    tasks = foremanapi.list("foreman_tasks", search=search)
     for task in tasks:
         foremanapi.wait_for_task(task)
 
 
 def wait_for_metadata_generate(foremanapi):
-    wait_for_tasks(foremanapi, 'label = Actions::Katello::Repository::MetadataGenerate')
+    wait_for_tasks(foremanapi, "label = Actions::Katello::Repository::MetadataGenerate")
 
 
 def pytest_configure(config):
@@ -357,7 +415,7 @@ def pytest_collection_modifyitems(config, items):
         config.hook.pytest_deselected(items=deselected)
         items[:] = selected
 
-    feature_dir = config.rootdir / 'tests' / 'feature'
+    feature_dir = config.rootdir / "tests" / "feature"
     for item in items:
         try:
             rel_path = item.path.relative_to(feature_dir)
@@ -422,13 +480,12 @@ def curl_request(server, certificates, quadlet_client_certificate, server_fqdn):
     server.run(f"echo '{cert}' > /tmp/quadlet.crt")
     server.run(f"echo '{key}' > /tmp/quadlet.key")
 
-    def _request(path, base_url=None, method=None, data=None, headers=None, return_body=False, resolve=None, insecure=False):
+    def _request(
+        path, base_url=None, method=None, data=None, headers=None, return_body=False, resolve=None, insecure=False
+    ):
         url = f"{base_url or f'https://{server_fqdn}'}/{path}"
         curl_opts = (
-            f"--cacert {certificates['server_ca_certificate']} "
-            f"--cert /tmp/quadlet.crt "
-            f"--key /tmp/quadlet.key "
-            f"--silent "
+            f"--cacert {certificates['server_ca_certificate']} --cert /tmp/quadlet.crt --key /tmp/quadlet.key --silent "
         )
         if not return_body:
             curl_opts += "--write-out '%{http_code}' --output /dev/null "
@@ -444,9 +501,10 @@ def curl_request(server, certificates, quadlet_client_certificate, server_fqdn):
             for key, value in headers.items():
                 curl_opts += f"--header '{key}: {value}' "
         return server.run(f"curl {curl_opts}{url}")
+
     return _request
 
 
 @pytest.fixture
 def foreman_plugins(foremanapi):
-    return [plugin['name'] for plugin in foremanapi.list('plugins')]
+    return [plugin["name"] for plugin in foremanapi.list("plugins")]

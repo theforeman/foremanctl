@@ -1,5 +1,7 @@
 import datetime
 import json
+import re
+import shlex
 
 import pytest
 import yaml
@@ -12,75 +14,67 @@ def test_foreman_proxy_features(curl_request, proxy_base_url, enabled_features):
     assert cmd.succeeded
     features = json.loads(cmd.stdout)
     assert "logs" in features
-    if 'remote-execution' in enabled_features:
+    if "remote-execution" in enabled_features:
         assert "script" in features
         assert "dynflow" in features
     else:
         assert "script" not in features
-    if 'bmc' in enabled_features:
+    if "bmc" in enabled_features:
         assert "bmc" in features
     else:
         assert "bmc" not in features
-    if 'templates' in enabled_features:
+    if "templates" in enabled_features:
         assert "templates" in features
     else:
         assert "templates" not in features
-    if 'ansible' in enabled_features:
+    if "ansible" in enabled_features:
         assert "ansible" in features
     else:
         assert "ansible" not in features
-    if 'registration' in enabled_features:
+    if "registration" in enabled_features:
         assert "registration" in features
         assert "templates" in features
     else:
         assert "registration" not in features
-    if 'container-gateway' in enabled_features:
+    if "container-gateway" in enabled_features:
         assert "container_gateway" in features
     else:
         assert "container_gateway" not in features
 
 
 def test_foreman_proxy_permitted_hosts_config(server, server_fqdn, obsah_params):
-    cmd = server.run(
-        "podman secret inspect "
-        "--format '{{.SecretData}}' "
-        "--showsecret foreman-proxy-settings-yml"
-    )
+    cmd = server.run("podman secret inspect --format '{{.SecretData}}' --showsecret foreman-proxy-settings-yml")
     assert cmd.succeeded
 
     settings = yaml.safe_load(cmd.stdout)
-    expected_hosts = [server_fqdn] + (obsah_params.get('server_aliases') or [])
-    assert settings[':permitted_hosts'] == expected_hosts
+    expected_hosts = [server_fqdn] + (obsah_params.get("server_aliases") or [])
+    assert settings[":permitted_hosts"] == expected_hosts
 
 
 def test_foreman_proxy_host_injection(curl_request, server):
-    warning = 'permitted_hosts is configured but not enforced by this Sinatra version'
-    invocation_id = server.check_output(
-        "systemctl show foreman-proxy.service --property=InvocationID --value"
-    ).strip()
+    warning = "permitted_hosts is configured but not enforced by this Sinatra version"
+    invocation_id = server.check_output("systemctl show foreman-proxy.service --property=InvocationID --value").strip()
     assert invocation_id, "Could not determine the current foreman-proxy service invocation"
 
-    journal = server.run(
-        f"journalctl -u foreman-proxy _SYSTEMD_INVOCATION_ID={invocation_id} --no-pager"
-    )
+    journal = server.run(f"journalctl -u foreman-proxy _SYSTEMD_INVOCATION_ID={invocation_id} --no-pager")
     assert journal.succeeded, f"Failed to read foreman-proxy startup journal: {journal.stderr}"
     if warning in journal.stdout:
         pytest.skip("Host-header rejection is not supported by the installed Sinatra version")
 
-    host = 'evil.hackers.test'
+    host = "evil.hackers.test"
     request = {
-        'base_url': f"https://{host}:{FOREMAN_PROXY_PORT}",
-        'headers': {"Host": host},
-        'resolve': f"{host}:{FOREMAN_PROXY_PORT}:127.0.0.1",
-        'insecure': True,
+        "base_url": f"https://{host}:{FOREMAN_PROXY_PORT}",
+        "headers": {"Host": host},
+        "resolve": f"{host}:{FOREMAN_PROXY_PORT}:127.0.0.1",
+        "insecure": True,
     }
     status = curl_request("v2/features", **request)
     assert status.succeeded, f"Failed to query Foreman Proxy: {status.stderr}"
-    assert status.stdout.strip() == '403', f"Expected HTTP 403, got {status.stdout.strip()}"
+    assert status.stdout.strip() == "403", f"Expected HTTP 403, got {status.stdout.strip()}"
 
     body = curl_request("v2/features", return_body=True, **request)
     assert body.succeeded, f"Failed to query Foreman Proxy: {body.stderr}"
-    assert body.stdout.strip() == 'Host not permitted'
+    assert body.stdout.strip() == "Host not permitted"
 
 
 def test_foreman_proxy_service(server):
@@ -89,11 +83,11 @@ def test_foreman_proxy_service(server):
 
 
 def test_foreman_proxy_port(server):
-    foreman_proxy = server.addr('localhost')
+    foreman_proxy = server.addr("localhost")
     assert foreman_proxy.port(FOREMAN_PROXY_PORT).is_reachable
 
 
-@pytest.mark.feature('remote-execution')
+@pytest.mark.feature("remote-execution")
 def test_remote_execution_ssh_public_key_comment(server, server_fqdn):
     cmd = server.run(
         "podman secret inspect "
@@ -106,9 +100,14 @@ def test_remote_execution_ssh_public_key_comment(server, server_fqdn):
     assert public_key[2] == f"foreman-proxy@{server_fqdn}"
 
 
-@pytest.mark.xfail(reason='Fails until report feature is available')
+@pytest.mark.xfail(reason="Fails until report feature is available")
 def test_foreman_proxy_client_auth_to_foreman(curl_request):
-    test_report = {"config_report": {"host": "test.example.com", "reported_at": datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M:%S UTC')}}
+    test_report = {
+        "config_report": {
+            "host": "test.example.com",
+            "reported_at": datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M:%S UTC"),
+        }
+    }
     cmd = curl_request(
         "api/v2/config_reports",
         method="POST",
@@ -116,48 +115,82 @@ def test_foreman_proxy_client_auth_to_foreman(curl_request):
         headers={"Content-Type": "application/json"},
     )
     assert cmd.succeeded
-    assert cmd.stdout == '201'
+    assert cmd.stdout == "201"
 
 
-@pytest.mark.feature('bmc')
+@pytest.mark.feature("bmc")
 def test_bmc_capabilities(proxy_v2_features):
-    assert 'bmc' in proxy_v2_features
-    capabilities = proxy_v2_features['bmc'].get('capabilities', [])
-    assert 'ipmitool' in capabilities
-    assert 'freeipmi' in capabilities
-    assert 'redfish' in capabilities
+    assert "bmc" in proxy_v2_features
+    capabilities = proxy_v2_features["bmc"].get("capabilities", [])
+    assert "ipmitool" in capabilities
+    assert "freeipmi" in capabilities
+    assert "redfish" in capabilities
 
 
-@pytest.mark.feature('bmc')
+@pytest.mark.feature("bmc")
 def test_bmc_default_provider(proxy_v2_features):
-    settings = proxy_v2_features['bmc'].get('settings', {})
-    assert settings.get('bmc_default_provider') == 'ipmitool'
+    settings = proxy_v2_features["bmc"].get("settings", {})
+    assert settings.get("bmc_default_provider") == "ipmitool"
 
 
-@pytest.mark.feature('templates')
+@pytest.mark.feature("templates")
 def test_templates_fetch_template_url(proxy_v2_features, obsah_params):
-    assert 'templates' in proxy_v2_features
-    settings = proxy_v2_features['templates'].get('settings', {})
-    assert settings.get('template_url') == obsah_params.get('foreman_proxy_templates_url')
+    assert "templates" in proxy_v2_features
+    settings = proxy_v2_features["templates"].get("settings", {})
+    assert settings.get("template_url") == obsah_params.get("foreman_proxy_templates_url")
 
 
-@pytest.mark.feature('templates')
+@pytest.mark.feature("templates")
 def test_templates_endpoint_responds(curl_request, proxy_base_url, server_fqdn):
     """Fetch templateServer data from the templates proxy endpoint"""
     cmd = curl_request("unattended/templateServer", base_url=proxy_base_url, return_body=True)
     assert cmd.succeeded, f"Failed to query /unattended/templateServer: {cmd.stderr}"
     data = json.loads(cmd.stdout)
-    assert 'templateServer' in data
-    assert server_fqdn in data['templateServer']
+    assert "templateServer" in data
+    assert server_fqdn in data["templateServer"]
 
 
-@pytest.mark.feature('registration')
+@pytest.mark.feature("registration")
 def test_registration_url(obsah_params):
-    registration_url = obsah_params.get('foreman_proxy_registration_url')
-    assert registration_url == 'https://loadbalancer.example.com:8443'
+    registration_url = obsah_params.get("foreman_proxy_registration_url")
+    assert registration_url == "https://loadbalancer.example.com:8443"
 
 
-@pytest.mark.feature('registration')
+@pytest.mark.feature("registration")
 def test_registration_endpoint(proxy_v2_features):
-    assert 'registration' in proxy_v2_features
-    assert proxy_v2_features['registration'].get('state') == 'running'
+    assert "registration" in proxy_v2_features
+    assert proxy_v2_features["registration"].get("state") == "running"
+
+
+def test_proxy_serves_chain_with_root_only_trust(server, server_fqdn, certificates):
+    from tests.certificates_test import pem_certificates
+
+    ca_pem = server.file(certificates["server_ca_certificate"]).content_string
+    ca_blocks = re.findall(r"-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----", ca_pem, re.S)
+    # Test fixtures put the self-signed root last, including the default single-root case.
+    root = ca_blocks[-1]
+    root_path = server.check_output("mktemp /tmp/proxy-root-XXXXXX.pem").strip()
+    try:
+        write = server.run(f"printf '%s' {shlex.quote(root)} > {shlex.quote(root_path)}")
+        assert write.succeeded
+        root_info = server.check_output("openssl x509 -in %s -noout -subject -issuer -nameopt RFC2253", root_path)
+        subject, issuer = root_info.splitlines()
+        assert subject.removeprefix("subject=") == issuer.removeprefix("issuer="), "Fixture must end with the root"
+        result = server.run(
+            "openssl s_client -connect %s:%s -servername %s -showcerts "
+            "-CAfile %s -no-CApath -no-CAstore -verify_hostname %s "
+            "-verify_return_error </dev/null",
+            server_fqdn,
+            str(FOREMAN_PROXY_PORT),
+            server_fqdn,
+            root_path,
+            server_fqdn,
+        )
+        assert result.succeeded, result.stdout + result.stderr
+        expected = pem_certificates(server.file(certificates["server_certificate"]).content_string)
+        presented = pem_certificates(result.stdout)
+        # OpenSSL may omit the self-signed root; every intermediate must be sent.
+        required = expected[:-1] if len(expected) > 1 and expected[-1] == pem_certificates(root)[0] else expected
+        assert presented[: len(required)] == required
+    finally:
+        server.run("rm -f %s", root_path)

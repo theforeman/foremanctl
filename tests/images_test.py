@@ -1,9 +1,6 @@
 import pytest
 
-CORE_IMAGES = [
-    "valkey",
-    'pulp'
-]
+CORE_IMAGES = ["valkey", "pulp"]
 
 
 @pytest.fixture(params=CORE_IMAGES)
@@ -33,7 +30,7 @@ def test_image_registry_auth_file(server, core_image):
 
 def test_postgresql_image_file(server, database_mode):
     image_file = server.file("/etc/containers/systemd/postgresql.image")
-    if database_mode == 'external':
+    if database_mode == "external":
         assert not image_file.exists
     else:
         assert image_file.exists and image_file.is_file
@@ -41,7 +38,7 @@ def test_postgresql_image_file(server, database_mode):
 
 def test_foreman_proxy_image_file(server, enabled_features):
     image_file = server.file("/etc/containers/systemd/foreman-proxy.image")
-    if 'foreman-proxy' in enabled_features:
+    if "foreman-proxy" in enabled_features:
         assert image_file.exists and image_file.is_file
     else:
         assert not image_file.exists
@@ -49,8 +46,7 @@ def test_foreman_proxy_image_file(server, enabled_features):
 
 def test_foreman_proxy_image_registry_auth_file(server, enabled_features):
     image_file = server.file("/etc/containers/systemd/foreman-proxy.image")
-    if 'foreman-proxy' in enabled_features:
+    if "foreman-proxy" in enabled_features:
         assert "REGISTRY_AUTH_FILE" in image_file.content_string
     else:
         assert not image_file.exists
-

@@ -11,13 +11,13 @@ def test_gateway_port(server):
 
 def test_gateway_secrets(server):
     secrets = [
-        'iop-core-gateway-server-cert',
-        'iop-core-gateway-server-key',
-        'iop-core-gateway-server-ca-cert',
-        'iop-core-gateway-client-cert',
-        'iop-core-gateway-client-key',
-        'iop-core-gateway-client-ca-cert',
-        'iop-core-gateway-relay-conf'
+        "iop-core-gateway-server-cert",
+        "iop-core-gateway-server-key",
+        "iop-core-gateway-server-ca-cert",
+        "iop-core-gateway-client-cert",
+        "iop-core-gateway-client-key",
+        "iop-core-gateway-client-ca-cert",
+        "iop-core-gateway-relay-conf",
     ]
 
     result = server.run("podman secret ls --format '{{.Name}}'")

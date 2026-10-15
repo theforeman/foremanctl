@@ -2,66 +2,69 @@ import subprocess
 
 import pytest
 
-pytestmark = pytest.mark.feature('katello')
+pytestmark = pytest.mark.feature("katello")
 
 
-HOSTNAME = 'proxy.example.com'
-TARBALL = f'/var/lib/foremanctl/certs/bundles/{HOSTNAME}.tar.gz'
+HOSTNAME = "proxy.example.com"
+TARBALL = f"/var/lib/foremanctl/certs/bundles/{HOSTNAME}.tar.gz"
 
-ALIAS = 'loadbalancer.example.com'
+ALIAS = "loadbalancer.example.com"
 
 EXPECTED_CA_FILES = [
-    'certs/ca.crt',
-    'certs/server-ca.crt',
-    'certs/ca-bundle.crt',
+    "certs/ca.crt",
+    "certs/server-ca.crt",
+    "certs/ca-bundle.crt",
 ]
 
 EXPECTED_SERVER_FILES = [
-    f'certs/{HOSTNAME}.crt',
-    f'private/{HOSTNAME}.key',
+    f"certs/{HOSTNAME}.crt",
+    f"private/{HOSTNAME}.key",
 ]
 
 EXPECTED_CLIENT_FILES = [
-    f'certs/{HOSTNAME}-client.crt',
-    f'private/{HOSTNAME}-client.key',
+    f"certs/{HOSTNAME}-client.crt",
+    f"private/{HOSTNAME}-client.key",
 ]
 
 EXPECTED_OAUTH_FILES = [
-    'oauth/foreman-oauth-consumer-key',
-    'oauth/foreman-oauth-consumer-secret',
+    "oauth/foreman-oauth-consumer-key",
+    "oauth/foreman-oauth-consumer-secret",
 ]
 
 
 @pytest.fixture(scope="module")
 def generate_custom_proxy_certs(server, certificate_source):
-    if certificate_source != 'custom_server':
+    if certificate_source != "custom_server":
         return
 
     result = subprocess.run(
-        ['./forge', 'custom-certs', '--hostname', HOSTNAME],
-        capture_output=True, text=True,
+        ["./forge", "custom-certs", "--hostname", HOSTNAME],
+        capture_output=True,
+        text=True,
     )
-    assert result.returncode == 0, f'forge custom-certs failed: {result.stdout}\n{result.stderr}'
+    assert result.returncode == 0, f"forge custom-certs failed: {result.stdout}\n{result.stderr}"
 
 
 @pytest.fixture(scope="module")
 def generate_bundle(server, certificate_source, generate_custom_proxy_certs):
-    command = ['./foremanctl', 'auth-bundle']
-    if certificate_source == 'custom_server':
+    command = ["./foremanctl", "auth-bundle"]
+    if certificate_source == "custom_server":
         command.extend([
-            '--certificate-server-certificate', f'/root/custom-certificates/certs/{HOSTNAME}.crt',
-            '--certificate-server-key', f'/root/custom-certificates/private/{HOSTNAME}.key',
+            "--certificate-server-certificate",
+            f"/root/custom-certificates/certs/{HOSTNAME}.crt",
+            "--certificate-server-key",
+            f"/root/custom-certificates/private/{HOSTNAME}.key",
         ])
     command.append(HOSTNAME)
 
     result = subprocess.run(command, capture_output=True, text=True)
-    assert result.returncode == 0, f'auth-bundle failed: {result.stdout}\n{result.stderr}'
+    assert result.returncode == 0, f"auth-bundle failed: {result.stdout}\n{result.stderr}"
 
 
 @pytest.fixture(scope="module")
 def tarball_members(server, generate_bundle):
-    result = server.run(f'tar tzf {TARBALL}')
-    assert result.succeeded, f'Tarball {TARBALL} not found.'
+    result = server.run(f"tar tzf {TARBALL}")
+    assert result.succeeded, f"Tarball {TARBALL} not found."
     return result.stdout.strip().splitlines()
 
 
@@ -91,26 +94,26 @@ def test_tarball_contains_oauth_credentials(tarball_members, expected_file):
 
 def test_proxy_certs_stored_in_hosts_subdirectory(server, generate_bundle):
     """Verify proxy certificates are stored in a per-host subdirectory."""
-    proxy_cert = server.file(f'/var/lib/foremanctl/certs/hosts/{HOSTNAME}/certs/{HOSTNAME}.crt')
+    proxy_cert = server.file(f"/var/lib/foremanctl/certs/hosts/{HOSTNAME}/certs/{HOSTNAME}.crt")
     assert proxy_cert.exists
-    proxy_client_cert = server.file(f'/var/lib/foremanctl/certs/hosts/{HOSTNAME}/certs/{HOSTNAME}-client.crt')
+    proxy_client_cert = server.file(f"/var/lib/foremanctl/certs/hosts/{HOSTNAME}/certs/{HOSTNAME}-client.crt")
     assert proxy_client_cert.exists
 
 
 def test_server_ca_and_default_ca_identical_for_default_deployment(server, generate_bundle, default_certificates):
     """For default (non-custom) deployments, server-ca.crt and ca.crt should be identical."""
-    server_ca = server.run(f'tar xzf {TARBALL} -O certs/server-ca.crt')
+    server_ca = server.run(f"tar xzf {TARBALL} -O certs/server-ca.crt")
     assert server_ca.succeeded
-    default_ca = server.run(f'tar xzf {TARBALL} -O certs/ca.crt')
+    default_ca = server.run(f"tar xzf {TARBALL} -O certs/ca.crt")
     assert default_ca.succeeded
     assert server_ca.stdout == default_ca.stdout
 
 
 def test_server_ca_and_default_ca_differ_for_custom_deployment(server, generate_bundle, custom_certificates):
     """For custom server cert deployments, server-ca.crt (custom) differs from ca.crt (internal)."""
-    server_ca = server.run(f'tar xzf {TARBALL} -O certs/server-ca.crt')
+    server_ca = server.run(f"tar xzf {TARBALL} -O certs/server-ca.crt")
     assert server_ca.succeeded
-    default_ca = server.run(f'tar xzf {TARBALL} -O certs/ca.crt')
+    default_ca = server.run(f"tar xzf {TARBALL} -O certs/ca.crt")
     assert default_ca.succeeded
     assert server_ca.stdout != default_ca.stdout
 
@@ -119,15 +122,28 @@ def test_server_ca_and_default_ca_differ_for_custom_deployment(server, generate_
 def generate_auth_bundle_with_alias(server, default_certificates):
     """--proxy-alias only applies to certificates issued by the internal CA."""
     result = subprocess.run(
-        ['./foremanctl', 'auth-bundle', '--proxy-alias', ALIAS, HOSTNAME],
-        capture_output=True, text=True,
+        ["./foremanctl", "auth-bundle", "--proxy-alias", ALIAS, HOSTNAME],
+        capture_output=True,
+        text=True,
     )
-    assert result.returncode == 0, f'auth-bundle failed: {result.stdout}\n{result.stderr}'
+    assert result.returncode == 0, f"auth-bundle failed: {result.stdout}\n{result.stderr}"
 
 
 def test_server_certificate_includes_server_alias_san(server, generate_auth_bundle_with_alias):
     """--proxy-alias must add the given name as a SAN, e.g. for a load balancer in front of a proxy."""
-    cert_path = f'/var/lib/foremanctl/certs/hosts/{HOSTNAME}/certs/{HOSTNAME}.crt'
-    result = server.run(f'openssl x509 -in {cert_path} -noout -text')
+    cert_path = f"/var/lib/foremanctl/certs/hosts/{HOSTNAME}/certs/{HOSTNAME}.crt"
+    result = server.run(f"openssl x509 -in {cert_path} -noout -text")
     assert result.succeeded
-    assert f'DNS:{ALIAS}' in result.stdout
+    assert f"DNS:{ALIAS}" in result.stdout
+
+
+def test_custom_auth_bundle_contains_server_chain(server, generate_bundle, custom_certificates):
+    from tests.certificates_test import pem_certificates
+
+    cert = server.run(f"tar xzf {TARBALL} -O certs/{HOSTNAME}.crt")
+    ca = server.run(f"tar xzf {TARBALL} -O certs/server-ca.crt")
+    assert cert.succeeded and ca.succeeded
+    chain = pem_certificates(cert.stdout)
+    assert chain[1:] == pem_certificates(ca.stdout)
+    disk = server.file(f"/var/lib/foremanctl/certs/hosts/{HOSTNAME}/certs/{HOSTNAME}.crt")
+    assert chain == pem_certificates(disk.content_string)

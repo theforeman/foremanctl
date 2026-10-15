@@ -5,7 +5,9 @@ def test_ingress_service(server):
 
 
 def test_ingress_http_endpoint(server, iop_image):
-    result = server.run(f"podman run --network=foreman-core-network --rm {iop_image('iop-ingress')} curl --fail -s -o /dev/null http://iop-core-ingress:8080/")
+    result = server.run(
+        f"podman run --network=foreman-core-network --rm {iop_image('iop-ingress')} curl --fail -s -o /dev/null http://iop-core-ingress:8080/"
+    )
     assert result.succeeded
 
 
@@ -13,32 +15,17 @@ def test_ingress_archive_volume(server):
     result = server.run("podman volume inspect iop-core-ingress-archives")
     assert result.succeeded
 
-    result = server.run(
-        "podman inspect iop-core-ingress "
-        "--format '{{range .Mounts}}{{.Name}}:{{.Destination}}{{end}}'"
-    )
+    result = server.run("podman inspect iop-core-ingress --format '{{range .Mounts}}{{.Name}}:{{.Destination}}{{end}}'")
     assert result.succeeded
-    assert (
-        "iop-core-ingress-archives:/var/tmp/insights-archives"
-        in result.stdout
-    )
+    assert "iop-core-ingress-archives:/var/tmp/insights-archives" in result.stdout
 
-    result = server.run(
-        "podman inspect iop-core-ingress "
-        "--format '{{range .Config.Env}}{{println .}}{{end}}'"
-    )
+    result = server.run("podman inspect iop-core-ingress --format '{{range .Config.Env}}{{println .}}{{end}}'")
     assert result.succeeded
-    assert (
-        "INGRESS_STORAGEFILESYSTEMPATH=/var/tmp/insights-archives"
-        in result.stdout.splitlines()
-    )
+    assert "INGRESS_STORAGEFILESYSTEMPATH=/var/tmp/insights-archives" in result.stdout.splitlines()
 
 
 def test_ingress_archive_volume_is_writable(server):
-    result = server.run(
-        "podman exec iop-core-ingress "
-        "test -w /var/tmp/insights-archives"
-    )
+    result = server.run("podman exec iop-core-ingress test -w /var/tmp/insights-archives")
     assert result.succeeded, result.stderr
 
 
@@ -70,10 +57,7 @@ def test_ingress_archive_cleanup_config(server):
 
     assert "24h" in unit.content_string
 
-    result = server.run(
-        "podman volume inspect iop-core-ingress-archives "
-        "--format '{{.Mountpoint}}'"
-    )
+    result = server.run("podman volume inspect iop-core-ingress-archives --format '{{.Mountpoint}}'")
     assert result.succeeded
     mountpoint = result.stdout.strip()
     assert mountpoint in unit.content_string

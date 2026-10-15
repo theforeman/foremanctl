@@ -18,26 +18,26 @@ def expected_databases(enabled_features):
     """
     databases = []
 
-    if 'foreman' in enabled_features:
-        databases.append('foreman')
+    if "foreman" in enabled_features:
+        databases.append("foreman")
 
-    if 'candlepin' in enabled_features:
-        databases.append('candlepin')
+    if "candlepin" in enabled_features:
+        databases.append("candlepin")
 
-    if 'pulp' in enabled_features:
-        databases.append('pulp')
+    if "pulp" in enabled_features:
+        databases.append("pulp")
 
-    if 'container-gateway' in enabled_features:
-        databases.append('container_gateway')
+    if "container-gateway" in enabled_features:
+        databases.append("container_gateway")
 
     # Add IOP databases if IOP feature is enabled
-    if 'iop' in enabled_features:
+    if "iop" in enabled_features:
         databases.extend([
-            'iop_advisor',
-            'iop_inventory',
-            'iop_remediation',
-            'iop_vmaas',
-            'iop_vulnerability',
+            "iop_advisor",
+            "iop_inventory",
+            "iop_remediation",
+            "iop_vmaas",
+            "iop_vulnerability",
         ])
 
     return databases
@@ -51,34 +51,36 @@ def backup_result(server, server_hostname):
     assert result.rc == 0, f"Failed to create backup directory on VM: {result.stderr}"
 
     result = subprocess.run(
-        ['./foremanctl', 'backup', BACKUP_DIR, '--target-host', server_hostname],
-        capture_output=True, text=True,
+        ["./foremanctl", "backup", BACKUP_DIR, "--target-host", server_hostname],
+        capture_output=True,
+        text=True,
     )
     returncode = result.returncode
 
     find_result = server.run(f"ls -1 {BACKUP_DIR}")
     assert find_result.rc == 0, f"Backup directory should exist on VM. ls output: {find_result.stderr}"
 
-    backup_dirs = [d for d in find_result.stdout.split('\n') if d.startswith('foreman-backup-')]
-    assert len(backup_dirs) > 0, \
+    backup_dirs = [d for d in find_result.stdout.split("\n") if d.startswith("foreman-backup-")]
+    assert len(backup_dirs) > 0, (
         f"Should have created a timestamped backup directory. Command rc={returncode}, stdout={result.stdout}, stderr={result.stderr}, ls output={find_result.stdout}"
+    )
 
     backup_dir_name = backup_dirs[0]
     full_backup_path = f"{BACKUP_DIR}/{backup_dir_name}"
 
     return {
-        'returncode': returncode,
-        'stdout': result.stdout,
-        'stderr': result.stderr,
-        'backup_dir': full_backup_path,
-        'backup_dir_name': backup_dir_name,
+        "returncode": returncode,
+        "stdout": result.stdout,
+        "stderr": result.stderr,
+        "backup_dir": full_backup_path,
+        "backup_dir_name": backup_dir_name,
     }
 
 
 @pytest.fixture(scope="module")
 def backup_metadata(server, backup_result):
     """Load and parse the backup metadata.yml file"""
-    backup_dir = backup_result['backup_dir']
+    backup_dir = backup_result["backup_dir"]
     metadata_file = f"{backup_dir}/metadata.yml"
     content = server.file(metadata_file).content_string
     return yaml.safe_load(content)
@@ -86,32 +88,34 @@ def backup_metadata(server, backup_result):
 
 def test_backup_directory_created(server, backup_result):
     """Test that backup creates a timestamped directory with correct permissions"""
-    backup_dir_name = backup_result['backup_dir_name']
-    backup_dir = backup_result['backup_dir']
+    backup_dir_name = backup_result["backup_dir_name"]
+    backup_dir = backup_result["backup_dir"]
 
-    timestamp_pattern = r'foreman-backup-\d{8}T\d{6}'
-    assert re.match(timestamp_pattern, backup_dir_name), \
+    timestamp_pattern = r"foreman-backup-\d{8}T\d{6}"
+    assert re.match(timestamp_pattern, backup_dir_name), (
         f"Backup directory should match pattern foreman-backup-YYYYMMDDTHHMMSS, got: {backup_dir_name}"
+    )
 
     # Check directory permissions
     dir_check = server.file(backup_dir)
     assert dir_check.is_directory
-    assert dir_check.mode == 0o770 or dir_check.mode == 0o40770, \
+    assert dir_check.mode == 0o770 or dir_check.mode == 0o40770, (
         f"Backup directory should have mode 0770, got {oct(dir_check.mode)}"
+    )
 
 
 def test_backup_command_succeeded(backup_result):
     """Test that backup command completed successfully"""
-    returncode = backup_result['returncode']
-    stdout = backup_result['stdout']
-    stderr = backup_result['stderr']
+    returncode = backup_result["returncode"]
+    stdout = backup_result["stdout"]
+    stderr = backup_result["stderr"]
     assert returncode == 0, f"Backup command should succeed, got rc={returncode}\nstdout: {stdout}\nstderr: {stderr}"
 
 
 def test_database_dumps_created(server, backup_result, expected_databases, backup_metadata):
     """Test that all database dump files are created and valid"""
-    backup_dir = backup_result['backup_dir']
-    database_mapping = backup_metadata.get('database_mapping', {})
+    backup_dir = backup_result["backup_dir"]
+    database_mapping = backup_metadata.get("database_mapping", {})
 
     for database_name in expected_databases:
         actual_db_name = database_mapping.get(database_name, database_name)
@@ -126,22 +130,23 @@ def test_database_dumps_created(server, backup_result, expected_databases, backu
         # Verify pg_dump custom format
         result = server.run(f"head -c 5 {dump_path}")
         assert result.rc == 0
-        assert result.stdout.startswith('PGDMP'), \
+        assert result.stdout.startswith("PGDMP"), (
             f"{dump_file} should be a valid pg_dump custom format file (should start with PGDMP)"
+        )
 
 
 @pytest.mark.feature("iop")
 def test_iop_database_dumps_created(server, backup_result, backup_metadata):
     """Test that all IOP database dump files are created and valid"""
-    backup_dir = backup_result['backup_dir']
-    database_mapping = backup_metadata.get('database_mapping', {})
+    backup_dir = backup_result["backup_dir"]
+    database_mapping = backup_metadata.get("database_mapping", {})
 
     expected_iop_databases = [
-        'iop_advisor',
-        'iop_inventory',
-        'iop_remediation',
-        'iop_vmaas',
-        'iop_vulnerability',
+        "iop_advisor",
+        "iop_inventory",
+        "iop_remediation",
+        "iop_vmaas",
+        "iop_vulnerability",
     ]
 
     for db_name in expected_iop_databases:
@@ -157,8 +162,9 @@ def test_iop_database_dumps_created(server, backup_result, backup_metadata):
         # Verify pg_dump custom format
         result = server.run(f"head -c 5 {dump_path}")
         assert result.rc == 0
-        assert result.stdout.startswith('PGDMP'), \
+        assert result.stdout.startswith("PGDMP"), (
             f"{dump_file} should be a valid pg_dump custom format file (should start with PGDMP)"
+        )
 
 
 def test_foremanctl_state_archived(server, backup_result):
@@ -171,7 +177,7 @@ def test_foremanctl_state_archived(server, backup_result):
     - Quadlet deployment: controller has the state, archive transferred to target
     - Proxy deployment: similar to quadlet
     """
-    backup_dir = backup_result['backup_dir']
+    backup_dir = backup_result["backup_dir"]
     state_archive = f"{backup_dir}/foremanctl-state.tar.gz"
 
     file_check = server.file(state_archive)
@@ -186,7 +192,7 @@ def test_foremanctl_state_archived(server, backup_result):
 
 def test_foremanctl_state_archive_contents(server, backup_result):
     """Test that foremanctl state archive contains expected deployment files"""
-    backup_dir = backup_result['backup_dir']
+    backup_dir = backup_result["backup_dir"]
     state_archive = f"{backup_dir}/foremanctl-state.tar.gz"
 
     # Get archive contents
@@ -194,13 +200,13 @@ def test_foremanctl_state_archive_contents(server, backup_result):
     assert result.rc == 0, "Should be able to list archive contents"
 
     archive_contents = result.stdout
-    file_list = [f for f in archive_contents.split('\n') if f and not f.endswith('/')]
+    file_list = [f for f in archive_contents.split("\n") if f and not f.endswith("/")]
 
     assert len(file_list) > 0, "Archive should contain at least one file"
 
 
 def test_pulp_content_archived(server, backup_result):
-    backup_dir = backup_result['backup_dir']
+    backup_dir = backup_result["backup_dir"]
     pulp_archive = f"{backup_dir}/pulp-content.tar.gz"
 
     file_check = server.file(pulp_archive)
@@ -213,24 +219,24 @@ def test_pulp_content_archived(server, backup_result):
     assert result.rc == 0, "pulp-content.tar.gz should be a valid tar.gz archive"
 
     archive_contents = server.run(f"tar -tzf {pulp_archive}").stdout
-    assert 'media' in archive_contents, "Archive should contain media directory"
-    assert 'database_fields.symmetric.key' in archive_contents, "Archive should contain database encryption key"
-    assert 'django_secret_key' in archive_contents, "Archive should contain django secret key"
+    assert "media" in archive_contents, "Archive should contain media directory"
+    assert "database_fields.symmetric.key" in archive_contents, "Archive should contain database encryption key"
+    assert "django_secret_key" in archive_contents, "Archive should contain django secret key"
 
 
 def test_pulp_content_excludes_correct_directories(server, backup_result):
-    backup_dir = backup_result['backup_dir']
+    backup_dir = backup_result["backup_dir"]
     pulp_archive = f"{backup_dir}/pulp-content.tar.gz"
 
     archive_contents = server.run(f"tar -tzf {pulp_archive}").stdout
 
-    assert 'media/exports' not in archive_contents, "Archive should exclude media/exports"
-    assert 'media/imports' not in archive_contents, "Archive should exclude media/imports"
-    assert 'media/sync_imports' not in archive_contents, "Archive should exclude media/sync_imports"
+    assert "media/exports" not in archive_contents, "Archive should exclude media/exports"
+    assert "media/imports" not in archive_contents, "Archive should exclude media/imports"
+    assert "media/sync_imports" not in archive_contents, "Archive should exclude media/sync_imports"
 
 
 def test_metadata_file_exists(server, backup_result):
-    backup_dir = backup_result['backup_dir']
+    backup_dir = backup_result["backup_dir"]
     metadata_file = f"{backup_dir}/metadata.yml"
 
     file_check = server.file(metadata_file)
@@ -241,64 +247,69 @@ def test_metadata_file_exists(server, backup_result):
 
 
 def test_metadata_structure(backup_metadata, expected_databases):
-    required_fields = ['hostname', 'os_version', 'type', 'timestamp', 'databases', 'database_mode']
+    required_fields = ["hostname", "os_version", "type", "timestamp", "databases", "database_mode"]
     for field in required_fields:
         assert field in backup_metadata, f"Metadata should contain '{field}' field"
 
-    assert backup_metadata['type'] == 'offline', "Backup type should be 'offline'"
-    assert backup_metadata['incremental']['is_incremental'] is False, "Backup should not be incremental"
-    assert backup_metadata['database_mode'] in ['internal', 'external'], "Database mode should be 'internal' or 'external'"
+    assert backup_metadata["type"] == "offline", "Backup type should be 'offline'"
+    assert backup_metadata["incremental"]["is_incremental"] is False, "Backup should not be incremental"
+    assert backup_metadata["database_mode"] in ["internal", "external"], (
+        "Database mode should be 'internal' or 'external'"
+    )
 
     # Verify expected databases are present
     expected_db_set = set(expected_databases)
-    actual_databases = set(backup_metadata['databases'])
-    assert expected_db_set == actual_databases, \
+    actual_databases = set(backup_metadata["databases"])
+    assert expected_db_set == actual_databases, (
         f"Expected databases {expected_db_set} should match actual {actual_databases}"
+    )
 
 
 def test_metadata_backed_up_components(backup_metadata):
-    assert 'backed_up_components' in backup_metadata, "Metadata should list backed up components"
+    assert "backed_up_components" in backup_metadata, "Metadata should list backed up components"
 
-    expected_components = {'databases', 'container_images', 'foremanctl_state', 'pulp_content'}
-    components_set = set(backup_metadata['backed_up_components'])
+    expected_components = {"databases", "container_images", "foremanctl_state", "pulp_content"}
+    components_set = set(backup_metadata["backed_up_components"])
 
-    assert expected_components.issubset(components_set), \
+    assert expected_components.issubset(components_set), (
         f"Backed up components should include {expected_components}, got {components_set}"
+    )
 
 
 @pytest.mark.feature("iop")
 def test_metadata_includes_iop_databases(backup_metadata, expected_databases):
-    assert 'databases' in backup_metadata, "Metadata should contain 'databases' field"
+    assert "databases" in backup_metadata, "Metadata should contain 'databases' field"
 
     # With IOP enabled, expected_databases fixture should include IOP databases
     expected_db_set = set(expected_databases)
-    actual_databases = set(backup_metadata['databases'])
+    actual_databases = set(backup_metadata["databases"])
 
     # Verify IOP databases are present
     # Note: These are the 'name' values from database.yml, not the actual PostgreSQL database names
     expected_iop_databases = {
-        'iop_advisor',
-        'iop_inventory',
-        'iop_remediation',
-        'iop_vmaas',
-        'iop_vulnerability',
+        "iop_advisor",
+        "iop_inventory",
+        "iop_remediation",
+        "iop_vmaas",
+        "iop_vulnerability",
     }
-    assert expected_iop_databases.issubset(actual_databases), \
+    assert expected_iop_databases.issubset(actual_databases), (
         f"With IOP enabled, databases should include {expected_iop_databases}, got {actual_databases}"
+    )
 
-    assert expected_db_set == actual_databases, \
+    assert expected_db_set == actual_databases, (
         f"Expected databases {expected_db_set} should match actual {actual_databases}"
+    )
 
 
 def test_metadata_timestamp_valid(backup_result, backup_metadata):
-    backup_dir_name = backup_result['backup_dir_name']
-    dir_timestamp = backup_dir_name.replace('foreman-backup-', '')
+    backup_dir_name = backup_result["backup_dir_name"]
+    dir_timestamp = backup_dir_name.replace("foreman-backup-", "")
 
-    assert backup_metadata['timestamp'] == dir_timestamp, \
-        "Metadata timestamp should match backup directory timestamp"
+    assert backup_metadata["timestamp"] == dir_timestamp, "Metadata timestamp should match backup directory timestamp"
 
 
 def test_health_check_passes_after_backup(server, backup_result):
     """Verify system is healthy after backup using foremanctl health check"""
-    result = subprocess.run(['./foremanctl', 'health'], capture_output=True, text=True)
+    result = subprocess.run(["./foremanctl", "health"], capture_output=True, text=True)
     assert result.returncode == 0, f"Health check should pass after backup. Output:\n{result.stdout}\n{result.stderr}"
