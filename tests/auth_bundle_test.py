@@ -131,3 +131,15 @@ def test_server_certificate_includes_server_alias_san(server, generate_auth_bund
     result = server.run(f'openssl x509 -in {cert_path} -noout -text')
     assert result.succeeded
     assert f'DNS:{ALIAS}' in result.stdout
+
+
+def test_custom_auth_bundle_contains_server_chain(server, generate_bundle, custom_certificates):
+    from tests.certificates_test import pem_certificates
+
+    cert = server.run(f"tar xzf {TARBALL} -O certs/{HOSTNAME}.crt")
+    ca = server.run(f"tar xzf {TARBALL} -O certs/server-ca.crt")
+    assert cert.succeeded and ca.succeeded
+    chain = pem_certificates(cert.stdout)
+    assert chain[1:] == pem_certificates(ca.stdout)
+    disk = server.file(f"/var/lib/foremanctl/certs/hosts/{HOSTNAME}/certs/{HOSTNAME}.crt")
+    assert chain == pem_certificates(disk.content_string)
