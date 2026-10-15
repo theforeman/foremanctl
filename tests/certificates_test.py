@@ -1,4 +1,6 @@
 import datetime
+import re
+import ssl
 
 import dateutil.parser
 import pytest
@@ -52,10 +54,11 @@ def test_ca_bundle_contains_both_cas(server, certificates, custom_certificates):
     ca_info = certificate_info(server, certificates['ca_certificate'])
     server_ca_info = certificate_info(server, certificates['server_ca_certificate'])
 
-    assert len(subjects) == 2, f"CA bundle should contain exactly 2 certificates, found {len(subjects)}"
-    assert ca_info['subject'] in subjects[0] or ca_info['subject'] in subjects[1], \
+    expected_count = 1 + len(pem_certificates(server.file(certificates['server_ca_certificate']).content_string))
+    assert len(subjects) == expected_count, f"CA bundle should contain {expected_count} certificates, found {len(subjects)}"
+    assert any(ca_info['subject'] in subject for subject in subjects), \
         f"Internal CA not found in bundle. Expected: {ca_info['subject']}, Found: {subjects}"
-    assert server_ca_info['subject'] in subjects[0] or server_ca_info['subject'] in subjects[1], \
+    assert any(server_ca_info['subject'] in subject for subject in subjects), \
         f"Server CA not found in bundle. Expected: {server_ca_info['subject']}, Found: {subjects}"
 
 
@@ -133,3 +136,16 @@ def test_custom_server_key_permissions(server, certificates, custom_certificates
     f = server.file(certificates['server_key'])
     assert f.exists
     assert f.mode == 0o440
+
+
+def pem_certificates(content):
+    return [
+        ssl.PEM_cert_to_DER_cert(pem)
+        for pem in re.findall(r"-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----", content, re.S)
+    ]
+
+
+def test_custom_server_file_contains_ca_chain(server, certificates, custom_certificates):
+    chain = pem_certificates(server.file(certificates["server_certificate"]).content_string)
+    ca_chain = pem_certificates(server.file(certificates["server_ca_certificate"]).content_string)
+    assert chain[1:] == ca_chain, "Server file must contain the leaf followed by the issuing chain"

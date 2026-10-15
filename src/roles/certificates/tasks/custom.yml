@@ -1,11 +1,4 @@
 ---
-- name: Copy custom server certificate
-  ansible.builtin.copy:
-    src: "{{ certificates_custom_server_certificate }}"
-    dest: "{{ certificates_output_directory_certs }}/{{ certificates_hostname }}.crt"
-    remote_src: true
-    mode: '0444'
-
 - name: Copy custom server key
   ansible.builtin.copy:
     src: "{{ certificates_custom_server_key }}"
@@ -20,3 +13,22 @@
     remote_src: true
     mode: '0444'
   when: certificates_custom_server_ca_certificate is defined
+
+# Use the canonical CA file also when auth-bundle reuses the deployment CA.
+- name: Read custom server certificate
+  ansible.builtin.slurp:
+    src: "{{ certificates_custom_server_certificate }}"
+  register: _certificates_custom_server_leaf
+
+- name: Read server CA chain
+  ansible.builtin.slurp:
+    src: "{{ certificates_ca_directory_certs }}/server-ca.crt"
+  register: _certificates_custom_server_chain
+
+- name: Build fullchain server certificate
+  ansible.builtin.copy:
+    content: |
+      {{ (_certificates_custom_server_leaf.content | b64decode).rstrip() }}
+      {{ (_certificates_custom_server_chain.content | b64decode).strip() }}
+    dest: "{{ certificates_output_directory_certs }}/{{ certificates_hostname }}.crt"
+    mode: '0444'
