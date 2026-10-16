@@ -4,6 +4,7 @@ HTTP_HOST = 'localhost'
 HTTP_PORT = 80
 HTTPS_PORT = 443
 HTTPD_PUB_DIR = '/var/www/html/pub'
+HTTPD_PROXY_BALANCER_MODULES_CONF = '/etc/httpd/conf.modules.d/proxy-balancer.conf'
 CURL_CMD = "curl --silent --output /dev/null"
 
 
@@ -140,6 +141,14 @@ def test_httpd_event_conf_contains_server_limit(server):
 def test_httpd_event_conf_contains_threads_per_child(server):
     event_conf = server.file("/etc/httpd/conf.modules.d/event.conf")
     assert event_conf.contains("ThreadsPerChild")
+
+
+@pytest.mark.feature('foreman')
+def test_httpd_registration_admission_control_enabled_by_default(server):
+    assert server.file(HTTPD_PROXY_BALANCER_MODULES_CONF).exists
+
+    vhost = server.file("/etc/httpd/conf.d/foreman-ssl.conf")
+    assert vhost.contains(r"BalancerMember .* max=150")
 
 
 def test_httpd_selinux_context(server):
