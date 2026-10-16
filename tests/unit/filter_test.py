@@ -68,6 +68,44 @@ def test_list_all_features_marks_dependency_as_enabled(monkeypatch):
     assert 'enabled' in child_line
 
 
+def test_list_all_features_includes_every_flavor_before_deployment(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-server', {'flavors': ['katello']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-proxy', {'flavors': ['foreman-proxy-content']})
+
+    output = list_all_features([])
+
+    assert 'test-server' in output
+    assert 'test-proxy' in output
+
+
+def test_list_all_features_filters_features_by_flavor(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-server', {'flavors': ['katello']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-proxy', {'flavors': ['foreman-proxy-content']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-shared', {})
+
+    output = list_all_features([], flavor='foreman-proxy-content')
+
+    assert 'test-server' not in output
+    assert 'test-proxy' in output
+    assert 'test-shared' in output
+
+
+def test_proxy_flavor_hides_server_features():
+    output = list_all_features([], flavor='foreman-proxy-content')
+
+    assert 'foreman ' not in output
+    assert 'katello ' not in output
+    assert 'container-gateway ' in output
+
+
+def test_server_flavor_hides_proxy_features():
+    output = list_all_features([], flavor='katello')
+
+    assert 'foreman ' in output
+    assert 'katello ' in output
+    assert 'container-gateway ' not in output
+
+
 def test_foreman_plugins_deduplicates(monkeypatch):
     monkeypatch.setitem(FEATURE_MAP, 'test-parent', {
         'dependencies': ['test-child'],
