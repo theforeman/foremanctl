@@ -29,3 +29,17 @@ def test_check_foreman_api_has_feature_guards():
 
 def test_check_foreman_tasks_has_feature_guards():
     ensure_role_has_feature_guards('check_foreman_tasks', ['tasks'])
+
+
+def test_backup_foreman_task_checks_have_feature_guards():
+    preflight_yaml = os.path.join(ROLES_DIR, 'backup', 'tasks', 'preflight.yaml')
+    with open(preflight_yaml, 'r') as f:
+        all_tasks = yaml.safe_load(f)
+
+    foreman_tasks = [task for task in all_tasks if 'Foreman' in task.get('name', '')]
+    assert len(foreman_tasks) == 4
+    for task in foreman_tasks:
+        when_condition = task.get('when', [])
+        when_conditions = when_condition if isinstance(when_condition, list) else [when_condition]
+        assert "enabled_features | has_feature('foreman')" in when_conditions, \
+            f"Task '{task.get('name')}' must only run on a Foreman server."
