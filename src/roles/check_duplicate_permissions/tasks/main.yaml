@@ -1,26 +1,34 @@
 ---
 # TODO: Remove this role one release after https://projects.theforeman.org/issues/38465 is addressed.
 - name: Query for duplicate permissions
-  community.postgresql.postgresql_query:
-    login_db: "{{ foreman_database_name }}"
-    login_user: "{{ foreman_database_user }}"
-    login_password: "{{ foreman_database_password }}"
-    login_host: "{{ database_management_host }}"
-    query: |
-      SELECT id, name
-      FROM permissions p
-      WHERE (SELECT count(name) FROM permissions pr WHERE p.name = pr.name) > 1
-      ORDER BY name, id
-  register: check_duplicate_permissions_result
+  theforeman.foreman.resource_info:
+    server_url: "{{ health_foreman_url }}"
+    oauth1_consumer_key: "{{ health_foreman_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ health_foreman_oauth_consumer_secret }}"
+    ca_path: "{{ health_foreman_ca_certificate }}"
+    resource: permissions
+  register: check_duplicate_permissions_api_result
   changed_when: false
+
+- name: Reset duplicate permission names
+  ansible.builtin.set_fact:
+    check_duplicate_permissions_names: []
+
+- name: Collect duplicate permission names
+  ansible.builtin.set_fact:
+    check_duplicate_permissions_names: "{{ check_duplicate_permissions_names + [item.0] }}"
+  loop: "{{ check_duplicate_permissions_api_result.resources | groupby('name') }}"
+  loop_control:
+    label: "{{ item.0 }}"
+  when: item.1 | length > 1
 
 - name: Check for duplicate permissions
   ansible.builtin.assert:
     that:
-      - check_duplicate_permissions_result.rowcount == 0
+      - check_duplicate_permissions_names | length == 0
     fail_msg: >-
-      Found {{ check_duplicate_permissions_result.rowcount }} duplicate permission(s) in database:
-      {{ check_duplicate_permissions_result.query_result | map(attribute='name') | unique | join(', ') }}
+      Found duplicate permissions in Foreman:
+      {{ check_duplicate_permissions_names | join(', ') }}
 
       Duplicate permissions can cause issues with role-based access control and Foreman upgrades.
       Please resolve the above duplicate permissions.
