@@ -6,6 +6,7 @@ variables:
     action: append_unique
   remove_features:
     parameter: --remove-feature
-    help: Additional features to disable in this deployment.
+    help: Features to remove from the persisted user feature list.
     action: remove
     dest: features
+    persist: false
