@@ -1,0 +1,25 @@
+---
+- name: Check provided auth bundle path
+  ansible.builtin.stat:
+    path: "{{ auth_bundle }}"
+  register: _validate_proxy_auth_bundle
+  delegate_to: localhost
+  become: false
+  when: auth_bundle is defined
+
+- name: Fail when provided auth bundle does not exist
+  ansible.builtin.fail:
+    msg: "Path to auth bundle file not found: {{ auth_bundle }}"
+  when:
+    - auth_bundle is defined
+    - not (_validate_proxy_auth_bundle.stat.exists | default(false))
+
+- name: Require auth bundle for an uninitialized proxy
+  ansible.builtin.assert:
+    that:
+      - auth_bundle is defined
+    fail_msg: >-
+      An auth bundle is required because this proxy has not been initialized.
+      Generate a bundle on the Foreman server with foremanctl auth-bundle,
+      then retry with --auth-bundle.
+  when: validate_proxy_auth_installed_flag is not exists
