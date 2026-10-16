@@ -299,6 +299,14 @@ Because the pull goes through the image services, any `.image.d` drop-ins alread
 
 `pull-images` requires access to the configured container registry. It is rejected whenever air-gapped mode is active. For air-gapped installations, preload all required images into local container storage before running `foremanctl deploy --air-gapped`.
 
+#### Updating an Existing Deployment
+
+The `foremanctl update` command combines the safe update sequence into one operation. In connected mode it first runs the same image pre-pull as `foremanctl pull-images`, while the existing services remain available. It then stops `foreman.target` and every loaded Foreman and Pulp socket before importing the regular deploy playbook.
+
+The sockets are stopped explicitly so the first update from an older foremanctl release is safe even when the installed socket units do not yet declare `PartOf=foreman.target`. In air-gapped mode, the pre-pull phase is skipped and all required images must already exist in local container storage.
+
+An image pull failure happens before the service stop and leaves the running deployment untouched. A failure during the deploy phase intentionally leaves the successfully stopped services down for investigation; after correcting the problem, rerun `foremanctl deploy` to complete recovery.
+
 ## Deployer Stages
 
 The deployment utility will have internal execution stages.

@@ -1,0 +1,9 @@
+---
+help: |
+  Update an existing server
+
+  Pre-pulls updated images when connected, stops Foreman services, and
+  redeploys the server using the persisted deployment parameters.
+
+include:
+  - _deploy
