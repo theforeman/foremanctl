@@ -92,7 +92,15 @@
 
     - name: Wait for PostgreSQL readiness
       ansible.builtin.command:
-        cmd: pg_isready -h {{ database_management_host }} -p {{ database_port }}
+        argv:
+          - podman
+          - run
+          - --rm
+          - --network=host
+          - "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
+          - pg_isready
+          - "--host={{ database_management_host }}"
+          - "--port={{ database_port }}"
       register: backup_pg_ready
       retries: "{{ backup_postgresql_ready_retries }}"
       delay: "{{ backup_postgresql_ready_delay }}"
