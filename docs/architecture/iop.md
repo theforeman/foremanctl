@@ -10,9 +10,9 @@ The `iop` feature depends on `rh-cloud`, which installs the `foreman_rh_cloud` p
 
 ## Architecture
 
-IOP runs as a set of containerized services managed via podman quadlets on the shared `foreman-core-network` IPv4 bridge (`10.130.0.0/24`), alongside Foreman, Postgres, and other co-located services. On IPv6-capable hosts, IOP containers also join the optional `foreman-core-network-ipv6` bridge. See [Network Architecture](network.md) for the host/bridge split, IPv6 detection, unix sockets, and published ports.
+IOP runs as a set of containerized services managed via podman quadlets on the shared `foreman-core-network` IPv4 bridge (`10.130.0.0/24` by default), alongside Foreman, Postgres, and other co-located services. Use `--container-network-ipv4-subnet` on `deploy` or `deploy-proxy` to select a different IPv4 subnet when needed; the bridge gateway is derived from it. On IPv6-capable hosts, IOP containers also join the optional `foreman-core-network-ipv6` bridge. See [Network Architecture](network.md) for the host/bridge split, IPv6 detection, unix sockets, and published ports.
 
-The subnet matches the former `iop-core-network` so the gateway image nginx resolver (`10.130.0.1`) can resolve upstream service names. The gateway is registered as a Foreman smart proxy at `https://iop-core-gateway:8443` (host publish remains `127.0.0.1:24443` for host-side tools and tests).
+The default subnet matches the former `iop-core-network`. The gateway's nginx resolver is configured to use the derived bridge gateway so it can resolve upstream service names after the subnet changes. The gateway is registered as a Foreman smart proxy at `https://iop-core-gateway:8443` (host publish remains `127.0.0.1:24443` for host-side tools and tests).
 
 ```mermaid
 graph TB

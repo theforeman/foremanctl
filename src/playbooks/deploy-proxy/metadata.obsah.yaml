@@ -17,6 +17,7 @@ variables:
     help: FQDN of the Foreman server this proxy connects to.
 
 include:
+  - _network
   - _flavor_features
   - _flavors/foreman-proxy-content
   - _server_aliases
