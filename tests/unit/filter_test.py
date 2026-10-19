@@ -1,9 +1,11 @@
+import pytest
 from foremanctl import FEATURE_MAP
 from foremanctl import conflicting_features
 from foremanctl import foreman_plugins
 from foremanctl import foreman_proxy_plugins
 from foremanctl import hammer_plugins
 from foremanctl import list_all_features
+from foremanctl import network_gateway
 
 
 def _asymmetric_conflicts():
@@ -19,6 +21,25 @@ def _asymmetric_conflicts():
 
 def test_no_conflicts():
     assert conflicting_features(['foreman', 'hammer']) == []
+
+
+def test_network_gateway():
+    assert network_gateway('10.130.0.0/24') == '10.130.0.1'
+    assert network_gateway('192.168.24.0/24') == '192.168.24.1'
+
+
+def test_network_gateway_ipv6():
+    assert network_gateway('fd00:10:130::/64', 6) == 'fd00:10:130::1'
+
+
+def test_network_gateway_rejects_wrong_ip_version():
+    with pytest.raises(ValueError):
+        network_gateway('fd00:10:130::/64')
+
+
+def test_network_gateway_rejects_subnet_without_usable_gateway():
+    with pytest.raises(ValueError):
+        network_gateway('192.0.2.1/32')
 
 
 def test_detects_conflict(monkeypatch):

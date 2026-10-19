@@ -4,6 +4,7 @@ from __future__ import print_function
 
 __metaclass__ = type
 
+import ipaddress
 import os
 import pathlib
 
@@ -27,6 +28,16 @@ if _features_d.is_dir():
 
 def compact_list(items):
     return [item for item in items if item is not None]
+
+
+def network_gateway(subnet, ip_version=4):
+    """Return the first usable host address of an IPv4/IPv6 network."""
+    network = ipaddress.ip_network(subnet, strict=False)
+    if network.version != ip_version:
+        raise ValueError(f'{subnet} is not an IPv{ip_version} network')
+    if network.num_addresses < 2:
+        raise ValueError(f'{subnet} has no usable gateway address')
+    return str(network[1])
 
 
 def filter_content(items):
@@ -168,4 +179,5 @@ class FilterModule(object):
             'databases_for_features': databases_for_features,
             'to_postgresql_databases': to_postgresql_databases,
             'to_postgresql_users': to_postgresql_users,
+            'network_gateway': network_gateway,
         }
