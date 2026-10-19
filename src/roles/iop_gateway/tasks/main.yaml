@@ -57,8 +57,6 @@
     image: iop-gateway.image
     state: quadlet
     network: "{{ foreman_core_network_container_networks }}"
-    publish:
-      - "127.0.0.1:24443:8443"
     secrets:
       - 'iop-core-gateway-server-cert,target=/etc/nginx/certs/nginx.crt,mode=0440,uid=998,gid=998,type=mount'
       - 'iop-core-gateway-server-key,target=/etc/nginx/certs/nginx.key,mode=0440,uid=998,gid=998,type=mount'
