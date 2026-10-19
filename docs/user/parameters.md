@@ -95,7 +95,7 @@ There are multiple use cases from the users perspective that dictate what parame
 
 | Parameter | Description |
 | ----------| ----------- |
-| `--log-level` | Default log level for all services, unless overridden by the service-specific parameters. Accepted values: `debug`, `info`, `warn`, `error`, `fatal`. Defaults to `info`. | 
+| `--log-level` | Default log level for all services, unless overridden by the service-specific parameters. Accepted values: `debug`, `info`, `warn`, `error`, `fatal`. Defaults to `info`. |
 | `--valkey-log-level` | Log level for Valkey. Uses Valkey's native levels. Overrides `--log-level`. Accepted values: `debug`, `verbose`, `notice`, `warning` & `nothing`. Defaults to `notice`. |
 | `--pulp-log-level` | Log level for Pulp. Overrides `--log-level` for Pulp only. Accepted values: `debug`, `info`, `warning`, `error` & `critical` |
 
@@ -132,6 +132,13 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-plugin-remote-execution-cockpit-ensure` | | |
 | `--foreman-telemetry-prometheus-enabled` | | |
 
+
+## Network
+
+| Parameter | Description |
+| ----------| ----------- |
+| `--container-network-ipv4-subnet` | IPv4 CIDR for the internal `foreman-core-network` Podman bridge. Defaults to `10.130.0.0/24`. Change it if that subnet overlaps with an existing host network or route. The bridge gateway is derived as the first usable address, and the IOP gateway's nginx resolver follows it. Only effective on the initial deploy; changing it on an already-deployed system is not supported and fails cleanly. Available on `deploy` and `deploy-proxy`. |
+| `--container-network-ipv6-subnet` | IPv6 CIDR for the internal `foreman-core-network-ipv6` Podman bridge, used only on IPv6-capable hosts. Defaults to `fd00:10:130::/64`. Change it if that subnet overlaps with an existing host network or route. The bridge gateway is derived as the first usable address. Only effective on the initial deploy; changing it on an already-deployed system is not supported and fails cleanly. Available on `deploy` and `deploy-proxy`. |
 
 ## Smart Proxy
 

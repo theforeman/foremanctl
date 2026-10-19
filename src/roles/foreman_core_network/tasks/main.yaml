@@ -25,6 +25,26 @@
         ([foreman_core_network_ipv6_name] if foreman_core_network_ipv6_available else [])
       }}
 
+- name: Prevent changing the subnet of an existing foreman-core-network
+  vars:
+    _foreman_core_network_existing_subnets: >-
+      {{ _foreman_core_network_networks.networks
+      | selectattr('name', 'equalto', foreman_core_network_name)
+      | map(attribute='subnets') | flatten | map(attribute='subnet') | list }}
+  ansible.builtin.assert:
+    that:
+      - >-
+        _foreman_core_network_existing_subnets | length == 0
+        or foreman_core_network_subnet in _foreman_core_network_existing_subnets
+    fail_msg: >-
+      {{ foreman_core_network_name }} already exists with a different subnet
+      ({{ _foreman_core_network_existing_subnets | join(', ') }}) than requested
+      ({{ foreman_core_network_subnet }}). Changing --container-network-ipv4-subnet on an already-deployed
+      system is not supported, as recreating the network would fail while its containers are
+      still attached. Keep the original subnet, or remove the
+      {{ foreman_core_network_name }} Podman network and its containers before changing it.
+    quiet: true
+
 - name: Create foreman-core-network
   containers.podman.podman_network:
     name: "{{ foreman_core_network_name }}"
@@ -34,6 +54,27 @@
     gateway: "{{ foreman_core_network_gateway }}"
     opt:
       no_default_route: "{{ not foreman_core_network_ipv4_available }}"
+
+- name: Prevent changing the subnet of an existing foreman-core-network-ipv6
+  vars:
+    _foreman_core_network_ipv6_existing_subnets: >-
+      {{ _foreman_core_network_networks.networks
+      | selectattr('name', 'equalto', foreman_core_network_ipv6_name)
+      | map(attribute='subnets') | flatten | map(attribute='subnet') | list }}
+  ansible.builtin.assert:
+    that:
+      - >-
+        _foreman_core_network_ipv6_existing_subnets | length == 0
+        or foreman_core_network_ipv6_subnet in _foreman_core_network_ipv6_existing_subnets
+    fail_msg: >-
+      {{ foreman_core_network_ipv6_name }} already exists with a different subnet
+      ({{ _foreman_core_network_ipv6_existing_subnets | join(', ') }}) than requested
+      ({{ foreman_core_network_ipv6_subnet }}). Changing --container-network-ipv6-subnet on an
+      already-deployed system is not supported, as recreating the network would fail while its
+      containers are still attached. Keep the original subnet, or remove the
+      {{ foreman_core_network_ipv6_name }} Podman network and its containers before changing it.
+    quiet: true
+  when: foreman_core_network_ipv6_available
 
 - name: Create foreman-core-network-ipv6
   containers.podman.podman_network:
