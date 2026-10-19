@@ -9,8 +9,10 @@
     foreman_core_network_legacy_iop_network_name
     in (_foreman_core_network_networks.networks | map(attribute='name') | list)
 
-- name: Check IPv6 support in host
+- name: Check IP support in host
   ansible.builtin.set_fact:
+    foreman_core_network_ipv4_available: >-
+      {{ (ansible_facts['default_ipv4'] | default({})) is truthy and (ansible_facts['lo']['ipv4'] | default({})) is truthy }}
     foreman_core_network_ipv6_available: >-
       {{ (ansible_facts['default_ipv6'] | default({})) is truthy and (ansible_facts['lo']['ipv6'] | default([])) is truthy }}
 
@@ -30,7 +32,8 @@
     driver: "{{ foreman_core_network_driver }}"
     subnet: "{{ foreman_core_network_subnet }}"
     gateway: "{{ foreman_core_network_gateway }}"
-
+    opt:
+      no_default_route: "{{ not foreman_core_network_ipv4_available }}"
 
 - name: Create foreman-core-network-ipv6
   containers.podman.podman_network:
