@@ -22,16 +22,12 @@ All steps must be run as root user.
     - This installs the `katello`, `candlepin`, and `pulpcore` repositories.
 6. Update all packages to their latest versions:
     - `dnf upgrade`
-7. Optional Pre-pull container images to reduce downtime during deploy:
-    - `foremanctl pull-images`
-    - Container image tags are updated over time for a given Foreman X.Y release to include the bug fixes and security patches.
-    - This step is optional but recommended. Services can continue running while images are pulled, reducing the downtime window during the deploy.
-8. Stop the existing Foreman services:
-    - `systemctl stop foreman.target`
-9. Run upgrade tasks by re-deploying your Foreman environment: 
-    - `foremanctl deploy` 
+7. Upgrade the running deployment:
+    - `foremanctl update`
+    - This pre-pulls the new stream's container images while the existing services are still running, then stops all Foreman services and sockets and redeploys the environment using the persisted deployment parameters.
     - Please see [Parameters](parameters.md) for additional deployment options.
-    - This deploy command will pull new images (if not already pulled in the previous step) and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
+    - The command runs all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this to take longer than a z-stream update.
+    - If image pulling fails, the existing services remain running. If deployment fails after services are stopped, correct the reported problem and run `foremanctl deploy` to finish the upgrade.
 
 ## Upgrading foremanctl from disconnected RPM install
 
@@ -69,7 +65,7 @@ All steps must be run as root user.
     - `podman load -i <filename>.tar`
 11. On the disconnected environment, update all packages to their latest versions:
     - `dnf upgrade`
-12. Stop the existing Foreman services:
-    - `systemctl stop foreman.target`
-13. Run upgrade tasks by re-deploying your Foreman environment: 
-    - `foremanctl deploy`
+12. Upgrade the running deployment using the preloaded images:
+    - `foremanctl update --air-gapped`
+    - Air-gapped mode skips registry access, stops all Foreman services and sockets, and redeploys the environment using the persisted deployment parameters.
+    - If deployment fails after services are stopped, correct the reported problem and run `foremanctl deploy --air-gapped` to finish the upgrade.
