@@ -102,6 +102,14 @@ def invalid_features(features):
     return [feature for feature in features if feature not in FEATURE_MAP]
 
 
+def incompatible_features(features, flavor):
+    """Return known features which do not support the selected flavor."""
+    return [
+        feature for feature in features
+        if feature in FEATURE_MAP and flavor not in FEATURE_MAP[feature].get('flavors', [])
+    ]
+
+
 def conflicting_features(features):
     """Return a list of conflict violation strings for enabled features."""
     conflicts = set()
@@ -163,6 +171,7 @@ class FilterModule(object):
             'available_foreman_proxy_plugins': available_foreman_proxy_plugins,
             'list_all_features': list_all_features,
             'invalid_features': invalid_features,
+            'incompatible_features': incompatible_features,
             'conflicting_features': conflicting_features,
             'has_feature': has_feature,
             'databases_for_features': databases_for_features,
