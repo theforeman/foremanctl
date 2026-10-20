@@ -287,19 +287,13 @@ jobs:
             --add-feature google \
             --add-feature remote-execution \
             --add-feature iop
-      - name: Stop services
-        run:
-          vagrant ssh quadlet -- sudo systemctl stop foreman.target
       - name: Switch foremanctl version
         run: |
           git fetch origin ${{ github.ref }}
           git checkout FETCH_HEAD
-      - name: Run image pull
+      - name: Run update
         run: |
-          ./foremanctl pull-images
-      - name: Run deployment
-        run: |
-          ./foremanctl deploy
+          ./foremanctl update
       - name: Run health check
         run: |
           ./foremanctl health
