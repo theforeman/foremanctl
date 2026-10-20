@@ -14,4 +14,4 @@
   tasks:
     - name: Print features
       ansible.builtin.debug:
-        msg: "{{ enabled_features | list_all_features(list_enabled) }}"
+        msg: "{{ enabled_features | list_all_features(list_enabled, flavor_features) }}"
