@@ -141,6 +141,18 @@
       After=foreman.socket
   when: httpd_with_foreman
 
+- name: Ensure foreman.target wants directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/system/foreman.target.wants
+    state: directory
+    mode: "0755"
+
+- name: Ensure httpd is wanted by foreman.target
+  ansible.builtin.file:
+    src: /usr/lib/systemd/system/{{ httpd_service }}.service
+    dest: /etc/systemd/system/foreman.target.wants/{{ httpd_service }}.service
+    state: link
+
 - name: Reload systemd daemon
   ansible.builtin.systemd:
     daemon_reload: true

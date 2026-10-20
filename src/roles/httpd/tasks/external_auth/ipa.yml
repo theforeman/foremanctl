@@ -1,11 +1,7 @@
 ---
 - name: Install Apache modules for IPA authentication
   ansible.builtin.package:
-    name:
-      - mod_authnz_pam
-      - mod_intercept_form_submit
-      - mod_lookup_identity
-      - mod_auth_gssapi
+    name: "{{ httpd_ipa_packages }}"
     state: present
 
 - name: Create directory for Apache module configuration
@@ -25,6 +21,19 @@
     - intercept_form_submit
     - lookup_identity
     - auth_gssapi
+  when: httpd_ipa_load_modules | bool
+  notify:
+    - Restart httpd
+
+- name: Enable Apache modules for IPA authentication (Debian)
+  community.general.apache2_module:
+    name: "{{ item }}"
+  loop:
+    - authnz_pam
+    - intercept_form_submit
+    - lookup_identity
+    - auth_gssapi
+  when: not (httpd_ipa_load_modules | bool)
   notify:
     - Restart httpd
 

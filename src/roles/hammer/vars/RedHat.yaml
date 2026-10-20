@@ -1,0 +1,5 @@
+---
+hammer_base_package: rubygem-hammer_cli
+hammer_plugin_prefix: rubygem-hammer_cli_
+hammer_packages: >-
+  {{ [hammer_base_package] + (hammer_default_plugins + hammer_plugins) | map('regex_replace', '^', hammer_plugin_prefix) | list }}
