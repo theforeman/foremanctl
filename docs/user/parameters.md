@@ -84,6 +84,14 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--certificate-server-key` | Path to the private key for the custom server certificate. | `--certs-server-key` |
 | `--certificate-server-ca-certificate` (on `deploy`) | Path to the CA certificate that signed the custom server certificate. | `--certs-server-ca-cert` |
 
+##### New
+
+| Parameter | Description |
+| ----------| ----------- |
+| `--add-certificate-algorithm` | Key algorithm of the generated certificates. Accepted values: `RSA`, `ECC` & `ML-DSA-87`. Defaults to `RSA`. |
+| `--certificate-algorithm-rsa-size` | Key size of the generated certificates. Only applies to RSA. Defaults to `4096`. |
+| `--certificate-algorithm-ecc-curve` | Elliptic curve of the generated certificates. Only applies to ECC. Defaults to `secp384r1`. |
+
 ##### Unmapped
 
 | foreman-installer Parameter | Description | Reason |

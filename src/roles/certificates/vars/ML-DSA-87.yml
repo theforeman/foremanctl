@@ -1,0 +1,5 @@
+---
+_certificates_key_parameters:
+  type: ML-DSA-87
+_certificates_key_usage:
+  - digitalSignature

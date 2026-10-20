@@ -36,3 +36,6 @@ constraints:
   forbidden_if:
     - ['certificates_source', 'default', ['certificates_custom_server_certificate', 'certificates_custom_server_key']]
     - ['certificates_source', 'custom_server', ['proxy_aliases']]
+
+include:
+  - _certificate_algorithm
