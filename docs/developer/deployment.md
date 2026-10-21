@@ -13,6 +13,49 @@ There is a desire to allow deployments where a single `foremanctl` control node 
 The rest of this documentation assumes you have `foremanctl` installed inside a VM and "control node" and "managed node" are the same system (`localhost`).
 If they are not, adjust any calls to use `./foremanctl` from the Git checkout.
 
+## Firewall prerequisites
+
+Configure host and network firewalls before running `foremanctl deploy`, `foremanctl deploy-proxy`, or `foremanctl restore`.
+Foremanctl deploys the services, but it does not open their host firewall ports.
+If you do not use `firewall-cmd`, apply equivalent rules with your firewall management tool.
+
+### Server host
+
+Allow HTTP and HTTPS access to the Foreman server:
+
+```console
+# firewall-cmd \
+  --add-service=http \
+  --add-service=https
+# firewall-cmd --runtime-to-permanent
+```
+
+### Proxy host
+
+Allow HTTP and HTTPS access to the proxy's content service, access to the provisioning templates service on TCP port 8000, and communication with the Foreman Proxy API on TCP port 8443:
+
+```console
+# firewall-cmd \
+  --add-port=8000/tcp \
+  --add-port=8443/tcp \
+  --add-service=http \
+  --add-service=https
+# firewall-cmd --runtime-to-permanent
+```
+
+Ensure that network firewalls permit the Foreman server to reach the proxy on TCP port 8443 and permit the proxy to reach the Foreman server on TCP port 443.
+Restrict access to the expected server, proxy, and client networks where possible.
+
+Verify the active rules on each host:
+
+```console
+# firewall-cmd --list-all
+```
+
+Optional features such as DNS, DHCP, TFTP, Puppet, and remote execution require additional ports.
+Review the current [Foreman server](https://docs.theforeman.org/nightly/Planning_for_Project/index-katello.html#foreman-port-and-firewall-requirements) and [Smart Proxy](https://docs.theforeman.org/nightly/Planning_for_Project/index-katello.html#smart-proxy-port-and-firewall-requirements) port requirements before enabling those features.
+Internal container services do not need public firewall rules; see [Network Architecture](../architecture/network.md) for the exposed entry points.
+
 ## Deployment Types
 
 foremanctl supports two deployment types: **server** and **proxy**. Each has its own sub-command, flavor, and set of services.
