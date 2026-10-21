@@ -78,12 +78,37 @@ def test_foreman_recurring_services_exist(server, instance):
     assert service.exists
 
 
+def _service_is_running(properties):
+    active_state = properties["ActiveState"]
+    return (
+        active_state in ("active", "activating")
+        or (
+            active_state == "deactivating"
+            and properties["Result"] == "success"
+        )
+    )
+
+
 @pytest.mark.parametrize("instance", RECURRING_INSTANCES)
 def test_foreman_recurring_timer_next_trigger(server, instance):
-    """Verify that timers have a scheduled next trigger time."""
+    """Verify that timers have a scheduled next trigger or are firing."""
     timer_name = f"foreman-recurring@{instance}.timer"
     timer = server.service(timer_name)
-    assert timer.systemd_properties["NextElapseUSecRealtime"] != "0"
+    for _ in range(10):
+        timer_props = timer.systemd_properties
+        if timer_props.get("NextElapseUSecRealtime") not in (None, "0"):
+            return
+
+        service = server.service(f"foreman-recurring@{instance}.service")
+        if (
+            timer_props.get("LastTriggerUSec") not in (None, "0", "n/a")
+            and _service_is_running(service.systemd_properties)
+        ):
+            return
+
+        time.sleep(1)
+
+    pytest.fail(f"{timer_name} has no next trigger and is not firing")
 
 
 @pytest.mark.slow
@@ -97,8 +122,15 @@ def test_foreman_recurring_timer_execution(server, instance):
     runtime and outcome are not what this test verifies.
     """
     service_name = f"foreman-recurring@{instance}.service"
+    service = server.service(service_name)
+    service_props = service.systemd_properties
 
-    previous_invocation = server.service(service_name).systemd_properties.get("InvocationID", "")
+    # A calendar timer may have started the service between test collection
+    # and this test. That live invocation already exercises the same path.
+    if _service_is_running(service_props):
+        return
+
+    previous_invocation = service_props.get("InvocationID", "")
 
     server.check_output(f"systemctl start --no-block {service_name}")
 
@@ -117,7 +149,7 @@ def test_foreman_recurring_timer_execution(server, instance):
         )
 
         if invocation and invocation != previous_invocation and (
-            active_state in ("active", "activating", "deactivating")
+            _service_is_running(props)
             or (active_state == "inactive" and result == "success")
         ):
             break
