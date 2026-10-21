@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+target=foreman.target
+units=()
+
+unit_output=$(
+  systemctl show "${target}" --property=Wants --property=Requires --value |
+    tr ' ' '\n' |
+    awk '
+      /\.service$/ { print }
+      /\.timer$/ {
+        print
+        sub(/\.timer$/, ".service")
+        print
+      }
+    ' |
+    sort -u
+) || exit $?
+
+if [[ -n ${unit_output} ]]; then
+  while IFS= read -r unit; do
+    units+=("${unit}")
+  done <<< "${unit_output}"
+fi
+
+if [[ ${#units[@]} -eq 0 ]]; then
+  echo "No services found in ${target}." >&2
+  exit 1
+fi
+
+journal_args=(--follow)
+for unit in "${units[@]}"; do
+  journal_args+=(--unit "${unit}")
+done
+
+exec journalctl "${journal_args[@]}" "$@"
