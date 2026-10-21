@@ -1,3 +1,6 @@
 ---
 auth_bundle_output_directory: "{{ certificates_ca_directory }}/bundles"
 auth_bundle_server_ca_certificate: "{{ auth_bundle_ca_certificate }}"
+auth_bundle_legacy: false
+auth_bundle_filename: >-
+  {{ auth_bundle_hostname }}{{ '-certs' if auth_bundle_legacy else '' }}.tar.gz
