@@ -15,6 +15,7 @@
     - "../../vars/logging.yml"
     - "../../vars/base.yaml"
   roles:
+    - role: validate_proxy_auth
     - role: pre_install
     - role: checks
       vars:
