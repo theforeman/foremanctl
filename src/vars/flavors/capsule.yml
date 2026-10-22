@@ -24,3 +24,5 @@ health_checks_to_execute:
   - check_services
 
 certificates_generate: false
+
+foreman_proxy_ansible_callback: 'redhat.satellite.foreman'
