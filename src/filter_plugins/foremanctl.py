@@ -42,11 +42,11 @@ def network_gateway(subnet, ip_version=4):
 
 def loopback_addresses(addresses):
     """Return IPv4 and IPv6 loopback addresses from an iterable."""
-    result = []
+    result = set()
     for address in addresses:
         try:
             if ipaddress.ip_address(address).is_loopback:
-                result.append(address)
+                result.add(address)
         except ValueError:
             continue
     return result
