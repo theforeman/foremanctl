@@ -5,7 +5,18 @@ from foremanctl import foreman_plugins
 from foremanctl import foreman_proxy_plugins
 from foremanctl import hammer_plugins
 from foremanctl import list_all_features
+from foremanctl import loopback_addresses
 from foremanctl import network_gateway
+
+
+def test_loopback_addresses_detects_all_ipv4_loopback_addresses_and_ipv6_localhost():
+    addresses = ['127.0.0.1', '127.0.1.1', '127.255.255.255', '::1']
+    assert loopback_addresses(addresses) == addresses
+
+
+def test_loopback_addresses_ignores_non_loopback_and_invalid_addresses():
+    addresses = ['126.255.255.255', '128.0.0.0', '192.0.2.10', '::2', '2001:db8::1', 'not-an-address']
+    assert loopback_addresses(addresses) == []
 
 
 def _asymmetric_conflicts():

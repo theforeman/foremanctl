@@ -36,9 +36,9 @@ Please update this file as check usage evolves.
 - **Rationale**: Very high host facts count causes slow facts processing. See: https://access.redhat.com/solutions/4163891 for more information.
 
 ### check_hostname
-- **Description**: Validates FQDN is not 'localhost' or 'localhost.localdomain', contains at least one dot, and has no underscores.
-- **Fail state**: Fails if FQDN conditions are not met.
-- **Rationale**: Foreman requires a properly-configured server FQDN. This check ensures server hostname was modified from the default and approximates a valid FQDN.
+- **Description**: Validates that the FQDN is lowercase, is not `localhost` or `localhost.localdomain`, contains at least one dot, has no underscores, and is not mapped to an IPv4 or IPv6 loopback address in `/etc/hosts`.
+- **Fail state**: Fails if the FQDN conditions are not met.
+- **Rationale**: Foreman requires a properly configured server FQDN. A loopback mapping inherited by a container points to that container rather than the host and prevents communication between Foreman services. The lookup uses only the `files` NSS service so synthetic results from services such as `nss-myhostname` do not cause false positives.
 
 ### check_podman_network_backend
 - **Description**: Verifies the Podman network backend is `netavark`.

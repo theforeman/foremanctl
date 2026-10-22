@@ -40,6 +40,18 @@ def network_gateway(subnet, ip_version=4):
     return str(network[1])
 
 
+def loopback_addresses(addresses):
+    """Return IPv4 and IPv6 loopback addresses from an iterable."""
+    result = []
+    for address in addresses:
+        try:
+            if ipaddress.ip_address(address).is_loopback:
+                result.append(address)
+        except ValueError:
+            continue
+    return result
+
+
 def filter_content(items):
     return filter(lambda x: not x.startswith('content/'), items)
 
@@ -176,6 +188,7 @@ class FilterModule(object):
             'invalid_features': invalid_features,
             'conflicting_features': conflicting_features,
             'has_feature': has_feature,
+            'loopback_addresses': loopback_addresses,
             'databases_for_features': databases_for_features,
             'to_postgresql_databases': to_postgresql_databases,
             'to_postgresql_users': to_postgresql_users,
