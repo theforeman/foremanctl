@@ -16,6 +16,7 @@ checks_to_execute:
   - check_database_connection
   - check_system_requirements
   - check_podman_network_backend
+  - check_ipv6_disable
 
 health_checks_to_execute:
   - check_hostname
