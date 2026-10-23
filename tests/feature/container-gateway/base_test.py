@@ -1,9 +1,20 @@
 import pytest
+import yaml
 
 
 def test_container_gateway_running(proxy_v2_features):
     """Verify container_gateway is loaded and running via /v2/features."""
     assert proxy_v2_features['container_gateway']['state'] == 'running'
+
+
+@pytest.mark.parametrize('setting', ['db_max_connections', 'db_pool_timeout'])
+def test_container_gateway_database_pool_settings(server, obsah_params, setting):
+    """Verify database pool settings reach the configuration mounted in the proxy."""
+    config = yaml.safe_load(server.check_output(
+        'podman exec foreman-proxy cat /etc/foreman-proxy/settings.d/container_gateway.yml'
+    ))
+    expected = int(obsah_params.get(f'foreman_proxy_container_gateway_{setting}', 30))
+    assert config[f':{setting}'] == expected
 
 
 @pytest.fixture

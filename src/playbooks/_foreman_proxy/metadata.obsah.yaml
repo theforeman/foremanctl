@@ -1,5 +1,11 @@
 ---
 variables:
+  foreman_proxy_container_gateway_db_max_connections:
+    parameter: --container-gateway-database-max-connections
+    help: Maximum number of database connections for the container gateway. Defaults to 30.
+  foreman_proxy_container_gateway_db_pool_timeout:
+    parameter: --container-gateway-database-pool-timeout
+    help: Time in seconds to wait for a database connection from the container gateway pool. Defaults to 30.
   foreman_proxy_bmc_ipmi_implementation:
     parameter: --bmc-ipmi-implementation
     help: IPMI implementation to use for BMC.
