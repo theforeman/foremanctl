@@ -20,6 +20,7 @@ foreman_proxy_available_features: "{{ [] | available_foreman_proxy_plugins }}"
 foreman_proxy_disabled_features: "{{ foreman_proxy_available_features | difference(foreman_proxy_features) }}"
 
 foreman_proxy_foreman_server_url: "https://{{ ansible_facts['fqdn'] }}"
+foreman_proxy_ansible_callback: theforeman.foreman.foreman
 
 # Templates settings
 foreman_proxy_templates_url: "http://{{ foreman_proxy_name }}:8000"
