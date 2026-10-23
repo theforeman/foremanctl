@@ -46,7 +46,7 @@ EXPECTED_FEATURES = {
         'templates',
         'valkey',
     },
-    'satellite': (DEFAULT_FEATURES | {'rh-cloud', 'theme-satellite'}) - {'content/python', 'content/deb'},
+    'satellite': (DEFAULT_FEATURES | {'rh-cloud', 'theme-satellite', 'virt-who'}) - {'content/python', 'content/deb'},
     'capsule': {
         'bmc',
         'container-gateway',

@@ -46,6 +46,11 @@ azure-rm:
   hammer: foreman_azure_rm
   foreman:
     plugin_name: foreman_azure_rm
+virt-who:
+  description: Virt-who Configure plugin for Foreman
+  hammer: foreman_virt_who_configure
+  foreman:
+    plugin_name: foreman_virt_who_configure
 tasks:
   description: Tasks management engine for Foreman
   foreman:
