@@ -289,6 +289,36 @@
     - Restart foreman
     - Restart dynflow-sidekiq@
 
+# Run on every deployment, after migrations/seeding and before service health checks.
+- name: Ensure Candlepin bypasses Foreman's HTTP proxy
+  when: enabled_features | has_feature('katello')
+  containers.podman.podman_container:
+    name: foreman-http-proxy-exclusions
+    image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
+    state: started
+    detach: false
+    rm: true
+    http_proxy: false
+    network: "{{ foreman_networks }}"
+    env: "{{ foreman_env | combine({'FOREMAN_CANDLEPIN_HOST': foreman_candlepin_url | urlsplit('hostname')}) }}"
+    secrets: "{{ foreman_secrets }}"
+    command:
+      - bin/rails
+      - runner
+      - |
+        current = Array(Setting[:http_proxy_except_list])
+        required = [ENV.fetch('FOREMAN_CANDLEPIN_HOST')]
+        updated = (current + required).uniq
+        if updated != current
+          Setting[:http_proxy_except_list] = updated
+          puts 'HTTP_PROXY_EXCEPT_LIST_UPDATED'
+        end
+  register: foreman_http_proxy_exclusions
+  changed_when: "'HTTP_PROXY_EXCEPT_LIST_UPDATED' in foreman_http_proxy_exclusions.stdout"
+  notify:
+    - Restart foreman
+    - Restart dynflow-sidekiq@
+
 - name: Flush handlers to restart services
   ansible.builtin.meta: flush_handlers
 
