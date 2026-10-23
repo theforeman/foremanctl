@@ -53,7 +53,7 @@
     subnet: "{{ foreman_core_network_subnet }}"
     gateway: "{{ foreman_core_network_gateway }}"
     opt:
-      no_default_route: "{{ not foreman_core_network_ipv4_available }}"
+      no_default_route: "{{ (not foreman_core_network_ipv4_available)   | string | lower }}"
 
 - name: Prevent changing the subnet of an existing foreman-core-network-ipv6
   vars:
