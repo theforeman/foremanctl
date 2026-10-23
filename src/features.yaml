@@ -51,6 +51,8 @@ virt-who:
   hammer: foreman_virt_who_configure
   foreman:
     plugin_name: foreman_virt_who_configure
+  dependencies:
+    - katello
 tasks:
   description: Tasks management engine for Foreman
   foreman:
