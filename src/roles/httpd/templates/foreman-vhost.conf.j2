@@ -55,6 +55,16 @@
     ProxyPassReverse {{ httpd_pulp_content_backend }}/pulp/content
   </Location>
 
+{# Not gated on 'katello': the RHSM endpoint also exists on split (foreman-proxy-content)
+   deployments, which enable 'pulp' but not 'katello'. #}
+{% if enabled_features | has_feature('pulp') %}
+{% if httpd_with_foreman %}
+  RedirectMatch 302 ^/pub/katello-rhsm-consumer$ /unattended/public/katello-rhsm-consumer?url=https://{{ ansible_facts['fqdn'] }}
+{% else %}
+  RedirectMatch 302 ^/pub/katello-rhsm-consumer$ {{ httpd_foreman_url }}/unattended/public/katello-rhsm-consumer?url=https://{{ ansible_facts['fqdn'] }}
+{% endif %}
+{% endif %}
+
   Alias /pub {{ httpd_pub_dir }}
 
   <Location /pub>
