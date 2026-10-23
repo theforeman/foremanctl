@@ -23,6 +23,27 @@ def ensure_role_has_feature_guards(check_role, features, tasks=None):
             f"Task '{task.get('name')}' missing required feature guard(s)."
 
 
+def test_check_hostname_rejects_loopback_entries_from_etc_hosts():
+    role_path = os.path.join(ROLES_DIR, 'check_hostname', 'tasks', 'main.yaml')
+    with open(role_path, 'r') as f:
+        tasks = yaml.safe_load(f)
+
+    getent_task = next(task for task in tasks if task.get('ansible.builtin.getent'))
+    assert getent_task['ansible.builtin.getent'] == {
+        'database': 'ahosts',
+        'key': "{{ ansible_facts['fqdn'] }}",
+        'service': 'files',
+        'fail_key': False,
+    }
+
+    loopback_assertion = next(
+        task for task in tasks
+        if task.get('name') == 'Assert FQDN does not resolve to a loopback address in /etc/hosts'
+    )
+    conditions = loopback_assertion['ansible.builtin.assert']['that']
+    assert any('loopback_addresses' in condition for condition in conditions)
+
+
 def test_check_foreman_api_has_feature_guards():
     ensure_role_has_feature_guards('check_foreman_api', ['tasks', 'katello'], ["Check Foreman tasks status"])
 
