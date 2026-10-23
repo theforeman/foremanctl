@@ -30,6 +30,8 @@ foreman_proxy_container_gateway_db_host: "127.0.0.1"
 foreman_proxy_container_gateway_db_port: 5432
 foreman_proxy_container_gateway_db_user: container_gateway
 foreman_proxy_container_gateway_db_name: container_gateway
+foreman_proxy_container_gateway_db_max_connections: 30
+foreman_proxy_container_gateway_db_pool_timeout: 30
 foreman_proxy_container_gateway_db_connection_string: >-
   postgresql://{{ foreman_proxy_container_gateway_db_user }}:{{
   foreman_proxy_container_gateway_db_password }}@{{
