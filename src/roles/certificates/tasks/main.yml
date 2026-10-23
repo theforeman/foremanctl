@@ -1,4 +1,17 @@
 ---
+- name: 'Require a single certificate algorithm'
+  ansible.builtin.assert:
+    that:
+      - certificates_enabled_algorithms | length == 1
+    fail_msg: >-
+      Only a single certificate algorithm is supported at the moment.
+      `certificates_algorithms` is a list for forwards compatibility
+      (future dual-certificate support), but only the primary algorithm is
+      used today. You specified: {{ certificates_enabled_algorithms | join(', ') }}.
+      Specify exactly one algorithm; use --remove-certificate-algorithm to
+      drop the extras.
+    quiet: true
+
 - name: 'Install crypto dependencies'
   ansible.builtin.package:
     name:

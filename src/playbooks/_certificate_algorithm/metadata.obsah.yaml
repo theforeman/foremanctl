@@ -8,6 +8,15 @@ variables:
       - RSA
       - ECC
       - ML-DSA-87
+  remove_certificates_algorithms:
+    help: Remove an algorithm from the persisted certificate algorithm list.
+    parameter: --remove-certificate-algorithm
+    action: remove
+    dest: certificates_algorithms
+    choices:
+      - RSA
+      - ECC
+      - ML-DSA-87
   certificates_algorithm_rsa_size:
     help: Key size of the generated certificates. Only applies to RSA.
     parameter: --certificate-algorithm-rsa-size

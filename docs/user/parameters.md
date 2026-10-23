@@ -88,7 +88,8 @@ There are multiple use cases from the users perspective that dictate what parame
 
 | Parameter | Description |
 | ----------| ----------- |
-| `--add-certificate-algorithm` | Key algorithm of the generated certificates. Accepted values: `RSA`, `ECC` & `ML-DSA-87`. Defaults to `RSA`. |
+| `--add-certificate-algorithm` | Key algorithm of the generated certificates. Accepted values: `RSA`, `ECC` & `ML-DSA-87`. Defaults to `RSA`. Only one algorithm is supported at a time. |
+| `--remove-certificate-algorithm` | Remove an algorithm from the persisted certificate algorithm list. Accepted values: `RSA`, `ECC` & `ML-DSA-87`. |
 | `--certificate-algorithm-rsa-size` | Key size of the generated certificates. Only applies to RSA. Defaults to `4096`. |
 | `--certificate-algorithm-ecc-curve` | Elliptic curve of the generated certificates. Only applies to ECC. Defaults to `secp384r1`. |
 
