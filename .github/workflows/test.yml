@@ -52,6 +52,15 @@ jobs:
       - name: Run ruff
         run: ruff check --output-format=github tests/ src/ development/scripts/ inventories/
 
+  vagrant-config:
+    name: Vagrant Configuration
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Test box selection without starting VMs
+        run: python3 -m unittest discover -s tests/unit -p vagrant_box_test.py -v
+
   tests:
     strategy:
       fail-fast: false
@@ -681,6 +690,7 @@ jobs:
       - capsule-tests
       - ansible-lint
       - python-lint
+      - vagrant-config
     runs-on: ubuntu-latest
     name: Test suite
     steps:
