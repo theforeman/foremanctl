@@ -1,0 +1,64 @@
+---
+- name: Ensure Podman is installed on the target
+  become: true
+  ansible.builtin.package:
+    name: podman
+    state: present
+
+- name: Ensure the base image is available locally
+  become: true
+  containers.podman.podman_image:
+    name: "{{ deploy_packit_base_image }}"
+    state: present
+    pull: true
+    pull_policy: missing
+
+- name: Inspect the base image user
+  become: true
+  containers.podman.podman_image_info:
+    name:
+      - "{{ deploy_packit_base_image }}"
+  register: deploy_packit_base_image_info
+
+- name: Build the Packit-patched Foreman image on the target
+  block:
+    - name: Create a temporary build context on the target
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: foreman-packit
+      register: deploy_packit_build_context
+
+    - name: Copy the Packit Containerfile to the target
+      ansible.builtin.copy:
+        src: "{{ role_path }}/files/Containerfile"
+        dest: "{{ deploy_packit_build_context.path }}/Containerfile"
+        mode: "0644"
+
+    - name: Build the Packit-patched Foreman image
+      become: true
+      containers.podman.podman_image:
+        name: "{{ deploy_packit_target_image }}"
+        state: build
+        path: "{{ deploy_packit_build_context.path }}"
+        force: true
+        build:
+          file: "{{ deploy_packit_build_context.path }}/Containerfile"
+          extra_args: >-
+            --build-arg BASE_IMAGE={{ deploy_packit_base_image }}
+            --build-arg CONTAINER_USER={{ deploy_packit_base_image_info.images[0].User | default('0', true) }}
+            --build-arg REPO_ORG={{ deploy_packit_repo_org }}
+            --build-arg REPO_NAME={{ deploy_packit_repo_name }}
+            --build-arg PR={{ deploy_packit_pr }}
+  always:
+    - name: Remove the temporary build context from the target
+      ansible.builtin.file:
+        path: "{{ deploy_packit_build_context.path }}"
+        state: absent
+      when: deploy_packit_build_context is defined and deploy_packit_build_context.path is defined
+
+- name: Show the next step
+  ansible.builtin.debug:
+    msg: >-
+      Built {{ deploy_packit_target_image }} with Packit PR {{ deploy_packit_pr }} directly in
+      root's local Podman store on {{ inventory_hostname }}. Run foremanctl deploy
+      against this target to deploy it.
