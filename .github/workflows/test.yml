@@ -505,7 +505,9 @@ jobs:
             --add-feature bmc
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--server-hostname=proxy --featureset=proxy"
+          ./forge test --pytest-args="--server-hostname=proxy --featureset=proxy \
+            --expected-container-gateway-db-max-connections=60 \
+            --expected-container-gateway-db-pool-timeout=45"
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
