@@ -13,13 +13,20 @@ def test_post_install_message_format(pytestconfig, obsah_params):
         for path in log_paths if path.is_file()
     )
     blocks = re.findall(
-        r'^[ \t]+msg: \|[-+]?\n'
-        r'([ \t]+You can log in at [^\n]+\n(?:[ \t]+[^\n]+\n)*)',
+        r'^[ \t]+msg:([^\n]*)\n((?:[ \t]+[^\n]*\n)*)',
         log,
         re.MULTILINE,
     )
-    messages = [[line.lstrip() for line in block.splitlines()] for block in blocks]
-    assert messages, 'Expected a multiline post-install message in foremanctl.log'
+    messages = [
+        (style.strip(), [line.lstrip() for line in block.splitlines() if line.strip()])
+        for style, block in blocks if 'You can log in at ' in style + block
+    ]
+    assert messages, 'Expected a post-install message in the deployment logs'
+
+    multiline_styles = ('|', '|-', '|+')
+    latest_style, latest_message = messages[-1]
+    latest_is_multiline = latest_style in multiline_styles
+    assert latest_is_multiline, 'Expected the latest post-install message to use multiline format'
 
     featureset = pytestconfig.getoption('featureset')
     if featureset != 'upgrade':
@@ -32,11 +39,12 @@ def test_post_install_message_format(pytestconfig, obsah_params):
             ).rstrip('\n')
         expected_credentials = f'Admin credentials: {username}:{password}'
         credentials_found = any(
-            message[1:] == [expected_credentials] for message in messages
+            style in multiline_styles and message[1:] == [expected_credentials]
+            for style, message in messages
         )
         assert credentials_found, 'Expected initial credentials in the multiline message'
 
     if featureset != 'migration':
         # Migration CI deploys once; other jobs also exercise a subsequent run.
-        url_only = len(messages[-1]) == 1
+        url_only = len(latest_message) == 1 and latest_message[0].startswith('You can log in at ')
         assert url_only, 'Expected only the login URL after the subsequent deployment'
