@@ -1,0 +1,13 @@
+---
+# Exercises the check_ip_stack role in isolation. The caller injects
+# `ansible_facts` and `enabled_features` via extra-vars so the role's
+# assertion can be tested against synthetic network configurations without
+# a real host. See tests/unit/check_ip_stack_test.py.
+- name: Exercise check_ip_stack with mocked facts
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Run check_ip_stack
+      ansible.builtin.include_role:
+        name: check_ip_stack

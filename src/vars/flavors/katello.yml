@@ -13,6 +13,7 @@ flavor_features:
 checks_to_execute:
   - check_features
   - check_hostname
+  - check_ip_stack
   - check_database_connection
   - check_system_requirements
   - check_podman_network_backend

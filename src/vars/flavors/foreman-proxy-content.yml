@@ -16,6 +16,7 @@ pulp_rhsm_url: "https://{{ ansible_facts['fqdn'] }}/rhsm"
 checks_to_execute:
   - check_features
   - check_hostname
+  - check_ip_stack
   - check_database_connection
   - check_podman_network_backend
 
