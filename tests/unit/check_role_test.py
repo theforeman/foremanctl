@@ -41,7 +41,11 @@ def test_check_hostname_rejects_loopback_entries_from_etc_hosts():
         if task.get('name') == 'Assert FQDN does not resolve to a loopback address in /etc/hosts'
     )
     conditions = loopback_assertion['ansible.builtin.assert']['that']
-    assert any('loopback_addresses' in condition for condition in conditions)
+    expected_condition = (
+        '(_check_hostname_hosts.ansible_facts.getent_ahosts.keys() '
+        '| loopback_addresses | length) == 0'
+    )
+    assert expected_condition in conditions
 
 
 def test_check_foreman_api_has_feature_guards():
