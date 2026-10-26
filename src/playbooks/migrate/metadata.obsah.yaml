@@ -1,6 +1,6 @@
 ---
 help: |
-  Migrate from a foreman-installer deployment to foremanctl.
+  Migrate from a foreman-installer deployment to a container-based deployment.
 
   By default, previews the migration without making any changes.
   Use --apply to perform the actual migration.
@@ -11,8 +11,8 @@ help: |
     - Certificate state detected on the system
 
   With --apply, performs:
-    - Writes migrated parameters to the foremanctl configuration
-    - Normalizes installer certificates to the foremanctl layout
+    - Writes migrated parameters to the configuration
+    - Normalizes installer certificates to the container deployment layout
     - Backs up the original /root/ssl-build/ directory
 
 variables:
@@ -25,5 +25,5 @@ variables:
     help: Path to the foreman-installer answer file to migrate. If not specified, attempts to read from the default location.
     persist: false
   output:
-    help: Path where the migrated configuration should be written. If not specified and --apply is used, writes to the foremanctl configuration.
+    help: Path where the migrated configuration should be written. If not specified and --apply is used, writes to the default configuration location.
     persist: false

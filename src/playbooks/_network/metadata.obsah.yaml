@@ -1,0 +1,17 @@
+---
+variables:
+  foreman_core_network_subnet:
+    help: >-
+      IPv4 subnet (CIDR) for the internal foreman-core-network Podman bridge. Change this if the
+      default 10.130.0.0/24 overlaps with an existing network/route on this host. The bridge
+      gateway is always the first usable address of this subnet.
+    parameter: --container-network-ipv4-subnet
+    type: IP
+  foreman_core_network_ipv6_subnet:
+    help: >-
+      IPv6 subnet (CIDR) for the internal foreman-core-network-ipv6 Podman bridge, used only on
+      IPv6-capable hosts. Change this if the default fd00:10:130::/64 overlaps with an existing
+      network/route on this host. The bridge gateway is always the first usable address of this
+      subnet.
+    parameter: --container-network-ipv6-subnet
+    type: IP

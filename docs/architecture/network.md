@@ -66,27 +66,29 @@ Netavark provides the bridge, gateway IP, and [aardvark-dns](https://github.com/
 
 The `foreman_core_network` role creates the shared application network early in both `foremanctl deploy` and `foremanctl deploy-proxy`.
 
-The primary network is always IPv4-only:
+The primary network is always IPv4-only. Its subnet can be changed with `foremanctl deploy --container-network-ipv4-subnet` or `foremanctl deploy-proxy --container-network-ipv4-subnet` if the default overlaps with a host network. The gateway is derived as the first usable address in the configured subnet, and the IOP gateway's nginx resolver follows that gateway. The subnet is only applied on the initial deploy: the role refuses to change it on an already-created `foreman-core-network`, since Podman cannot recreate a bridge with a new subnet while its containers remain attached.
 
 | Setting | Value |
 |---------|-------|
 | Name | `foreman-core-network` |
 | Driver | `bridge` |
-| Subnet | `10.130.0.0/24` |
-| Gateway | `10.130.0.1` |
+| Subnet | `10.130.0.0/24` (default) |
+| Gateway | `10.130.0.1` (derived from the subnet) |
 
 When the host is IPv6-capable, the role also creates a separate IPv6-only network:
+
+Its subnet can be changed with `foremanctl deploy --container-network-ipv6-subnet` or `foremanctl deploy-proxy --container-network-ipv6-subnet`, e.g. to match the rest of an existing IPv6 deployment. The gateway is derived as the first usable address in the configured subnet.
 
 | Setting | Value |
 |---------|-------|
 | Name | `foreman-core-network-ipv6` |
 | Driver | `bridge` |
-| Subnet | `fd00:10:130::/64` |
-| Gateway | `fd00:10:130::1` |
+| Subnet | `fd00:10:130::/64` (default) |
+| Gateway | `fd00:10:130::1` (derived from the subnet) |
 
 IPv6 is enabled only when Ansible facts show both an IPv6 default route and an IPv6 address on loopback. On systems where IPv6 is disabled in the kernel, the IPv6 network is not created, which avoids netavark failures when assigning an IPv6 address to the bridge.
 
-The IPv4 subnet matches the former `iop-core-network`. The IOP gateway image uses `10.130.0.1` as its nginx resolver; that address is the IPv4 bridge gateway, where aardvark-dns answers container-name lookups.
+The default IPv4 subnet matches the former `iop-core-network`. The IOP gateway's nginx resolver uses the configured IPv4 bridge gateway, where aardvark-dns answers container-name lookups.
 On upgrade, the role stops containers still on a leftover `iop-core-network`, removes that network, then deletes any `podman*` host bridge that still holds the gateway address only if that interface is not claimed as `NetworkInterface` by any remaining Podman network (so a live `foreman-core-network` bridge is left alone on re-deploy). It then creates `foreman-core-network` and, when IPv6 is available, `foreman-core-network-ipv6`.
 
 Containers on these networks talk by **container name**, not by published host ports. Examples:
@@ -102,7 +104,7 @@ Containers on these networks talk by **container name**, not by published host p
 
 Certificates include extra DNS names for names used over TLS on the bridge (`candlepin`, `iop-core-gateway`). See [Certificates](../user/certificates.md).
 
-### HTTP proxy isolation                                                                                
+### HTTP proxy isolation
 
 All containers have `HttpProxy=false` set in their quadlet `.container` files. This prevents containers from inheriting the host's `HTTP_PROXY` / `HTTPS_PROXY` environment variables, which would interfere with container-to-container communication.
 

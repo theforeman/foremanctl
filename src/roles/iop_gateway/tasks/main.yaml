@@ -51,6 +51,13 @@
     data: "{{ lookup('ansible.builtin.template', 'relay.conf.j2') }}"
   notify: Restart gateway
 
+- name: Create Gateway resolver configuration secret
+  containers.podman.podman_secret:
+    state: present
+    name: iop-core-gateway-resolver-conf
+    data: "{{ lookup('ansible.builtin.template', 'resolver.conf.j2') }}"
+  notify: Restart gateway
+
 - name: Deploy Gateway container
   containers.podman.podman_container:
     name: iop-core-gateway
@@ -67,6 +74,7 @@
       - 'iop-core-gateway-client-key,target=/etc/nginx/smart-proxy-relay/certs/proxy.key,mode=0440,uid=998,gid=998,type=mount'
       - 'iop-core-gateway-client-ca-cert,target=/etc/nginx/smart-proxy-relay/certs/ca.crt,mode=0440,uid=998,gid=998,type=mount'
       - 'iop-core-gateway-relay-conf,target=/etc/nginx/smart-proxy-relay/relay.conf,mode=0440,uid=998,gid=998,type=mount'
+      - 'iop-core-gateway-resolver-conf,target=/etc/nginx/common.d/30-resolver.conf,mode=0440,uid=998,gid=998,type=mount'
     quadlet_options:
       - "HttpProxy=false"
       - |
@@ -80,6 +88,7 @@
         [Install]
         WantedBy=multi-user.target
         WantedBy=default.target foreman.target
+  notify: Restart gateway
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
