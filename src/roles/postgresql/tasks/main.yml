@@ -29,6 +29,7 @@
     healthcheck_interval: 5s
     sdnotify: healthy
     stop_signal: 2
+    shm_size: "{{ postgresql_shm_size }}"
     network: "{{ postgresql_networks }}"
     publish: "{{ postgresql_publish | default(omit) }}"
     volumes:

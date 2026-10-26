@@ -26,6 +26,13 @@ def test_postgresql_not_listening_on_all_interfaces(database, database_mode):
     assert '[::]:5432' not in ss.stdout
 
 
+def test_postgresql_shm_size(database):
+    result = database.run("podman exec postgresql df -k --output=size /dev/shm")
+    assert result.succeeded
+    shm_size_kb = int(result.stdout.splitlines()[-1].strip())
+    assert shm_size_kb >= 512 * 1024
+
+
 def test_postgresql_password_encryption(database):
     result = database.run("podman exec postgresql psql -U postgres -c 'SHOW password_encryption'")
     assert "scram-sha-256" in result.stdout
