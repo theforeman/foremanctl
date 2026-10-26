@@ -46,7 +46,7 @@
         ownca_path: "{{ certificates_ca_directory_certs }}/ca.crt"
         ownca_privatekey_path: "{{ certificates_ca_directory_keys }}/ca.key"
         ownca_not_after: "+{{ certificates_validity_days }}d"
-        force: "{{ (certificates_renew | bool) or (_certificates_missing_sans | length > 0) }}"
+        force: "{{ (certificates_renew | bool) or (certificates_ca_renew | bool) or (_certificates_missing_sans | length > 0) }}"
 
 - name: 'Issue client certificate'
   when: certificates_hostname not in (certificates_client_certificate_excluded_hostnames | default([]))
@@ -79,4 +79,4 @@
         ownca_path: "{{ certificates_ca_directory }}/certs/ca.crt"
         ownca_privatekey_path: "{{ certificates_ca_directory }}/private/ca.key"
         ownca_not_after: "+{{ certificates_validity_days }}d"
-        force: "{{ certificates_renew | bool }}"
+        force: "{{ (certificates_renew | bool) or (certificates_ca_renew | bool) }}"
