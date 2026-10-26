@@ -70,6 +70,18 @@ class UserParameters:
 def pytest_addoption(parser):
     parser.addoption("--server-hostname", action="store", default="quadlet", help="Hostname of the server VM to test against")
     parser.addoption("--featureset", action="store", help="Which featureset should be tested against")
+    parser.addoption(
+        "--expected-container-gateway-db-max-connections",
+        type=int,
+        default=30,
+        help="Expected maximum number of Container Gateway database connections (default: 30)",
+    )
+    parser.addoption(
+        "--expected-container-gateway-db-pool-timeout",
+        type=int,
+        default=30,
+        help="Expected Container Gateway database pool timeout in seconds (default: 30)",
+    )
 
 
 @pytest.fixture(scope="module")
