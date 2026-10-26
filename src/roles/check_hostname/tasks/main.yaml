@@ -1,4 +1,21 @@
 ---
+- name: Resolve FQDN through /etc/hosts
+  ansible.builtin.getent:
+    database: ahosts
+    key: "{{ ansible_facts['fqdn'] }}"
+    service: files
+    fail_key: false
+  register: _check_hostname_hosts
+
+- name: Assert FQDN does not resolve to a loopback address in /etc/hosts
+  ansible.builtin.assert:
+    that:
+      - (_check_hostname_hosts.ansible_facts.getent_ahosts.keys() | loopback_addresses | length) == 0
+    fail_msg: >-
+      FQDN {{ ansible_facts['fqdn'] }} must not resolve to a loopback address in /etc/hosts.
+      Remove or correct the entries for
+      {{ _check_hostname_hosts.ansible_facts.getent_ahosts.keys() | loopback_addresses | join(', ') }}.
+
 - name: Assert FQDN is not 'localhost' or 'localhost.localdomain'
   ansible.builtin.assert:
     that:
