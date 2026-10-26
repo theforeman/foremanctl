@@ -40,6 +40,11 @@ Please update this file as check usage evolves.
 - **Fail state**: Fails if FQDN conditions are not met.
 - **Rationale**: Foreman requires a properly-configured server FQDN. This check ensures server hostname was modified from the default and approximates a valid FQDN.
 
+### check_ip_stack
+- **Description**: Verifies the host has at least one fully configured IP stack. For IPv4 or IPv6, a stack is complete when it has both a default gateway (to reach external resources) and a loopback address (`127.0.0.1` or `::1`, for on-the-host communication).
+- **Fail state**: Fails only if **neither** IPv4 nor IPv6 is complete. A host with IPv6 fully disabled passes as long as IPv4 has a default gateway and `127.0.0.1`; an IPv6-only host passes as long as it has an IPv6 default gateway and `::1`. A half-configured host fails — for example an IPv6-only host with `::1` removed from the loopback (`net.ipv6.conf.lo.disable_ipv6=1`), where IPv6 has a gateway but no loopback and IPv4 has a loopback but no gateway.
+- **Rationale**: Services bind and connect over both external interfaces and `localhost`, so the host needs one complete IP stack for external and on-the-host communication. With the move to containers, fully disabling one family (e.g. IPv6) is supported as long as the other family is complete; the failure mode this guards against is a half-configured stack, which otherwise surfaces late as cryptic bind/connect hangs (e.g. at "Wait for Foreman service to be accessible").
+
 ### check_podman_network_backend
 - **Description**: Verifies the Podman network backend is `netavark`.
 - **Fail state**: Fails if the network backend is anything other than `netavark`.
