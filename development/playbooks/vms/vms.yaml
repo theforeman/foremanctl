@@ -3,6 +3,8 @@
   gather_facts: false
   hosts:
     - localhost
+  environment:
+    FOREMANCTL_SYNCED_FOLDER: "{{ vm_synced_folder | default(lookup('ansible.builtin.env', 'FOREMANCTL_SYNCED_FOLDER') or 'enabled', true) }}"
   tasks:
     - name: Start virtual machines
       when: vm_action == 'start'
