@@ -17,15 +17,17 @@ def ansible_proxy_id(foremanapi):
 
 
 @pytest.fixture(scope="module")
-def ansible_role(server, foremanapi, ansible_proxy_id):
+def ansible_role(server, foremanapi, ansible_proxy_id, obsah_params):
     # The upstream test image does not contain redhat.satellite.foreman; alias
     # the upstream collection so the Satellite callback can be tested here.
-    callback_compatibility = server.run(
-        "podman exec --user 0 foreman-proxy sh -c '"
-        "ln -sfn /usr/share/ansible/collections/ansible_collections/theforeman/foreman "
-        "/usr/share/ansible/collections/ansible_collections/redhat/satellite'"
-    )
-    assert callback_compatibility.succeeded
+    if obsah_params.get('flavor') in ('satellite', 'capsule'):
+        callback_compatibility = server.run(
+            "podman exec --user 0 foreman-proxy sh -c '"
+            "mkdir -p /usr/share/ansible/collections/ansible_collections/redhat && "
+            "ln -sfn /usr/share/ansible/collections/ansible_collections/theforeman/foreman "
+            "/usr/share/ansible/collections/ansible_collections/redhat/satellite'"
+        )
+        assert callback_compatibility.succeeded
 
     setup = server.run(f"mkdir -p /var/lib/foreman-proxy/ansible/roles/{ROLE_NAME}/tasks")
     assert setup.succeeded
