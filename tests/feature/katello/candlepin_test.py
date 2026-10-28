@@ -74,9 +74,11 @@ def test_candlepin_tomcat_logs_in_journal(server):
 
 def test_tls(server):
     result = server.run('podman inspect -f \'{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}\' candlepin')
+    assert result.succeeded, result.stderr
 
     candlepin_ip = result.stdout.strip()
     result = server.run(f'nmap -sT --script +ssl-enum-ciphers -p 23443 {candlepin_ip}')
+    assert result.succeeded, result.stderr
     result = result.stdout
     assert "TLSv1.3" in result
     assert "TLSv1.2" in result
