@@ -69,7 +69,7 @@
 - name: Enable postgres_fdw extension for IOP databases
   community.postgresql.postgresql_ext:
     name: postgres_fdw
-    db: "{{ item.database }}"
+    login_db: "{{ item.database }}"
     login_host: "{{ database_management_host }}"
     login_port: "{{ database_port }}"
     login_user: postgres
