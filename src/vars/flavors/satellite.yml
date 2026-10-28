@@ -13,6 +13,7 @@ flavor_features:
   - remote-execution
   - rh-cloud
   - theme-satellite
+  - virt-who
   - webhooks
   - hammer
   - foreman-proxy
