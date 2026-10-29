@@ -60,6 +60,9 @@
     daemon_reload: true
   when: cloud_connector_uses_dbus | bool
 
+- name: Flush handlers before republishing connection status
+  ansible.builtin.meta: flush_handlers
+
 - name: Republish yggdrasil connection status
   ansible.builtin.file:
     path: /var/lib/yggdrasil/canonical-facts.json
@@ -84,5 +87,5 @@
     ca_path: "{{ cloud_connector_foreman_ca_certificate | default(omit) }}"
     instance_id: "{{ cloud_connector_cert_info.subject.commonName }}"
 
-- name: Configure HTTP proxy for cloud connector dispatcher
+- name: Configure HTTP proxy for cloud connector services
   ansible.builtin.include_tasks: http_proxy.yaml
