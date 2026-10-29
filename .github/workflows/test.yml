@@ -505,9 +505,7 @@ jobs:
             --add-feature bmc
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--server-hostname=proxy --featureset=proxy \
-            --expected-container-gateway-db-max-connections=60 \
-            --expected-container-gateway-db-pool-timeout=45"
+          ./forge test --pytest-args="--server-hostname=proxy --featureset=proxy"
       - name: Generate sos reports
         if: ${{ always() }}
         run: ./forge sos
@@ -650,6 +648,8 @@ jobs:
             --flavor capsule \
             --auth-bundle $(pwd)/.var/lib/foremanctl/proxy.example.com.tar.gz \
             --foreman-fqdn quadlet.example.com \
+            --container-gateway-database-max-connections 60 \
+            --container-gateway-database-pool-timeout 45 \
             --templates-url http://proxy.example.com:8000 \
             --registration-url https://loadbalancer.example.com:8443 \
             --add-feature bmc

@@ -7,14 +7,13 @@ def test_container_gateway_running(proxy_v2_features):
     assert proxy_v2_features['container_gateway']['state'] == 'running'
 
 
-@pytest.mark.parametrize('setting', ['db_max_connections', 'db_pool_timeout'])
-def test_container_gateway_database_pool_settings(server, pytestconfig, setting):
-    """Verify database pool settings reach the configuration mounted in the proxy."""
+def test_container_gateway_database_pool_settings(server):
+    """Verify configured database pool values reach the proxy container."""
     config = yaml.safe_load(server.check_output(
         'podman exec foreman-proxy cat /etc/foreman-proxy/settings.d/container_gateway.yml'
     ))
-    expected = pytestconfig.getoption(f'expected_container_gateway_{setting}')
-    assert config[f':{setting}'] == expected
+    assert config[':db_max_connections'] == 60
+    assert config[':db_pool_timeout'] == 45
 
 
 @pytest.fixture
