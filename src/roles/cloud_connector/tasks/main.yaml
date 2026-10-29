@@ -64,14 +64,19 @@
   ansible.builtin.meta: flush_handlers
 
 - name: Republish yggdrasil connection status
+  # yggdrasil only republishes on a real write (IN_CLOSE_WRITE); state=touch
+  # on an existing file is utime()-only and never triggers it.
+  ansible.builtin.command: >-
+    python3 -c "p='/var/lib/yggdrasil/canonical-facts.json'; d=open(p,'rb').read(); open(p,'wb').write(d)"
+  changed_when: true
+  when: cloud_connector_uses_dbus | bool
+
+- name: Ensure correct ownership for yggdrasil connection status facts
   ansible.builtin.file:
     path: /var/lib/yggdrasil/canonical-facts.json
-    state: touch
     owner: yggdrasil
     group: yggdrasil
     mode: '0644'
-    modification_time: preserve
-    access_time: now
   when: cloud_connector_uses_dbus | bool
 
 - name: Read client ID from consumer certificate
