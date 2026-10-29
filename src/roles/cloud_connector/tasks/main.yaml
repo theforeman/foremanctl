@@ -85,12 +85,19 @@
   register: cloud_connector_cert_info
 
 - name: Announce to Sources
+  # A successful task does not guarantee registration happened: the organization is
+  # skipped (not failed) if its Candlepin identity cert isn't ready yet, which can
+  # happen this early in a deploy. Retry until the module confirms registration.
   foremanctl_announce_to_sources:
     server_url: "{{ cloud_connector_url }}"
     oauth1_consumer_key: "{{ cloud_connector_foreman_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ cloud_connector_foreman_oauth_consumer_secret }}"
     ca_path: "{{ cloud_connector_foreman_ca_certificate | default(omit) }}"
     instance_id: "{{ cloud_connector_cert_info.subject.commonName }}"
+  register: cloud_connector_announce_result
+  until: cloud_connector_announce_result.registered
+  retries: 5
+  delay: 15
 
 - name: Configure HTTP proxy for cloud connector services
   ansible.builtin.include_tasks: http_proxy.yaml
