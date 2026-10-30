@@ -12,7 +12,9 @@ OBSAH_ALLOW_EXTRA_VARS=${OBSAH_ALLOW_EXTRA_VARS:-false}
 export OBSAH_NAME OBSAH_DATA OBSAH_INVENTORY OBSAH_STATE OBSAH_PERSIST_PARAMS OBSAH_ALLOW_EXTRA_VARS
 
 ANSIBLE_LOG_PATH=${OBSAH_BASE}/.var/lib/foremanctl/foremanctl.log
-ANSIBLE_COLLECTIONS_PATH=${OBSAH_BASE}/build/collections/foremanctl
+# Prefer bundled collections, but retain packaged system collections when a
+# source checkout overlays /usr/share/foremanctl without gitignored build/.
+ANSIBLE_COLLECTIONS_PATH=${OBSAH_BASE}/build/collections/foremanctl:${OBSAH_BASE}/collections:/etc/ansible/collections:/usr/share/ansible/collections
 ANSIBLE_COLLECTIONS_SCAN_SYS_PATH=false
 export ANSIBLE_LOG_PATH ANSIBLE_COLLECTIONS_PATH ANSIBLE_COLLECTIONS_SCAN_SYS_PATH
 

@@ -34,6 +34,7 @@ def expected_databases(enabled_features):
     if 'iop' in enabled_features:
         databases.extend([
             'iop_advisor',
+            'iop_compliance',
             'iop_inventory',
             'iop_remediation',
             'iop_vmaas',
@@ -138,6 +139,7 @@ def test_iop_database_dumps_created(server, backup_result, backup_metadata):
 
     expected_iop_databases = [
         'iop_advisor',
+        'iop_compliance',
         'iop_inventory',
         'iop_remediation',
         'iop_vmaas',
@@ -278,6 +280,7 @@ def test_metadata_includes_iop_databases(backup_metadata, expected_databases):
     # Note: These are the 'name' values from database.yml, not the actual PostgreSQL database names
     expected_iop_databases = {
         'iop_advisor',
+        'iop_compliance',
         'iop_inventory',
         'iop_remediation',
         'iop_vmaas',
