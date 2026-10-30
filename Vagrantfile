@@ -3,6 +3,10 @@ if ARGV.any? { |arg| %w[up provision reload].include?(arg) } && ENV['ANSIBLE_COL
 end
 
 DOMAIN = ENV.fetch('VAGRANT_DOMAIN', 'example.com'.freeze)
+SYNCED_FOLDER = ENV.fetch('FOREMANCTL_SYNCED_FOLDER', 'enabled')
+unless %w[enabled disabled].include?(SYNCED_FOLDER)
+  abort('FOREMANCTL_SYNCED_FOLDER must be enabled or disabled')
+end
 
 # Official CentOS libvirt images include swap; Vagrant Cloud boxes do not.
 def set_centos_box_url(vm)
@@ -13,7 +17,7 @@ def set_centos_box_url(vm)
 end
 
 Vagrant.configure("2") do |config|
-  config.vm.synced_folder ".", "/vagrant"
+  config.vm.synced_folder ".", "/vagrant", disabled: SYNCED_FOLDER == 'disabled'
 
   config.vm.provision("etc_hosts", type: 'ansible') do |ansible|
     ansible.playbook = "development/playbooks/etc_host.yml"

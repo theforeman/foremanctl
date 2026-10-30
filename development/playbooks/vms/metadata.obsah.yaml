@@ -12,3 +12,10 @@ variables:
   vms:
     help: Which VMs to manage, defaults to all.
     action: store
+  vm_synced_folder:
+    parameter: --synced-folder
+    help: Enable or disable /vagrant sharing. Defaults to FOREMANCTL_SYNCED_FOLDER or enabled.
+    choices:
+      - enabled
+      - disabled
+    persist: false
