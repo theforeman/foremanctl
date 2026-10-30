@@ -14,11 +14,10 @@
       ansible.builtin.stat:
         path: "{{ backup_incremental }}/{{ item }}"
       register: backup_previous_files_check
-      loop:
-        - "metadata.yml"
-        - "config.snar"
-        - "pulp.snar"
+      loop: "{{ _backup_expected_files }}"
       failed_when: false
+      vars:
+        _backup_expected_files: "{{ ['metadata.yml', 'config.snar'] + (['pulp.snar'] if not skip_pulp_content | default(false) else []) }}"
 
     - name: Fail if previous backup is invalid
       ansible.builtin.fail:
