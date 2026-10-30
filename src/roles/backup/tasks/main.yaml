@@ -17,8 +17,13 @@
       loop:
         - "metadata.yml"
         - "config.snar"
-        - "pulp.snar"
       failed_when: false
+
+    - name: Check previous Pulp snapshot exists
+      ansible.builtin.stat:
+        path: "{{ backup_incremental }}/pulp.snar"
+      register: backup_previous_pulp_snar_check
+      when: not skip_pulp_content | default(false)
 
     - name: Fail if previous backup is invalid
       ansible.builtin.fail:
