@@ -1,0 +1,33 @@
+---
+- name: Assert at least one IP stack (IPv4 or IPv6) is fully configured
+  ansible.builtin.assert:
+    that:
+      - (check_ip_stack_ipv4_ok | bool) or (check_ip_stack_ipv6_ok | bool)
+    fail_msg: >-
+      No fully configured IP stack found. Deployment requires at least one
+      protocol family (IPv4 or IPv6) that has both a default gateway, to reach
+      external resources, and a loopback address (127.0.0.1 or ::1), for
+      on-the-host communication.
+      IPv4: default gateway
+      {{ 'present' if ansible_facts.default_ipv4.gateway is defined else 'missing' }},
+      loopback 127.0.0.1
+      {{ 'present' if '127.0.0.1' in check_ip_stack_lo_ipv4 else 'missing' }}.
+      IPv6: default gateway
+      {{ 'present' if ansible_facts.default_ipv6.gateway is defined else 'missing' }},
+      loopback ::1
+      {{ 'present' if '::1' in check_ip_stack_lo_ipv6 else 'missing' }}.
+      Configure a complete IPv4 or IPv6 network stack and retry.{{
+      ' See https://access.redhat.com/solutions/5045841 for more details.'
+      if (enabled_features | has_feature('theme-satellite')) else '' }}
+  vars:
+    check_ip_stack_lo_ipv4: >-
+      {{ ([ansible_facts.lo.ipv4] | map(attribute='address') | list)
+         if ansible_facts.lo.ipv4 is defined else [] }}
+    check_ip_stack_lo_ipv6: >-
+      {{ ansible_facts.lo.ipv6 | default([]) | map(attribute='address') | list }}
+    check_ip_stack_ipv4_ok: >-
+      {{ ansible_facts.default_ipv4.gateway is defined
+         and '127.0.0.1' in check_ip_stack_lo_ipv4 }}
+    check_ip_stack_ipv6_ok: >-
+      {{ ansible_facts.default_ipv6.gateway is defined
+         and '::1' in check_ip_stack_lo_ipv6 }}
