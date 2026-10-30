@@ -108,6 +108,37 @@ def test_backup_command_succeeded(backup_result):
     assert returncode == 0, f"Backup command should succeed, got rc={returncode}\nstdout: {stdout}\nstderr: {stderr}"
 
 
+def test_incremental_backup_requires_base_backup_argument(tmp_path):
+    backup_dir = tmp_path / 'backup'
+    result = subprocess.run(
+        ['./foremanctl', 'backup', str(backup_dir), '--base-backup'],
+        capture_output=True, text=True, timeout=30,
+    )
+
+    assert result.returncode == 2, f'Expected an argument error:\n{result.stdout}\n{result.stderr}'
+    assert '--base-backup: expected one argument' in result.stderr
+    assert not backup_dir.exists(), 'Failed incremental backup should not create its output directory'
+
+
+def test_incremental_backup_rejects_nonexistent_base_backup(server, server_hostname, tmp_path):
+    backup_dir = tmp_path / 'backup'
+    base_backup_dir = tmp_path / 'missing-base'
+    assert not server.file(str(backup_dir)).exists
+    assert not server.file(str(base_backup_dir)).exists
+
+    result = subprocess.run(
+        ['./foremanctl', 'backup', str(backup_dir), '--base-backup', str(base_backup_dir), '--target-host', server_hostname],
+        capture_output=True, text=True, timeout=300,
+    )
+
+    assert result.returncode != 0, f'Incremental backup should fail:\n{result.stdout}\n{result.stderr}'
+    assert (
+        f'Previous backup directory does not exist or is not a valid foremanctl backup: {base_backup_dir}'
+        in result.stdout
+    ), f'Expected an error for the missing base backup:\n{result.stdout}\n{result.stderr}'
+    assert not server.file(str(backup_dir)).exists, 'Failed incremental backup should not create its output directory'
+
+
 def test_database_dumps_created(server, backup_result, expected_databases, backup_metadata):
     """Test that all database dump files are created and valid"""
     backup_dir = backup_result['backup_dir']
