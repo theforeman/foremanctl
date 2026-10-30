@@ -19,7 +19,31 @@ PARAMETER_MAP = {
     ('foreman', 'db_username'): 'foreman_database_user',
     ('foreman', 'db_password'): 'foreman_database_password',
     ('foreman', 'db_manage'): ('database_mode', cast_database_mode),
+    ('foreman', 'db_sslmode'): 'database_ssl_mode',
+    ('foreman', 'db_root_cert'): 'database_ssl_ca',
     ('foreman', 'db_manage_rake'): 'IGNORE',  # Not needed in new format
+    ('foreman_proxy_content', 'pulpcore_postgresql_user'): 'pulp_database_user',
+    ('foreman_proxy_content', 'pulpcore_postgresql_password'): 'pulp_database_password',
+    ('foreman_proxy_content', 'pulpcore_postgresql_db_name'): 'pulp_database_name',
+    ('katello', 'candlepin_db_name'): 'candlepin_database_name',
+    ('katello', 'candlepin_db_user'): 'candlepin_database_user',
+    ('katello', 'candlepin_db_password'): 'candlepin_database_password',
+
+    # Ignore pulpcore and candlepin specific DB connection data, this is now inherited from Foreman
+    ('foreman_proxy_content', 'pulpcore_manage_postgresql'): 'IGNORE',
+    ('foreman_proxy_content', 'pulpcore_postgresql_host'): 'IGNORE',
+    ('foreman_proxy_content', 'pulpcore_postgresql_port'): 'IGNORE',
+    ('foreman_proxy_content', 'pulpcore_postgresql_ssl'): 'IGNORE',
+    ('foreman_proxy_content', 'pulpcore_postgresql_ssl_require'): 'IGNORE',
+    ('foreman_proxy_content', 'pulpcore_postgresql_ssl_cert'): 'IGNORE',
+    ('foreman_proxy_content', 'pulpcore_postgresql_ssl_key'): 'IGNORE',
+    ('foreman_proxy_content', 'pulpcore_postgresql_ssl_root_ca'): 'IGNORE',
+    ('katello', 'candlepin_db_host'): 'IGNORE',
+    ('katello', 'candlepin_db_port'): 'IGNORE',
+    ('katello', 'candlepin_db_ssl'): 'IGNORE',
+    ('katello', 'candlepin_db_ssl_ca'): 'IGNORE',
+    ('katello', 'candlepin_db_ssl_verify'): 'IGNORE',
+    ('katello', 'candlepin_manage_db'): 'IGNORE',
 
     # Foreman configuration
     ('foreman', 'initial_admin_username'): 'foreman_initial_admin_username',
@@ -156,7 +180,7 @@ def apply_mappings(old_config):
         db_host = flat_config.get(('foreman', 'db_host'))
         if db_host in ('localhost', '127.0.0.1'):
             result.pop('database_host', None)
-            
+
     return {
         'mapped': result,
         'unmappable': unmappable

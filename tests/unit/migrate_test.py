@@ -57,7 +57,7 @@ class TestParameterMapping:
 
         assert 'db_manage_rake' not in result['mapped']
         assert 'db_manage_rake' not in str(result['unmappable'])
-        assert 'database_host' not in result['mapped'] 
+        assert 'database_host' not in result['mapped']
 
     def test_certificate_parameters_ignored(self):
         """Test that certificate path parameters are ignored (handled by migration role)"""
@@ -140,6 +140,56 @@ class TestParameterMapping:
         assert 'foreman::unknown_param' not in result['unmappable']
         assert 'foreman::another_unknown' in result['unmappable']
         assert len(result['unmappable']) == 1
+
+    def test_skip_none_values_in_mapped(self):
+        """Test that None values are not added to mapped list"""
+        old_config = {
+            'katello': {
+                'candlepin_db_password': None
+            }
+        }
+
+        result = migrate_answers.apply_mappings(old_config)
+
+        assert 'candlepin_database_password' not in result['mapped']
+        assert 'katello::candlepin_db_password' not in result['unmappable']
+        assert len(result['unmappable']) == 0
+
+    def test_database_config(self):
+        """Test that all relevant database parameters are correctly mapped"""
+        old_config = {
+            'foreman': {'db_manage': True, 'db_host': 'db.example.com', 'db_port': 5432, 'db_database': 'foreman', 'db_username': 'foreman', 'db_password': 'foreman123', 'db_sslmode': 'verify-full', 'db_root_cert': '/etc/pki/tls/certs/ca-bundle.crt', 'db_pool': None, 'db_extra_options': {}, 'db_manage_rake': True},
+            'foreman_proxy_content': {'pulpcore_manage_postgresql': True, 'pulpcore_postgresql_host': 'db.example.com', 'pulpcore_postgresql_port': 5432, 'pulpcore_postgresql_user': 'pulp', 'pulpcore_postgresql_password': 'pulp123', 'pulpcore_postgresql_db_name': 'pulpcore', 'pulpcore_postgresql_ssl': False, 'pulpcore_postgresql_ssl_require': True, 'pulpcore_postgresql_ssl_cert': '/etc/pki/katello/certs/pulpcore-database.crt', 'pulpcore_postgresql_ssl_key': '/etc/pki/katello/private/pulpcore-database.key', 'pulpcore_postgresql_ssl_root_ca': '/etc/pki/tls/certs/ca-bundle.crt'},
+            'katello': {'candlepin_db_host': 'db.example.com', 'candlepin_db_port': 5432, 'candlepin_db_name': 'candlepin', 'candlepin_db_user': 'candlepin', 'candlepin_db_password': 'candlepin123', 'candlepin_db_ssl': False, 'candlepin_db_ssl_verify': True, 'candlepin_db_ssl_ca': '/etc/pki/tls/certs/ca-bundle.crt', 'candlepin_manage_db': True}
+        }
+        result = migrate_answers.apply_mappings(old_config)
+
+        assert 'database_host' in result['mapped']
+        assert result['mapped']['database_host'] == 'db.example.com'
+        assert 'database_ssl_mode' in result['mapped']
+        assert result['mapped']['database_ssl_mode'] == 'verify-full'
+        assert 'database_ssl_ca' in result['mapped']
+        assert result['mapped']['database_ssl_ca'] == '/etc/pki/tls/certs/ca-bundle.crt'
+
+        assert 'candlepin_database_user' in result['mapped']
+        assert result['mapped']['candlepin_database_user'] == 'candlepin'
+        assert 'candlepin_database_password' in result['mapped']
+        assert result['mapped']['candlepin_database_password'] == 'candlepin123'
+        assert 'candlepin_database_name' in result['mapped']
+        assert result['mapped']['candlepin_database_name'] == 'candlepin'
+        assert 'foreman_database_user' in result['mapped']
+        assert result['mapped']['foreman_database_user'] == 'foreman'
+        assert 'foreman_database_password' in result['mapped']
+        assert result['mapped']['foreman_database_password'] == 'foreman123'
+        assert 'foreman_database_name' in result['mapped']
+        assert result['mapped']['foreman_database_name'] == 'foreman'
+        assert 'pulp_database_user' in result['mapped']
+        assert result['mapped']['pulp_database_user'] == 'pulp'
+        assert 'pulp_database_password' in result['mapped']
+        assert result['mapped']['pulp_database_password'] == 'pulp123'
+        assert 'pulp_database_name' in result['mapped']
+        assert result['mapped']['pulp_database_name'] == 'pulpcore'
+        assert len(result['unmappable']) == 0
 
 
 class TestFileOperations:
