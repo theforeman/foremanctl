@@ -62,21 +62,35 @@ PARAMETER_MAP = {
 IGNORE_PARAMS = {'IGNORE'}
 
 
-def resolve_answer_file_from_scenario(scenario_file='/etc/foreman-installer/scenarios.d/last_scenario.yaml'):
-    """Read scenario file and extract answer file path from :answer_file: key."""
+def load_scenario_data(scenario_file='/etc/foreman-installer/scenarios.d/last_scenario.yaml'):
+    """Read scenario file and return the data"""
     with open(scenario_file, 'r') as f:
         try:
             scenario_data = yaml.safe_load(f)
             if scenario_data is None:
                 raise ValueError(f"Scenario file {scenario_file} is empty")
 
-            answer_file = scenario_data.get(':answer_file')
-            if not answer_file:
-                raise ValueError("Scenario file does not contain :answer_file: key")
-
-            return answer_file
+            return scenario_data
         except yaml.YAMLError as e:
             raise ValueError(f"Invalid YAML in scenario file: {e}")
+
+
+def resolve_answer_file_from_scenario(scenario_file='/etc/foreman-installer/scenarios.d/last_scenario.yaml'):
+    """Extract answer file path from :answer_file: key in scenario_data."""
+    scenario_data = load_scenario_data(scenario_file)
+
+    answer_file = scenario_data.get(':answer_file')
+    if not answer_file:
+        raise ValueError("Scenario file does not contain :answer_file: key")
+
+    return answer_file
+
+
+def resolve_tuning_from_scenario(scenario_file='/etc/foreman-installer/scenarios.d/last_scenario.yaml'):
+    """Find tuning fact in scenario data or return default"""
+    scenario_data = load_scenario_data(scenario_file)
+
+    return scenario_data.get(':facts', {}).get('tuning', 'default')
 
 
 def load_answer_file(file_path):
@@ -137,7 +151,7 @@ def flatten_nested_dict(nested_dict, parent_key=''):
     return dict(items)
 
 
-def apply_mappings(old_config):
+def apply_mappings(old_config, old_tuning='default'):
     """
     Transform old config to new format using mapping table.
 
@@ -181,6 +195,9 @@ def apply_mappings(old_config):
         if db_host in ('localhost', '127.0.0.1'):
             result.pop('database_host', None)
 
+    if old_tuning != 'default':
+        result['tuning'] = old_tuning
+
     return {
         'mapped': result,
         'unmappable': unmappable
@@ -213,7 +230,9 @@ def run_module():
         old_config = load_answer_file(answer_file)
         validate_answer_file(old_config, answer_file)
 
-        migration_result = apply_mappings(old_config)
+        old_tuning = resolve_tuning_from_scenario()
+
+        migration_result = apply_mappings(old_config, old_tuning)
 
         result['mapped_count'] = len(migration_result['mapped'])
         result['unmappable_count'] = len(migration_result['unmappable'])

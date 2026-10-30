@@ -191,6 +191,17 @@ class TestParameterMapping:
         assert result['mapped']['pulp_database_name'] == 'pulpcore'
         assert len(result['unmappable']) == 0
 
+    def test_tuning_default(self):
+        result = migrate_answers.apply_mappings({}, 'default')
+
+        assert 'tuning' not in result['mapped']
+
+    def test_tuning_medium(self):
+        result = migrate_answers.apply_mappings({}, 'medium')
+
+        assert 'tuning' in result['mapped']
+        assert result['mapped']['tuning'] == 'medium'
+
 
 class TestFileOperations:
     """Test file loading and writing"""
@@ -235,6 +246,14 @@ class TestFileOperations:
                 migrate_answers.load_answer_file(temp_file)
         finally:
             os.unlink(temp_file)
+
+    def test_resolve_answer_file_from_scenario(self, fixture_dir):
+        answers_file = migrate_answers.resolve_answer_file_from_scenario(fixture_dir / 'installer-answers/last_scenario.yaml')
+        assert answers_file == '/etc/foreman-installer/scenarios.d/katello-answers.yaml'
+
+    def test_resolve_tuning_from_scenario(self, fixture_dir):
+        tuning = migrate_answers.resolve_tuning_from_scenario(fixture_dir / 'installer-answers/last_scenario.yaml')
+        assert tuning == 'development'
 
 
 class TestTransformations:
