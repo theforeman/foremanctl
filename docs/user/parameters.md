@@ -83,6 +83,7 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--certificate-server-certificate` | Path to a custom server certificate to use instead of the auto-generated one. Requires `--certificate-source=custom_server` on `deploy`. | `--certs-server-cert` |
 | `--certificate-server-key` | Path to the private key for the custom server certificate. | `--certs-server-key` |
 | `--certificate-server-ca-certificate` (on `deploy`) | Path to the CA certificate that signed the custom server certificate. | `--certs-server-ca-cert` |
+| `--legacy` (on `auth-bundle`) | Packages certificates in the `ssl-build` layout consumed by an N-1 `foreman-installer` proxy | `--certs-tar-file` |
 
 ##### Unmapped
 
