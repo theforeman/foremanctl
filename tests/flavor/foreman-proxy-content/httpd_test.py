@@ -14,6 +14,14 @@ def test_pulpcore_ssl_proxy_add_headers(server):
     assert "ProxyAddHeaders On" in conf.content_string
 
 
+def test_katello_rhsm_consumer_redirect_to_foreman_host(server):
+    for conf_file in ("/etc/httpd/conf.d/pulpcore.conf", "/etc/httpd/conf.d/pulpcore-ssl.conf"):
+        conf = server.file(conf_file)
+        assert conf.exists
+        assert conf.is_file
+        assert conf.contains(r"RedirectMatch 302 \^/pub/katello-rhsm-consumer\$ https://")
+
+
 def test_https_pulp_api_with_client_cert(curl_request):
     cmd = curl_request("pulp/api/v3/smart_proxy/v2/features")
     assert cmd.succeeded

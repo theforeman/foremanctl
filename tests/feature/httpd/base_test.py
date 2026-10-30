@@ -112,6 +112,43 @@ def test_https_pub_server_ca_certificate_downloadable(curl_request):
     assert cmd.stdout == '200'
 
 
+@pytest.mark.feature('pulp')
+def test_http_pub_katello_rhsm_consumer_redirect(server, server_fqdn):
+    cmd = server.run(
+        f"curl --silent --output /dev/null --write-out '%{{http_code}} %{{redirect_url}}' "
+        f"http://{server_fqdn}/pub/katello-rhsm-consumer"
+    )
+    assert cmd.succeeded
+    assert cmd.stdout.startswith('302 ')
+    assert '/unattended/public/katello-rhsm-consumer' in cmd.stdout
+    assert f'url=https://{server_fqdn}' in cmd.stdout
+
+
+@pytest.mark.feature('pulp')
+def test_https_pub_katello_rhsm_consumer_redirect(server, certificates, server_fqdn):
+    cmd = server.run(
+        f"curl --silent --cacert {certificates['server_ca_certificate']} --output /dev/null "
+        f"--write-out '%{{http_code}} %{{redirect_url}}' "
+        f"https://{server_fqdn}/pub/katello-rhsm-consumer"
+    )
+    assert cmd.succeeded
+    assert cmd.stdout.startswith('302 ')
+    assert '/unattended/public/katello-rhsm-consumer' in cmd.stdout
+    assert f'url=https://{server_fqdn}' in cmd.stdout
+
+
+@pytest.mark.feature('katello')
+def test_https_pub_katello_rhsm_consumer_script_embeds_server_ca(server, certificates, server_fqdn):
+    cmd = server.run(
+        f"curl --silent --cacert {certificates['server_ca_certificate']} --location "
+        f"https://{server_fqdn}/pub/katello-rhsm-consumer"
+    )
+    assert cmd.succeeded
+    assert 'subscription-manager config' in cmd.stdout
+    server_ca = server.file(certificates['server_ca_certificate']).content_string
+    assert server_ca in cmd.stdout
+
+
 @pytest.mark.feature('foreman')
 def test_http_foreman_login(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/users/login")
