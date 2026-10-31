@@ -11,3 +11,41 @@
       - "{{ hostname | default(ansible_facts['fqdn']) }}"
   roles:
     - role: certificates
+      when: not intermediate_ca | default(false) | bool
+
+  tasks:
+    - name: Generate intermediate CA test hierarchy
+      when: intermediate_ca | default(false) | bool
+      block:
+        - name: Create test certificate directories
+          ansible.builtin.file:
+            path: "{{ certificates_ca_directory }}/{{ item }}"
+            state: directory
+            mode: '0700'
+          loop:
+            - certs
+            - private
+
+        - name: Generate test certificates signed by an intermediate
+          ansible.builtin.script:
+            cmd: >-
+              files/generate-intermediate-certs.sh
+              {{ certificates_ca_directory | quote }}
+              {{ (hostname | default(ansible_facts['fqdn'])) | quote }}
+
+        - name: Install test certificate files
+          ansible.builtin.copy:
+            src: "{{ certificates_ca_directory }}/{{ item.src }}"
+            dest: "{{ certificates_ca_directory }}/{{ item.dest }}"
+            remote_src: true
+            mode: "{{ item.mode }}"
+          loop:
+            - src: server-ca.pem
+              dest: certs/ca.crt
+              mode: '0444'
+            - src: "{{ hostname | default(ansible_facts['fqdn']) }}.crt"
+              dest: "certs/{{ hostname | default(ansible_facts['fqdn']) }}.crt"
+              mode: '0444'
+            - src: "{{ hostname | default(ansible_facts['fqdn']) }}.key"
+              dest: "private/{{ hostname | default(ansible_facts['fqdn']) }}.key"
+              mode: '0400'
