@@ -20,6 +20,7 @@ feature_two:
 The following properties are defined:
 * `description` (_String_): A human-readable description of the feature, can be used in documentation/help output.
 * `internal` (_Boolean_): Whether the feature is user visible (shows up in documentation/help) or internal (just to perform additional configuration without user interaction).
+* `flavors` (_Array_ of _String_): Flavors for which the feature is relevant. When omitted, the feature is available to every flavor. This restriction only affects the feature listing after a deployment has completed; before the first deployment all features are shown.
 * `foreman` (_Hash_): How this feature should be applied on the "main" system that offers the main user interaction via UI/API.
   * `plugin_name` (_String_): The name of the Foreman plugin to be enabled (via `FOREMAN_ENABLED_PLUGINS`).
      If `roles/foreman/tasks/feature/{{ foreman_plugin }}.yaml` exists, it will be executed to perform any plugin-specific setup.
