@@ -689,6 +689,8 @@ jobs:
     name: Test suite
     steps:
       - name: Decide whether the needed jobs succeeded or failed
-        uses: re-actors/alls-green@release/v1
-        with:
-          jobs: ${{ toJSON(needs) }}
+        env:
+          JOB_RESULTS: ${{ toJSON(needs) }}
+        run: |
+          printf '%s\n' "$JOB_RESULTS" | jq --raw-output 'to_entries[] | "\(.key): \(.value.result)"'
+          printf '%s\n' "$JOB_RESULTS" | jq --exit-status 'type == "object" and length > 0 and all(.[]; .result == "success")'
