@@ -38,6 +38,7 @@
   RequestHeader unset REMOTE_USER-GROUPS
   RequestHeader unset REMOTE_USER_GROUPS
 {% endif %}
+{% if httpd_with_pulpcore %}
 
   <Location "/pulp/content">
     RequestHeader unset X-CLIENT-CERT
@@ -54,6 +55,7 @@
     ProxyPass {{ httpd_pulp_content_backend }}/pulp/content disablereuse=on timeout=600
     ProxyPassReverse {{ httpd_pulp_content_backend }}/pulp/content
   </Location>
+{% endif %}
 
   Alias /pub {{ httpd_pub_dir }}
 
