@@ -1,15 +1,24 @@
 ---
-- name: Check if PG_VERSION file exists
-  ansible.builtin.stat:
-    path: "{{ postgresql_data_dir }}/userdata/PG_VERSION"
-  register: postgresql_version_file
+- name: Find PG_VERSION file if it exists
+  ansible.builtin.find:
+    paths:
+      - "{{ postgresql_data_dir }}/userdata"
+      - "{{ postgresql_data_dir }}"
+    pattern: PG_VERSION
+  register: postgresql_version_files
+
+- name: Assert we found at max one PG_VERSION file
+  ansible.builtin.assert:
+    that:
+      - postgresql_version_files.matched <= 1
+    fail_msg: Found more than one PG_VERSION file in PostgreSQL data dir
 
 - name: Set postgresql_version version fact
-  when: postgresql_version_file.stat.exists
+  when: postgresql_version_files.matched == 1
   block:
     - name: Read PG_VERSION file
       ansible.builtin.slurp:
-        src: "{{ postgresql_data_dir }}/userdata/PG_VERSION"
+        src: "{{ postgresql_version_files.files[0].path }}"
       register: postgresql_version_encoded
 
     - name: Register PG version fact
