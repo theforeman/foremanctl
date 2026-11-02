@@ -1,0 +1,5 @@
+:enabled: {{ feature_enabled }}
+{% if feature_enabled != 'false' %}
+:tftproot: /var/lib/tftpboot
+:tftp_servername: {{ foreman_proxy_tftp_servername }}
+{% endif %}

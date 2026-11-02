@@ -11,6 +11,28 @@ def cast_database_mode(value):
     return value
 
 
+def map_tftp_feature(value):
+    """Represent installer TFTP enablement in foremanctl's additive feature list."""
+    if isinstance(value, bool):
+        return ['tftp'] if value else []
+
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {'true', 'yes', 'on', '1'}:
+            return ['tftp']
+        if normalized in {'false', 'no', 'off', '0'}:
+            return []
+
+    raise ValueError(f"Invalid foreman_proxy::tftp value: {value!r}; expected a boolean")
+
+
+def map_nonempty_value(value):
+    """Do not persist empty installer values as configured TFTP parameters."""
+    if value is None or (isinstance(value, str) and not value.strip()):
+        return None
+    return value
+
+
 PARAMETER_MAP = {
     # Database configuration
     ('foreman', 'db_host'): 'database_host',
@@ -55,6 +77,13 @@ PARAMETER_MAP = {
     ('foreman', 'server_ssl_cert'): 'IGNORE',
     ('foreman', 'server_ssl_key'): 'IGNORE',
     ('foreman', 'server_ssl_ca'): 'IGNORE',
+
+    # TFTP is an independently managed service. Only enable the Smart Proxy
+    # module; foremanctl does not install or configure a TFTP daemon.
+    ('foreman_proxy', 'tftp'): ('features', map_tftp_feature),
+    ('foreman_proxy', 'tftp_root'): ('foreman_proxy_tftp_root', map_nonempty_value),
+    ('foreman_proxy', 'tftp_servername'): ('foreman_proxy_tftp_servername', map_nonempty_value),
+    ('foreman_proxy', 'tftp_managed'): 'IGNORE',
 
     # TODO: Add more mappings as discovered
 }
@@ -167,6 +196,7 @@ def apply_mappings(old_config, old_tuning='default'):
 
     result = {}
     unmappable = []
+    warnings = []
 
     for old_key, old_value in flat_config.items():
         if old_key in PARAMETER_MAP:
@@ -183,7 +213,13 @@ def apply_mappings(old_config, old_tuning='default'):
                 new_value = old_value
 
             if new_value is not None:
-                result[new_key] = new_value
+                if new_key == 'features':
+                    existing_features = result.setdefault('features', [])
+                    for feature in new_value:
+                        if feature not in existing_features:
+                            existing_features.append(feature)
+                else:
+                    result[new_key] = new_value
         else:
             if old_value is not None:
                 if isinstance(old_key, tuple):
@@ -200,9 +236,29 @@ def apply_mappings(old_config, old_tuning='default'):
     if old_tuning != 'default':
         result['tuning'] = old_tuning
 
+    if ('foreman_proxy', 'tftp_managed') in flat_config and flat_config[('foreman_proxy', 'tftp_managed')] is not None:
+        warnings.append(
+            'foreman_proxy::tftp_managed has no foremanctl-managed service equivalent. '
+            'Keep the existing TFTP service; foremanctl creates and configures its shared directory when enabled.'
+        )
+
+    if result.get('features') and 'tftp' in result['features']:
+        servername = flat_config.get(('foreman_proxy', 'tftp_servername'))
+        if not isinstance(servername, str) or not servername.strip():
+            warnings.append(
+                'TFTP was enabled in the installer answers but has no usable server name. '
+                'Supply --tftp-servername before deploying with TFTP enabled.'
+            )
+        if not flat_config.get(('foreman_proxy', 'tftp_root')):
+            warnings.append(
+                'No TFTP root was migrated. foremanctl defaults to /var/lib/tftpboot, '
+                'which foremanctl creates and configures for the Smart Proxy when TFTP is enabled.'
+            )
+
     return {
         'mapped': result,
-        'unmappable': unmappable
+        'unmappable': unmappable,
+        'warnings': warnings,
     }
 
 
@@ -216,6 +272,7 @@ def run_module():
         mapped_count=0,
         unmappable_count=0,
         unmappable=[],
+        warnings=[],
         mapped={},
     )
 
@@ -239,6 +296,7 @@ def run_module():
         result['mapped_count'] = len(migration_result['mapped'])
         result['unmappable_count'] = len(migration_result['unmappable'])
         result['unmappable'] = migration_result['unmappable']
+        result['warnings'] = migration_result['warnings']
         result['mapped'] = migration_result['mapped']
 
         if migration_result['unmappable']:

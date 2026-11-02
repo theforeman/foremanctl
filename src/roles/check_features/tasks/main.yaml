@@ -24,3 +24,12 @@
       These features cannot be enabled together.
   vars:
     found_conflicts: "{{ enabled_features | conflicting_features }}"
+
+- name: Require foreman-proxy when TFTP is enabled
+  ansible.builtin.assert:
+    that:
+      - enabled_features | has_feature('foreman-proxy')
+    fail_msg: >-
+      TFTP requires the foreman-proxy feature. Enable foreman-proxy explicitly
+      with --add-feature foreman-proxy or use a deployment flavor that includes it.
+  when: enabled_features | has_feature('tftp')
