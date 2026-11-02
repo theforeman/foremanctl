@@ -1,7 +1,7 @@
 ---
 variables:
   certificates_algorithms:
-    help: Algorithm used for the keys of the generated certificates.
+    help: Algorithm used for the private keys of the generated certificates. Changing it on an existing deployment requires --certificate-ca-renew.
     parameter: --add-certificate-algorithm
     action: append_unique
     choices:
@@ -9,7 +9,7 @@ variables:
       - ECC
       - ML-DSA-87
   remove_certificates_algorithms:
-    help: Remove an algorithm from the persisted certificate algorithm list.
+    help: Remove an algorithm from the persisted certificate algorithm list. Changing it on an existing deployment requires --certificate-ca-renew.
     parameter: --remove-certificate-algorithm
     action: remove
     dest: certificates_algorithms

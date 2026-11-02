@@ -12,6 +12,16 @@
       drop the extras.
     quiet: true
 
+- name: 'Validate RSA key size'
+  ansible.builtin.assert:
+    that:
+      - certificates_algorithm_rsa_size | string is match('^[0-9]+$')
+      - certificates_algorithm_rsa_size | int >= 2048
+    fail_msg: >-
+      The RSA key size must be an integer >= 2048, got: {{ certificates_algorithm_rsa_size }}
+    quiet: true
+  when: certificates_primary_algorithm == 'RSA'
+
 - name: 'Install crypto dependencies'
   ansible.builtin.package:
     name:
