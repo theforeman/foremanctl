@@ -1,4 +1,11 @@
 ---
+- name: Remove stale TFTP tmpfiles override
+  ansible.builtin.file:
+    path: /etc/tmpfiles.d/tftp.conf
+    state: absent
+  when:
+    - not (enabled_features | has_feature('tftp')) or foreman_proxy_tftp_root != '/var/lib/tftpboot'
+
 - name: Deploy foreman-proxy image
   ansible.builtin.include_tasks: image.yaml
 
@@ -24,6 +31,9 @@
       - 'foreman-proxy-foreman-ssl-ca,type=mount,target=/etc/foreman-proxy/foreman_ssl_ca.pem'
       - 'foreman-proxy-foreman-ssl-cert,type=mount,target=/etc/foreman-proxy/foreman_ssl_cert.pem'
       - 'foreman-proxy-foreman-ssl-key,type=mount,target=/etc/foreman-proxy/foreman_ssl_key.pem'
+    volumes: >-
+      {{ [foreman_proxy_tftp_root + ':/var/lib/tftpboot:rw']
+         if enabled_features | has_feature('tftp') else [] }}
     quadlet_options:
       - "HttpProxy=false"
       - |

@@ -24,3 +24,11 @@
       These features cannot be enabled together.
   vars:
     found_conflicts: "{{ enabled_features | conflicting_features }}"
+
+- name: Validate TFTP server name
+  ansible.builtin.assert:
+    that:
+      - foreman_proxy_tftp_servername is not defined or (foreman_proxy_tftp_servername | default('', true) | trim | length > 0)
+    fail_msg: >-
+      ERROR: --tftp-servername cannot be empty. Omit the option to use the Smart Proxy hostname.
+  when: enabled_features | has_feature('tftp')

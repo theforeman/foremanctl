@@ -1,0 +1,66 @@
+---
+- name: Install SELinux management utilities for TFTP storage
+  ansible.builtin.package:
+    name: policycoreutils-python-utils
+    state: present
+  when: ansible_facts['selinux']['status'] == "enabled"
+
+- name: Allow Foreman Proxy container to manage public TFTP content
+  ansible.posix.seboolean:
+    name: container_manage_public_content
+    state: true
+    persistent: true
+  when: ansible_facts['selinux']['status'] == "enabled"
+
+- name: Configure SELinux context for TFTP storage
+  community.general.sefcontext:
+    target: "{{ foreman_proxy_tftp_root | regex_escape }}(/.*)?"
+    setype: public_content_rw_t
+    state: present
+  when: ansible_facts['selinux']['status'] == "enabled"
+
+- name: Preserve TFTP storage ownership across tmpfiles runs
+  ansible.builtin.copy:
+    dest: /etc/tmpfiles.d/tftp.conf
+    content: >-
+      d {{ foreman_proxy_tftp_root }} - {{ foreman_proxy_container_uid }} - -
+    mode: '0644'
+    owner: root
+    group: root
+  when: foreman_proxy_tftp_root == '/var/lib/tftpboot'
+
+- name: Remove tmpfiles configuration when TFTP root is not default
+  ansible.builtin.file:
+    path: /etc/tmpfiles.d/tftp.conf
+    state: absent
+  when: foreman_proxy_tftp_root != '/var/lib/tftpboot'
+
+- name: Check whether TFTP storage already exists
+  ansible.builtin.stat:
+    path: "{{ foreman_proxy_tftp_root }}"
+  register: foreman_proxy_tftp_root_stat
+
+- name: Create TFTP storage
+  ansible.builtin.file:
+    path: "{{ foreman_proxy_tftp_root }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ foreman_proxy_container_uid }}"
+  when: not foreman_proxy_tftp_root_stat.stat.exists
+
+- name: Set TFTP storage ownership and permissions on existing contents
+  ansible.builtin.file:
+    path: "{{ foreman_proxy_tftp_root }}"
+    state: directory
+    owner: "{{ foreman_proxy_container_uid }}"
+    mode: 'u+rwX,go+rX'
+    recurse: true
+
+- name: Apply SELinux context to TFTP storage
+  ansible.builtin.command:
+    argv:
+      - restorecon
+      - -RF
+      - "{{ foreman_proxy_tftp_root }}"
+  changed_when: false
+  when: ansible_facts['selinux']['status'] == "enabled"
