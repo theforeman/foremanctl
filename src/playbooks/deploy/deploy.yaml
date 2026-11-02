@@ -27,6 +27,9 @@
         certificate_checks_key: "{{ server_key }}"
         certificate_checks_ca: "{{ server_ca_certificate }}"
     - role: foreman_core_network
+    - role: systemd_target
+      vars:
+        systemd_target_start: false
     - role: postgresql
       when:
         - database_mode == 'internal'

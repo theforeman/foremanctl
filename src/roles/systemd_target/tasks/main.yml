@@ -20,3 +20,5 @@
     name: foreman.target
     state: started
     enabled: true
+  when:
+    - systemd_target_start | default(true)

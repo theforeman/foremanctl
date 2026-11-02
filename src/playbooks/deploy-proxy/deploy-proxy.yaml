@@ -27,6 +27,9 @@
         certificate_checks_ca: "{{ server_ca_certificate }}"
     - role: oauth_from_bundle
     - role: foreman_core_network
+    - role: systemd_target
+      vars:
+        systemd_target_start: false
     - role: postgresql
       when:
         - database_mode == 'internal'
@@ -39,10 +42,10 @@
     - role: pulp
       when:
         - "enabled_features | has_feature('pulp')"
-    - role: systemd_target
     - role: foreman_proxy
       when:
         - "enabled_features | has_feature('foreman-proxy')"
+    - role: systemd_target
     - role: post_install
       vars:
         post_install_foreman_ca_path: "{{ foreman_proxy_foreman_ca_certificate | default(omit) }}"
