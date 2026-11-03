@@ -147,12 +147,12 @@ archive contents eligible for cleanup after 24 hours.
 
 | Container | Type | Description |
 |-----------|------|-------------|
-| `iop-service-compl-dbmigrate` | oneshot | Database schema migration |
-| `iop-service-compl-backend` | service | Main Compliance API endpoint |
-| `iop-service-compl-ssg` | service | SSG content server |
-| `iop-service-compl-inventory-consumer` | service | Consumes inventory events |
-| `iop-service-compl-goodjob` | service | GoodJob background worker |
-| `iop-service-compl-import-ssg` | oneshot | Imports SSG datastreams and remediation playbooks during deployment after the SSG image is refreshed |
+| `iop-service-compliance-dbmigrate` | oneshot | Database schema migration |
+| `iop-service-compliance-backend` | service | Main Compliance API endpoint |
+| `iop-service-compliance-ssg` | service | SSG content server |
+| `iop-service-compliance-inventory-consumer` | service | Consumes inventory events |
+| `iop-service-compliance-goodjob` | service | GoodJob background worker |
+| `iop-service-compliance-import-ssg` | oneshot | Imports SSG datastreams and remediation playbooks during deployment after the SSG image is refreshed |
 
 ### Network
 

@@ -40,7 +40,7 @@
 
 - name: Deploy Compliance Database Migration Check Container
   containers.podman.podman_container:
-    name: iop-service-compl-db-migration-check
+    name: iop-service-compliance-db-migration-check
     image: iop-compliance.image
     state: quadlet
     command: sh -c "bundle exec rake db:abort_if_pending_migrations"
@@ -63,7 +63,7 @@
 
 - name: Deploy Compliance Database Upgrade Init Container
   containers.podman.podman_container:
-    name: iop-service-compl-dbmigrate
+    name: iop-service-compliance-dbmigrate
     image: iop-compliance.image
     state: quadlet
     command: sh -c "bundle exec rake db:migrate --trace"
@@ -86,7 +86,7 @@
 
 - name: Deploy Compliance Backend API Container
   containers.podman.podman_container:
-    name: iop-service-compl-backend
+    name: iop-service-compliance-backend
     image: iop-compliance.image
     state: quadlet
     network: "{{ foreman_core_network_container_networks }}"
@@ -107,7 +107,7 @@
         [Unit]
         Description=Compliance Service
         PartOf=foreman.target
-        After=iop-service-compl-dbmigrate.service
+        After=iop-service-compliance-dbmigrate.service
         [Service]
         Restart=on-failure
         [Install]
@@ -115,7 +115,7 @@
 
 - name: Deploy Compliance SSG Container
   containers.podman.podman_container:
-    name: iop-service-compl-ssg
+    name: iop-service-compliance-ssg
     image: iop-compliance-ssg.image
     state: quadlet
     network: "{{ foreman_core_network_container_networks }}"
@@ -127,15 +127,15 @@
         PartOf=foreman.target
         [Service]
         Restart=on-failure
-        ExecStartPost=/usr/bin/podman exec --user root iop-service-compl-ssg sh -c 'cd /content/playbooks/rhel8 && test -e all || ln -s . all'
-        ExecStartPost=/usr/bin/podman exec --user root iop-service-compl-ssg sh -c 'cd /content/playbooks/rhel9 && test -e all || ln -s . all'
-        ExecStartPost=/usr/bin/podman exec --user root iop-service-compl-ssg sh -c 'cd /content/playbooks/rhel10 && test -e all || ln -s . all'
+        ExecStartPost=/usr/bin/podman exec --user root iop-service-compliance-ssg sh -c 'cd /content/playbooks/rhel8 && test -e all || ln -s . all'
+        ExecStartPost=/usr/bin/podman exec --user root iop-service-compliance-ssg sh -c 'cd /content/playbooks/rhel9 && test -e all || ln -s . all'
+        ExecStartPost=/usr/bin/podman exec --user root iop-service-compliance-ssg sh -c 'cd /content/playbooks/rhel10 && test -e all || ln -s . all'
         [Install]
         WantedBy=default.target foreman.target
 
 - name: Deploy Compliance Inventory Consumer Container
   containers.podman.podman_container:
-    name: iop-service-compl-inventory-consumer
+    name: iop-service-compliance-inventory-consumer
     image: iop-compliance.image
     state: quadlet
     env: >-
@@ -160,7 +160,7 @@
 
 - name: Deploy Compliance GoodJob Worker Container
   containers.podman.podman_container:
-    name: iop-service-compl-goodjob
+    name: iop-service-compliance-goodjob
     image: iop-compliance.image
     state: quadlet
     env: >-
@@ -183,7 +183,7 @@
 
 - name: Deploy Compliance Import SSG Container
   containers.podman.podman_container:
-    name: iop-service-compl-import-ssg
+    name: iop-service-compliance-import-ssg
     image: iop-compliance.image
     state: quadlet
     env: >-
@@ -198,8 +198,8 @@
       - |
         [Unit]
         Description=Compliance Import SSG Job
-        Requires=iop-service-compl-ssg.service
-        After=iop-service-compl-ssg.service
+        Requires=iop-service-compliance-ssg.service
+        After=iop-service-compliance-ssg.service
         [Service]
         Type=oneshot
 
@@ -209,12 +209,12 @@
 
 - name: Check for pending Compliance migrations
   ansible.builtin.systemd:
-    name: iop-service-compl-db-migration-check.service
+    name: iop-service-compliance-db-migration-check.service
     state: restarted
 
 - name: Get Compliance migration check exit status  # noqa command-instead-of-module
   ansible.builtin.command:
-    cmd: systemctl show --property=ExecMainStatus --value iop-service-compl-db-migration-check.service
+    cmd: systemctl show --property=ExecMainStatus --value iop-service-compliance-db-migration-check.service
   register: iop_compliance_migration_check_status
   changed_when: false
   failed_when: >-
@@ -228,7 +228,7 @@
 
 - name: Migrate the Compliance database
   ansible.builtin.systemd:
-    name: iop-service-compl-dbmigrate.service
+    name: iop-service-compliance-dbmigrate.service
     state: restarted
   when: iop_compliance_migration_needed
   notify: Restart compliance
@@ -238,10 +238,10 @@
 
 - name: Restart Compliance SSG service before importing content
   ansible.builtin.systemd:
-    name: iop-service-compl-ssg.service
+    name: iop-service-compliance-ssg.service
     state: restarted
 
 - name: Import Compliance SSG content during deployment
   ansible.builtin.systemd:
-    name: iop-service-compl-import-ssg.service
+    name: iop-service-compliance-import-ssg.service
     state: restarted
