@@ -112,7 +112,6 @@ def test_https_pub_server_ca_certificate_downloadable(curl_request):
     assert cmd.stdout == '200'
 
 
-@pytest.mark.feature('foreman')
 @pytest.mark.feature('pulp')
 def test_http_pub_katello_rhsm_consumer_served_directly(server, server_fqdn):
     cmd = server.run(
@@ -123,7 +122,6 @@ def test_http_pub_katello_rhsm_consumer_served_directly(server, server_fqdn):
     assert cmd.stdout.rstrip() == '200'
 
 
-@pytest.mark.feature('foreman')
 @pytest.mark.feature('pulp')
 def test_https_pub_katello_rhsm_consumer_served_directly(server, certificates, server_fqdn):
     cmd = server.run(
@@ -135,7 +133,7 @@ def test_https_pub_katello_rhsm_consumer_served_directly(server, certificates, s
     assert cmd.stdout.rstrip() == '200'
 
 
-@pytest.mark.feature('katello')
+@pytest.mark.feature('pulp')
 def test_https_pub_katello_rhsm_consumer_script_embeds_server_ca(server, certificates, server_fqdn):
     cmd = server.run(
         f"curl --silent --cacert {certificates['server_ca_certificate']} "

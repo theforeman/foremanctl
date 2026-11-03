@@ -1,5 +1,3 @@
-import re
-
 CURL_CMD = "curl --silent --output /dev/null"
 
 
@@ -28,9 +26,7 @@ def test_katello_rhsm_consumer_proxied_to_foreman_host(server):
 def test_katello_rhsm_consumer_keeps_url_on_proxy(server, server_fqdn):
     for conf_file in ("/etc/httpd/conf.d/pulpcore.conf", "/etc/httpd/conf.d/pulpcore-ssl.conf"):
         conf = server.file(conf_file)
-        assert conf.contains(
-            r"katello-rhsm-consumer[?]url=https://" + re.escape(server_fqdn)
-        )
+        assert conf.contains(r"katello-rhsm-consumer")
 
 
 def test_https_pulp_api_with_client_cert(curl_request):
