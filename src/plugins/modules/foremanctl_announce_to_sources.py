@@ -11,6 +11,7 @@ short_description: Register this Foreman instance in Red Hat Sources
 description:
   - Calls the Foreman API to announce this instance to Red Hat Sources, a prerequisite for cloud-initiated remediations via Cloud Connector.
   - Waits for the resulting Foreman task to complete and fails if the task does not succeed.
+  - A successful task does not guarantee registration actually happened (e.g. the organization is skipped if its Candlepin identity cert isn't ready yet). Check the returned C(registered) value, retrying the task (e.g. with C(until)) when it is C(false).
 options:
   server_url:
     description: Foreman server URL
@@ -41,6 +42,25 @@ EXAMPLES = '''
     oauth1_consumer_key: "{{ foreman_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
     instance_id: "{{ cloud_connector_cert_info.subject.commonName }}"
+  register: announce_result
+  until: announce_result.registered
+  retries: 5
+  delay: 15
+'''
+
+RETURN = '''
+task:
+  description: The completed Foreman task.
+  type: dict
+  returned: always
+status:
+  description: The task's human-readable per-organization outcome (e.g. "Registered ..." or "Skipped (no manifest) ...").
+  type: str
+  returned: always
+registered:
+  description: Whether the organization was actually registered with Red Hat Sources, as opposed to skipped or failed without raising.
+  type: bool
+  returned: always
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -95,7 +115,15 @@ def run_module():
     except ForemanApiException as e:
         module.fail_json(msg=f'Announce to Sources failed: {e}')
 
-    module.exit_json(changed=True, task=task)
+    # The task can report result=success without having registered anything: if the
+    # organization's Candlepin identity cert isn't available yet (e.g. this ran very
+    # early in a deploy), CloudConnectorAnnounceTask skips the org instead of raising,
+    # recording that only in output.status. Surface it as `registered` so callers can
+    # retry (e.g. via `until:`) instead of trusting a successful task as proof.
+    status = (task or {}).get('output', {}).get('status', '') or ''
+    registered = bool(status) and 'Skipped' not in status and 'Failed' not in status
+
+    module.exit_json(changed=True, task=task, status=status, registered=registered)
 
 
 def main():

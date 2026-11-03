@@ -27,7 +27,9 @@
     owner: root
     group: root
     mode: '0640'
-  notify: Restart rhcd
+  notify:
+    - Restart cloud connector dispatcher
+    - Restart cloud connector worker
 
 - name: Create rhcd worker script
   ansible.builtin.copy:
@@ -35,16 +37,47 @@
     content: |
       #!/bin/bash
 
-      CONFIG_FILE="{{ cloud_connector_config_file }}" exec /usr/libexec/yggdrasil-worker-forwarder
+      CONFIG_FILE="{{ cloud_connector_config_file }}" exec {{ cloud_connector_forwarder_executable }}
     owner: root
     group: root
     mode: '0755'
+  when: not (cloud_connector_uses_dbus | bool)
 
-- name: Ensure rhcd started and enabled
+- name: Remove obsolete cloud connector files
+  ansible.builtin.include_tasks: cleanup_cloud_connector.yaml
+
+- name: Ensure cloud connector dispatcher started and enabled
   ansible.builtin.service:
-    name: rhcd
+    name: "{{ cloud_connector_dispatcher_service }}"
     state: started
     enabled: true
+
+- name: Ensure cloud connector worker started and enabled
+  ansible.builtin.systemd_service:
+    name: "{{ cloud_connector_worker_service }}"
+    state: started
+    enabled: true
+    daemon_reload: true
+  when: cloud_connector_uses_dbus | bool
+
+- name: Flush handlers before republishing connection status
+  ansible.builtin.meta: flush_handlers
+
+- name: Republish yggdrasil connection status
+  # yggdrasil only republishes on a real write (IN_CLOSE_WRITE); state=touch
+  # on an existing file is utime()-only and never triggers it.
+  ansible.builtin.command: >-
+    python3 -c "p='/var/lib/yggdrasil/canonical-facts.json'; d=open(p,'rb').read(); open(p,'wb').write(d)"
+  changed_when: true
+  when: cloud_connector_uses_dbus | bool
+
+- name: Ensure correct ownership for yggdrasil connection status facts
+  ansible.builtin.file:
+    path: /var/lib/yggdrasil/canonical-facts.json
+    owner: yggdrasil
+    group: yggdrasil
+    mode: '0644'
+  when: cloud_connector_uses_dbus | bool
 
 - name: Read client ID from consumer certificate
   community.crypto.x509_certificate_info:
@@ -52,12 +85,19 @@
   register: cloud_connector_cert_info
 
 - name: Announce to Sources
+  # A successful task does not guarantee registration happened: the organization is
+  # skipped (not failed) if its Candlepin identity cert isn't ready yet, which can
+  # happen this early in a deploy. Retry until the module confirms registration.
   foremanctl_announce_to_sources:
     server_url: "{{ cloud_connector_url }}"
     oauth1_consumer_key: "{{ cloud_connector_foreman_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ cloud_connector_foreman_oauth_consumer_secret }}"
     ca_path: "{{ cloud_connector_foreman_ca_certificate | default(omit) }}"
     instance_id: "{{ cloud_connector_cert_info.subject.commonName }}"
+  register: cloud_connector_announce_result
+  until: cloud_connector_announce_result.registered
+  retries: 5
+  delay: 15
 
-- name: Configure HTTP proxy for rhcd
+- name: Configure HTTP proxy for cloud connector services
   ansible.builtin.include_tasks: http_proxy.yaml
