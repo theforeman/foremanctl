@@ -4,6 +4,6 @@
     name: "{{ item }}"
     state: restarted
   loop:
-    - iop-service-compl-backend
-    - iop-service-compl-inventory-consumer
-    - iop-service-compl-goodjob
+    - iop-service-compliance-backend
+    - iop-service-compliance-inventory-consumer
+    - iop-service-compliance-goodjob

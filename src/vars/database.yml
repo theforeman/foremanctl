@@ -162,7 +162,7 @@ databases:
     feature: iop
   - name: iop_compliance
     database: "{{ iop_compliance_database_name }}"
-    host: "{{ iop_compliance_database_host }}"
+    host: "{{ database_management_host }}"
     port: "{{ iop_compliance_database_port }}"
     user: "{{ iop_compliance_database_user }}"
     password: "{{ iop_compliance_database_password }}"

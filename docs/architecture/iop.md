@@ -147,12 +147,12 @@ archive contents eligible for cleanup after 24 hours.
 
 | Container | Type | Description |
 |-----------|------|-------------|
-| `iop-service-compl-dbmigrate` | oneshot | Database schema migration |
-| `iop-service-compl-backend` | service | Main Compliance API endpoint |
-| `iop-service-compl-ssg` | service | SSG content server |
-| `iop-service-compl-inventory-consumer` | service | Consumes inventory events |
-| `iop-service-compl-goodjob` | service | GoodJob background worker |
-| `iop-service-compl-import-ssg` | oneshot | Imports SSG datastreams and remediation playbooks during deployment after the SSG image is refreshed |
+| `iop-service-compliance-dbmigrate` | oneshot | Applies pending database migrations during deployment |
+| `iop-service-compliance-backend` | service | Main Compliance API endpoint |
+| `iop-service-compliance-ssg` | service | SSG content server |
+| `iop-service-compliance-inventory-consumer` | service | Consumes inventory events |
+| `iop-service-compliance-goodjob` | service | GoodJob background worker |
+| `iop-service-compliance-import-ssg` | oneshot | Imports SSG datastreams and remediation playbooks during deployment after the SSG image is refreshed |
 
 ### Network
 
@@ -166,11 +166,11 @@ The gateway's nginx relay configuration proxies requests to `https://host.contai
 
 ### Systemd Integration
 
-All IOP containers are `PartOf=foreman.target`, meaning they start and stop with the Foreman service group.
+Long-running IOP services are attached to `foreman.target`; one-shot jobs run during startup or deployment as appropriate.
 
 Patterns used:
 
-- **Init containers** (database migrations): `Type=oneshot` with `RemainAfterExit=true`. Downstream services use `Requires=` and `After=` to depend on these.
+- **Init containers**: `Type=oneshot` with `RemainAfterExit=true`; dependent services declare ordering and dependencies as needed.
 - **Long-running services**: `Restart=on-failure` with `WantedBy=default.target foreman.target`
 - **Periodic tasks**: systemd timers with `Persistent=true` and `RandomizedDelaySec`
 

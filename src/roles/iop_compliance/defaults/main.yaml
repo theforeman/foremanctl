@@ -7,7 +7,7 @@ iop_compliance_ssg_container_tag: "latest"
 iop_compliance_database_volumes: []
 
 iop_compliance_ssg_port: 8080
-iop_compliance_ssg_url: "http://iop-service-compl-ssg:{{ iop_compliance_ssg_port }}"
+iop_compliance_ssg_url: "http://iop-service-compliance-ssg:{{ iop_compliance_ssg_port }}"
 iop_compliance_host_inventory_url: "http://iop-core-host-inventory-api:8081"
 
 # SECRET_KEY_BASE is randomly generated once and persisted to the state
