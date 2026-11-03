@@ -28,6 +28,18 @@ To setup the environment, run the setup script which will create a virtualenv an
 source .venv/bin/activate
 ```
 
+If a pull changes `src/requirements.txt`, `development/requirements.txt`,
+`src/requirements.yml`, or `development/requirements.yml`, rerun
+`./setup-environment` to refresh the Python dependencies and generated Ansible
+collections under `build/collections/`. Git pulls do not update installed Python
+packages or those generated collections.
+
+A local `src/requirements-lock.yml` takes precedence over `src/requirements.yml`.
+If it is stale, remove it and `build/collections/foremanctl` before rerunning
+setup. When dependencies are removed, deactivate the virtualenv and remove
+`.venv` and `build/collections/` before rerunning setup to discard obsolete
+Python packages and Ansible collections.
+
 ### VM Configuration
 
 VMs can be customized via environment variables:
