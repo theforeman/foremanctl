@@ -1,3 +1,4 @@
 obsah >= 1.11.1
+argcomplete
 requests
 requests-oauthlib
