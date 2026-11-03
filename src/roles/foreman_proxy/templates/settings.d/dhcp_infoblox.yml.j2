@@ -1,0 +1,20 @@
+---
+:enabled: {{ feature_enabled }}
+{% if foreman_proxy_dhcp_infoblox_username %}
+:username: {{ foreman_proxy_dhcp_infoblox_username }}
+{% endif %}
+{% if foreman_proxy_dhcp_infoblox_password %}
+:password: {{ foreman_proxy_dhcp_infoblox_password }}
+{% endif %}
+{% if foreman_proxy_dhcp_infoblox_dns_view %}
+:dns_view: {{ foreman_proxy_dhcp_infoblox_dns_view }}
+{% endif %}
+{% if foreman_proxy_dhcp_infoblox_network_view %}
+:network_view: {{ foreman_proxy_dhcp_infoblox_network_view }}
+{% endif %}
+{% if foreman_proxy_dhcp_infoblox_record_type %}
+:record_type: {{ foreman_proxy_dhcp_infoblox_record_type }}
+{% endif %}
+{% if foreman_proxy_dhcp_infoblox_used_ips_search_type %}
+:used_ips_search_type: {{ foreman_proxy_dhcp_infoblox_used_ips_search_type }}
+{% endif %}

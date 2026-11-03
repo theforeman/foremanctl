@@ -43,4 +43,18 @@ foreman_proxy_container_gateway_db_connection_string: >-
 foreman_proxy_bmc_ipmi_implementation: ipmitool
 foreman_proxy_bmc_redfish_verify_ssl: true
 
+# Infoblox DHCP settings
+foreman_proxy_dhcp_infoblox_username:  # noqa: no-empty-defaults
+foreman_proxy_dhcp_infoblox_password:  # noqa: no-empty-defaults
+foreman_proxy_dhcp_infoblox_dns_view: default
+foreman_proxy_dhcp_infoblox_network_view: default
+foreman_proxy_dhcp_infoblox_record_type: fixedaddress
+foreman_proxy_dhcp_infoblox_used_ips_search_type: record_type
+
+# Infoblox DNS settings
+foreman_proxy_dns_infoblox_username:  # noqa: no-empty-defaults
+foreman_proxy_dns_infoblox_password:  # noqa: no-empty-defaults
+foreman_proxy_dns_infoblox_dns_view: default
+foreman_proxy_dns_infoblox_dns_server:  # noqa: no-empty-defaults
+
 foreman_proxy_with_pulp_mirror: "{{ pulp_mirror | default(false) }}"

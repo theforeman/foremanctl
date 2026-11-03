@@ -115,6 +115,14 @@ bmc:
   description: Power management for bare metal hosts (IPMI, Redfish)
   foreman_proxy:
     plugin_name: bmc
+dhcp-infoblox:
+  description: Infoblox DHCP provider for Smart Proxy
+  foreman_proxy:
+    plugin_name: dhcp_infoblox
+dns-infoblox:
+  description: Infoblox DNS provider for Smart Proxy
+  foreman_proxy:
+    plugin_name: dns_infoblox
 webhooks:
   description: Webhooks plugin for Foreman
   foreman:

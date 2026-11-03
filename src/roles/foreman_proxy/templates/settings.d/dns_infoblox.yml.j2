@@ -1,0 +1,14 @@
+---
+:enabled: {{ feature_enabled }}
+{% if foreman_proxy_dns_infoblox_username %}
+:username: {{ foreman_proxy_dns_infoblox_username }}
+{% endif %}
+{% if foreman_proxy_dns_infoblox_password %}
+:password: {{ foreman_proxy_dns_infoblox_password }}
+{% endif %}
+{% if foreman_proxy_dns_infoblox_dns_view %}
+:dns_view: {{ foreman_proxy_dns_infoblox_dns_view }}
+{% endif %}
+{% if foreman_proxy_dns_infoblox_dns_server %}
+:dns_server: {{ foreman_proxy_dns_infoblox_dns_server }}
+{% endif %}
