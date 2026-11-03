@@ -28,6 +28,8 @@ To setup the environment, run the setup script which will create a virtualenv an
 source .venv/bin/activate
 ```
 
+If a pull changes `src/requirements.yml` or `development/requirements.yml`, rerun `./setup-environment` to refresh the Python dependencies and generated Ansible collections under `build/collections/`. Git pulls do not update those generated collections.
+
 ### VM Configuration
 
 VMs can be customized via environment variables:
