@@ -145,7 +145,10 @@ jobs:
           ./forge security --mode ${{ matrix.security }}
       - name: Run image pull
         run: |
-          ./foremanctl pull-images ${{ matrix.database == 'external' && '--database-mode=external' || '' }} ${{ matrix.air_gapped == true && '--add-feature foreman-proxy' || '' }}
+          ./foremanctl pull-images \
+            ${{ matrix.database == 'external' && '--database-mode=external' || '' }} \
+            ${{ matrix.air_gapped == true && '--add-feature foreman-proxy' || '' }} \
+            ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run deployment
         run: |
           ./foremanctl deploy \
@@ -269,7 +272,7 @@ jobs:
           ./forge setup-repositories
       - name: Run image pull
         run: |
-          ./foremanctl pull-images
+          ./foremanctl pull-images --add-feature iop
       - name: Run deployment
         run: |
           ./foremanctl deploy \
@@ -296,7 +299,7 @@ jobs:
           git checkout FETCH_HEAD
       - name: Run image pull
         run: |
-          ./foremanctl pull-images
+          ./foremanctl pull-images --add-feature iop
       - name: Run deployment
         run: |
           ./foremanctl deploy
