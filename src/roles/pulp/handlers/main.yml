@@ -1,4 +1,8 @@
 ---
+- name: Update CA trust
+  ansible.builtin.command: update-ca-trust extract
+  changed_when: true
+
 - name: Restart pulp-api socket
   ansible.builtin.systemd:
     name: pulp-api.socket

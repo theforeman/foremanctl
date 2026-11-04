@@ -12,6 +12,12 @@
     gpgcheck: false
     baseurl: "https://yum.theforeman.org/katello/{{ setup_repositories_version }}/katello/el{{ ansible_facts['distribution_major_version'] }}/$basearch/"
 
+- name: Setup repository for Pulpcore {{ setup_repositories_version }}
+  ansible.builtin.package:
+    name: "https://yum.theforeman.org/pulpcore/{{ setup_repositories_version }}/el{{ ansible_facts['distribution_major_version'] }}/x86_64/pulpcore-release.rpm"
+    disable_gpg_check: true
+    state: present
+
 - name: 'Setup OpenVox repository'
   ansible.builtin.package:
     name: https://yum.voxpupuli.org/openvox{{ setup_repositories_openvox_version }}-release-el-{{ ansible_facts['distribution_major_version'] }}.noarch.rpm
