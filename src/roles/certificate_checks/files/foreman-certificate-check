@@ -1,264 +1,349 @@
-#!/usr/bin/env bash
+#!/usr/bin/python3
 
-# Define colors uses for status output
-RED=$(tput setaf 1 2> /dev/null)
-GREEN=$(tput setaf 2 2> /dev/null)
-RESET=$(tput sgr0 2> /dev/null)
+import argparse
+import os
+import re
+import subprocess
+import sys
 
-CABUNDLE_MAX_ISSUERS=32
+CA_BUNDLE_MAX_ISSUERS = 32
+CERTIFICATE_PATTERN = re.compile(
+    br'-----BEGIN(?: TRUSTED)? CERTIFICATE-----.*?-----END(?: TRUSTED)? CERTIFICATE-----',
+    re.DOTALL,
+)
 
-function usage () {
-  cat <<HELP >&2
-Verifies, that custom SSL certificate files are usable as part of the installation.
-When passing filenames use absolute paths.
 
-usage: $0 -c CERT_FILE -k KEY_FILE -b CA_BUNDLE_FILE
-HELP
-}
+class ArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        self.print_usage(sys.stderr)
+        self.exit(1, f'{self.prog}: error: {message}\n')
 
-while getopts "c:k:b:" opt; do
-    case $opt in
-        c)
-            CERT_FILE="$(readlink -f $OPTARG)"
-            ;;
-        k)
-            KEY_FILE="$(readlink -f $OPTARG)"
-            ;;
-        b)
-            CA_BUNDLE_FILE="$(readlink -f $OPTARG)"
-            ;;
-        h)
-            usage
-            exit 0
-            ;;
-        ?)
-            usage
-            exit 1
-            ;;
-    esac
-done
 
-EXIT_CODE=0
+class CertificateValidator:
+    def __init__(self, certificate, key, ca_bundle, expected_names):
+        self.certificate = os.path.abspath(certificate)
+        self.key = os.path.abspath(key)
+        self.ca_bundle = os.path.abspath(ca_bundle)
+        self.expected_names = expected_names
+        self.exit_code = 0
 
-if [ -z "$CERT_FILE" -o -z "$KEY_FILE" -o -z "$CA_BUNDLE_FILE" ]; then
-    echo 'One of the required parameters is missing.' >&2
-    usage
-    exit 1
-fi
+    @staticmethod
+    def _openssl(*arguments, input_data=None):
+        return subprocess.run(
+            ['openssl', *arguments],
+            input=input_data,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
 
-function error () {
-    echo -e "\n${RED}[FAIL]${RESET}\n"
-    CURRENT_EXIT_CODE=$1
-    EXIT_CODE=$((EXIT_CODE|CURRENT_EXIT_CODE))
-    echo -e $2 >&2
-}
+    @staticmethod
+    def _output(result):
+        return (result.stderr or result.stdout).decode(errors='replace').strip()
 
-function success () {
-    echo -e "\n${GREEN}[OK]${RESET}\n"
-}
+    def _result(self, description, passed, code=0, detail=None):
+        status = 'OK' if passed else 'FAIL'
+        output = f'[{status}] {description}'
+        if detail:
+            output += f': {detail}'
+        print(output)
+        if not passed:
+            self.exit_code |= code
 
-function check-files-exist() {
-    if [[ ! -f "$CA_BUNDLE_FILE" ]] || [[ ! -f "$CERT_FILE" ]] || [[ ! -f "$KEY_FILE" ]] ; then
-        echo "One of '${CERT_FILE}', '${KEY_FILE}' or '${CA_BUNDLE_FILE}' not found" >&2
-        exit 1
-    fi
-}
+    def _check_files(self):
+        missing = [path for path in (self.certificate, self.key, self.ca_bundle) if not os.path.isfile(path)]
+        self._result(
+            'Required certificate files exist',
+            not missing,
+            1,
+            f"not found: {', '.join(missing)}" if missing else None,
+        )
+        return not missing
 
-function check-server-cert-encoding () {
-    printf 'Checking server certificate encoding: '
-    openssl x509 -inform pem -in $CERT_FILE -noout -text &> /dev/null
-    if [[ $? == "0" ]]; then
-        success
-    else
-        openssl x509 -inform der -in $CERT_FILE -noout -text &> /dev/null
-        if [[ $? == "0" ]]; then
-            error 8 "The server certificate is in DER encoding, which is incompatible.\n\n"
-            printf "Run the following command to convert the certificate to PEM encoding,\n"
-            printf "then test it again.\n"
-            printf "# openssl x509 -in %s -outform pem -out %s.pem\n\n" $(basename $CERT_FILE) $(basename $CERT_FILE)
-            printf "When you run $(basename $0) again, use file\n"
-            printf "%s.pem for the server certificate.\n\n" $(basename $CERT_FILE)
-        else
-            error 9 "The encoding of the server certificate is unknown."
-        fi
-    fi
-}
+    def _check_certificate_encoding(self):
+        pem_result = self._openssl('x509', '-inform', 'PEM', '-in', self.certificate, '-noout')
+        if pem_result.returncode == 0:
+            self._result('Server certificate uses PEM encoding', True)
+            return True
 
-function check-expiration () {
-    CERT_EXP=$(openssl x509 -noout -enddate -in $CERT_FILE | sed -e 's/notAfter=//' | awk '{$NF="";}1')
-    CA_EXP=$(openssl x509 -noout -enddate -in $CA_BUNDLE_FILE | sed -e 's/notAfter=//' | awk '{$NF="";}1')
-    DATE_TODAY=$(date -u +%Y%m%d%H%M%S)
-    CERT_DATE=$(date -d"${CERT_EXP}" +%Y%m%d%H%M%S)
-    CA_DATE=$(date -d"${CA_EXP}" +%Y%m%d%H%M%S)
-    printf "Checking expiration of certificate: "
-    if [[ $DATE_TODAY -gt $CERT_DATE ]]; then
-        error 6 "The certificate \"$CERT_FILE\" has already expired on: $CERT_EXP"
-    else
-        success
-    fi
-    printf "Checking expiration of CA bundle: "
-    if [[ $DATE_TODAY -gt $CA_DATE ]]; then
-        error 7 "The CA bundle \"$CA_BUNDLE_FILE\" has already expired on: $CA_EXP"
-    else
-        success
-    fi
-}
+        der_result = self._openssl('x509', '-inform', 'DER', '-in', self.certificate, '-noout')
+        if der_result.returncode == 0:
+            detail = (
+                'DER encoding is not supported; convert it with '
+                f'openssl x509 -in {os.path.basename(self.certificate)} -inform DER -outform PEM '
+                f'-out {os.path.basename(self.certificate)}.pem'
+            )
+            self._result('Server certificate uses PEM encoding', False, 8, detail)
+        else:
+            self._result('Server certificate uses PEM encoding', False, 9, 'certificate encoding is unknown')
+        return False
 
-function check-cert-ca-flag () {
-    printf "Checking if server certificate has CA:TRUE flag "
-    openssl x509 -in $CERT_FILE -noout -text | grep -q CA:TRUE
-    if [[ $? -ne 0 ]]; then
-        success
-    else
-        error 7 "The server certificate is marked as a CA and can not be used."
-    fi
-}
-
-function check-passphrase () {
-    printf "Checking for private key passphrase: "
-    CHECK=$(cat $KEY_FILE | grep ENCRYPTED)
-    if [[ $? == "0" ]]; then
-        error 2 "The $KEY_FILE contains a passphrase, remove the key's passphrase by doing:
-        \nmv $KEY_FILE $KEY_FILE.old
-        \nopenssl pkey -in $KEY_FILE.old -out $KEY_FILE"
-        exit 2
-    else
-        success
-    fi
-}
-
-function check-priv-key () {
-    printf "Checking to see if the private key matches the certificate: "
-    CERT_PUBKEY_SUM=$(openssl x509 -noout -pubkey -in $CERT_FILE | openssl sha512)
-    KEY_PUBKEY_SUM=$(openssl pkey -pubout -in $KEY_FILE | openssl sha512)
-    if [[ "$CERT_PUBKEY_SUM" != "$KEY_PUBKEY_SUM" ]]; then
-        error 2 "The $KEY_FILE does not match the $CERT_FILE"
-    else
-        success
-    fi
-}
-
-function check-ca-bundle () {
-    printf "Checking CA bundle against the certificate file: "
-    ERROR_PATTERN="error [0-9]+ at"
-    CHECK=$(openssl verify -no-CApath -no-CAstore -CAfile $CA_BUNDLE_FILE -purpose sslserver -verbose $CERT_FILE 2>&1)
-    CHECK_STATUS=$?
-
-    if [[ $CHECK_STATUS != "0" || $CHECK =~ $ERROR_PATTERN ]]; then
-        error 4 "The $CA_BUNDLE_FILE does not verify the $CERT_FILE"
-        echo -e "${CHECK/OK/}\n"
-    else
-        success
-    fi
-}
-
-function check-ca-bundle-size () {
-    printf "Checking CA bundle size: "
-    CHECK=$(grep -c "^--*BEGIN" $CA_BUNDLE_FILE)
-    printf $CHECK
-    if [[ $CHECK -lt $CABUNDLE_MAX_ISSUERS ]]; then
-        success
-    else
-        CERRTISSUER=$(openssl x509 -noout -in $CERT_FILE -issuer 2>&1)
-        error 10 "The CA bundle counts $CHECK issuers. Please trim your CA bundle and include only the certs relevant to your cert file"
-        echo $CERTISSUER
-        echo
-    fi
-}
-
-function check-ca-bundle-trust-rules () {
-    printf "Checking if CA bundle has trust rules: "
-    CHECK=$(grep 'BEGIN TRUSTED CERTIFICATE'  $CA_BUNDLE_FILE| wc -l)
-    printf $CHECK
-    if [[ $CHECK -lt 1 ]]; then
-        success
-    else
-        error 10 "The CA bundle contains $CHECK certificate(s) with trust rules. This will create problems for older systems. Please, recreate the bundle using certificates without trust rules."
-        echo
-    fi
-}
-
-function check-cert-san () {
-    printf "Checking Subject Alt Name on certificate "
-    DNS_LIST=$(openssl x509 -noout -text -in $CERT_FILE | grep DNS:)
-    if [[ $? == "0" ]]; then
-        success
-        printf "Checking if any Subject Alt Name on certificate matches the Subject CN"
-        SUBJECT_CN=$(openssl x509 -in $CERT_FILE -noout -subject -nameopt multiline|grep commonName|cut -d '=' -f 2|tr -d ' ')
-        for DNS in ${DNS_LIST}
-          do
-          DNS_VALUE="$( echo ${DNS//DNS:/} | tr -d ',')"
-          if [ $SUBJECT_CN == $DNS_VALUE ]
-          then
-            success
+    def _check_expiration(self, path, description, code):
+        result = self._openssl('x509', '-noout', '-checkend', '0', '-in', path)
+        if result.returncode == 0:
+            self._result(description, True)
             return
-          fi
-        done
-        error 11 "The $CERT_FILE does not have a Subject Alt Name matching the Subject CN"
-    else
-        error 11 "The $CERT_FILE does not contain a Subject Alt Name. Common Name is deprecated, use Subject Alt Name instead. See: https://tools.ietf.org/html/rfc2818#section-3.1"
-    fi
-}
 
-function check-cert-usage-key-encipherment () {
-    printf "Checking Key Usage extension on certificate for Key Encipherment "
-    CHECK=$(openssl x509 -noout -text -in $CERT_FILE | grep -A1 'X509v3 Key Usage:' | grep 'Key Encipherment')
-    if [[ $? == "0" ]]; then
-        success
-    else
-        error 4 "The $CERT_FILE does not allow for the 'Key Encipherment' key usage."
-    fi
-}
+        end_date = self._openssl('x509', '-noout', '-enddate', '-in', path)
+        detail = end_date.stdout.decode(errors='replace').strip().replace('notAfter=', '')
+        if not detail:
+            detail = self._output(result) or 'certificate could not be read'
+        self._result(description, False, code, f'expired or invalid ({detail})')
 
-function check-shortname () {
-    printf "Checking for use of shortname as CN"
+    def _certificate_text(self, path=None, input_data=None):
+        arguments = ['x509', '-noout', '-text']
+        if path:
+            arguments.extend(['-in', path])
+        result = self._openssl(*arguments, input_data=input_data)
+        return result, result.stdout.decode(errors='replace')
 
-    SUBJECT_CN=$(openssl x509 -in $CERT_FILE -noout -subject -nameopt multiline|grep commonName|cut -d '=' -f 2|tr -d ' ')
-    if [[ $SUBJECT_CN != *"."* ]]; then
-        error 1 "The $(basename $CERT_FILE) is using a shortname for Common Name (CN) and cannot be used.\n"
-    fi
+    def _check_ca_flag(self, certificate_text):
+        is_ca = re.search(r'CA:\s*TRUE', certificate_text, re.IGNORECASE) is not None
+        self._result(
+            'Server certificate is not a CA certificate',
+            not is_ca,
+            7,
+            'the certificate has the CA:TRUE flag' if is_ca else None,
+        )
 
-    DNS_LIST=$(openssl x509 -noout -text -in $CERT_FILE | grep DNS:)
-    if [[ $? == "0" ]]; then
-        for DNS in ${DNS_LIST}
-          do
-          DNS_VALUE="$( echo ${DNS//DNS:/} | tr -d ',')"
+    def _check_passphrase(self):
+        with open(self.key, 'rb') as key_file:
+            encrypted = b'ENCRYPTED' in key_file.read()
+        self._result(
+            'Private key has no passphrase',
+            not encrypted,
+            2,
+            f"The {self.key} contains a passphrase; remove it with 'openssl pkey'" if encrypted else None,
+        )
+        return not encrypted
 
-          if [[ $DNS_VALUE == *"."* ]]; then
-            success
+    def _check_private_key(self):
+        certificate_key = self._openssl('x509', '-noout', '-pubkey', '-in', self.certificate)
+        private_key = self._openssl('pkey', '-pubout', '-in', self.key, input_data=b'')
+        passed = (
+            certificate_key.returncode == 0
+            and private_key.returncode == 0
+            and certificate_key.stdout.strip() == private_key.stdout.strip()
+        )
+        detail = None
+        if not passed:
+            detail = f'{self.key} does not match {self.certificate}'
+            openssl_error = self._output(private_key)
+            if openssl_error:
+                detail += f' ({openssl_error})'
+        self._result('Private key matches the server certificate', passed, 2, detail)
+
+    def _check_ca_bundle(self):
+        result = self._openssl(
+            'verify',
+            '-no-CApath',
+            '-no-CAstore',
+            '-CAfile',
+            self.ca_bundle,
+            '-purpose',
+            'sslserver',
+            self.certificate,
+        )
+        passed = result.returncode == 0 and not re.search(rb'error \d+ at', result.stdout + result.stderr)
+        detail = None
+        if not passed:
+            detail = f'{self.ca_bundle} does not verify {self.certificate}'
+            openssl_error = self._output(result)
+            if openssl_error:
+                detail += f' ({openssl_error})'
+        self._result('CA bundle verifies the server certificate', passed, 4, detail)
+
+    def _read_ca_bundle(self):
+        with open(self.ca_bundle, 'rb') as ca_file:
+            return ca_file.read()
+
+    def _check_ca_bundle_size(self, ca_bundle_data):
+        count = len(CERTIFICATE_PATTERN.findall(ca_bundle_data))
+        passed = count < CA_BUNDLE_MAX_ISSUERS
+        detail = f'{count} certificate(s)'
+        if not passed:
+            detail += f'; trim the bundle to fewer than {CA_BUNDLE_MAX_ISSUERS} issuers'
+        self._result('CA bundle size is supported', passed, 10, detail)
+
+    def _check_ca_bundle_trust_rules(self, ca_bundle_data):
+        count = ca_bundle_data.count(b'BEGIN TRUSTED CERTIFICATE')
+        detail = None
+        if count:
+            detail = (
+                f'{self.ca_bundle} contains {count} certificate(s) with trust rules; '
+                'recreate the bundle without trust rules'
+            )
+        self._result('CA bundle contains no trust rules', count == 0, 10, detail)
+
+    def _certificate_names(self):
+        subject = self._openssl('x509', '-in', self.certificate, '-noout', '-subject', '-nameopt', 'multiline')
+        subject_text = subject.stdout.decode(errors='replace')
+        common_name_match = re.search(r'^\s*commonName\s*=\s*(.+?)\s*$', subject_text, re.MULTILINE)
+        common_name = common_name_match.group(1) if common_name_match else ''
+
+        san = self._openssl('x509', '-in', self.certificate, '-noout', '-ext', 'subjectAltName')
+        san_text = san.stdout.decode(errors='replace')
+        dns_names = re.findall(r'DNS:([^,\s]+)', san_text)
+        return common_name, dns_names
+
+    @staticmethod
+    def _dns_name_matches(pattern, hostname):
+        pattern = pattern.lower().rstrip('.')
+        hostname = hostname.lower().rstrip('.')
+        if pattern == hostname:
+            return True
+        if not pattern.startswith('*.'):
+            return False
+        suffix = pattern[1:]
+        prefix = hostname[:-len(suffix)] if hostname.endswith(suffix) else ''
+        return bool(prefix) and '.' not in prefix
+
+    def _check_names(self):
+        common_name, dns_names = self._certificate_names()
+        self._result(
+            'Server certificate contains DNS Subject Alternative Names',
+            bool(dns_names),
+            11,
+            'Common Name is deprecated; add DNS names to Subject Alternative Name' if not dns_names else None,
+        )
+        if not dns_names:
             return
-          fi
-        done
-        error 1 "The $(basename $CERT_FILE) is using only shortnames for Subject Alt Name and cannot be used.\n"
-    fi
-}
 
-function check-ca-signing-algorithm () {
-    printf "Checking CA signing algorithm for sha1: "
-    CHECK=$(openssl crl2pkcs7 -nocrl -certfile "$CA_BUNDLE_FILE" | openssl pkcs7 -print | grep algorithm | grep -q 'sha1WithRSAEncryption')
-    if [[ $? == "0" ]]; then
-        error 4 "The file '$CA_BUNDLE_FILE' contains a certificate signed with sha1 and will break installation. Update the server CA certificate and its chain with one signed by sha256 or stronger."
-    else
-        success
-    fi
-}
+        cn_matches = common_name.lower().rstrip('.') in {name.lower().rstrip('.') for name in dns_names}
+        self._result(
+            'A DNS Subject Alternative Name matches the Common Name',
+            cn_matches,
+            11,
+            f'{self.certificate} has Common Name {common_name!r}, which is not present in its DNS names'
+            if not cn_matches
+            else None,
+        )
 
-check-files-exist
-check-server-cert-encoding
-check-expiration
-check-cert-ca-flag
-check-passphrase
-check-priv-key
-check-ca-bundle
-check-ca-bundle-size
-check-ca-bundle-trust-rules
-check-cert-san
-check-cert-usage-key-encipherment
-check-shortname
-check-ca-signing-algorithm
+        if self.expected_names:
+            missing = [
+                name
+                for name in self.expected_names
+                if not any(self._dns_name_matches(pattern, name) for pattern in dns_names)
+            ]
+            self._result(
+                'Certificate covers every expected server name',
+                not missing,
+                11,
+                f"missing: {', '.join(missing)}; certificate DNS names: {', '.join(dns_names)}" if missing else None,
+            )
 
-if [[ $EXIT_CODE == "0" ]]; then
-    echo -e "${GREEN}Validation succeeded${RESET}\n"
-else
-  exit $EXIT_CODE
-fi
+        common_name_is_fqdn = '.' in common_name.rstrip('.')
+        self._result(
+            'Certificate Common Name is fully qualified',
+            common_name_is_fqdn,
+            1,
+            f'{os.path.basename(self.certificate)} is using a shortname for Common Name ({common_name})'
+            if not common_name_is_fqdn
+            else None,
+        )
+
+        fqdn_names = [name for name in dns_names if '.' in name.rstrip('.')]
+        self._result(
+            'Certificate has a fully qualified DNS Subject Alternative Name',
+            bool(fqdn_names),
+            1,
+            f'{os.path.basename(self.certificate)} is using only shortnames for Subject Alternative Name'
+            if not fqdn_names
+            else None,
+        )
+
+    def _check_key_usage(self):
+        result = self._openssl('x509', '-in', self.certificate, '-noout', '-ext', 'keyUsage')
+        key_usage = result.stdout.decode(errors='replace')
+        passed = result.returncode == 0 and 'Key Encipherment' in key_usage
+        self._result(
+            'Server certificate permits Key Encipherment',
+            passed,
+            4,
+            f"{self.certificate} does not allow the 'Key Encipherment' key usage" if not passed else None,
+        )
+
+    def _check_ca_signing_algorithm(self, ca_bundle_data):
+        sha1_certificates = 0
+        unreadable_certificates = 0
+        for certificate in CERTIFICATE_PATTERN.findall(ca_bundle_data):
+            result, certificate_text = self._certificate_text(input_data=certificate)
+            if result.returncode != 0:
+                unreadable_certificates += 1
+            elif re.search(r'Signature Algorithm:\s*sha1', certificate_text, re.IGNORECASE):
+                sha1_certificates += 1
+
+        passed = sha1_certificates == 0 and unreadable_certificates == 0
+        detail = None
+        if sha1_certificates:
+            detail = (
+                f'{self.ca_bundle} contains {sha1_certificates} certificate(s) signed with SHA-1; '
+                'use certificates signed with SHA-256 or stronger'
+            )
+        elif unreadable_certificates:
+            detail = f'{self.ca_bundle} contains {unreadable_certificates} unreadable certificate(s)'
+        self._result('CA certificates use supported signing algorithms', passed, 4, detail)
+
+    def validate(self):
+        if not self._check_files():
+            return self.exit_code
+        if not self._check_certificate_encoding():
+            return self.exit_code
+
+        certificate_result, certificate_text = self._certificate_text(self.certificate)
+        if certificate_result.returncode != 0:
+            self._result('Server certificate can be inspected', False, 9, self._output(certificate_result))
+            return self.exit_code
+
+        self._check_expiration(self.certificate, 'Server certificate is not expired', 6)
+        self._check_expiration(self.ca_bundle, 'First CA bundle certificate is not expired', 7)
+        self._check_ca_flag(certificate_text)
+        key_is_unencrypted = self._check_passphrase()
+        if key_is_unencrypted:
+            self._check_private_key()
+        self._check_ca_bundle()
+        ca_bundle_data = self._read_ca_bundle()
+        self._check_ca_bundle_size(ca_bundle_data)
+        self._check_ca_bundle_trust_rules(ca_bundle_data)
+        self._check_names()
+        self._check_key_usage()
+        self._check_ca_signing_algorithm(ca_bundle_data)
+        return self.exit_code
+
+
+def parse_arguments():
+    parser = ArgumentParser(
+        description='Verify that custom TLS certificate files can be used by Foreman.',
+        formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=32, width=160),
+    )
+    parser.add_argument('-c', '--certificate', required=True, metavar='CERT_FILE', help='server certificate file')
+    parser.add_argument('-k', '--key', required=True, metavar='KEY_FILE', help='server private key file')
+    parser.add_argument('-b', '--ca-bundle', required=True, metavar='CA_BUNDLE_FILE', help='CA bundle file')
+    parser.add_argument(
+        '-n',
+        '--expected-names',
+        default='',
+        help='comma-separated FQDNs and aliases that the certificate must cover',
+    )
+    return parser.parse_args()
+
+
+def main():
+    arguments = parse_arguments()
+    expected_names = [name.strip() for name in arguments.expected_names.split(',') if name.strip()]
+    validator = CertificateValidator(
+        arguments.certificate,
+        arguments.key,
+        arguments.ca_bundle,
+        expected_names,
+    )
+    exit_code = validator.validate()
+    if exit_code:
+        print(f'Validation failed (exit code {exit_code})')
+    else:
+        print('Validation succeeded')
+    return exit_code
+
+
+if __name__ == '__main__':
+    sys.exit(main())
