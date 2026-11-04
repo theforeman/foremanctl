@@ -63,7 +63,7 @@
 {% else %}
   SSLProxyEngine On
   SSLProxyCACertificateFile "{{ httpd_ssl_dir }}/certs/katello-server-ca.crt"
-  RewriteRule ^/pub/katello-rhsm-consumer$ {{ httpd_foreman_url }}/unattended/public/katello-rhsm-consumer [P]
+  RewriteRule ^/pub/katello-rhsm-consumer$ {{ httpd_foreman_url }}/unattended/public/katello-rhsm-consumer?url=http://{{ ansible_facts['fqdn'] }} [P]
   ProxyPassReverse /pub/katello-rhsm-consumer {{ httpd_foreman_url }}/unattended/public/katello-rhsm-consumer
 {% endif %}
 {% endif %}

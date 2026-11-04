@@ -113,7 +113,7 @@
   RewriteRule ^/pub/katello-rhsm-consumer$ {{ httpd_foreman_backend }}/unattended/public/katello-rhsm-consumer [P]
   ProxyPassReverse /pub/katello-rhsm-consumer {{ httpd_foreman_backend }}/unattended/public/katello-rhsm-consumer
 {% else %}
-  RewriteRule ^/pub/katello-rhsm-consumer$ {{ httpd_foreman_url }}/unattended/public/katello-rhsm-consumer [P]
+  RewriteRule ^/pub/katello-rhsm-consumer$ {{ httpd_foreman_url }}/unattended/public/katello-rhsm-consumer?url=https://{{ ansible_facts['fqdn'] }} [P]
   ProxyPassReverse /pub/katello-rhsm-consumer {{ httpd_foreman_url }}/unattended/public/katello-rhsm-consumer
 {% endif %}
 {% endif %}
