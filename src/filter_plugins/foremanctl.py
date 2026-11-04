@@ -135,6 +135,21 @@ def conflicting_features(features):
     return [f"{pair[0]} conflicts with {pair[1]}" for pair in conflicts]
 
 
+def missing_requirements(features):
+    """Return a list of unmet 'requires' violation strings for enabled features.
+
+    Unlike 'dependencies', 'requires' is not auto-satisfied - the required
+    feature must be explicitly enabled (directly or as another feature's
+    dependency), otherwise this reports a hard failure.
+    """
+    missing = []
+    for feature in features:
+        for requirement in FEATURE_MAP.get(feature, {}).get('requires', []):
+            if not has_feature(features, requirement):
+                missing.append(f"{feature} requires {requirement} to be enabled")
+    return missing
+
+
 def hammer_plugins(value):
     dependencies = list(get_dependencies(filter_features(value)))
     features = set(filter_features(value + dependencies))
@@ -187,6 +202,7 @@ class FilterModule(object):
             'list_all_features': list_all_features,
             'invalid_features': invalid_features,
             'conflicting_features': conflicting_features,
+            'missing_requirements': missing_requirements,
             'has_feature': has_feature,
             'loopback_addresses': loopback_addresses,
             'databases_for_features': databases_for_features,

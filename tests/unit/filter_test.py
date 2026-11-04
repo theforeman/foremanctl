@@ -6,6 +6,7 @@ from foremanctl import foreman_proxy_plugins
 from foremanctl import hammer_plugins
 from foremanctl import list_all_features
 from foremanctl import loopback_addresses
+from foremanctl import missing_requirements
 from foremanctl import network_gateway
 
 
@@ -168,3 +169,37 @@ def test_foreman_proxy_plugins_sorted(monkeypatch):
     monkeypatch.setitem(FEATURE_MAP, 'test-m', {'foreman_proxy': {'plugin_name': 'm_proxy'}})
     result = foreman_proxy_plugins(['test-z', 'test-a', 'test-m'])
     assert result == ['a_proxy', 'm_proxy', 'z_proxy']
+
+
+def _unknown_requirements():
+    errors = []
+    for feature, meta in FEATURE_MAP.items():
+        for requirement in meta.get('requires', []):
+            if requirement not in FEATURE_MAP:
+                errors.append(f"{feature} requires unknown feature {requirement}")
+    return errors
+
+
+def test_no_unknown_requirements_in_features_yaml():
+    errors = _unknown_requirements()
+    assert errors == [], f"Unknown requirements found: {errors}"
+
+
+def test_missing_requirements_detects_missing(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-a', {'requires': ['test-b']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-b', {})
+    result = missing_requirements(['test-a'])
+    assert result == ['test-a requires test-b to be enabled']
+
+
+def test_missing_requirements_satisfied_directly(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-a', {'requires': ['test-b']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-b', {})
+    assert missing_requirements(['test-a', 'test-b']) == []
+
+
+def test_missing_requirements_satisfied_transitively(monkeypatch):
+    monkeypatch.setitem(FEATURE_MAP, 'test-a', {'requires': ['test-b']})
+    monkeypatch.setitem(FEATURE_MAP, 'test-b', {})
+    monkeypatch.setitem(FEATURE_MAP, 'test-c', {'dependencies': ['test-b']})
+    assert missing_requirements(['test-a', 'test-c']) == []

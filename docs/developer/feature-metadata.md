@@ -32,6 +32,7 @@ The following properties are defined:
 * `hammer` (_String_): The name of the Hammer plugin to be enabled (the package installed will be `hammer-cli-plugin-{{ hammer }}`).
 * `dependencies` (_Array_ of _String_): List of features that are automatically enabled when the user requests this feature. Usually will point at features with `internal: true`.
 * `conflicts` (_Array_ of _String_): List of features that are mutually exclusive with this feature. If both are enabled, deployment will fail with an error. Conflicts must be declared on both sides — if feature A lists B in its conflicts, B must also list A.
+* `requires` (_Array_ of _String_): List of features that must already be enabled (directly, or as another feature's dependency) for this feature to be used. Unlike `dependencies`, a missing requirement is **not** auto-enabled — deployment fails with an error instead. Use this when a feature only makes sense on top of another one the user must opt into explicitly (e.g. a Smart Proxy plugin requires the `foreman-proxy` feature).
 
 Properties can be omitted.
 
