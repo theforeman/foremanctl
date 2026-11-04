@@ -8,6 +8,8 @@
   vars_files:
     - "../../vars/defaults.yml"
     - "../../vars/flavors/{{ flavor }}.yml"
+    - "../../vars/certificates.yml"
+    - "../../vars/foreman.yml"
     - "../../vars/base.yaml"
     - "../../vars/database.yml"
   tasks:
