@@ -286,6 +286,8 @@ If the auth file does not exist (unauthenticated registry), podman ignores it gr
 
 The `foremanctl pull-images` command is an optional pre-deployment step that pulls all container images before running `foremanctl deploy`. This reduces deploy time and allows pre-staging images separately from deployment.
 
+The command uses the persisted deployment flavor and optional features. Before the first deployment, select them explicitly, for example `foremanctl pull-images --flavor katello --add-feature iop`. A Satellite checkout with the vendor overrides can use `--flavor satellite --add-feature iop` instead. Later runs reuse the persisted values. If neither an explicit nor persisted flavor is available, the command defaults to `katello`.
+
 `pull-images` deploys the `.image` unit files (making them available for quadlet to merge with any existing drop-ins from installed RPMs), then starts each `*-image.service` to perform the actual pull. To ensure mutable tags (such as `nightly`, `latest`, or `stream`) are always refreshed, `pull-images` temporarily creates a `Policy=always` drop-in before starting each service and removes it afterward, restoring `Policy=missing` for normal operation. See the [`Policy` field in `podman-image.unit(5)`](https://docs.podman.io/en/latest/markdown/podman-image.unit.5.html) for the full list of pull policies.
 
 ```
