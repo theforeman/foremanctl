@@ -1,0 +1,42 @@
+---
+# Container images that make up a Foreman infrastructure deployment, published
+# through this server's container registry so that proxies or other Foreman
+# servers in a hub-and-spoke setup can pull them from here instead of the
+# internet.
+#
+# Upstream defaults use the public quay.io/foreman images.
+#
+# Downstream vendors override these by shipping a file at
+# src/vars/vendor/infra-registry-images.yml (loaded automatically if present).
+# A vendor file replaces the whole dict, so each entry must define
+# repository_name, upstream_name and base_tag.
+
+# Registry each image is synced from.
+infra_registry_url: https://quay.io
+
+# Image definitions published by the registry sync.
+infra_registry_images:
+  foreman:
+    repository_name: foreman
+    upstream_name: foreman/foreman
+    base_tag: "{{ foreman_container_tag }}"
+  foreman_proxy:
+    repository_name: foreman-proxy
+    upstream_name: foreman/foreman-proxy
+    base_tag: "{{ foreman_proxy_container_tag }}"
+  candlepin:
+    repository_name: candlepin
+    upstream_name: foreman/candlepin
+    base_tag: "{{ candlepin_container_tag }}"
+  pulp:
+    repository_name: pulp
+    upstream_name: foreman/pulp
+    base_tag: "{{ pulp_container_tag }}"
+  postgresql:
+    repository_name: postgresql-16
+    upstream_name: sclorg/postgresql-16-c10s
+    base_tag: "{{ postgresql_container_tag }}"
+  valkey:
+    repository_name: valkey-8
+    upstream_name: sclorg/valkey-8-c10s
+    base_tag: "{{ valkey_container_tag }}"
