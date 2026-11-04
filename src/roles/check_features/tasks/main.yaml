@@ -24,3 +24,26 @@
       These features cannot be enabled together.
   vars:
     found_conflicts: "{{ enabled_features | conflicting_features }}"
+
+- name: Check whether IOP is already deployed
+  ansible.builtin.stat:
+    path: "{{ check_features_iop_marker }}"
+  register: check_features_iop_marker_stat
+  when:
+    - enabled_features | has_feature('iop')
+    - database_mode == 'external'
+    - check_features_installed_flag is exists
+
+- name: Validate IOP database mode
+  ansible.builtin.assert:
+    that:
+      - >-
+        database_mode == 'internal' or
+        (check_features_installed_flag is exists and
+        check_features_iop_marker_stat.stat.exists | default(false))
+    fail_msg: |
+      ERROR: IOP requires the internal database mode.
+
+      Disable IOP or select '--database-mode internal'.
+  when:
+    - enabled_features | has_feature('iop')

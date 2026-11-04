@@ -1,0 +1,3 @@
+---
+check_features_installed_flag: "{{ obsah_state_path }}/.installed"
+check_features_iop_marker: /etc/containers/systemd/iop-core-gateway.container
