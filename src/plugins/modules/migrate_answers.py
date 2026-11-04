@@ -13,24 +13,13 @@ def cast_database_mode(value):
 
 def map_tftp_feature(value):
     """Represent installer TFTP enablement in foremanctl's additive feature list."""
-    if isinstance(value, bool):
-        return ['tftp'] if value else []
+    if value is None:
+        return None
 
-    if isinstance(value, str):
-        normalized = value.strip().lower()
-        if normalized in {'true', 'yes', 'on', '1'}:
-            return ['tftp']
-        if normalized in {'false', 'no', 'off', '0'}:
-            return []
+    if isinstance(value, bool):
+        return ['tftp', 'foreman-proxy'] if value else []
 
     raise ValueError(f"Invalid foreman_proxy::tftp value: {value!r}; expected a boolean")
-
-
-def map_nonempty_value(value):
-    """Do not persist empty installer values as configured TFTP parameters."""
-    if value is None or (isinstance(value, str) and not value.strip()):
-        return None
-    return value
 
 
 PARAMETER_MAP = {
@@ -81,8 +70,8 @@ PARAMETER_MAP = {
     # TFTP is an independently managed service. Only enable the Smart Proxy
     # module; foremanctl does not install or configure a TFTP daemon.
     ('foreman_proxy', 'tftp'): ('features', map_tftp_feature),
-    ('foreman_proxy', 'tftp_root'): ('foreman_proxy_tftp_root', map_nonempty_value),
-    ('foreman_proxy', 'tftp_servername'): ('foreman_proxy_tftp_servername', map_nonempty_value),
+    ('foreman_proxy', 'tftp_root'): 'foreman_proxy_tftp_root',
+    ('foreman_proxy', 'tftp_servername'): 'foreman_proxy_tftp_servername',
     ('foreman_proxy', 'tftp_managed'): 'IGNORE',
 
     # TODO: Add more mappings as discovered
@@ -243,8 +232,7 @@ def apply_mappings(old_config, old_tuning='default'):
         )
 
     if result.get('features') and 'tftp' in result['features']:
-        servername = flat_config.get(('foreman_proxy', 'tftp_servername'))
-        if not isinstance(servername, str) or not servername.strip():
+        if not flat_config.get(('foreman_proxy', 'tftp_servername')):
             warnings.append(
                 'TFTP was enabled in the installer answers but has no usable server name. '
                 'Supply --tftp-servername before deploying with TFTP enabled.'

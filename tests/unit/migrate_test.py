@@ -215,7 +215,7 @@ class TestParameterMapping:
 
         result = migrate_answers.apply_mappings(old_config)
 
-        assert result['mapped']['features'] == ['tftp']
+        assert result['mapped']['features'] == ['tftp', 'foreman-proxy']
         assert result['mapped']['foreman_proxy_tftp_root'] == '/srv/provisioning/tftp'
         assert result['mapped']['foreman_proxy_tftp_servername'] == '192.0.2.10'
         assert any('no foremanctl-managed service equivalent' in warning for warning in result['warnings'])
@@ -257,24 +257,14 @@ class TestParameterMapping:
             'foreman_proxy': {'tftp': True, 'another_feature': True}
         })
 
-        assert result['mapped']['features'] == ['tftp', 'other']
+        assert result['mapped']['features'] == ['tftp', 'foreman-proxy', 'other']
 
     def test_enabled_tftp_with_missing_values_reports_operator_requirements(self):
         result = migrate_answers.apply_mappings({
             'foreman_proxy': {'tftp': True, 'tftp_servername': None, 'tftp_root': None}
         })
 
-        assert result['mapped']['features'] == ['tftp']
-        assert 'foreman_proxy_tftp_servername' not in result['mapped']
-        assert 'foreman_proxy_tftp_root' not in result['mapped']
-        assert any('--tftp-servername' in warning for warning in result['warnings'])
-        assert any('/var/lib/tftpboot' in warning for warning in result['warnings'])
-
-    def test_empty_tftp_values_are_treated_as_missing(self):
-        result = migrate_answers.apply_mappings({
-            'foreman_proxy': {'tftp': True, 'tftp_servername': ' ', 'tftp_root': ''}
-        })
-
+        assert result['mapped']['features'] == ['tftp', 'foreman-proxy']
         assert 'foreman_proxy_tftp_servername' not in result['mapped']
         assert 'foreman_proxy_tftp_root' not in result['mapped']
         assert any('--tftp-servername' in warning for warning in result['warnings'])

@@ -25,8 +25,8 @@ foreman_proxy_foreman_server_url: "https://{{ ansible_facts['fqdn'] }}"
 foreman_proxy_templates_url: "http://{{ foreman_proxy_name }}:8000"
 
 foreman_proxy_tftp_root: /var/lib/tftpboot
+# UID of the foreman-proxy user inside the Smart Proxy container image; update if that image user changes.
 foreman_proxy_container_uid: 991
-foreman_proxy_container_gid: 991
 
 # Container gateway settings (deploy playbooks override via database.yml)
 foreman_proxy_container_gateway_pulp_endpoint: "https://{{ foreman_proxy_name }}"

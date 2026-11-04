@@ -33,3 +33,12 @@
       TFTP requires the foreman-proxy feature. Enable foreman-proxy explicitly
       with --add-feature foreman-proxy or use a deployment flavor that includes it.
   when: enabled_features | has_feature('tftp')
+
+- name: Require TFTP server name when TFTP is enabled
+  ansible.builtin.assert:
+    that:
+      - foreman_proxy_tftp_servername is defined
+      - foreman_proxy_tftp_servername | length > 0
+    fail_msg: >-
+      TFTP requires --tftp-servername with a non-empty server hostname or IP address.
+  when: enabled_features | has_feature('tftp')

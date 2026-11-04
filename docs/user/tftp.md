@@ -13,13 +13,26 @@ Podman bind mount uses the shared `:z` SELinux relabel so the Smart Proxy
 container can access the directory. The external server still needs permission
 to read the files; configure SELinux access for it as needed. For an NFS
 directory, its server must allow the ownership changes Foremanctl makes for
-Smart Proxy.
+Smart Proxy, and the mount must accept SELinux security labels. Podman relabels
+the directory for the `:z` option, and the Smart Proxy container fails to
+start if that relabel fails.
 
 ## Enable TFTP
 
+Use `foremanctl deploy` for a combined Foreman and Smart Proxy deployment:
+
 ```shell
-foremanctl deploy|deploy-proxy \
+foremanctl deploy \
   --add-feature foreman-proxy \
+  --add-feature tftp \
+  --tftp-root /srv/provisioning/tftp \
+  --tftp-servername 192.0.2.10
+```
+
+Use `foremanctl deploy-proxy` instead when deploying a standalone Smart Proxy:
+
+```shell
+foremanctl deploy-proxy \
   --add-feature tftp \
   --tftp-root /srv/provisioning/tftp \
   --tftp-servername 192.0.2.10
