@@ -28,6 +28,7 @@ The following properties are defined:
 * `foreman_proxy` (_Hash_): How this feature should be applied to a secondary system that is connected using the Proxy API to the main system.
   * `plugin_name` (_String_): The name of the Foreman Proxy plugin to be enabled (by deploying `roles/foreman_proxy/templates/settings.d/{{ foreman_proxy_plugin }}.yml.j2` to `/etc/foreman-proxy/settings.d`).
     If `roles/foreman/tasks/feature/{{ foreman_proxy_plugin }}.yaml` exists, it will be executed to perform any plugin-specific setup.
+  * `protocol` (_String_): Listener protocol for the plugin. One of `http`, `https`, or `both`; defaults to `https`.
   * `role` (_String_): The name of the Ansible role to be executed if the feature is not implemented as a Foreman Proxy plugin.
 * `hammer` (_String_): The name of the Hammer plugin to be enabled (the package installed will be `hammer-cli-plugin-{{ hammer }}`).
 * `dependencies` (_Array_ of _String_): List of features that are automatically enabled when the user requests this feature. Usually will point at features with `internal: true`.
