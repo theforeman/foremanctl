@@ -5,10 +5,17 @@ end
 DOMAIN = ENV.fetch('VAGRANT_DOMAIN', 'example.com'.freeze)
 
 # Official CentOS libvirt images include swap; Vagrant Cloud boxes do not.
-def set_centos_box_url(vm)
-  stream = vm.box[/^centos\/stream(\d+)$/, 1]
-  return unless stream
+# A local box name prevents Vagrant from resolving centos/stream* through registry metadata.
+# Use the supported latest alias: dated compose artifacts are eventually removed.
+def set_box(vm, box)
+  stream = box[/^centos\/stream(\d+)$/, 1]
+  unless stream
+    vm.box = box
+    return
+  end
 
+  vm.box = "centos-stream#{stream}-libvirt"
+  vm.box_check_update = false
   vm.box_url = "https://cloud.centos.org/centos/#{stream}-stream/x86_64/images/CentOS-Stream-Vagrant-Libvirt-#{stream}-latest.x86_64.vagrant-libvirt.box"
 end
 
@@ -29,8 +36,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "quadlet" do |override|
-    override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10")
-    set_centos_box_url(override.vm)
+    set_box(override.vm, ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10"))
     override.vm.hostname = "quadlet.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
@@ -41,8 +47,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "client" do |override|
-    override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10")
-    set_centos_box_url(override.vm)
+    set_box(override.vm, ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10"))
     override.vm.hostname = "client.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
@@ -53,8 +58,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "database" do |override|
-    override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10")
-    set_centos_box_url(override.vm)
+    set_box(override.vm, ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10"))
     override.vm.hostname = "database.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
@@ -65,8 +69,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "proxy" do |override|
-    override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10")
-    set_centos_box_url(override.vm)
+    set_box(override.vm, ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10"))
     override.vm.hostname = "proxy.#{DOMAIN}"
 
     override.vm.provider "libvirt" do |libvirt, provider|
@@ -82,8 +85,7 @@ Vagrant.configure("2") do |config|
     user_boxes = YAML.safe_load(File.read(boxes_yaml)) || {}
     user_boxes.compact.each do |name, settings|
       config.vm.define name do |override|
-        override.vm.box = settings.fetch('box') { ENV.fetch('FOREMANCTL_BASE_BOX', 'centos/stream10') }
-        set_centos_box_url(override.vm)
+        set_box(override.vm, settings.fetch('box') { ENV.fetch('FOREMANCTL_BASE_BOX', 'centos/stream10') })
 
         override.vm.provider "libvirt" do |libvirt, _provider|
           libvirt.memory = settings.fetch('memory', 3072)
