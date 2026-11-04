@@ -9,11 +9,6 @@ Please update this file as check usage evolves.
 - **Fail state**: Fails if database connection cannot be established.
 - **Rationale**: Database access is required for many foremanctl operations; external databases must be reachable using the provided credentials.
 
-### check_duplicate_permissions
-- **Description**: Queries the Foreman database for duplicate entries in the permissions table.
-- **Fail state**: Fails if duplicate permissions are detected.
-- **Rationale**: A validation was incorrectly removed which prevented users from creating duplicate Foreman permissions, causing upgrade failure. This check will need to be included until https://projects.theforeman.org/issues/38465 is addressed.
-
 ### check_features
 - **Description**: Ensures that all foremanctl features requested (via the `--feature` flag) are valid.
 - **Fail state**: Fails when requested features are not recognized by foremanctl.
