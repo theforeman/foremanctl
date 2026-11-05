@@ -22,7 +22,7 @@
     - worker-hosts-queue
   register: foreman_dynflow_restart
 
-- name: Wait for dynflow-sidekiq@ restarts
+- name: Wait for dynflow-sidekiq@ restart commands
   listen: Restart dynflow-sidekiq@
   ansible.builtin.async_status:
     jid: "{{ item.ansible_job_id }}"
@@ -30,6 +30,24 @@
   until: foreman_dynflow_restart_result is finished
   retries: 120
   delay: 1
+  failed_when:
+    - foreman_dynflow_restart_result is failed
+    - foreman_dynflow_restart_result.rc is not defined
   loop: "{{ foreman_dynflow_restart.results }}"
   loop_control:
     label: "{{ item.item }}"
+
+- name: Wait for dynflow-sidekiq@ instances to become active
+  listen: Restart dynflow-sidekiq@
+  ansible.builtin.systemd:
+    name: "dynflow-sidekiq@{{ item }}"
+  register: foreman_dynflow_service
+  until:
+    - foreman_dynflow_service.status.ActiveState == 'active'
+    - foreman_dynflow_service.status.SubState == 'running'
+  retries: 120
+  delay: 1
+  loop:
+    - orchestrator
+    - worker
+    - worker-hosts-queue
