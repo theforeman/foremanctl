@@ -196,6 +196,14 @@ def quadlet_client_certificate():
 
 
 @pytest.fixture(scope="module")
+def quadlet_ca_certificate():
+    # this intentionally uses get_paramiko_host directly, as we want the cert of the quadlet box
+    # not the one "server" points at, as that can be the proxy
+    quadlet = get_paramiko_host('quadlet')
+    return quadlet.file("/var/lib/foremanctl/certs/certs/server-ca.crt").content_string
+
+
+@pytest.fixture(scope="module")
 def database_mode(obsah_params):
     return obsah_params.get('database_mode', 'internal')
 

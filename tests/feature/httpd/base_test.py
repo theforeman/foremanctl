@@ -112,6 +112,39 @@ def test_https_pub_server_ca_certificate_downloadable(curl_request):
     assert cmd.stdout == '200'
 
 
+@pytest.mark.feature('pulp')
+def test_http_pub_katello_rhsm_consumer_served_directly(server, server_fqdn):
+    cmd = server.run(
+        f"curl --silent --output /dev/null --write-out '%{{http_code}}' "
+        f"http://{server_fqdn}/pub/katello-rhsm-consumer"
+    )
+    assert cmd.succeeded
+    assert cmd.stdout.rstrip() == '200'
+
+
+@pytest.mark.feature('pulp')
+def test_https_pub_katello_rhsm_consumer_served_directly(server, certificates, server_fqdn):
+    cmd = server.run(
+        f"curl --silent --cacert {certificates['server_ca_certificate']} --output /dev/null "
+        f"--write-out '%{{http_code}}' "
+        f"https://{server_fqdn}/pub/katello-rhsm-consumer"
+    )
+    assert cmd.succeeded
+    assert cmd.stdout.rstrip() == '200'
+
+
+@pytest.mark.feature('pulp')
+def test_https_pub_katello_rhsm_consumer_script_embeds_server_ca(server, certificates, server_fqdn, quadlet_ca_certificate):
+    cmd = server.run(
+        f"curl --silent --cacert {certificates['server_ca_certificate']} "
+        f"https://{server_fqdn}/pub/katello-rhsm-consumer"
+    )
+    assert cmd.succeeded
+    assert 'subscription-manager config' in cmd.stdout
+    assert quadlet_ca_certificate in cmd.stdout
+    assert server_fqdn in cmd.stdout
+
+
 @pytest.mark.feature('foreman')
 def test_http_foreman_login(server, server_fqdn):
     cmd = server.run(f"{CURL_CMD} --write-out '%{{http_code}}' http://{server_fqdn}/users/login")

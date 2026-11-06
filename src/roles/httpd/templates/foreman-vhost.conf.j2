@@ -55,6 +55,19 @@
     ProxyPassReverse {{ httpd_pulp_content_backend }}/pulp/content
   </Location>
 
+{% if enabled_features | has_feature('pulp') %}
+  RewriteEngine On
+{% if httpd_with_foreman %}
+  RewriteRule ^/pub/katello-rhsm-consumer$ {{ httpd_foreman_backend }}/unattended/public/katello-rhsm-consumer [P]
+  ProxyPassReverse /pub/katello-rhsm-consumer {{ httpd_foreman_backend }}/unattended/public/katello-rhsm-consumer
+{% else %}
+  SSLProxyEngine On
+  SSLProxyCACertificateFile "{{ httpd_ssl_dir }}/certs/katello-server-ca.crt"
+  RewriteRule ^/pub/katello-rhsm-consumer$ {{ httpd_foreman_url }}/unattended/public/katello-rhsm-consumer?url=http://{{ ansible_facts['fqdn'] }} [P]
+  ProxyPassReverse /pub/katello-rhsm-consumer {{ httpd_foreman_url }}/unattended/public/katello-rhsm-consumer
+{% endif %}
+{% endif %}
+
   Alias /pub {{ httpd_pub_dir }}
 
   <Location /pub>
