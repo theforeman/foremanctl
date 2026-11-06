@@ -24,3 +24,15 @@
       These features cannot be enabled together.
   vars:
     found_conflicts: "{{ enabled_features | conflicting_features }}"
+
+- name: Validate feature requirements
+  ansible.builtin.assert:
+    that:
+      - found_missing_requirements | length == 0
+    fail_msg: |
+      ERROR: Missing required features:
+      {% for message in found_missing_requirements %}
+        - {{ message }}
+      {% endfor %}
+  vars:
+    found_missing_requirements: "{{ enabled_features | missing_requirements }}"
