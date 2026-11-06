@@ -1,0 +1,21 @@
+# Declare global ARG before FROM so the base image can be dynamically overridden
+ARG BASE_IMAGE=quay.io/foreman/foreman:nightly
+
+FROM ${BASE_IMAGE}
+
+ARG CONTAINER_USER=foreman
+
+USER 0
+RUN dnf install -y 'dnf*-command(copr)'
+
+# Build arguments for the specific PR build
+ARG REPO_ORG=theforeman
+ARG REPO_NAME=foreman
+ARG PR
+
+# Add the Packit RPM repo, install/upgrade the target package, and clean metadata
+RUN set -e && \
+    dnf copr enable -y packit/${REPO_ORG}-${REPO_NAME}-${PR} rhel-10-x86_64 && \
+    dnf repository-packages -y copr:copr.fedorainfracloud.org:packit:${REPO_ORG}-${REPO_NAME}-${PR} upgrade && \
+    dnf clean all
+USER ${CONTAINER_USER}

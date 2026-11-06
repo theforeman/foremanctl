@@ -1,0 +1,45 @@
+---
+help: |
+  Build a Foreman container image with packages from a Packit pull request.
+
+  Specify either --pr (optionally with --repo-org and --repo-name), or pass a
+  GitHub pull request URL with --pr-url.
+
+  The Containerfile is copied to the target machine, where the image is built
+  directly in root's local Podman image store under the normal Foreman image
+  reference. Podman is installed on the target if needed. Run
+  foremanctl deploy against the same target to deploy a quadlet that uses the
+  patched image.
+
+variables:
+  target_host:
+    help: Target hostname or IP address (defaults to quadlet).
+    action: store
+  deploy_packit_pr:
+    parameter: --pr
+    help: Packit pull request number to install in the Foreman image.
+    persist: false
+  deploy_packit_repo_org:
+    parameter: --repo-org
+    help: "Packit organization for --pr. Default: theforeman."
+    persist: false
+  deploy_packit_repo_name:
+    parameter: --repo-name
+    help: "Packit repository name for --pr. Default: foreman."
+    persist: false
+  deploy_packit_base_image:
+    parameter: --base-image
+    help: "Base image to patch. Default: the configured Foreman image."
+    persist: false
+  deploy_packit_pr_url:
+    parameter: --pr-url
+    help: GitHub pull request URL (for example, https://github.com/theforeman/foreman/pull/100).
+    persist: false
+
+constraints:
+  required_one_of:
+    - [deploy_packit_pr, deploy_packit_pr_url]
+  mutually_exclusive:
+    - [deploy_packit_pr_url, deploy_packit_pr]
+    - [deploy_packit_pr_url, deploy_packit_repo_org]
+    - [deploy_packit_pr_url, deploy_packit_repo_name]

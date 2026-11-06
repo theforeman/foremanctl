@@ -1,0 +1,5 @@
+---
+deploy_packit_base_image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
+deploy_packit_repo_org: theforeman
+deploy_packit_repo_name: foreman
+deploy_packit_target_image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
