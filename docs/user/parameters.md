@@ -158,6 +158,9 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--templates-url` | URL that hosts will use to contact the proxy for provisioning templates | `--foreman-proxy-templates-url` |
 | `--add-feature registration` | Enable Registration feature | `--foreman-proxy-registration` |
 | `--registration-url` | URL that hosts use to reach the registration endpoint | `--foreman-proxy-registration-url` |
+| `--add-feature tftp` | Enable the Smart Proxy TFTP integration. Requires `foreman-proxy` and an independently managed TFTP server. Foremanctl creates the directory if needed and configures Smart Proxy access. See the [TFTP integration guide](tftp.md). | `--foreman-proxy-tftp` |
+| `--tftp-root` | Absolute directory on the host running the Smart Proxy. Defaults to `/var/lib/tftpboot`. Foremanctl creates it if missing and configures ownership and permissions for Smart Proxy. | `--foreman-proxy-tftp-root` |
+| `--tftp-servername` | TFTP server hostname or IP address that booting clients can reach. An IP address avoids depending on client DNS. Required when TFTP is enabled. | `--foreman-proxy-tftp-servername` |
 
 ### Unmapped
 
@@ -194,10 +197,7 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-proxy-plugin-dns-route53-aws-access-key` | | foreman_proxy::plugin::dns_route53 | aws_access_key |
 | `--foreman-proxy-plugin-dns-route53-aws-secret-key` | | foreman_proxy::plugin::dns_route53 | aws_secret_key |
 | `--foreman-proxy-httpboot` | | foreman_proxy | httpboot |
-| `--foreman-proxy-tftp` | | foreman_proxy | tftp |
-| `--foreman-proxy-tftp-servername` | | foreman_proxy | tftp_servername |
-| `--foreman-proxy-tftp-managed` | | foreman_proxy | tftp_managed |
-| `--foreman-proxy-tftp-root` | | foreman_proxy | tftp_root |
+| `--foreman-proxy-tftp-managed` | TFTP daemon management is not supported; keep the existing service independently managed. | foreman_proxy | tftp_managed |
 | `--foreman-proxy-plugin-dhcp-remote-isc-dhcp-config` | | foreman_proxy::plugin::dhcp_remote_isc | config |
 | `--foreman-proxy-plugin-dhcp-remote-isc-dhcp-leases` | | foreman_proxy::plugin::dhcp_remote_isc | dhcp_config |
 | `--foreman-proxy-plugin-dhcp-remote-isc-key-name` | | foreman_proxy::plugin::dhcp_remote_isc | key_name |

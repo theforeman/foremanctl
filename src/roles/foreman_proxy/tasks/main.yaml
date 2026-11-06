@@ -24,6 +24,9 @@
       - 'foreman-proxy-foreman-ssl-ca,type=mount,target=/etc/foreman-proxy/foreman_ssl_ca.pem'
       - 'foreman-proxy-foreman-ssl-cert,type=mount,target=/etc/foreman-proxy/foreman_ssl_cert.pem'
       - 'foreman-proxy-foreman-ssl-key,type=mount,target=/etc/foreman-proxy/foreman_ssl_key.pem'
+    volumes: >-
+      {{ [foreman_proxy_tftp_root + ':/var/lib/tftpboot:rw,z']
+         if enabled_features | has_feature('tftp') else [] }}
     quadlet_options:
       - "HttpProxy=false"
       - |

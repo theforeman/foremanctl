@@ -1,0 +1,15 @@
+---
+- name: Create TFTP storage
+  ansible.builtin.file:
+    path: "{{ foreman_proxy_tftp_root }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ foreman_proxy_container_uid }}"
+
+- name: Set TFTP storage ownership and permissions
+  ansible.builtin.file:
+    path: "{{ foreman_proxy_tftp_root }}"
+    state: directory
+    owner: "{{ foreman_proxy_container_uid }}"
+    mode: 'u+rwX'
+    recurse: true

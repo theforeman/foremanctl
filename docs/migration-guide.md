@@ -131,7 +131,7 @@ foreman_initial_admin_username: admin
 
 When the migration completes, you may see warnings like:
 
-> [!WARNING]  
+> [!WARNING]
 > The following parameters could not be mapped:
 >  - katello::enable_ostree
 > - foreman::some_other_param
@@ -148,3 +148,13 @@ Once you've applied the migration:
    ```
 
    The `foremanctl deploy` command automatically loads configuration from `/var/lib/foremanctl/parameters.yaml`.
+
+## Reusing an installer-managed TFTP service
+
+Migration preserves `foreman_proxy::tftp` as the `tftp` feature and maps the
+configured root and server name to `foreman_proxy_tftp_root` and
+`foreman_proxy_tftp_servername`. `foreman_proxy::tftp_managed` has no managed
+service equivalent: Foremanctl does not install or control a TFTP daemon. Keep
+the existing daemon and files in place. When TFTP is enabled, Foremanctl creates
+the configured directory if needed and configures its ownership and permissions
+for the Smart Proxy image user.
