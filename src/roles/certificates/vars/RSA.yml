@@ -1,0 +1,7 @@
+---
+_certificates_key_parameters:
+  type: RSA
+  size: "{{ certificates_algorithm_rsa_size }}"
+_certificates_key_usage:
+  - digitalSignature
+  - keyEncipherment
