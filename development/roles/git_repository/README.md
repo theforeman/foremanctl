@@ -26,7 +26,7 @@ fi
 |----------|-------------|------|
 | `git_repository_repository_owner` | The owner of the repository to clone from | Yes |
 | `git_repository_repository_name` | The name of the repository to clone | Yes |
-| `git_repository_revision` | The revision to clone the repository at | No, defaults to `HEAD` |
+| `git_repository_revision` | The revision to clone the repository at. `HEAD` clones the remote default branch initially and preserves the current local checkout on later runs. | No, defaults to `HEAD` |
 | `git_repository_remote_name` | The name of the remote the repository was cloned from | No, defaults to `origin` |
 | `git_repository_destination_dir` | Path to the directory where the repository will be cloned to | Yes |
 | `git_repository_secondary_remote_owner` | Name of the owner of the secondary remote to be added to the local clone | No, secondary remote will not be added if left blank |
