@@ -8,6 +8,50 @@
       ansible.builtin.package:
         name:
           - nmap
+      register: testing_dependencies
+
+    - name: Prepare Nmap scripts for fapolicyd
+      when: security_mode | default('none') == 'fapolicyd'
+      block:
+        - name: Check for Nmap test trust file
+          ansible.builtin.stat:
+            path: /etc/fapolicyd/trust.d/foremanctl-nmap
+          register: nmap_trust_file
+
+        - name: Maintain trust for Nmap script dependencies
+          ansible.builtin.command:
+            argv:
+              - fapolicyd-cli
+              - --file
+              - "{{ 'update' if nmap_trust_file.stat.exists else 'add' }}"
+              - /usr/share/nmap/
+              - --trust-file
+              - foremanctl-nmap
+          when: testing_dependencies is changed or not nmap_trust_file.stat.exists
+          changed_when: true
+          notify: Reload fapolicyd trust after preparing Nmap
+
+        - name: Flush Nmap trust updates before running tests
+          ansible.builtin.meta: flush_handlers
+
+        - name: Wait for the Nmap Lua library to become trusted
+          ansible.builtin.command:
+            argv:
+              - fapolicyd-cli
+              - --dump-db
+          register: nmap_trust_database
+          changed_when: false
+          until: "'/usr/share/nmap/nselib/outlib.lua ' in nmap_trust_database.stdout"
+          retries: 10
+          delay: 1
+
+  handlers:
+    - name: Reload fapolicyd trust after preparing Nmap
+      ansible.builtin.command:
+        argv:
+          - fapolicyd-cli
+          - --update
+      changed_when: true
 
 - name: Execute tests
   gather_facts: false
