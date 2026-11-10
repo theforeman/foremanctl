@@ -23,6 +23,8 @@ def test_custom_chain_redeploy_and_auth_bundle_ca_reuse(tmp_path):
     ca = tmp_path / "ca.pem"
     ca.write_text("INTERMEDIATE\nROOT\n")
     output = certs / "proxy.example.com.crt"
+    output.write_text("OLD FULLCHAIN\n")
+    (certs / "unrelated.crt").write_text("UNRELATED CERTIFICATE\n")
     variables = {
         "ansible_remote_tmp": str(tmp_path / "remote-tmp"),
         "certificates_hostname": "proxy.example.com",
@@ -58,6 +60,10 @@ def test_custom_chain_redeploy_and_auth_bundle_ca_reuse(tmp_path):
     deploy()
     assert output.read_text() == "LEAF\nINTERMEDIATE\nROOT\n"
     assert output.stat().st_mode & 0o777 == 0o444
+    # Neither other certificates nor stale files may enter the assembled chain.
+    fragments = tmp_path / "fullchain/proxy.example.com"
+    (fragments / "02-unrelated.crt").write_text("UNRELATED FRAGMENT\n")
+    (fragments / "previous-fullchain.crt").write_bytes(output.read_bytes())
     assert "changed=0" in deploy()
     assert output.read_text().count("INTERMEDIATE") == 1
     del variables["certificates_custom_server_ca_certificate"]
@@ -71,4 +77,13 @@ def test_custom_chain_redeploy_and_auth_bundle_ca_reuse(tmp_path):
     leaf.write_text("NEW LEAF\n")
     deploy()
     assert (host_certs / output.name).read_text() == "NEW LEAF\nNEW INTERMEDIATE\nROOT\n"
+    assert "changed=0" in deploy()
+
+    # Issuing another hostname must not replace an existing hostname's fragments.
+    variables["certificates_hostname"] = "server.example.com"
+    leaf.write_text("OTHER LEAF\n")
+    deploy()
+    assert (host_certs / "server.example.com.crt").read_text() == "OTHER LEAF\nNEW INTERMEDIATE\nROOT\n"
+    assert (host_certs / output.name).read_text() == "NEW LEAF\nNEW INTERMEDIATE\nROOT\n"
+    assert (fragments / "00-leaf.crt").read_text() == "NEW LEAF\n"
     assert "changed=0" in deploy()
