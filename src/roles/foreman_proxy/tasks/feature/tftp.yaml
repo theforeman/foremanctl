@@ -14,7 +14,7 @@
 
 - name: Configure SELinux context for TFTP storage
   community.general.sefcontext:
-    target: "{{ foreman_proxy_tftp_root | regex_escape }}(/.*)?"
+    target: "{{ foreman_proxy_tftp_root | regex_replace('/+$', '') | regex_escape }}(/.*)?"
     setype: public_content_rw_t
     state: present
   when: ansible_facts['selinux']['status'] == "enabled"

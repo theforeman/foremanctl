@@ -291,9 +291,7 @@ jobs:
             --add-feature bmc \
             --add-feature google \
             --add-feature remote-execution \
-            --add-feature iop \
-            --add-feature tftp \
-            --tftp-servername quadlet.example.com
+            --add-feature iop
       - name: Stop services
         run:
           vagrant ssh quadlet -- sudo systemctl stop foreman.target
@@ -307,6 +305,11 @@ jobs:
       - name: Run deployment
         run: |
           ./foremanctl deploy
+      - name: Deploy TFTP feature
+        run: |
+          ./foremanctl deploy \
+            --add-feature tftp \
+            --tftp-servername quadlet.example.com
       - name: Run health check
         run: |
           ./foremanctl health

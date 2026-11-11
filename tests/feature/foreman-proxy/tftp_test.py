@@ -8,18 +8,6 @@ import pytest
 import yaml
 
 
-@pytest.fixture(scope="module", autouse=True)
-def cleanup_tftp_service(server):
-    """Clean up TFTP service and configuration after all tests."""
-    yield
-
-    server.run("systemctl stop tftp.socket tftp.service")
-    server.run("systemctl disable tftp.socket")
-
-    server.run("find /etc/systemd/system/tftp.service.d -name 'zz-foremanctl-test-*.conf' -delete 2>/dev/null || true")
-    server.run("systemctl daemon-reload")
-
-
 @pytest.fixture(scope="module")
 def tftp_root(obsah_params):
     """The TFTP root directory the deployment is configured to use."""
@@ -34,6 +22,9 @@ def tftp_serving_configured_root(server, tftp_root):
     drop-in is needed to point in.tftpd at the root the deployment configured.
     """
     assert server.run("dnf install -y tftp-server tftp").succeeded
+
+    was_active = server.run("systemctl is-active --quiet tftp.socket").succeeded
+    was_enabled = server.run("systemctl is-enabled --quiet tftp.socket").succeeded
 
     dropin_dir = "/etc/systemd/system/tftp.service.d"
     dropin = f"{dropin_dir}/zz-foremanctl-test-{uuid.uuid4().hex}.conf"
@@ -50,7 +41,14 @@ def tftp_serving_configured_root(server, tftp_root):
 
     server.run(f"rm -f {shlex.quote(dropin)}")
     server.run("systemctl daemon-reload")
-    server.run("systemctl restart tftp.socket")
+
+    if was_active:
+        server.run("systemctl restart tftp.socket")
+    else:
+        server.run("systemctl stop tftp.socket tftp.service")
+
+    if not was_enabled:
+        server.run("systemctl disable tftp.socket")
 
 
 @pytest.fixture
@@ -123,7 +121,7 @@ def test_tftp_settings_configured(server, proxy_v2_features, obsah_params, tftp_
     tftp_mount = next(mount for mount in mounts if mount["Source"] == tftp_root)
 
     assert settings[":tftproot"] == tftp_mount["Destination"]
-    assert settings[":tftp_servername"] == obsah_params.get("foreman_proxy_tftp_servername")
+    assert settings.get(":tftp_servername") == obsah_params.get("foreman_proxy_tftp_servername")
 
 
 @pytest.mark.feature("tftp")
