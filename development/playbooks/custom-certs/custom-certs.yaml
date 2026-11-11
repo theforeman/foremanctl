@@ -15,7 +15,7 @@
 
   tasks:
     - name: Generate intermediate CA test hierarchy
-      ansible.builtin.include_tasks: intermediate-ca.yaml
+      ansible.builtin.include_tasks: tasks/intermediate-ca.yaml
       when: intermediate_ca | default(false) | bool
       vars:
         _custom_certs_hostname: "{{ hostname | default(ansible_facts['fqdn']) }}"
