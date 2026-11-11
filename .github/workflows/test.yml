@@ -228,6 +228,9 @@ jobs:
       - name: Run deployment
         run: |
           ./forge deploy-dev --foreman-development-enabled-plugin foreman_ansible --add-feature foreman-proxy --add-feature hammer
+      - name: Run development tests
+        run: |
+          ./forge test --pytest-args="tests/development/"
       - name: Setup upterm session
         if: ${{ failure() }}
         uses: owenthereal/action-upterm@v2
