@@ -44,9 +44,9 @@ variables:
     parameter: --foreman-proxy-dhcp-kea-verify-ssl
     help: "Verify SSL certificates when connecting to Kea (default: true)"
     type: Boolean
-  foreman_proxy_dhcp_kea_lease_timeout:
-    parameter: --foreman-proxy-dhcp-kea-lease-timeout
-    help: "Timeout in seconds for Kea lease operations (default: 60)"
+  foreman_proxy_dhcp_kea_http_timeout:
+    parameter: --foreman-proxy-dhcp-kea-http-timeout
+    help: "HTTP connect/read timeout for Kea API requests (default: 5 seconds)"
   foreman_proxy_dhcp_subnets:
     parameter: --foreman-proxy-dhcp-subnets
     help: Restrict DHCP management to specific subnets (CIDR format)
