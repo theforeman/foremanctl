@@ -22,14 +22,6 @@ def map_tftp_feature(value):
     raise ValueError(f"Invalid foreman_proxy::tftp value: {value!r}; expected a boolean")
 
 
-def map_nonempty_value(value):
-    """Return a nonempty stripped string, or None when the value is blank."""
-    if isinstance(value, str):
-        value = value.strip()
-        return value or None
-    return value
-
-
 PARAMETER_MAP = {
     # Database configuration
     ('foreman', 'db_host'): 'database_host',
@@ -77,8 +69,8 @@ PARAMETER_MAP = {
 
     # TFTP
     ('foreman_proxy', 'tftp'): ('features', map_tftp_feature),
-    ('foreman_proxy', 'tftp_root'): ('foreman_proxy_tftp_root', map_nonempty_value),
-    ('foreman_proxy', 'tftp_servername'): ('foreman_proxy_tftp_servername', map_nonempty_value),
+    ('foreman_proxy', 'tftp_root'): 'foreman_proxy_tftp_root',
+    ('foreman_proxy', 'tftp_servername'): 'foreman_proxy_tftp_servername',
     ('foreman_proxy', 'tftp_managed'): 'IGNORE',
 
     # TODO: Add more mappings as discovered
@@ -239,12 +231,12 @@ def apply_mappings(old_config, old_tuning='default'):
         )
 
     if result.get('features') and 'tftp' in result['features']:
-        if map_nonempty_value(flat_config.get(('foreman_proxy', 'tftp_root'))) is None:
+        if flat_config.get(('foreman_proxy', 'tftp_root')) is None:
             warnings.append(
                 'No TFTP root was migrated. foremanctl defaults to /var/lib/tftpboot, '
                 'which foremanctl creates and configures for the Smart Proxy when TFTP is enabled.'
             )
-        if map_nonempty_value(flat_config.get(('foreman_proxy', 'tftp_servername'))) is None:
+        if flat_config.get(('foreman_proxy', 'tftp_servername')) is None:
             warnings.append(
                 'An empty TFTP server name was not migrated. Foreman uses the Smart Proxy hostname by default.'
             )

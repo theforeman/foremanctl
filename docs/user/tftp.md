@@ -8,7 +8,7 @@ remove files. It keeps the existing group ownership. Foremanctl does not install
 or manage the TFTP server.
 
 The directory can be local or an NFS mount. For a separate TFTP server, make
-the same files available to that server and configure it to serve them. The
+the same files available to that server and configure it to serve them.
 When SELinux is enabled, Foremanctl labels the directory `public_content_rw_t`
 and enables `container_manage_public_content` so the Smart Proxy can manage
 files while the host TFTP server can read them. For an NFS directory, its

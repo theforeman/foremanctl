@@ -276,21 +276,6 @@ class TestParameterMapping:
         assert 'foreman_proxy_tftp_root' not in result['mapped']
         assert any('/var/lib/tftpboot' in warning for warning in result['warnings'])
 
-    def test_blank_tftp_values_are_omitted_and_warned(self):
-        """Report blank legacy TFTP settings and allow defaults to apply."""
-        result = migrate_answers.apply_mappings({
-            'foreman_proxy': {
-                'tftp': True,
-                'tftp_root': '   ',
-                'tftp_servername': '\t ',
-            }
-        })
-
-        assert 'foreman_proxy_tftp_root' not in result['mapped']
-        assert 'foreman_proxy_tftp_servername' not in result['mapped']
-        assert any('/var/lib/tftpboot' in warning for warning in result['warnings'])
-        assert any('Smart Proxy hostname' in warning for warning in result['warnings'])
-
 
 class TestFileOperations:
     """Test file loading and writing"""
