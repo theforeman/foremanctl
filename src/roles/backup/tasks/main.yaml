@@ -142,6 +142,7 @@
         cmd: >
           tar -czf "{{ obsah_state_path | dirname }}/foremanctl-state.tar.gz"
           --listed-incremental="{{ obsah_state_path | dirname }}/config.snar"
+          {{ '--level=0' if backup_incremental | default('') | length == 0 else '' }}
           -C "{{ obsah_state_path | dirname }}"
           "{{ obsah_state_path | basename }}"
       delegate_to: localhost
