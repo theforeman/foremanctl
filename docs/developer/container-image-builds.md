@@ -46,6 +46,10 @@ Use `forge deploy-packit` to build the Foreman image with a Packit pull request 
 ./forge deploy-packit --pr-url https://github.com/theforeman/foreman/pull/100
 # Or provide the pr and optionally repo-org and repo-name parts:
 ./forge deploy-packit --pr 100 --repo-org theforeman --repo-name foreman
+
+# Don't forget to stop the services on the target, if they were running before:
+systemctl stop foreman.target
+
 ./foremanctl deploy
 ```
 

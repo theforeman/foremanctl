@@ -60,5 +60,5 @@
   ansible.builtin.debug:
     msg: >-
       Built {{ deploy_packit_target_image }} with Packit PR {{ deploy_packit_pr }} directly in
-      root's local Podman store on {{ inventory_hostname }}. Run foremanctl deploy
-      against this target to deploy it.
+      root's local Podman store on {{ inventory_hostname }}. Stop the previous containers with
+      systemctl stop foreman.target and run foremanctl deploy against this target to deploy it.
