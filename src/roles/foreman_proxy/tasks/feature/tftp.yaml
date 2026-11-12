@@ -1,10 +1,4 @@
 ---
-- name: Install SELinux management utilities for TFTP storage
-  ansible.builtin.package:
-    name: policycoreutils-python-utils
-    state: present
-  when: ansible_facts['selinux']['status'] == "enabled"
-
 - name: Allow Foreman Proxy container to manage public TFTP content
   ansible.posix.seboolean:
     name: container_manage_public_content
