@@ -25,7 +25,6 @@ pulp_content_listen_stream: localhost:24816
 
 pulp_content_origin: "http://{{ ansible_facts['fqdn'] }}:24816"
 pulp_pulp_url: "http://{{ ansible_facts['fqdn'] }}:24817"
-pulp_smart_proxy_url: "https://{{ ansible_facts['fqdn'] }}/pulp/api/v3/smart_proxy"
 
 pulp_enable_analytics: false
 pulp_mirror: false

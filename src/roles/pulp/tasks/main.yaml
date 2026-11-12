@@ -443,7 +443,7 @@
 - name: Configure Foreman Proxy
   theforeman.foreman.smart_proxy:
     name: "{{ ansible_facts['fqdn'] }}-pulp"
-    url: "{{ pulp_smart_proxy_url }}"
+    url: "{{ pulp_pulp_url | regex_replace('/+$', '') }}/pulp/api/v3/smart_proxy"
     server_url: "{{ pulp_foreman_url }}"
     oauth1_consumer_key: "{{ pulp_foreman_oauth_consumer_key }}"
     oauth1_consumer_secret: "{{ pulp_foreman_oauth_consumer_secret }}"
