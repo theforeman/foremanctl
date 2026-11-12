@@ -178,7 +178,7 @@ def expand_features(features):
     """Expand features list to include all dependencies."""
     all_features = set(features)
     all_features.update(get_dependencies(features))
-    return list(all_features)
+    return sorted(all_features)
 
 
 class FilterModule(object):
