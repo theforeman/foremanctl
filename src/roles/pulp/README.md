@@ -11,6 +11,7 @@ Variables
 - `pulp_worker_count`: Number of Pulp workers (default: min of 8 or CPU count)
 - `pulp_content_origin`: URL for the Pulp content service (default: `http://{{ fqdn }}:24816`)
 - `pulp_pulp_url`: URL for the Pulp API service (default: `http://{{ fqdn }}:24817`)
+- `pulp_smart_proxy_url`: Endpoint registered with Foreman. Foremanctl derives it from `pulp_pulp_url`; the standalone role defaults to `https://{{ fqdn }}/pulp/api/v3/smart_proxy`.
 - `pulp_volumes`: Volume mounts for Pulp containers (default: `/var/lib/pulp:/var/lib/pulp`)
 - `pulp_enable_analytics`: Enable Pulp analytics (default: `false`)
 - `pulp_import_paths`: Paths Pulp can use for content imports (default: `[/var/lib/pulp/sync_imports, /var/lib/pulp/imports]`)

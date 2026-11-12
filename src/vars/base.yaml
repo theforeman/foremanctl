@@ -52,6 +52,7 @@ pulp_container_uid: 700
 pulp_container_gid: 700
 pulp_content_origin: "https://{{ ansible_facts['fqdn'] }}"
 pulp_pulp_url: "https://{{ ansible_facts['fqdn'] }}"
+pulp_smart_proxy_url: "{{ pulp_pulp_url | regex_replace('/+$', '') }}/pulp/api/v3/smart_proxy"
 pulp_plugins: "{{ enabled_features | select('contains', 'content/') | map('replace', 'content/', 'pulp_') | list }}"
 pulp_foreman_url: "{{ foreman_proxy_foreman_server_url }}"
 pulp_foreman_ca_certificate: "{{ foreman_ca_certificate }}"
