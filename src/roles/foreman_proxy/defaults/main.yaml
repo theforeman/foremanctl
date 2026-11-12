@@ -46,7 +46,6 @@ foreman_proxy_bmc_redfish_verify_ssl: true
 foreman_proxy_with_pulp_mirror: "{{ pulp_mirror | default(false) }}"
 
 # DHCP settings
-# DHCP settings
 foreman_proxy_dhcp_provider: dhcp_kea
 foreman_proxy_dhcp_subnets: []
 
