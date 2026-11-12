@@ -135,12 +135,6 @@ jobs:
       - name: Configure repositories
         run: |
           ./forge setup-repositories
-      - name: Generate Kea test database password
-        run: |
-          echo "KEA_DB_PASSWORD=$(openssl rand -hex 24)" >> "$GITHUB_ENV"
-      - name: Setup Kea DHCP server
-        run: |
-          ./forge kea
       - name: Create custom certificates
         if: matrix.certificate_source == 'custom_server'
         run: |
@@ -149,6 +143,10 @@ jobs:
         if: matrix.security != 'none'
         run: |
           ./forge security --mode ${{ matrix.security }}
+      - name: Setup Kea DHCP server
+        if: matrix.box == 'centos/stream10'
+        run: |
+          ./forge kea
       - name: Run image pull
         run: |
           ./foremanctl pull-images \
@@ -181,12 +179,11 @@ jobs:
             --add-feature webhooks \
             --add-feature tftp \
             --tftp-servername quadlet.example.com \
-            --add-feature dhcp \
-            --foreman-proxy-dhcp-kea-url http://127.0.0.1:18000 \
+            ${{ matrix.box == 'centos/stream10' && '--add-feature dhcp --foreman-proxy-dhcp-kea-url http://127.0.0.1:18000' || '' }} \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--featureset=${{ matrix.iop == 'enabled' && 'default-iop' || 'default' }}"
+          ./forge test --pytest-args="--featureset=${{ matrix.box == 'centos/stream10' && (matrix.iop == 'enabled' && 'default-kea-iop' || 'default-kea') || (matrix.iop == 'enabled' && 'default-iop' || 'default') }}"
       - name: Run smoker
         run: |
           ./forge smoker
@@ -280,9 +277,6 @@ jobs:
       - name: Configure repositories
         run: |
           ./forge setup-repositories
-      - name: Configure base version
-        run: |
-          sed -i '/container_tag_stream:/ s/:.*/: "${{ matrix.upgrade_from }}"/' src/vars/images.yml
       - name: Run image pull
         run: |
           ./foremanctl pull-images --add-feature iop
@@ -301,7 +295,8 @@ jobs:
             --add-feature azure-rm \
             --add-feature bmc \
             --add-feature google \
-            --add-feature remote-execution
+            --add-feature remote-execution \
+            --add-feature iop
       - name: Stop services
         run:
           vagrant ssh quadlet -- sudo systemctl stop foreman.target
