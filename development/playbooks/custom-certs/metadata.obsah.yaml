@@ -6,3 +6,8 @@ variables:
   hostname:
     help: Additional hostname to generate certificates for.
     parameter: --hostname
+  intermediate_ca:
+    help: Issue custom server certificates through an intermediate CA (test only).
+    parameter: --intermediate-ca
+    action: store_true
+    default: false

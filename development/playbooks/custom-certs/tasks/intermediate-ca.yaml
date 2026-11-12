@@ -1,0 +1,137 @@
+---
+- name: Validate test certificate hostname
+  ansible.builtin.assert:
+    that:
+      - _custom_certs_hostname | length > 0
+      - _custom_certs_hostname | regex_search('[^a-zA-Z0-9.-]') is none
+
+- name: Install crypto dependencies
+  ansible.builtin.package:
+    name:
+      - python3-cryptography
+    state: present
+
+- name: Create test certificate directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0700'
+  loop:
+    - "{{ certificates_ca_directory }}"
+    - "{{ certificates_ca_directory }}/certs"
+    - "{{ certificates_ca_directory }}/private"
+
+- name: Create test private keys
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates_ca_directory }}/{{ item }}.key"
+    type: RSA
+    size: 3072
+    mode: '0600'
+  loop:
+    - root
+    - intermediate
+    - "{{ _custom_certs_hostname }}"
+
+- name: Create root CA CSR
+  community.crypto.openssl_csr:
+    path: "{{ certificates_ca_directory }}/root.csr"
+    privatekey_path: "{{ certificates_ca_directory }}/root.key"
+    common_name: SAT-20173 Test Root
+    use_common_name_for_san: false
+    basic_constraints:
+      - 'CA:TRUE'
+      - 'pathlen:1'
+    basic_constraints_critical: true
+    key_usage:
+      - keyCertSign
+      - cRLSign
+    key_usage_critical: true
+    create_subject_key_identifier: true
+
+- name: Create self-signed test root CA
+  community.crypto.x509_certificate:
+    path: "{{ certificates_ca_directory }}/root.pem"
+    csr_path: "{{ certificates_ca_directory }}/root.csr"
+    privatekey_path: "{{ certificates_ca_directory }}/root.key"
+    provider: selfsigned
+    selfsigned_not_after: '+10950d'
+    mode: '0600'
+
+- name: Create intermediate CA CSR
+  community.crypto.openssl_csr:
+    path: "{{ certificates_ca_directory }}/intermediate.csr"
+    privatekey_path: "{{ certificates_ca_directory }}/intermediate.key"
+    common_name: SAT-20173 Test Intermediate
+    use_common_name_for_san: false
+    basic_constraints:
+      - 'CA:TRUE'
+      - 'pathlen:0'
+    basic_constraints_critical: true
+    key_usage:
+      - keyCertSign
+      - cRLSign
+    key_usage_critical: true
+    create_subject_key_identifier: true
+
+- name: Sign test intermediate CA with root CA
+  community.crypto.x509_certificate:
+    path: "{{ certificates_ca_directory }}/intermediate.pem"
+    csr_path: "{{ certificates_ca_directory }}/intermediate.csr"
+    provider: ownca
+    ownca_path: "{{ certificates_ca_directory }}/root.pem"
+    ownca_privatekey_path: "{{ certificates_ca_directory }}/root.key"
+    ownca_not_after: '+7300d'
+    mode: '0600'
+
+- name: Create test server CSR
+  community.crypto.openssl_csr:
+    path: "{{ certificates_ca_directory }}/{{ _custom_certs_hostname }}.csr"
+    privatekey_path: "{{ certificates_ca_directory }}/{{ _custom_certs_hostname }}.key"
+    common_name: "{{ _custom_certs_hostname }}"
+    subject_alt_name:
+      - "DNS:{{ _custom_certs_hostname }}"
+    basic_constraints:
+      - 'CA:FALSE'
+    basic_constraints_critical: true
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    key_usage_critical: true
+    extended_key_usage:
+      - serverAuth
+      - clientAuth
+    create_subject_key_identifier: true
+
+- name: Sign test server certificate with intermediate CA
+  community.crypto.x509_certificate:
+    path: "{{ certificates_ca_directory }}/{{ _custom_certs_hostname }}.crt"
+    csr_path: "{{ certificates_ca_directory }}/{{ _custom_certs_hostname }}.csr"
+    provider: ownca
+    ownca_path: "{{ certificates_ca_directory }}/intermediate.pem"
+    ownca_privatekey_path: "{{ certificates_ca_directory }}/intermediate.key"
+    ownca_not_after: '+7300d'
+    mode: '0600'
+
+- name: Assemble test server CA chain with intermediate before root
+  ansible.builtin.assemble:
+    src: "{{ certificates_ca_directory }}"
+    dest: "{{ certificates_ca_directory }}/server-ca.pem"
+    regexp: '^(intermediate|root)\.pem$'
+    mode: '0600'
+
+- name: Install test certificate files
+  ansible.builtin.copy:
+    src: "{{ certificates_ca_directory }}/{{ item.src }}"
+    dest: "{{ certificates_ca_directory }}/{{ item.dest }}"
+    remote_src: true
+    mode: "{{ item.mode }}"
+  loop:
+    - src: server-ca.pem
+      dest: certs/ca.crt
+      mode: '0444'
+    - src: "{{ _custom_certs_hostname }}.crt"
+      dest: "certs/{{ _custom_certs_hostname }}.crt"
+      mode: '0444'
+    - src: "{{ _custom_certs_hostname }}.key"
+      dest: "private/{{ _custom_certs_hostname }}.key"
+      mode: '0400'
