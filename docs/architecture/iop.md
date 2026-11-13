@@ -147,7 +147,7 @@ archive contents eligible for cleanup after 24 hours.
 
 | Container | Type | Description |
 |-----------|------|-------------|
-| `iop-service-compliance-dbmigrate` | oneshot | Database schema migration |
+| `iop-service-compliance-dbmigrate` | oneshot | Applies pending database migrations during deployment |
 | `iop-service-compliance-backend` | service | Main Compliance API endpoint |
 | `iop-service-compliance-ssg` | service | SSG content server |
 | `iop-service-compliance-inventory-consumer` | service | Consumes inventory events |
@@ -166,11 +166,11 @@ The gateway's nginx relay configuration proxies requests to `https://host.contai
 
 ### Systemd Integration
 
-All IOP containers are `PartOf=foreman.target`, meaning they start and stop with the Foreman service group.
+Long-running IOP services are attached to `foreman.target` so they start and stop with the Foreman service group. The Compliance database migration is a deployment-only oneshot: `StopPropagatedFrom=foreman.target` stops an in-flight migration during backup without making the migration unit a runtime dependency or restarting it when the target starts.
 
 Patterns used:
 
-- **Init containers** (database migrations): `Type=oneshot` with `RemainAfterExit=true`. Downstream services use `Requires=` and `After=` to depend on these.
+- **Init containers**: `Type=oneshot` with `RemainAfterExit=true`. Downstream services use `Requires=` and `After=` to depend on these. Compliance migrations run only during deployment when pending migrations exist.
 - **Long-running services**: `Restart=on-failure` with `WantedBy=default.target foreman.target`
 - **Periodic tasks**: systemd timers with `Persistent=true` and `RandomizedDelaySec`
 

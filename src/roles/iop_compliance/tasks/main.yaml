@@ -55,6 +55,7 @@
         Description=Compliance Database Migration Check
         After=postgresql.service iop-core-kafka.service
         Wants=postgresql.service iop-core-kafka.service
+        StopPropagatedFrom=foreman.target
         [Service]
         Type=oneshot
         RemainAfterExit=true
@@ -78,7 +79,7 @@
         Description=Compliance Database Upgrade Init Container
         After=postgresql.service iop-core-kafka.service
         Wants=postgresql.service iop-core-kafka.service
-        PartOf=foreman.target
+        StopPropagatedFrom=foreman.target
         [Service]
         Type=oneshot
         RemainAfterExit=true
