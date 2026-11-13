@@ -44,3 +44,14 @@ foreman_proxy_bmc_ipmi_implementation: ipmitool
 foreman_proxy_bmc_redfish_verify_ssl: true
 
 foreman_proxy_with_pulp_mirror: "{{ pulp_mirror | default(false) }}"
+
+# DHCP settings
+foreman_proxy_dhcp_provider: dhcp_kea
+foreman_proxy_dhcp_subnets: []
+
+# Kea DHCP provider settings
+foreman_proxy_dhcp_kea_url: "{{ undef(hint='You must specify the Kea API URL') }}"
+foreman_proxy_dhcp_kea_username: null
+foreman_proxy_dhcp_kea_password: null
+foreman_proxy_dhcp_kea_verify_ssl: true
+foreman_proxy_dhcp_kea_http_timeout: 5

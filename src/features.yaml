@@ -135,3 +135,9 @@ theme-satellite:
   internal: true
   foreman:
     plugin_name: foreman_theme_satellite
+dhcp:
+  description: DHCP management
+  foreman_proxy:
+    plugin_name: dhcp
+  dependencies:
+    - foreman-proxy

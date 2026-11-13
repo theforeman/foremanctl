@@ -174,6 +174,13 @@ def to_postgresql_users(databases):
     return [{'name': db['user'], 'password': db['password']} for db in databases]
 
 
+def expand_features(features):
+    """Expand features list to include all dependencies."""
+    all_features = set(features)
+    all_features.update(get_dependencies(features))
+    return sorted(all_features)
+
+
 class FilterModule(object):
     '''foremanctl filters'''
 
@@ -193,4 +200,5 @@ class FilterModule(object):
             'to_postgresql_databases': to_postgresql_databases,
             'to_postgresql_users': to_postgresql_users,
             'network_gateway': network_gateway,
+            'expand_features': expand_features,
         }

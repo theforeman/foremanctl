@@ -3,7 +3,7 @@ certificates_source: default
 database_mode: internal
 tuning: default
 features: []
-enabled_features: "{{ (flavor_features + features) }}"
+enabled_features: "{{ (flavor_features + features) | expand_features }}"
 air_gapped: false
 
 foreman_proxy_ansible_callback: theforeman.foreman.foreman

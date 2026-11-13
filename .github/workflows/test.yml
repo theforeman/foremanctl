@@ -135,6 +135,12 @@ jobs:
       - name: Configure repositories
         run: |
           ./forge setup-repositories
+      - name: Generate Kea test database password
+        run: |
+          echo "KEA_DB_PASSWORD=$(openssl rand -hex 24)" >> "$GITHUB_ENV"
+      - name: Setup Kea DHCP server
+        run: |
+          ./forge kea
       - name: Create custom certificates
         if: matrix.certificate_source == 'custom_server'
         run: |
@@ -173,6 +179,8 @@ jobs:
             --add-feature ansible \
             --add-feature bmc \
             --add-feature webhooks \
+            --add-feature dhcp \
+            --foreman-proxy-dhcp-kea-url http://127.0.0.1:18000 \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
@@ -270,6 +278,9 @@ jobs:
       - name: Configure repositories
         run: |
           ./forge setup-repositories
+      - name: Configure base version
+        run: |
+          sed -i '/container_tag_stream:/ s/:.*/: "${{ matrix.upgrade_from }}"/' src/vars/images.yml
       - name: Run image pull
         run: |
           ./foremanctl pull-images --add-feature iop

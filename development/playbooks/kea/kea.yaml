@@ -1,0 +1,159 @@
+
+---
+- name: Kea DHCP development server
+  hosts:
+    - quadlet
+  become: true
+
+  vars:
+    kea_api_port: 18000
+    kea_db_port: 15432
+    kea_db_password: "{{ lookup('ansible.builtin.env', 'KEA_DB_PASSWORD') }}"
+
+  tasks:
+    - name: Require Kea database password
+      ansible.builtin.assert:
+        that:
+          - kea_db_password | length > 0
+        fail_msg: "Set KEA_DB_PASSWORD before running ./forge kea"
+
+    - name: Install EPEL repositories
+      ansible.builtin.package:
+        name:
+          - epel-release
+          - epel-next-release
+        state: present
+
+    - name: Check ISC Kea repository
+      ansible.builtin.stat:
+        path: /etc/yum.repos.d/isc-kea-3-0.repo
+      register: kea_repo
+
+    - name: Download ISC Kea repository setup
+      ansible.builtin.get_url:
+        url: https://dl.cloudsmith.io/public/isc/kea-3-0/setup.rpm.sh
+        dest: /tmp/setup-isc-kea.sh
+        mode: '0644'
+      when: not kea_repo.stat.exists
+
+    - name: Configure ISC Kea repository
+      ansible.builtin.command:
+        cmd: /bin/bash /tmp/setup-isc-kea.sh
+        creates: /etc/yum.repos.d/isc-kea-3-0.repo
+      when: not kea_repo.stat.exists
+
+    - name: Install Kea 3.0 packages
+      ansible.builtin.package:
+        name:
+          - log4cplus
+          - isc-kea-dhcp4
+          - isc-kea-hooks
+          - isc-kea-pgsql
+          - isc-kea-admin
+        state: present
+
+    - name: Create Kea PostgreSQL volume
+      containers.podman.podman_volume:
+        name: kea-pgdata
+        state: present
+
+    - name: Start Kea PostgreSQL container
+      containers.podman.podman_container:
+        name: kea-postgresql
+        image: quay.io/sclorg/postgresql-16-c10s:latest
+        state: started
+        ports:
+          - "127.0.0.1:{{ kea_db_port }}:5432"
+        env:
+          POSTGRESQL_USER: kea
+          POSTGRESQL_PASSWORD: "{{ kea_db_password }}"
+          POSTGRESQL_DATABASE: kea
+        volume:
+          - "kea-pgdata:/var/lib/pgsql/data:Z"
+      no_log: true
+
+    - name: Wait for Kea PostgreSQL
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: "{{ kea_db_port }}"
+        state: started
+        timeout: 60
+
+    - name: Check Kea database schema version
+      ansible.builtin.command: >-
+        /usr/sbin/kea-admin db-version pgsql
+        -h 127.0.0.1
+        -P {{ kea_db_port }}
+        -u kea
+        -n kea
+      environment:
+        KEA_ADMIN_DB_PASSWORD: "{{ kea_db_password }}"
+      register: kea_schema_check
+      changed_when: false
+      failed_when: false
+      no_log: true
+
+    - name: Initialize Kea database schema
+      ansible.builtin.command: >-
+        /usr/sbin/kea-admin db-init pgsql
+        -h 127.0.0.1
+        -P {{ kea_db_port }}
+        -u kea
+        -n kea
+      environment:
+        KEA_ADMIN_DB_PASSWORD: "{{ kea_db_password }}"
+      when: kea_schema_check.rc != 0
+      no_log: true
+
+    - name: Configure Kea DHCP4
+      ansible.builtin.template:
+        src: templates/kea-dhcp4.conf.j2
+        dest: /etc/kea/kea-dhcp4.conf
+        owner: root
+        group: kea
+        mode: '0640'
+      notify: Restart Kea DHCP4
+      no_log: true
+
+    - name: Validate Kea DHCP4 configuration
+      ansible.builtin.command:
+        cmd: /usr/sbin/kea-dhcp4 -T /etc/kea/kea-dhcp4.conf
+      changed_when: false
+
+    - name: Enable and start Kea DHCP4
+      ansible.builtin.systemd:
+        name: kea-dhcp4
+        enabled: true
+        state: started
+
+    - name: Apply pending Kea configuration changes
+      ansible.builtin.meta: flush_handlers
+
+    - name: Verify Kea HTTP API
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ kea_api_port }}/"
+        method: POST
+        body_format: json
+        body:
+          command: version-get
+          service:
+            - dhcp4
+        status_code: 200
+        return_content: true
+      register: kea_api_check
+      retries: 15
+      delay: 2
+      until: kea_api_check is succeeded
+      changed_when: false
+
+    - name: Confirm successful Kea API response
+      ansible.builtin.assert:
+        that:
+          - kea_api_check.json[0].result == 0
+        fail_msg: "Kea HTTP API returned an error"
+
+  handlers:
+    - name: Restart Kea DHCP4
+      ansible.builtin.systemd:
+        name: kea-dhcp4
+        state: restarted
