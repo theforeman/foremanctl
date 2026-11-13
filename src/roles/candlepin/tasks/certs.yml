@@ -1,4 +1,9 @@
 ---
+- name: Inspect the CA key algorithm for the Candlepin crypto scheme
+  community.crypto.openssl_privatekey_info:
+    path: "{{ candlepin_ca_key }}"
+  register: _candlepin_ca_key_info
+
 - name: Create the podman secret for Candlepin CA certificate
   containers.podman.podman_secret:
     state: present
