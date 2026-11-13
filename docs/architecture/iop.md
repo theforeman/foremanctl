@@ -22,6 +22,7 @@ graph TB
             InventoryFE[Inventory Frontend]
             AdvisorFE[Advisor Frontend]
             VulnFE[Vulnerability Frontend]
+            ComplianceFE[Compliance Frontend]
         end
 
         VulnMeta["Vulnerability Metadata Downloader<br/>(systemd timer + path watcher)"]
@@ -127,6 +128,7 @@ archive contents eligible for cleanup after 24 hours.
 | remediation | `iop-service-remediations-api` | 3000 (internal) | Remediation playbook generation |
 | vmaas | `iop-service-vmaas-reposcan`, `iop-service-vmaas-webapp-go` | - | Vulnerability metadata and advisory sync |
 | vulnerability | 8 containers (see below) | 8443 (internal) | Vulnerability assessment pipeline |
+| compliance | 6 containers (see below) | 8000 API, 8080 SSG | Compliance API, SSG content, inventory consumer, GoodJob worker, migrations, and periodic SSG import |
 
 #### Vulnerability containers
 
@@ -141,6 +143,17 @@ archive contents eligible for cleanup after 24 hours.
 | `iop-service-vuln-evaluator-upload` | service | Evaluates new uploads against VMAAS data |
 | `iop-service-vuln-vmaas-sync` | timer (4h) | Periodic sync from VMAAS webapp |
 
+#### Compliance containers
+
+| Container | Type | Description |
+|-----------|------|-------------|
+| `iop-service-compliance-dbmigrate` | oneshot | Applies pending database migrations during deployment |
+| `iop-service-compliance-backend` | service | Main Compliance API endpoint |
+| `iop-service-compliance-ssg` | service | SSG content server |
+| `iop-service-compliance-inventory-consumer` | service | Consumes inventory events |
+| `iop-service-compliance-goodjob` | service | GoodJob background worker |
+| `iop-service-compliance-import-ssg` | oneshot | Imports SSG datastreams and remediation playbooks during deployment after the SSG image is refreshed |
+
 ### Network
 
 All IOP containers join `foreman-core-network` and reach Postgres at `postgresql:5432`. The gateway is published on host loopback as `127.0.0.1:24443` (container port `8443`) so it is not externally accessible; the Foreman container talks to it as `https://iop-core-gateway:8443`. The gateway relays to Foreman via `https://host.containers.internal` (Apache on the host). See [Network Architecture](network.md).
@@ -153,11 +166,11 @@ The gateway's nginx relay configuration proxies requests to `https://host.contai
 
 ### Systemd Integration
 
-All IOP containers are `PartOf=foreman.target`, meaning they start and stop with the Foreman service group.
+Long-running IOP services are attached to `foreman.target` so they start and stop with the Foreman service group. The Compliance database migration is a deployment-only oneshot: `StopPropagatedFrom=foreman.target` stops an in-flight migration during backup without making the migration unit a runtime dependency or restarting it when the target starts.
 
 Patterns used:
 
-- **Init containers** (database migrations): `Type=oneshot` with `RemainAfterExit=true`. Downstream services use `Requires=` and `After=` to depend on these.
+- **Init containers**: `Type=oneshot` with `RemainAfterExit=true`. Downstream services use `Requires=` and `After=` to depend on these. Compliance migrations run only during deployment when pending migrations exist.
 - **Long-running services**: `Restart=on-failure` with `WantedBy=default.target foreman.target`
 - **Periodic tasks**: systemd timers with `Persistent=true` and `RandomizedDelaySec`
 
@@ -171,7 +184,7 @@ Timers:
 
 ## Databases
 
-IOP creates five PostgreSQL databases, all accessible to containers via the
+IOP creates six PostgreSQL databases, all accessible to containers via the
 `postgresql` container on `foreman-core-network` (`postgresql:5432`):
 
 | Database | User |
@@ -181,6 +194,7 @@ IOP creates five PostgreSQL databases, all accessible to containers via the
 | `remediations_db` | `remediations_user` |
 | `vmaas_db` | `vmaas_admin` |
 | `vulnerability_db` | `vulnerability_admin` |
+| `compliance_db` | `compliance_admin` |
 
 Passwords are auto-generated using Ansible's `password` lookup and stored as podman secrets.
 
@@ -262,9 +276,9 @@ The CVE map URL is served locally at `http://iop-core-gateway:9090/pub/iop/data/
 
 ## Frontend Assets
 
-Inventory, advisor, and vulnerability frontend assets are extracted from container images and served by Apache:
+Inventory, advisor, vulnerability, and compliance frontend assets are extracted from container images and served by Apache:
 
-- Assets are deployed to `/var/www/iop/assets/apps/{inventory,advisor,vulnerability}`
+- Assets are deployed to `/var/www/iop/assets/apps/{inventory,advisor,vulnerability,compliance}`
 - Apache serves them via `Alias` directives in `/etc/httpd/conf.d/05-foreman-ssl.d/`
 - `ProxyPass ... !` prevents these paths from being proxied to Foreman
 - Assets include gzip precompression support and 1-year cache headers
