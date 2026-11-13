@@ -1,0 +1,29 @@
+---
+- name: Prepare a Foreman image on the target with a Packit pull request
+  hosts: "{{ target_host if target_host is defined and target_host != '' else 'quadlet' }}"
+  gather_facts: false
+  vars_files:
+    - "../../../src/vars/images.yml"
+  pre_tasks:
+    - name: Validate Packit pull request URL
+      ansible.builtin.assert:
+        that:
+          - deploy_packit_pr_url | urlsplit('scheme') == 'https'
+          - deploy_packit_pr_url | urlsplit('hostname') == 'github.com'
+          - deploy_packit_pr_url | urlsplit('path') is match('^/[^/]+/[^/]+/pull/[0-9]+/?$')
+        fail_msg: >-
+          --pr-url must be a GitHub pull request URL such as
+          https://github.com/theforeman/foreman/pull/100.
+      when: deploy_packit_pr_url is defined
+
+    - name: Parse Packit pull request URL
+      ansible.builtin.set_fact:
+        deploy_packit_repo_org: >-
+          {{ (deploy_packit_pr_url | urlsplit('path') | regex_replace('/$', '')).split('/')[1] }}
+        deploy_packit_repo_name: >-
+          {{ (deploy_packit_pr_url | urlsplit('path') | regex_replace('/$', '')).split('/')[2] }}
+        deploy_packit_pr: >-
+          {{ (deploy_packit_pr_url | urlsplit('path') | regex_replace('/$', '')).split('/')[-1] }}
+      when: deploy_packit_pr_url is defined
+  roles:
+    - deploy_packit
