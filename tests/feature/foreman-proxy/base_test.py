@@ -38,6 +38,14 @@ def test_foreman_proxy_features(curl_request, proxy_base_url, enabled_features):
         assert "container_gateway" in features
     else:
         assert "container_gateway" not in features
+    if 'dhcp-infoblox' in enabled_features:
+        assert "dhcp_infoblox" in features
+    else:
+        assert "dhcp_infoblox" not in features
+    if 'dns-infoblox' in enabled_features:
+        assert "dns_infoblox" in features
+    else:
+        assert "dns_infoblox" not in features
 
 
 def test_foreman_proxy_permitted_hosts_config(server, server_fqdn, obsah_params):

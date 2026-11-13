@@ -158,6 +158,18 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--templates-url` | URL that hosts will use to contact the proxy for provisioning templates | `--foreman-proxy-templates-url` |
 | `--add-feature registration` | Enable Registration feature | `--foreman-proxy-registration` |
 | `--registration-url` | URL that hosts use to reach the registration endpoint | `--foreman-proxy-registration-url` |
+| `--add-feature dhcp-infoblox` | Enable Infoblox DHCP provider for Smart Proxy | `--foreman-proxy-dhcp-infoblox` |
+| `--dhcp-infoblox-username` | Infoblox username for DHCP management | `--foreman-proxy-plugin-dhcp-infoblox-username` |
+| `--dhcp-infoblox-password` | Infoblox password for DHCP management | `--foreman-proxy-plugin-dhcp-infoblox-password` |
+| `--dhcp-infoblox-dns-view` | Infoblox DNS view to use for DHCP-managed records | `--foreman-proxy-plugin-dhcp-infoblox-dns-view` |
+| `--dhcp-infoblox-network-view` | Infoblox network view to use for DHCP | `--foreman-proxy-plugin-dhcp-infoblox-network-view` |
+| `--dhcp-infoblox-record-type` | Infoblox record type to create for DHCP leases (`fixedaddress`, `host`) | `--foreman-proxy-plugin-dhcp-infoblox-record-type` |
+| `--dhcp-infoblox-used-ips-search-type` | Search type Infoblox uses to determine used IPs (`record_type`, `used`) | `--foreman-proxy-plugin-dhcp-infoblox-used-ips-search-type` |
+| `--add-feature dns-infoblox` | Enable Infoblox DNS provider for Smart Proxy | `--foreman-proxy-dns-infoblox` |
+| `--dns-infoblox-username` | Infoblox username for DNS management | `--foreman-proxy-plugin-dns-infoblox-username` |
+| `--dns-infoblox-password` | Infoblox password for DNS management | `--foreman-proxy-plugin-dns-infoblox-password` |
+| `--dns-infoblox-dns-view` | Infoblox DNS view to use | `--foreman-proxy-plugin-dns-infoblox-dns-view` |
+| `--dns-infoblox-dns-server` | Infoblox grid DNS server hostname or IP | `--foreman-proxy-plugin-dns-infoblox-dns-server` |
 
 ### Unmapped
 
@@ -214,17 +226,8 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-proxy-plugin-openscap-puppet-module` | | foreman_proxy::plugin::openscap | puppet_module |
 | `--foreman-proxy-http` | | | |
 | `--foreman-proxy-plugin-ansible-working-dir` | | | |
-| `--foreman-proxy-plugin-dhcp-infoblox-dns-view` | | | |
-| `--foreman-proxy-plugin-dhcp-infoblox-network-view` | | | |
-| `--foreman-proxy-plugin-dhcp-infoblox-password` | | | |
-| `--foreman-proxy-plugin-dhcp-infoblox-record-type` | | | |
-| `--foreman-proxy-plugin-dhcp-infoblox-username` | | | |
 | `--foreman-proxy-plugin-discovery-install-images` | | | |
 | `--foreman-proxy-plugin-discovery-source-url` | | | |
-| `--foreman-proxy-plugin-dns-infoblox-dns-server` | | | |
-| `--foreman-proxy-plugin-dns-infoblox-dns-view` | | | |
-| `--foreman-proxy-plugin-dns-infoblox-password` | | | |
-| `--foreman-proxy-plugin-dns-infoblox-username` | | | |
 | `--foreman-proxy-plugin-remote-execution-script-cockpit-integration` | | | |
 | `--foreman-proxy-plugin-remote-execution-script-ssh-kerberos-auth` | | | |
 | `--foreman-proxy-realm` | | | |

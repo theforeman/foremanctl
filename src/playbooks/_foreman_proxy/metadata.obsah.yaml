@@ -22,3 +22,43 @@ variables:
   foreman_proxy_registration_url:
     parameter: --registration-url
     help: URL that hosts use to reach the registration endpoint (e.g. https://loadbalancer.example.com).
+  foreman_proxy_dhcp_infoblox_username:
+    parameter: --dhcp-infoblox-username
+    help: Infoblox username for DHCP management.
+  foreman_proxy_dhcp_infoblox_password:
+    parameter: --dhcp-infoblox-password
+    help: Infoblox password for DHCP management.
+  foreman_proxy_dhcp_infoblox_dns_view:
+    parameter: --dhcp-infoblox-dns-view
+    help: Infoblox DNS view to use for DHCP-managed records.
+  foreman_proxy_dhcp_infoblox_network_view:
+    parameter: --dhcp-infoblox-network-view
+    help: Infoblox network view to use for DHCP.
+  foreman_proxy_dhcp_infoblox_record_type:
+    parameter: --dhcp-infoblox-record-type
+    help: Infoblox record type to create for DHCP leases.
+    choices:
+      - fixedaddress
+      - host
+  foreman_proxy_dhcp_infoblox_used_ips_search_type:
+    parameter: --dhcp-infoblox-used-ips-search-type
+    help: Search type Infoblox uses to determine used IPs.
+    choices:
+      - record_type
+      - used
+  foreman_proxy_dns_infoblox_username:
+    parameter: --dns-infoblox-username
+    help: Infoblox username for DNS management.
+  foreman_proxy_dns_infoblox_password:
+    parameter: --dns-infoblox-password
+    help: Infoblox password for DNS management.
+  foreman_proxy_dns_infoblox_dns_view:
+    parameter: --dns-infoblox-dns-view
+    help: Infoblox DNS view to use.
+  foreman_proxy_dns_infoblox_dns_server:
+    parameter: --dns-infoblox-dns-server
+    help: Infoblox grid DNS server hostname or IP.
+
+constraints:
+  required_together:
+    - [foreman_proxy_dns_infoblox_dns_server, foreman_proxy_dns_infoblox_username, foreman_proxy_dns_infoblox_password]
