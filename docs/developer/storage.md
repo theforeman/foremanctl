@@ -122,6 +122,19 @@ Rules for bind mounts:
 - Do not disable SELinux labelling unless there is a documented exception.
 - Document why a bind mount is required instead of a named Podman volume.
 
+### TFTP integration exception
+
+The Smart Proxy TFTP integration uses a host directory that an independently
+managed TFTP server also serves. When the feature is enabled, Foremanctl creates
+the directory if missing, sets its owner to the Smart Proxy image user, and
+grants that owner read, write, and traversal permissions recursively on
+existing contents. Existing group ownership is kept. The bind mount uses
+the `public_content_rw_t` SELinux type, and Foremanctl enables
+`container_manage_public_content` so the Smart Proxy container can write to it.
+The administrator remains responsible for parent directory access. Foremanctl
+backup does not automatically include this external directory; see the
+[TFTP administrator guide](../user/tftp.md).
+
 ## Backup, restore, and upgrades
 
 - Any new persistent volume must be considered for backup. See

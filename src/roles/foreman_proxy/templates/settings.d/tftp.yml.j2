@@ -1,0 +1,5 @@
+:enabled: {{ feature_enabled }}
+:tftproot: /var/lib/tftpboot
+{% if foreman_proxy_tftp_servername is defined and foreman_proxy_tftp_servername | trim | length > 0 %}
+:tftp_servername: {{ foreman_proxy_tftp_servername }}
+{% endif %}

@@ -173,6 +173,8 @@ jobs:
             --add-feature ansible \
             --add-feature bmc \
             --add-feature webhooks \
+            --add-feature tftp \
+            --tftp-servername quadlet.example.com \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
@@ -303,6 +305,11 @@ jobs:
       - name: Run deployment
         run: |
           ./foremanctl deploy
+      - name: Deploy TFTP feature
+        run: |
+          ./foremanctl deploy \
+            --add-feature tftp \
+            --tftp-servername quadlet.example.com
       - name: Run health check
         run: |
           ./foremanctl health
@@ -377,7 +384,9 @@ jobs:
             --add-feature bmc \
             --add-feature google \
             --add-feature remote-execution \
-            --add-feature webhooks
+            --add-feature webhooks \
+            --add-feature tftp \
+            --tftp-servername quadlet.example.com
       - name: Run tests
         run: |
           ./forge test --pytest-args="--featureset=migration"
@@ -505,7 +514,10 @@ jobs:
             --container-gateway-database-pool-timeout 45 \
             --templates-url http://proxy.example.com:8000 \
             --registration-url https://loadbalancer.example.com:8443 \
-            --add-feature bmc
+            --add-feature bmc \
+            --add-feature tftp \
+            --tftp-root /srv/tftp \
+            --tftp-servername proxy.example.com
       - name: Run tests
         run: |
           ./forge test --pytest-args="--server-hostname=proxy --featureset=proxy"
@@ -655,7 +667,10 @@ jobs:
             --container-gateway-database-pool-timeout 45 \
             --templates-url http://proxy.example.com:8000 \
             --registration-url https://loadbalancer.example.com:8443 \
-            --add-feature bmc
+            --add-feature bmc \
+            --add-feature tftp \
+            --tftp-root /srv/tftp \
+            --tftp-servername proxy.example.com
       - name: Run tests
         run: |
           ./forge test --pytest-args="--server-hostname=proxy --featureset=capsule"
