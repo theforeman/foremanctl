@@ -76,6 +76,16 @@ Vagrant.configure("2") do |config|
     end
   end
 
+  config.vm.define "named" do |override|
+    override.vm.box = ENV.fetch("FOREMANCTL_BASE_BOX", "centos/stream10")
+    set_centos_box_url(override.vm)
+    override.vm.hostname = "named.#{DOMAIN}"
+
+    override.vm.provider "libvirt" do |libvirt, provider|
+      libvirt.memory = 2048
+    end
+  end
+
   # Load user-local box definitions from boxes.yaml (gitignored)
   boxes_yaml = File.join(__dir__, 'boxes.yaml')
   if File.exist?(boxes_yaml)

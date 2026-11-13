@@ -1,0 +1,7 @@
+---
+- name: Include tasks for {{ item }}
+  ansible.builtin.include_tasks: feature.yaml
+  vars:
+    feature_enabled: "{{ foreman_proxy_dns_provider_name == item }}"
+    feature_name: "{{ item }}"
+  loop: "{{ foreman_proxy_dns_provider_list }}"
