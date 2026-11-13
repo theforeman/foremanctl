@@ -229,20 +229,25 @@
     executable: /bin/bash
   register: restore_pulp_space
   changed_when: false
+  when: "'pulp_content' in restore_backup_metadata.backed_up_components | default([])"
 
 - name: Get Pulp content archive size (single volume)
   ansible.builtin.stat:
     path: "{{ restore_backup_dir }}/pulp-content.tar.gz"
   register: restore_pulp_archive
+  when: "'pulp_content' in restore_backup_metadata.backed_up_components | default([])"
 
 - name: Find Pulp content volume files (multi-volume)
   ansible.builtin.find:
     paths: "{{ restore_backup_dir }}"
     patterns: "pulp-content.tar.gz.part*"
   register: restore_pulp_volumes
+  when: "'pulp_content' in restore_backup_metadata.backed_up_components | default([])"
 
 - name: Validate multi-volume archive completeness
-  when: restore_pulp_volumes.matched > 0
+  when:
+    - "'pulp_content' in restore_backup_metadata.backed_up_components | default([])"
+    - restore_pulp_volumes.matched > 0
   block:
     - name: Set expected volume count from metadata
       ansible.builtin.set_fact:
@@ -294,6 +299,7 @@
       {{ (restore_backup_metadata.pulp_storage_size_bytes | default(0) | int / 1024 / 1024 / 1024) | int + 1 }}GB required
       at /var/lib/pulp
   when:
+    - "'pulp_content' in (restore_backup_metadata.backed_up_components | default([]))"
     - (restore_pulp_archive.stat.exists | default(false)) or (restore_pulp_volumes.matched > 0)
     - restore_backup_metadata.pulp_storage_size_bytes is defined
     - restore_backup_metadata.pulp_storage_size_bytes | int > 0
