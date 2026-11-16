@@ -151,6 +151,16 @@
     - Restart pulp-content
     - Restart pulp-worker
 
+- name: Create Redis URL secret
+  containers.podman.podman_secret:
+    state: present
+    name: pulp-redis-url
+    data: "redis://:{{ pulp_valkey_password | default('') }}@valkey:6379/8"
+  notify:
+    - Restart pulp-api
+    - Restart pulp-content
+    - Restart pulp-worker
+
 - name: Generate Django secret key
   ansible.builtin.command: "bash -c 'openssl rand -base64 50 | tr -d \"\\n\" | tr \"+/\" \"-_\" > {{ pulp_storage_path }}/django_secret_key'"
   args:
@@ -219,6 +229,7 @@
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
       - 'pulp-db-ca,type=mount,target={{ pulp_database_ssl_ca_path }}'
       - 'pulp-django-secret-key,type=env,target=PULP_SECRET_KEY'
+      - 'pulp-redis-url,type=env,target=PULP_REDIS_URL'
     env: "{{ pulp_settings_env }}"
     quadlet_options:
       - "HttpProxy=false"
@@ -260,6 +271,7 @@
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
       - 'pulp-db-ca,type=mount,target={{ pulp_database_ssl_ca_path }}'
       - 'pulp-django-secret-key,type=env,target=PULP_SECRET_KEY'
+      - 'pulp-redis-url,type=env,target=PULP_REDIS_URL'
     env: "{{ pulp_settings_env }}"
     quadlet_options:
       - "HttpProxy=false"
@@ -294,6 +306,7 @@
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
       - 'pulp-db-ca,type=mount,target={{ pulp_database_ssl_ca_path }}'
       - 'pulp-django-secret-key,type=env,target=PULP_SECRET_KEY'
+      - 'pulp-redis-url,type=env,target=PULP_REDIS_URL'
     env: "{{ pulp_settings_env }}"
     quadlet_options:
       - "HttpProxy=false"
