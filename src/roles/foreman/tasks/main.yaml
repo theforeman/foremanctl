@@ -11,6 +11,14 @@
     - Restart foreman
     - Restart dynflow-sidekiq@
 
+- name: Create secret for DYNFLOW_REDIS_URL
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-dynflow-redis-url
+    data: redis://:{{ foreman_valkey_password | default('') }}@valkey:6379/6
+  notify:
+    - Restart dynflow-sidekiq@
+
 - name: Create secret for SEED_ADMIN_USER
   containers.podman.podman_secret:
     state: present

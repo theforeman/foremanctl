@@ -178,3 +178,5 @@ postgresql_users: >-
 
 valkey_password_file: "{{ obsah_state_path }}/valkey-password"
 valkey_password: "{{ lookup('ansible.builtin.password', valkey_password_file, chars=['ascii_letters', 'digits']) }}"
+foreman_valkey_password: "{{ valkey_password }}"
+pulp_valkey_password: "{{ valkey_password }}"

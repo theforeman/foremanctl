@@ -24,7 +24,7 @@
 :rails_cache_store:
   :type: redis
   :urls:
-    - "redis://valkey:6379/4"
+    - "redis://:{{ foreman_valkey_password | default('') }}@valkey:6379/4"
   :options:
     :compress: true
     :namespace: foreman
