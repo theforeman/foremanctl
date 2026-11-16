@@ -344,3 +344,23 @@ class TestTransformations:
     def test_cast_database_mode_passthrough(self):
         """Test database mode transformation with non-boolean"""
         assert migrate_answers.cast_database_mode('already_a_string') == 'already_a_string'
+
+
+class TestMigratePlaybookOrder:
+    """Certificate normalization must not run before answer validation."""
+
+    def test_certificate_role_runs_after_parameters_are_written(self):
+        playbook = os.path.join(os.path.dirname(__file__), '../../src/playbooks/migrate/migrate.yaml')
+        with open(playbook) as playbook_file:
+            play = yaml.safe_load(playbook_file)[0]
+
+        assert 'roles' not in play
+        names = [task['name'] for task in play['tasks']]
+        parse_at = names.index('Run answer file migration')
+        write_at = names.index('Write migrated configuration to parameters file')
+        certs_at = names.index('Normalize installer certificates')
+        assert parse_at < write_at < certs_at
+
+        certificates = play['tasks'][certs_at]
+        assert certificates['ansible.builtin.include_role']['name'] == 'migrate_foreman_installer'
+        assert certificates['when'] == 'migrate_apply | default(false)'
