@@ -22,3 +22,13 @@ variables:
   foreman_proxy_registration_url:
     parameter: --registration-url
     help: URL that hosts use to reach the registration endpoint (e.g. https://loadbalancer.example.com).
+  foreman_proxy_tftp_root:
+    parameter: --tftp-root
+    help: >-
+      Absolute directory on the proxy host used for TFTP files. Foremanctl
+      creates it if missing and configures access for Smart Proxy. Defaults to
+      /var/lib/tftpboot.
+    type: AbsolutePath
+  foreman_proxy_tftp_servername:
+    parameter: --tftp-servername
+    help: TFTP server hostname or IP address reachable by booting clients.

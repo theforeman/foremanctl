@@ -11,6 +11,17 @@ def cast_database_mode(value):
     return value
 
 
+def map_tftp_feature(value):
+    """Represent installer TFTP enablement in foremanctl's additive feature list."""
+    if value is None:
+        return None
+
+    if isinstance(value, bool):
+        return ['tftp'] if value else []
+
+    raise ValueError(f"Invalid foreman_proxy::tftp value: {value!r}; expected a boolean")
+
+
 PARAMETER_MAP = {
     # Database configuration
     ('foreman', 'db_host'): 'database_host',
@@ -55,6 +66,12 @@ PARAMETER_MAP = {
     ('foreman', 'server_ssl_cert'): 'IGNORE',
     ('foreman', 'server_ssl_key'): 'IGNORE',
     ('foreman', 'server_ssl_ca'): 'IGNORE',
+
+    # TFTP
+    ('foreman_proxy', 'tftp'): ('features', map_tftp_feature),
+    ('foreman_proxy', 'tftp_root'): 'foreman_proxy_tftp_root',
+    ('foreman_proxy', 'tftp_servername'): 'foreman_proxy_tftp_servername',
+    ('foreman_proxy', 'tftp_managed'): 'IGNORE',
 
     # TODO: Add more mappings as discovered
 }
@@ -167,6 +184,7 @@ def apply_mappings(old_config, old_tuning='default'):
 
     result = {}
     unmappable = []
+    warnings = []
 
     for old_key, old_value in flat_config.items():
         if old_key in PARAMETER_MAP:
@@ -183,7 +201,13 @@ def apply_mappings(old_config, old_tuning='default'):
                 new_value = old_value
 
             if new_value is not None:
-                result[new_key] = new_value
+                if new_key == 'features':
+                    existing_features = result.setdefault('features', [])
+                    for feature in new_value:
+                        if feature not in existing_features:
+                            existing_features.append(feature)
+                else:
+                    result[new_key] = new_value
         else:
             if old_value is not None:
                 if isinstance(old_key, tuple):
@@ -200,9 +224,27 @@ def apply_mappings(old_config, old_tuning='default'):
     if old_tuning != 'default':
         result['tuning'] = old_tuning
 
+    if flat_config.get(('foreman_proxy', 'tftp_managed')) is True:
+        warnings.append(
+            'foreman_proxy::tftp_managed has no foremanctl-managed service equivalent. '
+            'Keep the existing TFTP service; foremanctl creates and configures its shared directory when enabled.'
+        )
+
+    if result.get('features') and 'tftp' in result['features']:
+        if flat_config.get(('foreman_proxy', 'tftp_root')) is None:
+            warnings.append(
+                'No TFTP root was migrated. foremanctl defaults to /var/lib/tftpboot, '
+                'which foremanctl creates and configures for the Smart Proxy when TFTP is enabled.'
+            )
+        if flat_config.get(('foreman_proxy', 'tftp_servername')) is None:
+            warnings.append(
+                'An empty TFTP server name was not migrated. Foreman uses the Smart Proxy hostname by default.'
+            )
+
     return {
         'mapped': result,
-        'unmappable': unmappable
+        'unmappable': unmappable,
+        'warnings': warnings,
     }
 
 
@@ -216,6 +258,7 @@ def run_module():
         mapped_count=0,
         unmappable_count=0,
         unmappable=[],
+        warnings=[],
         mapped={},
     )
 
@@ -239,6 +282,7 @@ def run_module():
         result['mapped_count'] = len(migration_result['mapped'])
         result['unmappable_count'] = len(migration_result['unmappable'])
         result['unmappable'] = migration_result['unmappable']
+        result['warnings'] = migration_result['warnings']
         result['mapped'] = migration_result['mapped']
 
         if migration_result['unmappable']:

@@ -124,6 +124,12 @@ templates:
   description: Templates feature for foreman-proxy
   foreman_proxy:
     plugin_name: templates
+tftp:
+  description: TFTP integration for foreman-proxy using an externally managed TFTP server
+  foreman_proxy:
+    plugin_name: tftp
+  dependencies:
+    - foreman-proxy
 registration:
   description: Host registration feature for foreman-proxy
   foreman_proxy:

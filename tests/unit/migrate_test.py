@@ -6,8 +6,10 @@ import pytest
 import yaml
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src/plugins/modules'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src/filter_plugins'))
 
 import migrate_answers
+from foremanctl import has_feature
 
 
 class TestParameterMapping:
@@ -201,6 +203,78 @@ class TestParameterMapping:
 
         assert 'tuning' in result['mapped']
         assert result['mapped']['tuning'] == 'medium'
+
+    @pytest.mark.parametrize('managed', [True, False])
+    def test_tftp_enabled_mapping_and_service_management_warning(self, managed):
+        """Map TFTP and warn only when the legacy installer managed its daemon."""
+        old_config = {
+            'foreman_proxy': {
+                'tftp': True,
+                'tftp_root': '/srv/provisioning/tftp',
+                'tftp_servername': '192.0.2.10',
+                'tftp_managed': managed,
+            }
+        }
+
+        result = migrate_answers.apply_mappings(old_config)
+
+        assert result['mapped']['features'] == ['tftp']
+        assert has_feature(result['mapped']['features'], 'foreman-proxy')
+        assert result['mapped']['foreman_proxy_tftp_root'] == '/srv/provisioning/tftp'
+        assert result['mapped']['foreman_proxy_tftp_servername'] == '192.0.2.10'
+        assert bool(result['warnings']) is managed
+
+    def test_tftp_disabled_does_not_enable_feature(self):
+        result = migrate_answers.apply_mappings({
+            'foreman_proxy': {
+                'tftp': False,
+                'tftp_root': '/srv/provisioning/tftp',
+                'tftp_servername': 'tftp.example.test',
+            }
+        })
+
+        assert 'tftp' not in result['mapped'].get('features', [])
+        assert result['mapped']['foreman_proxy_tftp_root'] == '/srv/provisioning/tftp'
+        assert result['mapped']['foreman_proxy_tftp_servername'] == 'tftp.example.test'
+
+    def test_tftp_parameters_do_not_infer_enablement(self):
+        result = migrate_answers.apply_mappings({
+            'foreman_proxy': {
+                'tftp_root': '/srv/provisioning/tftp',
+                'tftp_servername': 'tftp.example.test',
+            }
+        })
+
+        assert 'features' not in result['mapped']
+        assert result['mapped']['foreman_proxy_tftp_root'] == '/srv/provisioning/tftp'
+        assert result['mapped']['foreman_proxy_tftp_servername'] == 'tftp.example.test'
+
+    def test_feature_mappings_merge_without_duplicates(self, monkeypatch):
+        """Merge feature mappings without duplicating feature names."""
+        monkeypatch.setitem(
+            migrate_answers.PARAMETER_MAP,
+            ('foreman_proxy', 'another_feature'),
+            ('features', lambda enabled: ['other', 'tftp'] if enabled else []),
+        )
+
+        result = migrate_answers.apply_mappings({
+            'foreman_proxy': {'tftp': True, 'another_feature': True}
+        })
+
+        assert result['mapped']['features'] == ['tftp', 'other']
+        assert has_feature(result['mapped']['features'], 'foreman-proxy')
+
+    def test_enabled_tftp_with_missing_values_reports_operator_requirements(self):
+        """Use defaults when enabled TFTP has no root or server name."""
+        result = migrate_answers.apply_mappings({
+            'foreman_proxy': {'tftp': True, 'tftp_servername': None, 'tftp_root': None}
+        })
+
+        assert result['mapped']['features'] == ['tftp']
+        assert has_feature(result['mapped']['features'], 'foreman-proxy')
+        assert 'foreman_proxy_tftp_servername' not in result['mapped']
+        assert 'foreman_proxy_tftp_root' not in result['mapped']
+        assert any('/var/lib/tftpboot' in warning for warning in result['warnings'])
 
 
 class TestFileOperations:

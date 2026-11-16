@@ -22,6 +22,7 @@ DEFAULT_FEATURES = {
     'pulp',
     'remote-execution',
     'tasks',
+    'tftp',
     'valkey',
     'webhooks',
 }
@@ -29,7 +30,7 @@ DEFAULT_FEATURES = {
 EXPECTED_FEATURES = {
     'default': DEFAULT_FEATURES,
     'default-iop': DEFAULT_FEATURES | {'iop', 'rh-cloud'},
-    'upgrade': (DEFAULT_FEATURES | {'iop', 'rh-cloud'}) - {'ansible', 'webhooks'},
+    'upgrade': ((DEFAULT_FEATURES | {'iop', 'rh-cloud'}) - {'ansible', 'webhooks'}),
     'migration': DEFAULT_FEATURES,
     'proxy': {
         'bmc',
@@ -44,9 +45,10 @@ EXPECTED_FEATURES = {
         'pulp',
         'registration',
         'templates',
+        'tftp',
         'valkey',
     },
-    'satellite': (DEFAULT_FEATURES | {'rh-cloud', 'theme-satellite', 'virt-who'}) - {'content/python', 'content/deb'},
+    'satellite': (DEFAULT_FEATURES | {'rh-cloud', 'theme-satellite', 'virt-who'}) - {'content/python', 'content/deb', 'tftp'},
     'capsule': {
         'bmc',
         'container-gateway',
@@ -58,6 +60,7 @@ EXPECTED_FEATURES = {
         'pulp',
         'registration',
         'templates',
+        'tftp',
         'valkey',
     },
 }

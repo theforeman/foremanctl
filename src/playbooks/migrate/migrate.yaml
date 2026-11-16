@@ -44,6 +44,7 @@
           - "{{ 'Migration completed successfully!' if (migrate_apply | default(false)) else 'Migration preview (use --apply to perform the migration):' }}"
           - "Mapped parameters: {{ migration_result.mapped_count }}"
           - "Unmappable parameters: {{ migration_result.unmappable_count }}"
+          - "Migration notes: {{ migration_result.warnings | default([]) | join(' ') or 'none' }}"
           - "{{ _unmappable_warning if migration_result.unmappable | length > 0 else '' }}"
       vars:
         _unmappable_warning: "Warning: {{ migration_result.unmappable | length }} parameter(s) could not be mapped - see warnings above"
