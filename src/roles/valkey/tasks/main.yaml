@@ -13,6 +13,13 @@
     group: 1001
     mode: '0755'
 
+- name: Create Podman secret for Valkey password
+  containers.podman.podman_secret:
+    name: valkey-password
+    data: "{{ valkey_password }}"
+  notify:
+    - Restart valkey
+
 - name: Run Valkey as a container
   containers.podman.podman_container:
     name: valkey
@@ -22,6 +29,8 @@
     publish: "{{ valkey_publish | default(omit) }}"
     sdnotify: true
     command: ["run-valkey", "--supervised", "systemd", "--loglevel", "{{ valkey_log_level }}", "--bind", "*", "-::"]
+    secrets:
+      - 'valkey-password,target=VALKEY_PASSWORD,type=env'
     volumes:
       - /var/lib/valkey:/data:rw,Z
     quadlet_options:

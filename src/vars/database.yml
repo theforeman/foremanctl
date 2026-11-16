@@ -175,3 +175,6 @@ postgresql_databases: >-
   {{ all_databases | to_postgresql_databases }}
 postgresql_users: >-
   {{ all_databases | to_postgresql_users }}
+
+valkey_password_file: "{{ obsah_state_path }}/valkey-password"
+valkey_password: "{{ lookup('ansible.builtin.password', valkey_password_file, chars=['ascii_letters', 'digits']) }}"
