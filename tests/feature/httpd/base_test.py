@@ -187,6 +187,19 @@ def test_httpd_config_syntax(server):
     assert cmd.succeeded
 
 
+@pytest.mark.parametrize('scheme', ['http', 'https'])
+@pytest.mark.parametrize(('header_size', 'expected_status'), [(16384, '200'), (33792, '400')])
+def test_httpd_request_header_limit(server, certificates, server_fqdn, scheme, header_size, expected_status):
+    header = 'X-Header-Limit-Test: ' + 'a' * header_size
+    cmd = server.run(
+        f"{CURL_CMD} --head --http1.1 --cacert {certificates['server_ca_certificate']} "
+        f"--header '{header}' --write-out '%{{http_code}}' "
+        f"{scheme}://{server_fqdn}/pub/katello-server-ca.crt"
+    )
+    assert cmd.succeeded
+    assert cmd.stdout == expected_status
+
+
 @pytest.mark.feature('foreman')
 def test_httpd_headers_use_dashes(server):
     cmd = server.run("grep -rPn 'RequestHeader\\s+set\\s+\\S*_\\S*\\s' /etc/httpd/conf.d/foreman.conf /etc/httpd/conf.d/foreman-ssl.conf /etc/httpd/conf.d/05-foreman.d/ /etc/httpd/conf.d/05-foreman-ssl.d/ 2>/dev/null")

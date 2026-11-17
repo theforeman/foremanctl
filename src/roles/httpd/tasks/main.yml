@@ -36,6 +36,16 @@
     path: /etc/httpd/conf.d/welcome.conf
     state: absent
 
+- name: Configure request header field size limit
+  ansible.builtin.copy:
+    dest: /etc/httpd/conf.d/00-request-header-limit.conf
+    content: |
+      LimitRequestFieldSize 32768
+    mode: "0644"
+    setype: httpd_config_t
+  notify:
+    - Restart httpd
+
 - name: Create cert directories
   ansible.builtin.file:
     path: "{{ item }}"
