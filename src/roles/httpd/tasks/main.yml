@@ -36,7 +36,7 @@
     path: /etc/httpd/conf.d/welcome.conf
     state: absent
 
-- name: Configure request header field size limit
+- name: Configure Apache request header field size limit
   ansible.builtin.copy:
     dest: /etc/httpd/conf.d/00-request-header-limit.conf
     content: |
