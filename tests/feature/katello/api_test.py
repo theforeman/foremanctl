@@ -17,9 +17,11 @@ def test_foreman_file_repository(file_repository, foremanapi, local_request):
     assert local_request.get(f'{repo_url}/1.iso', verify=False)
 
 
-def test_foreman_container_repository(container_repository, foremanapi):
+def test_foreman_container_repository(container_repository, foremanapi, server):
     assert container_repository
     foremanapi.resource_action('repositories', 'sync', {'id': container_repository['id']})
+
+    server.check_output(f"podman pull --tls-verify=false --creds=admin:changeme {container_repository['full_path']}")
 
 
 def test_foreman_lifecycle_environment(lifecycle_environment):
