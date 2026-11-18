@@ -5,6 +5,7 @@
     version: "{{ git_repository_revision }}"
     force: true
     remote: "{{ git_repository_remote_name }}"
+    update: "{{ git_repository_revision != 'HEAD' }}"
   become: true
   become_user: "{{ git_repository_user }}"
 
