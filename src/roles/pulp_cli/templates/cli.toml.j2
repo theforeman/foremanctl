@@ -1,0 +1,6 @@
+# Managed by foremanctl. Put root's local overrides in /root/.config/pulp/cli.toml.
+[cli]
+base_url = {{ pulp_cli_url | to_json }}
+cert = {{ pulp_cli_client_certificate | to_json }}
+key = {{ pulp_cli_client_key | to_json }}
+verify_ssl = true

@@ -52,6 +52,7 @@ To release a new version of foremanctl, follow the instructions in [RELEASE.md](
 ## Getting Help
 
 - **Service logs**: [Common journalctl operations](docs/user/logging.md)
+- **Troubleshooting**: [Pulp CLI setup and usage](docs/user/troubleshooting.md)
 - **Issues**: [github.com/theforeman/foremanctl/issues](https://github.com/theforeman/foremanctl/issues)
 - **Matrix Chat**: [#theforeman-dev on matrix.org](https://matrix.to/#/#theforeman-dev:matrix.org)
 - **Community**: [Foreman Community Forum](https://community.theforeman.org/)

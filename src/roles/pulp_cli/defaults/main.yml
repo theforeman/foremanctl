@@ -1,0 +1,9 @@
+---
+pulp_cli_url: "https://{{ ansible_facts['fqdn'] }}"
+pulp_cli_packages:
+  - pulp-cli
+
+# TODO: Remove this temporary source once the deployment repositories provide
+# pulp-cli and its dependencies.
+pulp_cli_manage_repository: true
+pulp_cli_repository_url: "https://yum.theforeman.org/pulpcore/nightly/el{{ ansible_facts['distribution_major_version'] }}/$basearch/"

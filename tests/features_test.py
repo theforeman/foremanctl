@@ -48,7 +48,7 @@ EXPECTED_FEATURES = {
         'tftp',
         'valkey',
     },
-    'satellite': (DEFAULT_FEATURES | {'rh-cloud', 'theme-satellite', 'virt-who'}) - {'content/python', 'content/deb', 'tftp'},
+    'satellite': (DEFAULT_FEATURES | {'pulp-cli', 'rh-cloud', 'theme-satellite', 'virt-who'}) - {'content/python', 'content/deb', 'tftp'},
     'capsule': {
         'bmc',
         'container-gateway',
