@@ -35,7 +35,7 @@ dnf install foremanctl
 
 ### Foreman
 
-Foreman 3.18 (with Katello 4.20, Pulp 3.85 and Candlepin 4.6).
+Foreman 5.1 (with Katello 5.1, Pulp 3.118 and Candlepin 4.8).
 
 ### Ansible
 
