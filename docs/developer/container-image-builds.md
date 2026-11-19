@@ -55,5 +55,23 @@ systemctl stop foreman.target
 
 The command targets `quadlet` by default, or the host selected with `--target-host`. It ensures Podman is installed, copies the Containerfile to a temporary directory on that machine, then builds the image as root under the configured Foreman reference (by default `quay.io/foreman/foreman:nightly`). The temporary build context is removed afterward. The Foreman image quadlet created during deployment uses this same reference with `Policy=missing`, so the local patched image is used when available. Run `foremanctl deploy` against the same target.
 
-`--pr` defaults to the `theforeman/foreman` repository; use `--repo-org` and `--repo-name` to select another repository. Alternatively, pass a GitHub pull request URL with `--pr-url`. `--base-image` can override the base image.
+`--pr` defaults to the `theforeman/foreman` repository; use `--repo-org` and `--repo-name` to select another repository. Alternatively, pass a GitHub pull request URL with `--pr-url`. `--base-image` can override the base image without changing the output image reference.
 
+For Smart Proxy or its plugins, select `--component foreman-proxy`:
+
+```bash
+# Defaults to the theforeman/smart-proxy repository:
+./forge deploy-packit --component foreman-proxy --pr 100
+# The existing repository overrides also work for proxy plugins and forks:
+./forge deploy-packit --component foreman-proxy \
+  --pr 100 --repo-org theforeman --repo-name smart_proxy_ansible
+# Or provide a PR URL:
+./forge deploy-packit --component foreman-proxy \
+  --pr-url https://github.com/theforeman/smart-proxy/pull/100
+```
+
+The component selects both the base and output image from the configured image name and tag (`foreman_proxy_container_image` and `foreman_proxy_container_tag` for Foreman Proxy). The image's original container user is preserved. Foreman remains the default component.
+
+The component does not select the target host. For a standalone proxy, add `--target-host proxy` and deploy with `foremanctl deploy-proxy`; for the proxy on the Foreman server, use the default `quadlet` target and `foremanctl deploy --add-feature foreman-proxy`.
+
+In CI, run `forge deploy-packit` after `foremanctl pull-images` and before deployment on each host that needs the PR. `pull-images` forces registry pulls and would replace an image built earlier. Each host builds its own image in root's Podman store; deployment uses it with `Policy=missing`.

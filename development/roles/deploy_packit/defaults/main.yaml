@@ -1,5 +1,9 @@
 ---
-deploy_packit_base_image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
+deploy_packit_component: foreman
+deploy_packit_component_images:
+  foreman: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
+  foreman-proxy: "{{ foreman_proxy_container_image }}:{{ foreman_proxy_container_tag }}"
+deploy_packit_base_image: "{{ deploy_packit_component_images[deploy_packit_component] }}"
 deploy_packit_repo_org: theforeman
-deploy_packit_repo_name: foreman
-deploy_packit_target_image: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
+deploy_packit_repo_name: "{{ 'smart-proxy' if deploy_packit_component == 'foreman-proxy' else 'foreman' }}"
+deploy_packit_target_image: "{{ deploy_packit_component_images[deploy_packit_component] }}"

@@ -1,5 +1,5 @@
 ---
-- name: Prepare a Foreman image on the target with a Packit pull request
+- name: Prepare a container image on the target with a Packit pull request
   hosts: "{{ target_host if target_host is defined and target_host != '' else 'quadlet' }}"
   gather_facts: false
   vars_files:
