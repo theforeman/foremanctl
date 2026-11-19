@@ -1,5 +1,5 @@
 # Declare global ARG before FROM so the base image can be dynamically overridden
-ARG BASE_IMAGE=quay.io/foreman/foreman:nightly
+ARG BASE_IMAGE=quay.io/foreman/foreman:5.1
 
 FROM ${BASE_IMAGE}
 
