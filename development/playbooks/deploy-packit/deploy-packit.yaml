@@ -8,22 +8,25 @@
     - name: Validate Packit pull request URL
       ansible.builtin.assert:
         that:
-          - deploy_packit_pr_url | urlsplit('scheme') == 'https'
-          - deploy_packit_pr_url | urlsplit('hostname') == 'github.com'
-          - deploy_packit_pr_url | urlsplit('path') is match('^/[^/]+/[^/]+/pull/[0-9]+/?$')
+          - item | urlsplit('scheme') == 'https'
+          - item | urlsplit('hostname') == 'github.com'
+          - item | urlsplit('path') is match('^/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+/pull/[0-9]+/?$')
         fail_msg: >-
           --pr-url must be a GitHub pull request URL such as
           https://github.com/theforeman/foreman/pull/100.
-      when: deploy_packit_pr_url is defined
+      loop: "{{ deploy_packit_pr_url | default([]) }}"
 
-    - name: Parse Packit pull request URL
+    - name: Initialize Packit projects from pull request URLs
       ansible.builtin.set_fact:
-        deploy_packit_repo_org: >-
-          {{ (deploy_packit_pr_url | urlsplit('path') | regex_replace('/$', '')).split('/')[1] }}
-        deploy_packit_repo_name: >-
-          {{ (deploy_packit_pr_url | urlsplit('path') | regex_replace('/$', '')).split('/')[2] }}
-        deploy_packit_pr: >-
-          {{ (deploy_packit_pr_url | urlsplit('path') | regex_replace('/$', '')).split('/')[-1] }}
-      when: deploy_packit_pr_url is defined
+        deploy_packit_projects: []
+      when: deploy_packit_pr_url | default([]) | length > 0
+
+    - name: Parse Packit pull request URLs
+      ansible.builtin.set_fact:
+        deploy_packit_projects: "{{ deploy_packit_projects + [deploy_packit_project] }}"
+      vars:
+        deploy_packit_url_parts: "{{ (item | urlsplit('path') | regex_replace('/$', '')).split('/') }}"
+        deploy_packit_project: "{{ deploy_packit_url_parts[1] }}-{{ deploy_packit_url_parts[2] }}-{{ deploy_packit_url_parts[4] }}"
+      loop: "{{ deploy_packit_pr_url | default([]) }}"
   roles:
     - deploy_packit

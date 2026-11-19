@@ -75,3 +75,34 @@ The component selects both the base and output image from the configured image n
 The component does not select the target host. For a standalone proxy, add `--target-host proxy` and deploy with `foremanctl deploy-proxy`; for the proxy on the Foreman server, use the default `quadlet` target and `foremanctl deploy --add-feature foreman-proxy`.
 
 In CI, run `forge deploy-packit` after `foremanctl pull-images` and before deployment on each host that needs the PR. `pull-images` forces registry pulls and would replace an image built earlier. Each host builds its own image in root's Podman store; deployment uses it with `Policy=missing`.
+
+### Combining PRs from multiple repositories
+
+Repeat `--pr-url` to combine core and plugin PRs for the selected component. All supplied Packit repositories are enabled before packages are upgraded in one DNF transaction, so dependencies between the PR builds can be resolved together. Single-PR commands using `--pr` or `--pr-url` continue to work.
+
+For example, to test changes across Foreman, Smart Proxy, and their Ansible plugins (replace these example PR numbers with your own):
+
+```bash
+# Pull base images before building any PR images.
+./foremanctl pull-images --add-feature foreman-proxy
+
+# Foreman core and its Ansible plugin in one image build.
+./forge deploy-packit \
+  --pr-url https://github.com/theforeman/foreman/pull/100 \
+  --pr-url https://github.com/theforeman/foreman_ansible/pull/200
+
+# Smart Proxy core and its Ansible plugin in a separate image build.
+./forge deploy-packit --component foreman-proxy \
+  --pr-url https://github.com/theforeman/smart-proxy/pull/300 \
+  --pr-url https://github.com/theforeman/smart_proxy_ansible/pull/400
+```
+
+Then run your normal `foremanctl deploy` command with the required features and `forge test`. If services were already running, stop `foreman.target` on the target host before deploying so the containers are recreated with the new images.
+
+Foreman and Foreman Proxy use separate images and require separate invocations. For a standalone proxy, add `--target-host proxy` to the proxy build command and use `foremanctl deploy-proxy`. Build on each host that needs those changes; images are not transferred between hosts automatically.
+
+Each PR needs a successful RHEL 10 Packit build. Plugin packages must already be installed in the selected base image: the build upgrades existing packages rather than installing new plugins. Only packages available from the selected PR repositories are requested for upgrade, while other enabled repositories remain available to resolve dependencies.
+
+Use full URLs for all PRs in a combined build; `--pr-url` cannot be combined with `--pr`, `--repo-org`, or `--repo-name`. Each URL may specify a different organization or repository. Repeated identical URLs are ignored.
+
+Running `foremanctl pull-images` after building replaces the local PR images with registry images. Run it before the sequence above, or to reset the images before testing a different combination.

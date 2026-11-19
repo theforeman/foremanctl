@@ -6,4 +6,6 @@ deploy_packit_component_images:
 deploy_packit_base_image: "{{ deploy_packit_component_images[deploy_packit_component] }}"
 deploy_packit_repo_org: theforeman
 deploy_packit_repo_name: "{{ 'smart-proxy' if deploy_packit_component == 'foreman-proxy' else 'foreman' }}"
+deploy_packit_projects:
+  - "{{ deploy_packit_repo_org }}-{{ deploy_packit_repo_name }}-{{ deploy_packit_pr }}"
 deploy_packit_target_image: "{{ deploy_packit_component_images[deploy_packit_component] }}"
