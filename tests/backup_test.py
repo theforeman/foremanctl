@@ -1,5 +1,8 @@
+import os
 import re
+import shutil
 import subprocess
+from pathlib import Path
 
 import pytest
 import yaml
@@ -45,7 +48,32 @@ def expected_databases(enabled_features):
 
 
 @pytest.fixture(scope="module")
-def backup_result(server, server_hostname):
+def state_with_stale_snapshot(tmp_path_factory):
+    state_dir = Path(os.environ.get('OBSAH_STATE', '.var/lib/foremanctl')).resolve()
+    snapshot = state_dir.parent / 'config.snar'
+    saved_snapshot = tmp_path_factory.mktemp('backup-state') / 'config.snar'
+    had_snapshot = snapshot.exists()
+    if had_snapshot:
+        shutil.copy2(snapshot, saved_snapshot)
+
+    try:
+        snapshot.unlink(missing_ok=True)
+        result = subprocess.run(
+            ['tar', '-czf', '/dev/null', f'--listed-incremental={snapshot}',
+             '-C', str(state_dir.parent), state_dir.name],
+            capture_output=True, text=True,
+        )
+        assert result.returncode == 0, f'Failed to create stale snapshot:\n{result.stdout}\n{result.stderr}'
+        yield state_dir
+    finally:
+        if had_snapshot:
+            shutil.copy2(saved_snapshot, snapshot)
+        else:
+            snapshot.unlink(missing_ok=True)
+
+
+@pytest.fixture(scope="module")
+def backup_result(server, server_hostname, state_with_stale_snapshot):
     server.run(f"rm -rf {BACKUP_DIR}")
 
     result = server.run(f"mkdir -p {BACKUP_DIR}")
@@ -217,7 +245,7 @@ def test_foremanctl_state_archived(server, backup_result):
     assert result.rc == 0, "foremanctl-state.tar.gz should be a valid tar.gz archive"
 
 
-def test_foremanctl_state_archive_contents(server, backup_result):
+def test_foremanctl_state_archive_contents(server, backup_result, state_with_stale_snapshot):
     """Test that foremanctl state archive contains expected deployment files"""
     backup_dir = backup_result['backup_dir']
     state_archive = f"{backup_dir}/foremanctl-state.tar.gz"
@@ -230,6 +258,8 @@ def test_foremanctl_state_archive_contents(server, backup_result):
     file_list = [f for f in archive_contents.split('\n') if f and not f.endswith('/')]
 
     assert len(file_list) > 0, "Archive should contain at least one file"
+    assert f'{state_with_stale_snapshot.name}/parameters.yaml' in file_list, \
+        'Full backups must include unchanged deployment parameters despite a stale snapshot'
 
 
 def test_pulp_content_archived(server, backup_result):
