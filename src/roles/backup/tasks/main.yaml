@@ -130,45 +130,9 @@
         - backup_incremental is defined and backup_incremental | length > 0
         - not skip_pulp_content | default(false)
 
-    - name: Fetch config.snar from previous backup to controller
-      ansible.builtin.fetch:
-        src: "{{ backup_incremental }}/config.snar"
-        dest: "{{ obsah_state_path | dirname }}/config.snar"
-        flat: true
-      when: backup_incremental is defined and backup_incremental | length > 0
-
-    - name: Backup foremanctl state directory  # noqa: command-instead-of-module
-      ansible.builtin.command:
-        cmd: >
-          tar -czf "{{ obsah_state_path | dirname }}/foremanctl-state.tar.gz"
-          --listed-incremental="{{ obsah_state_path | dirname }}/config.snar"
-          -C "{{ obsah_state_path | dirname }}"
-          "{{ obsah_state_path | basename }}"
-      delegate_to: localhost
-      become: false
-      changed_when: true
-
-    - name: Copy foremanctl state archive to target
-      ansible.builtin.copy:
-        src: "{{ obsah_state_path | dirname }}/foremanctl-state.tar.gz"
-        dest: "{{ backup_dir_full }}/foremanctl-state.tar.gz"
-        mode: '0644'
-
-    - name: Copy config.snar to backup directory
-      ansible.builtin.copy:
-        src: "{{ obsah_state_path | dirname }}/config.snar"
-        dest: "{{ backup_dir_full }}/config.snar"
-        mode: '0644'
-
-    - name: Clean up foremanctl state files on controller
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ obsah_state_path | dirname }}/foremanctl-state.tar.gz"
-        - "{{ obsah_state_path | dirname }}/config.snar"
-      delegate_to: localhost
-      become: false
+    - name: Backup foremanctl state
+      ansible.builtin.include_tasks:
+        file: foremanctl_state.yaml
 
     - name: Backup pulp content
       ansible.builtin.include_tasks:
