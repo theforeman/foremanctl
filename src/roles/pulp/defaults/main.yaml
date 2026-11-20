@@ -23,8 +23,12 @@ pulp_worker_container_name: pulp-worker
 pulp_api_listen_stream: localhost:24817
 pulp_content_listen_stream: localhost:24816
 
-pulp_content_origin: "http://{{ ansible_facts['fqdn'] }}:24816"
-pulp_pulp_url: "http://{{ ansible_facts['fqdn'] }}:24817"
+pulp_name: "{{ ansible_facts['fqdn'] }}"
+pulp_content_origin: "http://{{ pulp_name }}:24816"
+pulp_pulp_url: "http://{{ pulp_name }}:24817"
+
+# Pulp's own hostnames accepted in HTTP Host headers (Django ALLOWED_HOSTS).
+pulp_allowed_hosts: "{{ [pulp_name, 'localhost'] + (server_aliases | default([])) }}"
 
 pulp_enable_analytics: false
 pulp_mirror: false
@@ -89,6 +93,8 @@ pulp_settings_other_env:
   PULP_LOGGING__LOGGERS____LEVEL: "{{ pulp_log_level | upper }}"
   PULP_TOKEN_AUTH_DISABLED: "true"
   PULP_FLATPAK_INDEX: "true"
+  PULP_ALLOWED_HOSTS: >-
+    {{ pulp_allowed_hosts }}
   PULP_ALLOWED_IMPORT_PATHS: >-
     {{ pulp_default_import_paths + pulp_import_paths }}
   PULP_ALLOWED_EXPORT_PATHS: >-
