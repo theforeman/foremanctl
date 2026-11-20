@@ -1,0 +1,48 @@
+---
+- name: Create temporary state backup directory on controller
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: foremanctl-state-backup-
+  register: backup_state_tempdir
+  delegate_to: localhost
+  become: false
+
+- name: Backup foremanctl state
+  block:
+    - name: Fetch config.snar from previous backup to controller
+      ansible.builtin.fetch:
+        src: "{{ backup_incremental }}/config.snar"
+        dest: "{{ backup_state_tempdir.path }}/config.snar"
+        flat: true
+      when: backup_incremental is defined and backup_incremental | length > 0
+
+    - name: Backup foremanctl state directory  # noqa: command-instead-of-module
+      ansible.builtin.command:
+        cmd: >
+          tar -czf "{{ backup_state_tempdir.path }}/foremanctl-state.tar.gz"
+          --listed-incremental="{{ backup_state_tempdir.path }}/config.snar"
+          -C "{{ obsah_state_path | dirname }}"
+          "{{ obsah_state_path | basename }}"
+      delegate_to: localhost
+      become: false
+      changed_when: true
+
+    - name: Copy foremanctl state archive to target
+      ansible.builtin.copy:
+        src: "{{ backup_state_tempdir.path }}/foremanctl-state.tar.gz"
+        dest: "{{ backup_dir_full }}/foremanctl-state.tar.gz"
+        mode: '0644'
+
+    - name: Copy config.snar to backup directory
+      ansible.builtin.copy:
+        src: "{{ backup_state_tempdir.path }}/config.snar"
+        dest: "{{ backup_dir_full }}/config.snar"
+        mode: '0644'
+
+  always:
+    - name: Remove temporary state backup directory on controller
+      ansible.builtin.file:
+        path: "{{ backup_state_tempdir.path }}"
+        state: absent
+      delegate_to: localhost
+      become: false
