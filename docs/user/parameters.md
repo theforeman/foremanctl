@@ -63,6 +63,12 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--foreman-trusted-proxy-remove` | Remove an IPv4/IPv6 address or CIDR from the persisted trusted proxy list (same format as `--foreman-trusted-proxy`). May be specified multiple times. Does not remove the localhost ranges `127.0.0.0/8` and `::1`. | |
 | `--reset-foreman-trusted-proxy` | Clear the entire persisted trusted proxy list for this deployment (Obsah reset flag; hidden from the main option list—see `foremanctl deploy --help` epilog). Use with repeated `--foreman-trusted-proxy` to replace the list, for example: `foremanctl deploy --reset-foreman-trusted-proxy --foreman-trusted-proxy 10.0.0.1 --foreman-trusted-proxy 10.0.0.2`. | |
 
+#### Pulp CLI
+
+| Parameter | Description | foreman-installer Parameter |
+| ----------| ----------- | --------------------------- |
+| `--add-feature pulp-cli` | Install the host-side Pulp CLI for troubleshooting using the deployment's client certificate. Enabled by default in the Satellite flavor. See [troubleshooting](troubleshooting.md#pulp-cli) for configuration and the temporary upstream package source. | `--enable-pulpcore-cli` |
+
 #### Certs
 
 ##### New

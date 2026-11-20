@@ -1,0 +1,4 @@
+---
+- name: Update Pulp CLI CA trust
+  ansible.builtin.command: update-ca-trust extract
+  changed_when: true

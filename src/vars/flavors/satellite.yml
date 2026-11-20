@@ -16,6 +16,7 @@ flavor_features:
   - virt-who
   - webhooks
   - hammer
+  - pulp-cli
   - foreman-proxy
 
 checks_to_execute:

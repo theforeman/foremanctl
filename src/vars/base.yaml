@@ -62,6 +62,11 @@ hammer_ca_certificate: "{{ server_ca_certificate }}"
 hammer_plugins: "{{ enabled_features | features_to_hammer_plugins }}"
 hammer_foreman_server_url: "{{ foreman_url }}"
 
+pulp_cli_url: "{{ foreman_url }}"
+pulp_cli_client_certificate: "{{ client_certificate }}"
+pulp_cli_client_key: "{{ client_key }}"
+pulp_cli_ca_certificate: "{{ server_ca_certificate }}"
+
 foreman_proxy_plugins: "{{ enabled_features | features_to_foreman_proxy_plugins }}"
 foreman_proxy_foreman_server_url: "{{ foreman_url }}"
 foreman_proxy_foreman_ca_certificate: "{{ foreman_ca_certificate }}"

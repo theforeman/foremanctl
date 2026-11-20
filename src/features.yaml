@@ -10,6 +10,10 @@ foreman-proxy:
   description: Base Foreman Proxy
 hammer:
   description: Foreman CLI
+pulp-cli:
+  description: Pulp CLI for troubleshooting
+  dependencies:
+    - pulp
 pulp:
   description: Pulp content management service
   internal: true

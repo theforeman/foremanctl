@@ -1,0 +1,43 @@
+---
+- name: Configure temporary Pulp CLI repository
+  ansible.builtin.yum_repository:
+    name: foremanctl-pulp-cli
+    description: Temporary upstream repository for Pulp CLI
+    baseurl: "{{ pulp_cli_repository_url }}"
+    enabled: false
+    # The nightly repository's advertised signing-key URL currently returns 404.
+    gpgcheck: false
+    state: "{{ pulp_cli_manage_repository | ternary('present', 'absent') }}"
+
+- name: Install Pulp CLI
+  ansible.builtin.dnf:
+    name: "{{ pulp_cli_packages }}"
+    state: present
+    enablerepo: "{{ pulp_cli_manage_repository | ternary('foremanctl-pulp-cli', omit) }}"
+
+- name: Trust the Pulp server CA
+  ansible.builtin.copy:
+    src: "{{ pulp_cli_ca_certificate }}"
+    dest: /etc/pki/ca-trust/source/anchors/foremanctl-pulp-cli.crt
+    remote_src: true
+    owner: root
+    group: root
+    mode: '0644'
+  when: pulp_cli_ca_certificate is defined
+  notify: Update Pulp CLI CA trust
+
+- name: Create Pulp CLI configuration directory
+  ansible.builtin.file:
+    path: /etc/pulp
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Configure Pulp CLI defaults
+  ansible.builtin.template:
+    src: cli.toml.j2
+    dest: /etc/pulp/cli.toml
+    owner: root
+    group: root
+    mode: '0644'

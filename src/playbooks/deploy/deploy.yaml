@@ -59,6 +59,9 @@
     - role: hammer
       when:
         - "enabled_features | has_feature('hammer')"
+    - role: pulp_cli
+      when:
+        - "enabled_features | has_feature('pulp-cli')"
     - role: cloud_connector
       when:
         - enabled_features | has_feature('cloud-connector')
