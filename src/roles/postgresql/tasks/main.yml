@@ -17,6 +17,9 @@
   notify:
     - Restart postgresql
 
+- name: Cleanup foreman-installer generate configuration
+  ansible.builtin.include_tasks: cleanup_installer.yaml
+
 - name: Upgrade PostgreSQL database
   ansible.builtin.include_tasks: upgrade.yaml
 

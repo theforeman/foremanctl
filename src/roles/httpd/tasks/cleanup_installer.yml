@@ -1,0 +1,11 @@
+---
+- name: Remove old foreman-installer files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/httpd/conf.d/05-foreman.conf
+    - /etc/httpd/conf.d/05-foreman.d
+    - /etc/httpd/conf.d/05-foreman-ssl.conf
+    - /etc/httpd/conf.d/05-foreman-ssl.d
+    - /etc/httpd/conf.d/10-rhsm-pulpcore-https-443.conf

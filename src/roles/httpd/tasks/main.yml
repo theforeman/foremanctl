@@ -31,6 +31,9 @@
     - ansible_facts['selinux']['status'] == "enabled"
     - not httpd_with_foreman
 
+- name: Cleanup foreman-installer generated configuration
+  ansible.builtin.include_tasks: cleanup_installer.yml
+
 - name: Disable welcome page
   ansible.builtin.file:
     path: /etc/httpd/conf.d/welcome.conf
