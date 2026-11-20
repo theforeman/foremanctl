@@ -8,14 +8,26 @@ ARG CONTAINER_USER=foreman
 USER 0
 RUN dnf install -y 'dnf*-command(copr)'
 
-# Build arguments for the specific PR build
-ARG REPO_ORG=theforeman
-ARG REPO_NAME=foreman
-ARG PR
+# Space-separated Packit project names, each in organization-repository-PR format.
+ARG PACKIT_PROJECTS
 
-# Add the Packit RPM repo, install/upgrade the target package, and clean metadata
+# Enable every PR repository before resolving the upgrade in one transaction.
+# Query exact package versions to limit upgrade targets to the selected PR builds.
 RUN set -e && \
-    dnf copr enable -y packit/${REPO_ORG}-${REPO_NAME}-${PR} rhel-10-x86_64 && \
-    dnf repository-packages -y copr:copr.fedorainfracloud.org:packit:${REPO_ORG}-${REPO_NAME}-${PR} upgrade && \
+    test -n "$PACKIT_PROJECTS" && \
+    for project in $PACKIT_PROJECTS; do \
+        dnf copr enable -y "packit/$project" rhel-10-x86_64 || exit 1; \
+    done && \
+    packages="" && \
+    for project in $PACKIT_PROJECTS; do \
+        repo_id="copr:copr.fedorainfracloud.org:packit:$project"; \
+        project_packages="$(dnf -q repoquery --available --repo="$repo_id" --latest-limit=1 --nevra)" || exit 1; \
+        if [ -z "$project_packages" ]; then \
+            printf 'No packages found in packit/%s\n' "$project" >&2; \
+            exit 1; \
+        fi; \
+        packages="$packages $project_packages"; \
+    done && \
+    dnf upgrade -y --best $packages && \
     dnf clean all
 USER ${CONTAINER_USER}
