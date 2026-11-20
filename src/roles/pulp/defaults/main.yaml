@@ -76,7 +76,6 @@ pulp_settings_other_env:
   PULP_ANSIBLE_API_HOSTNAME: "{{ pulp_content_origin }}"
   PULP_ANSIBLE_CONTENT_HOSTNAME: "{{ pulp_content_origin }}/pulp/content"
   PULP_ANSIBLE_PERMISSION_CLASSES: "[]"
-  PULP_REDIS_URL: "redis://valkey:6379/8"
   PULP_REMOTE_USER_ENVIRON_NAME: "HTTP_REMOTE_USER"
   PULP_REST_FRAMEWORK__DEFAULT_AUTHENTICATION_CLASSES: >-
     ['rest_framework.authentication.SessionAuthentication', 'pulpcore.app.authentication.PulpRemoteUserAuthentication']

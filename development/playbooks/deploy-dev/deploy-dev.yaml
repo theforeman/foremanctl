@@ -76,6 +76,7 @@
         foreman_development_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
         foreman_development_candlepin_oauth_secret: "{{ candlepin_oauth_secret }}"
         foreman_development_database_password: "{{ foreman_database_password }}"
+        foreman_development_valkey_password: "{{ foreman_valkey_password }}"
 
     - role: iop_core
       when:

@@ -60,7 +60,6 @@ foreman_env:
   FOREMAN_PUMA_WORKERS: "{{ foreman_puma_workers }}"
 
 foreman_dynflow_extra_env:
-  DYNFLOW_REDIS_URL: "redis://valkey:6379/6"
   REDIS_PROVIDER: "DYNFLOW_REDIS_URL"
 
 foreman_dynflow_env: "{{ foreman_env | ansible.builtin.combine(foreman_dynflow_extra_env) }}"
@@ -76,6 +75,7 @@ foreman_secrets:
   - 'foreman-client-cert,type=mount,target=/etc/foreman/client_cert.pem'
   - 'foreman-client-key,type=mount,target=/etc/foreman/client_key.pem'
   - 'foreman-db-ca,type=mount,target={{ foreman_database_ssl_ca_path }}'
+  - 'foreman-dynflow-redis-url,type=env,target=DYNFLOW_REDIS_URL'
 
 foreman_dynflow_extra_secrets:
   - 'foreman-dynflow-worker-hosts-queue-yaml,type=mount,target=/etc/foreman/dynflow/worker-hosts-queue.yml'

@@ -26,3 +26,9 @@ def test_valkey_not_listening_on_all_interfaces(server):
     ss = server.run(f"ss -ltn '( sport = :{VALKEY_PORT} )'")
     assert f'0.0.0.0:{VALKEY_PORT}' not in ss.stdout
     assert f'[::]:{VALKEY_PORT}' not in ss.stdout
+
+
+def test_valkey_requires_password(server):
+    result = server.run(f"podman exec valkey valkey-cli -h {VALKEY_HOST} -p {VALKEY_PORT} ping")
+    assert 'PONG' not in result.stdout
+    assert 'NOAUTH' in result.stdout + result.stderr
