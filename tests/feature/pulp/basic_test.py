@@ -124,6 +124,23 @@ def test_pulp_manager_check(server):
     assert result.succeeded
 
 
+def test_pulp_allowed_hosts_settings(server, server_fqdn, obsah_params):
+    expected_hosts = [server_fqdn] + (obsah_params.get('server_aliases') or [])
+    py = 'from django.conf import settings; import json; print(json.dumps(list(settings.ALLOWED_HOSTS)))'
+    result = server.run(f"podman exec pulp-api pulpcore-manager shell -c '{py}'")
+    assert result.succeeded
+    assert json.loads(result.stdout) == expected_hosts
+
+
+def test_pulp_host_injection(server):
+    cmd = server.run(
+        f"curl -k -s -w '%{{stderr}}%{{http_code}}' --unix-socket {PULP_API_SOCKET} "
+        "-H 'Host: evil.hackers.test' http://evil.hackers.test/pulp/api/v3/status/"
+    )
+    assert cmd.succeeded
+    assert cmd.stderr == '400'
+
+
 def test_pulp_import_export_settings(server, pulp_import_export_paths):
     expected_import_paths, expected_export_paths = pulp_import_export_paths
     py = 'from django.conf import settings; import json; print(json.dumps({"import": list(settings.ALLOWED_IMPORT_PATHS), "export": list(settings.ALLOWED_EXPORT_PATHS)}))'
