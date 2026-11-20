@@ -125,7 +125,7 @@ def test_every_pull_request_url_is_validated(packit_parser, tmp_path, url):
     ], {}, [], '', '', succeeds=False)
 
 
-@pytest.mark.parametrize('failure', [None, 'enable', 'query', 'empty', 'upgrade'])
+@pytest.mark.parametrize('failure', [None, 'enable', 'query', 'query-second', 'empty', 'empty-second', 'upgrade'])
 def test_repositories_upgrade_in_one_transaction(tmp_path, failure):
     """Execute the Containerfile's RPM commands with a DNF stub that records calls."""
     log = tmp_path / 'dnf-calls.jsonl'
@@ -139,13 +139,17 @@ args = sys.argv[1:]
 with open(os.environ['DNF_LOG'], 'a') as log:
     log.write(json.dumps(args) + '\\n')
 failure = os.environ['DNF_FAILURE']
+second_repo = '--repo=copr:copr.fedorainfracloud.org:packit:example-smart_proxy_ansible-200' in args
 if (failure == 'enable' and 'enable' in args
         or failure == 'query' and 'repoquery' in args
+        or failure == 'query-second' and 'repoquery' in args and second_repo
         or failure == 'upgrade' and 'upgrade' in args):
     sys.exit(1)
-if 'repoquery' in args and failure != 'empty':
-    print('foreman-proxy-0:5.2.0-0.pr100.noarch')
-    print('rubygem-smart_proxy_ansible-0:3.0.0-0.pr200.noarch')
+if 'repoquery' in args and failure != 'empty' and not (failure == 'empty-second' and second_repo):
+    if second_repo:
+        print('rubygem-smart_proxy_ansible-0:3.0.0-0.pr200.noarch')
+    else:
+        print('foreman-proxy-0:5.2.0-0.pr100.noarch')
 ''')
     dnf.chmod(0o755)
     containerfile = (ROOT / 'development/roles/deploy_packit/files/Containerfile').read_text()
@@ -166,15 +170,20 @@ if 'repoquery' in args and failure != 'empty':
         assert ['clean', 'all'] not in calls
         if failure != 'upgrade':
             assert not any('upgrade' in call for call in calls)
+        if failure.startswith('empty'):
+            project = 'example-smart_proxy_ansible-200' if failure == 'empty-second' else 'theforeman-smart-proxy-100'
+            assert f'No packages found in packit/{project}' in result.stderr
     else:
         assert result.returncode == 0, result.stdout + result.stderr
         assert calls[:2] == [
             ['copr', 'enable', '-y', 'packit/theforeman-smart-proxy-100', 'rhel-10-x86_64'],
             ['copr', 'enable', '-y', 'packit/example-smart_proxy_ansible-200', 'rhel-10-x86_64'],
         ]
-        assert '--repo=copr:copr.fedorainfracloud.org:packit:theforeman-smart-proxy-100,' \
-            'copr:copr.fedorainfracloud.org:packit:example-smart_proxy_ansible-200' in calls[2]
-        assert '--nevra' in calls[2]
+        queries = [call for call in calls if 'repoquery' in call]
+        assert len(queries) == 2
+        assert '--repo=copr:copr.fedorainfracloud.org:packit:theforeman-smart-proxy-100' in queries[0]
+        assert '--repo=copr:copr.fedorainfracloud.org:packit:example-smart_proxy_ansible-200' in queries[1]
+        assert all('--nevra' in query for query in queries)
         assert [call for call in calls if 'upgrade' in call] == [[
             'upgrade', '-y', '--best', 'foreman-proxy-0:5.2.0-0.pr100.noarch',
             'rubygem-smart_proxy_ansible-0:3.0.0-0.pr200.noarch',

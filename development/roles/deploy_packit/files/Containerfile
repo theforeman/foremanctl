@@ -15,13 +15,19 @@ ARG PACKIT_PROJECTS
 # Query exact package versions to limit upgrade targets to the selected PR builds.
 RUN set -e && \
     test -n "$PACKIT_PROJECTS" && \
-    repo_ids="" && \
     for project in $PACKIT_PROJECTS; do \
         dnf copr enable -y "packit/$project" rhel-10-x86_64 || exit 1; \
-        repo_ids="${repo_ids:+$repo_ids,}copr:copr.fedorainfracloud.org:packit:$project"; \
     done && \
-    packages="$(dnf -q repoquery --available --repo="$repo_ids" --latest-limit=1 --nevra)" && \
-    test -n "$packages" && \
+    packages="" && \
+    for project in $PACKIT_PROJECTS; do \
+        repo_id="copr:copr.fedorainfracloud.org:packit:$project"; \
+        project_packages="$(dnf -q repoquery --available --repo="$repo_id" --latest-limit=1 --nevra)" || exit 1; \
+        if [ -z "$project_packages" ]; then \
+            printf 'No packages found in packit/%s\n' "$project" >&2; \
+            exit 1; \
+        fi; \
+        packages="$packages $project_packages"; \
+    done && \
     dnf upgrade -y --best $packages && \
     dnf clean all
 USER ${CONTAINER_USER}

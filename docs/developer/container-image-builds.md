@@ -101,7 +101,7 @@ Then run your normal `foremanctl deploy` command with the required features and 
 
 Foreman and Foreman Proxy use separate images and require separate invocations. For a standalone proxy, add `--target-host proxy` to the proxy build command and use `foremanctl deploy-proxy`. Build on each host that needs those changes; images are not transferred between hosts automatically.
 
-Each PR needs a successful RHEL 10 Packit build. Plugin packages must already be installed in the selected base image: the build upgrades existing packages rather than installing new plugins. Only packages available from the selected PR repositories are requested for upgrade, while other enabled repositories remain available to resolve dependencies.
+Each PR needs a successful RHEL 10 Packit build. The image build fails if any selected PR repository has no available packages. Plugin packages must already be installed in the selected base image: the build upgrades existing packages rather than installing new plugins. Only packages available from the selected PR repositories are requested for upgrade, while other enabled repositories remain available to resolve dependencies.
 
 Use full URLs for all PRs in a combined build; `--pr-url` cannot be combined with `--pr`, `--repo-org`, or `--repo-name`. Each URL may specify a different organization or repository. Repeated identical URLs are ignored.
 
