@@ -297,3 +297,19 @@ The directory `tests/feature` is special. Any subdirectory automatically applies
 | Behavior specific to a deployment flavor | `tests/flavor/<flavor>/<name>_test.py` |
 
 When adding a new file, follow the conventions of the nearest existing test file.
+
+### Nmap and fapolicyd
+
+The test setup installs Nmap for the Candlepin TLS check. On fapolicyd
+deployments, it also maintains a dedicated `foremanctl-nmap` trust file for
+`/usr/share/nmap/` and reloads the trust database before running tests. This
+does not change the fapolicyd policy or disable TLS assertions.
+
+The setup flow can be checked without a deployment or a running fapolicyd daemon:
+
+```console
+pytest --confcutdir=tests/unit tests/unit/nmap_trust_test.py
+```
+
+This exercises the Ansible tasks with a test command in place of `fapolicyd-cli`.
+The deployment jobs remain responsible for verifying the actual fapolicyd behavior.
