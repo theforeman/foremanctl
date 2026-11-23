@@ -6,8 +6,12 @@
 
   vars:
     kea_api_port: 18000
-    kea_db_port: 15432
+    kea_db_port: 5432
     kea_db_password: "changeme"
+
+  vars_files:
+    - ../../../src/vars/defaults.yml
+    - ../../../src/vars/database.yml
 
   tasks:
     - name: Install Kea packages
@@ -18,37 +22,32 @@
           - postgresql
         state: present
 
-    - name: Install Podman
-      ansible.builtin.package:
-        name: podman
-        state: present
-
-    - name: Create Kea PostgreSQL volume
-      containers.podman.podman_volume:
-        name: kea-pgdata
-        state: present
-
-    - name: Start Kea PostgreSQL container
-      containers.podman.podman_container:
-        name: kea-postgresql
-        image: quay.io/sclorg/postgresql-16-c10s:latest
-        state: started
-        ports:
-          - "127.0.0.1:{{ kea_db_port }}:5432"
-        env:
-          POSTGRESQL_USER: kea
-          POSTGRESQL_PASSWORD: "{{ kea_db_password }}"
-          POSTGRESQL_DATABASE: kea
-        volume:
-          - "kea-pgdata:/var/lib/pgsql/data:rw,Z"
-      no_log: true
-
     - name: Wait for Kea PostgreSQL
       ansible.builtin.wait_for:
         host: 127.0.0.1
         port: "{{ kea_db_port }}"
         state: started
         timeout: 60
+
+    - name: Ensure Kea PostgreSQL user exists
+      community.postgresql.postgresql_user:
+        name: kea
+        password: "{{ kea_db_password }}"
+        login_user: postgres
+        login_password: "{{ postgresql_admin_password }}"
+        login_host: 127.0.0.1
+        state: present
+      no_log: true
+
+    - name: Ensure Kea PostgreSQL database exists
+      community.postgresql.postgresql_db:
+        name: kea
+        owner: kea
+        login_user: postgres
+        login_password: "{{ postgresql_admin_password }}"
+        login_host: 127.0.0.1
+        state: present
+      no_log: true
 
     - name: Check Kea database schema version
       ansible.builtin.command: >-

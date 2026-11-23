@@ -36,7 +36,7 @@ variables:
   # DHCP settings
   foreman_proxy_dhcp_kea_url:
     parameter: --foreman-proxy-dhcp-kea-url
-    help: Kea DHCP HTTP API URL (e.g., http://127.0.0.1:18000)
+    help: Kea DHCP HTTP API URL (e.g., http://kea.example.com)
   foreman_proxy_dhcp_kea_username:
     parameter: --foreman-proxy-dhcp-kea-username
     help: HTTP Basic Auth username for Kea API

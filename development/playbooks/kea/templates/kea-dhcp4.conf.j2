@@ -34,9 +34,14 @@
       }
     ],
     "lease-database": {
-      "type": "memfile",
-      "persist": true,
-      "name": "/var/lib/kea/kea-leases4.csv"
+      "type": "postgresql",
+      "name": "kea",
+      "user": "kea",
+      "password": {{ kea_db_password | to_json }},
+      "host": "127.0.0.1",
+      "port": {{ kea_db_port }},
+      "max-reconnect-tries": 10,
+      "reconnect-wait-time": 1000
     },
     "hosts-database": {
       "type": "postgresql",
@@ -44,7 +49,9 @@
       "user": "kea",
       "password": {{ kea_db_password | to_json }},
       "host": "127.0.0.1",
-      "port": {{ kea_db_port }}
+      "port": {{ kea_db_port }},
+      "max-reconnect-tries": 10,
+      "reconnect-wait-time": 1000
     }
   }
 }
