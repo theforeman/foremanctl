@@ -1,0 +1,108 @@
+---
+- name: Run pre_install
+  ansible.builtin.import_role:
+    name: pre_install
+
+- name: Run checks
+  ansible.builtin.import_role:
+    name: checks
+  vars:
+    checks_databases: "{{ all_databases }}"
+
+- name: Run certificates
+  ansible.builtin.import_role:
+    name: certificates
+
+- name: Run certificate_checks
+  ansible.builtin.import_role:
+    name: certificate_checks
+  vars:
+    certificate_checks_certificate: "{{ server_certificate }}"
+    certificate_checks_key: "{{ server_key }}"
+    certificate_checks_ca: "{{ server_ca_certificate }}"
+
+- name: Run foreman_core_network
+  ansible.builtin.import_role:
+    name: foreman_core_network
+
+- name: Define systemd target
+  ansible.builtin.import_role:
+    name: systemd_target
+  vars:
+    systemd_target_start: false
+
+- name: Run postgresql
+  ansible.builtin.import_role:
+    name: postgresql
+  when:
+    - database_mode == 'internal'
+
+- name: Run valkey
+  ansible.builtin.import_role:
+    name: valkey
+  when:
+    - "enabled_features | has_feature('valkey')"
+
+- name: Run candlepin
+  ansible.builtin.import_role:
+    name: candlepin
+  when:
+    - "enabled_features | has_feature('candlepin')"
+
+- name: Run httpd
+  ansible.builtin.import_role:
+    name: httpd
+  when:
+    - "enabled_features | has_feature('httpd')"
+
+- name: Run foreman
+  ansible.builtin.import_role:
+    name: foreman
+  when:
+    - "enabled_features | has_feature('foreman')"
+
+- name: Run pulp
+  ansible.builtin.import_role:
+    name: pulp
+  when:
+    - "enabled_features | has_feature('pulp')"
+
+- name: Start systemd target
+  ansible.builtin.import_role:
+    name: systemd_target
+
+- name: Run iop_core
+  ansible.builtin.import_role:
+    name: iop_core
+  when:
+    - "enabled_features | has_feature('iop')"
+    - database_mode == 'internal'
+
+- name: Run foreman_proxy
+  ansible.builtin.import_role:
+    name: foreman_proxy
+  when:
+    - "enabled_features | has_feature('foreman-proxy')"
+
+- name: Run hammer
+  ansible.builtin.import_role:
+    name: hammer
+  when:
+    - "enabled_features | has_feature('hammer')"
+
+- name: Run cloud_connector
+  ansible.builtin.import_role:
+    name: cloud_connector
+  when:
+    - enabled_features | has_feature('cloud-connector')
+
+- name: Run post_install
+  ansible.builtin.import_role:
+    name: post_install
+  vars:
+    post_install_foreman_ca_path: "{{ foreman_ca_certificate }}"
+    post_install_foreman_oauth_consumer_key: "{{ foreman_oauth_consumer_key }}"
+    post_install_foreman_oauth_consumer_secret: "{{ foreman_oauth_consumer_secret }}"
+    post_install_foreman_server_url: "{{ foreman_url }}"
+    post_install_foreman_initial_admin_password: "{{ foreman_initial_admin_password }}"
+    post_install_foreman_initial_admin_username: "{{ foreman_initial_admin_username }}"

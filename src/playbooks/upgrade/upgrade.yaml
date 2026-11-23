@@ -1,0 +1,44 @@
+---
+- name: Upgrade
+  hosts:
+    - quadlet
+  become: true
+  vars:
+    flavor: katello
+  vars_files:
+    - "../../vars/defaults.yml"
+    - "../../vars/flavors/{{ flavor }}.yml"
+    - "../../vars/certificates.yml"
+    - "../../vars/images.yml"
+    - "../../vars/tuning/{{ tuning }}.yml"
+    - "../../vars/database.yml"
+    - "../../vars/foreman.yml"
+    - "../../vars/logging.yml"
+    - "../../vars/base.yaml"
+  pre_tasks:
+    - name: Check for an existing installation
+      ansible.builtin.stat:
+        path: /etc/systemd/system/foreman.target
+      register: upgrade_foreman_target
+
+    - name: Fail if no existing installation is present
+      ansible.builtin.fail:
+        msg: "No existing installation found. Run 'foremanctl deploy' first; 'foremanctl upgrade' only upgrades an existing deployment."
+      when: not upgrade_foreman_target.stat.exists
+
+    # Pre-upgrade orchestration placeholders (implemented separately):
+    # - maintenance mode / network blocking (SAT-44796)
+    # - disable sync plans, validate no running tasks (SAT-52183)
+    - name: Stop Foreman services before upgrade
+      ansible.builtin.systemd:
+        name: foreman.target
+        state: stopped
+  roles:
+    - role: server
+  post_tasks:
+    - name: Run registered upgrade tasks
+      ansible.builtin.include_role:
+        name: foreman
+        tasks_from: upgrade
+    # Post-upgrade orchestration placeholders (implemented separately):
+    # - Pulp data repair (SAT-51900), repository indexing, re-enable sync plans (SAT-52183)

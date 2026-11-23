@@ -1,0 +1,3 @@
+---
+help: |
+  Upgrade an existing deployment and run registered upgrade tasks

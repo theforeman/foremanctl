@@ -1,0 +1,41 @@
+---
+# Deploy runs db:seed (which registers upgrade tasks) only when migrations are
+# pending; re-run it here so migration-less upgrades register their tasks too
+- name: Register upgrade tasks via db:seed when no migration ran
+  ansible.builtin.systemd:
+    name: foreman-db-migrate.service
+    state: restarted
+  when: not (foreman_migration_needed | default(false))
+
+- name: Verify Foreman is available before running upgrade tasks
+  ansible.builtin.include_tasks: wait.yaml
+
+- name: Deploy Foreman upgrade tasks container
+  containers.podman.podman_container:
+    name: foreman-upgrade-run
+    state: quadlet
+    image: foreman.image
+    sdnotify: false
+    network: "{{ foreman_networks }}"
+    hostname: "{{ ansible_facts['hostname'] }}.local"
+    command: foreman-rake upgrade:run
+    volume:
+      - 'foreman-data-run:/var/run/foreman:rw,z,U'
+    env: "{{ foreman_env }}"
+    secrets: "{{ foreman_secrets }}"
+    quadlet_options:
+      - "HttpProxy=false"
+      - |
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        TimeoutStartSec=30m
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Run Foreman upgrade tasks
+  ansible.builtin.systemd:
+    name: foreman-upgrade-run.service
+    state: restarted
