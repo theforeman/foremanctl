@@ -122,6 +122,12 @@ def test_tftp_settings_configured(server, proxy_v2_features, obsah_params, tftp_
 
     assert settings[":tftproot"] == tftp_mount["Destination"]
     assert settings.get(":tftp_servername") == obsah_params.get("foreman_proxy_tftp_servername")
+    assert settings[":tftp_http_download_preflight"] == obsah_params.get(
+        "foreman_proxy_tftp_http_download_preflight", True
+    )
+    assert settings[":tftp_download_max_time"] == int(obsah_params.get(
+        "foreman_proxy_tftp_download_max_time", 3600
+    ))
 
 
 @pytest.mark.feature("tftp")

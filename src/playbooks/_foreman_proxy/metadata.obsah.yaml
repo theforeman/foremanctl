@@ -32,3 +32,15 @@ variables:
   foreman_proxy_tftp_servername:
     parameter: --tftp-servername
     help: TFTP server hostname or IP address reachable by booting clients.
+  foreman_proxy_tftp_http_download_preflight:
+    parameter: --tftp-http-download-preflight
+    help: >-
+      Perform an HTTP HEAD request before downloading TFTP boot files. Disable
+      this for servers that do not support HEAD requests. Defaults to true.
+    type: Boolean
+  foreman_proxy_tftp_download_max_time:
+    parameter: --tftp-download-max-time
+    help: >-
+      Maximum time in seconds for each curl transfer attempt. Curl retries
+      transient failures up to three times, and this timeout applies per
+      attempt. Defaults to 3600.

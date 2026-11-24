@@ -35,3 +35,11 @@ foremanctl deploy-proxy \
   --tftp-root /srv/provisioning/tftp \
   --tftp-servername 192.0.2.10
 ```
+
+By default, Smart Proxy checks HTTP sources with a HEAD request before it
+downloads TFTP boot files. Set `--tftp-http-download-preflight false` when a
+source server does not support HEAD requests.
+
+Each curl transfer attempt is limited to 3600 seconds by default. Set
+`--tftp-download-max-time` to change the limit; transient failures are
+retried up to three times, with the timeout applied per attempt.

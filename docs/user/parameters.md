@@ -161,6 +161,8 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--add-feature tftp` | Enable the Smart Proxy TFTP integration. Requires `foreman-proxy` and an independently managed TFTP server. Foremanctl creates the directory if needed and configures Smart Proxy access. See the [TFTP integration guide](tftp.md). | `--foreman-proxy-tftp` |
 | `--tftp-root` | Absolute directory on the host running the Smart Proxy. Defaults to `/var/lib/tftpboot`. Foremanctl creates it if missing and configures ownership and permissions for Smart Proxy. | `--foreman-proxy-tftp-root` |
 | `--tftp-servername` | TFTP server hostname or IP address that booting clients can reach. An IP address avoids depending on client DNS. Defaults to the Smart Proxy hostname if not specified. | `--foreman-proxy-tftp-servername` |
+| `--tftp-http-download-preflight` | Perform an HTTP HEAD request before downloading TFTP boot files. Disable this for servers that do not support HEAD requests. Defaults to true. | — |
+| `--tftp-download-max-time` | Maximum time in seconds for each curl transfer attempt. Curl retries transient failures up to three times, and this timeout applies per attempt. Defaults to 3600. | — |
 
 ### Unmapped
 
