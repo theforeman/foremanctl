@@ -375,18 +375,7 @@ jobs:
           ./foremanctl migrate --apply
       - name: Run deployment
         run: |
-          ./foremanctl deploy \
-            --tuning development \
-            --add-feature hammer \
-            --add-feature foreman-proxy \
-            --add-feature ansible \
-            --add-feature azure-rm \
-            --add-feature bmc \
-            --add-feature google \
-            --add-feature remote-execution \
-            --add-feature webhooks \
-            --add-feature tftp \
-            --tftp-servername quadlet.example.com
+          ./foremanctl deploy
       - name: Run tests
         run: |
           ./forge test --pytest-args="--featureset=migration"

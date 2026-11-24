@@ -12,14 +12,66 @@ def cast_database_mode(value):
 
 
 def map_tftp_feature(value):
-    """Represent installer TFTP enablement in foremanctl's additive feature list."""
+    return map_feature(value, 'tftp')
+
+
+def map_foreman_feature(value):
+    return map_feature(value, 'foreman')
+
+
+def map_foreman_proxy_feature(value):
+    return map_feature(value, 'foreman-proxy')
+
+
+def map_hammer_feature(value):
+    return map_feature(value, 'hammer')
+
+
+def map_katello_feature(value):
+    return map_feature(value, 'katello')
+
+
+def map_ansible_feature(value):
+    return map_feature(value, 'ansible')
+
+
+def map_azure_feature(value):
+    return map_feature(value, 'azure-rm')
+
+
+def map_google_feature(value):
+    return map_feature(value, 'google')
+
+
+def map_remote_execution_feature(value):
+    return map_feature(value, 'remote-execution')
+
+
+def map_rh_cloud_feature(value):
+    return map_feature(value, 'rh-cloud')
+
+
+def map_tasks_feature(value):
+    return map_feature(value, 'tasks')
+
+
+def map_virt_who_feature(value):
+    return map_feature(value, 'virt-who')
+
+
+def map_webhooks_feature(value):
+    return map_feature(value, 'webhooks')
+
+
+def map_feature(value, name):
+    """Represent installer feature in foremanctl's additive feature list."""
     if value is None:
         return None
 
     if isinstance(value, bool):
-        return ['tftp'] if value else []
+        return [name] if value else []
 
-    raise ValueError(f"Invalid foreman_proxy::tftp value: {value!r}; expected a boolean")
+    raise ValueError(f"Invalid value: {value!r}; expected a boolean")
 
 
 PARAMETER_MAP = {
@@ -33,6 +85,7 @@ PARAMETER_MAP = {
     ('foreman', 'db_sslmode'): 'database_ssl_mode',
     ('foreman', 'db_root_cert'): 'database_ssl_ca',
     ('foreman', 'db_manage_rake'): 'IGNORE',  # Not needed in new format
+    ('foreman', 'db_extra_options'): 'IGNORE',
     ('foreman_proxy_content', 'pulpcore_postgresql_user'): 'pulp_database_user',
     ('foreman_proxy_content', 'pulpcore_postgresql_password'): 'pulp_database_password',
     ('foreman_proxy_content', 'pulpcore_postgresql_db_name'): 'pulp_database_name',
@@ -72,6 +125,31 @@ PARAMETER_MAP = {
     ('foreman_proxy', 'tftp_root'): 'foreman_proxy_tftp_root',
     ('foreman_proxy', 'tftp_servername'): 'foreman_proxy_tftp_servername',
     ('foreman_proxy', 'tftp_managed'): 'IGNORE',
+
+    # Base features
+    'foreman': ('features', map_foreman_feature),
+    'foreman::cli': ('features', map_hammer_feature),
+    'foreman_proxy': ('features', map_foreman_proxy_feature),
+    'foreman_proxy_content': 'IGNORE',
+
+    # Foreman Plugins
+    'katello': ('features', map_katello_feature),
+    'foreman::plugin::ansible': ('features', map_ansible_feature),
+    'foreman::plugin::azure': ('features', map_azure_feature),
+    # 'foreman::plugin::bootdisk': ('features', map_x_feature),
+    # 'foreman::plugin::discovery': ('features', map_x_feature),
+    'foreman::plugin::google': ('features', map_google_feature),
+    # 'foreman::plugin::kubevirt': ('features', map_x_feature),
+    # 'foreman::plugin::leapp': ('features', map_x_feature),
+    # 'foreman::plugin::openscap': ('features', map_x_feature),
+    # 'foreman::plugin::puppet': ('features', map_x_feature),
+    'foreman::plugin::remote_execution': ('features', map_remote_execution_feature),
+    # 'foreman::plugin::remote_execution::cockpit': ('features', map_x_feature),
+    'foreman::plugin::rh_cloud': ('features', map_rh_cloud_feature),
+    'foreman::plugin::tasks': ('features', map_tasks_feature),
+    # 'foreman::plugin::templates': ('features', map_x_feature),
+    'foreman::plugin::virt_who_configure': ('features', map_virt_who_feature),
+    'foreman::plugin::webhooks': ('features', map_webhooks_feature),
 
     # TODO: Add more mappings as discovered
 }
@@ -161,6 +239,11 @@ def flatten_nested_dict(nested_dict, parent_key=''):
     items = []
     for key, value in nested_dict.items():
         if isinstance(value, dict):
+            # a dict, even an empty one, indicates that the module is "enabled"
+            if parent_key:
+                items.append(((parent_key, key), True))
+            else:
+                items.append((key, True))
             items.extend(flatten_nested_dict(value, key).items())
         else:
             if parent_key:

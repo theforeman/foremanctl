@@ -218,7 +218,7 @@ class TestParameterMapping:
 
         result = migrate_answers.apply_mappings(old_config)
 
-        assert result['mapped']['features'] == ['tftp']
+        assert set(result['mapped']['features']) == {'tftp', 'foreman-proxy'}
         assert has_feature(result['mapped']['features'], 'foreman-proxy')
         assert result['mapped']['foreman_proxy_tftp_root'] == '/srv/provisioning/tftp'
         assert result['mapped']['foreman_proxy_tftp_servername'] == '192.0.2.10'
@@ -245,7 +245,7 @@ class TestParameterMapping:
             }
         })
 
-        assert 'features' not in result['mapped']
+        assert result['mapped']['features'] == ['foreman-proxy']
         assert result['mapped']['foreman_proxy_tftp_root'] == '/srv/provisioning/tftp'
         assert result['mapped']['foreman_proxy_tftp_servername'] == 'tftp.example.test'
 
@@ -261,7 +261,7 @@ class TestParameterMapping:
             'foreman_proxy': {'tftp': True, 'another_feature': True}
         })
 
-        assert result['mapped']['features'] == ['tftp', 'other']
+        assert set(result['mapped']['features']) == {'tftp', 'other', 'foreman-proxy'}
         assert has_feature(result['mapped']['features'], 'foreman-proxy')
 
     def test_enabled_tftp_with_missing_values_reports_operator_requirements(self):
@@ -270,11 +270,33 @@ class TestParameterMapping:
             'foreman_proxy': {'tftp': True, 'tftp_servername': None, 'tftp_root': None}
         })
 
-        assert result['mapped']['features'] == ['tftp']
+        assert set(result['mapped']['features']) == {'tftp', 'foreman-proxy'}
         assert has_feature(result['mapped']['features'], 'foreman-proxy')
         assert 'foreman_proxy_tftp_servername' not in result['mapped']
         assert 'foreman_proxy_tftp_root' not in result['mapped']
         assert any('/var/lib/tftpboot' in warning for warning in result['warnings'])
+
+    def test_full_katello_answers_enabled_features(self, fixture_dir):
+        """Migrate the full katello answers fixture and check the enabled features."""
+        old_config = migrate_answers.load_answer_file(fixture_dir / 'installer-answers/katello-answers.yaml')
+
+        result = migrate_answers.apply_mappings(old_config)
+
+        assert set(result['mapped']['features']) == {
+            'foreman',
+            'foreman-proxy',
+            'hammer',
+            'katello',
+            'ansible',
+            'azure-rm',
+            'google',
+            'remote-execution',
+            'rh-cloud',
+            'tasks',
+            'tftp',
+            'virt-who',
+            'webhooks',
+        }
 
 
 class TestFileOperations:
