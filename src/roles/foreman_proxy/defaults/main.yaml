@@ -25,6 +25,8 @@ foreman_proxy_foreman_server_url: "https://{{ ansible_facts['fqdn'] }}"
 foreman_proxy_templates_url: "http://{{ foreman_proxy_name }}:8000"
 
 foreman_proxy_tftp_root: /var/lib/tftpboot
+foreman_proxy_tftp_http_download_preflight: true
+foreman_proxy_tftp_download_max_time: 3600
 # The Smart Proxy image user owns TFTP files. Update these values if that image user changes.
 foreman_proxy_container_uid: 991
 
