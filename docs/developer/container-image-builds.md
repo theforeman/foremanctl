@@ -78,6 +78,8 @@ In CI, run `forge deploy-packit` after `foremanctl pull-images` and before deplo
 
 ### Combining PRs from multiple repositories
 
+For a complete build and deployment in one command, use `forge deploy-packit-stack` as described below. Use the individual commands in this section when you want to prepare images without deploying them yet.
+
 Repeat `--pr-url` to combine core and plugin PRs for the selected component. All supplied Packit repositories are enabled before packages are upgraded in one DNF transaction, so dependencies between the PR builds can be resolved together. Single-PR commands using `--pr` or `--pr-url` continue to work.
 
 For example, to test changes across Foreman, Smart Proxy, and their Ansible plugins (replace these example PR numbers with your own):
@@ -106,3 +108,37 @@ Each PR needs a successful RHEL 10 Packit build. The image build fails if any se
 Use full URLs for all PRs in a combined build; `--pr-url` cannot be combined with `--pr`, `--repo-org`, or `--repo-name`. Each URL may specify a different organization or repository. Repeated identical URLs are ignored.
 
 Running `foremanctl pull-images` after building replaces the local PR images with registry images. Run it before the sequence above, or to reset the images before testing a different combination.
+
+### Building and deploying in one command
+
+Use `forge deploy-packit-stack` to build and deploy a complete combination of PRs. The VMs and their package repositories must already be configured, as for a normal `foremanctl deploy` or `deploy-proxy` run.
+
+For a Foreman server with its local proxy:
+
+```bash
+./forge deploy-packit-stack \
+  --foreman-pr-url https://github.com/theforeman/foreman/pull/100 \
+  --foreman-pr-url https://github.com/theforeman/foreman_ansible/pull/200 \
+  --proxy-pr-url https://github.com/theforeman/smart-proxy/pull/300 \
+  --proxy-pr-url https://github.com/theforeman/smart_proxy_ansible/pull/400 \
+  --deploy-args='--initial-admin-password changeme --tuning development --add-feature ansible'
+```
+
+Repeat either PR option to combine core and plugin builds in one RPM transaction per component. Only one component needs PRs; omit the other component's options when testing only server or proxy changes. Supplying proxy PRs for a server automatically adds the `foreman-proxy` feature.
+
+For a standalone proxy, first generate an auth bundle on its Foreman server as usual, then run:
+
+```bash
+./forge deploy-packit-stack --deployment proxy \
+  --proxy-pr-url https://github.com/theforeman/smart-proxy/pull/300 \
+  --proxy-pr-url https://github.com/theforeman/smart_proxy_ansible/pull/400 \
+  --deploy-args='--auth-bundle /absolute/path/proxy.example.com.tar.gz --foreman-fqdn foreman.example.com'
+```
+
+The server workflow targets `quadlet` and calls `foremanctl deploy`. The standalone proxy workflow targets `proxy` and calls `foremanctl deploy-proxy`; it accepts only proxy PRs. Each selects the matching default flavor (`katello` or `foreman-proxy-content`), with an explicit `--flavor` in `--deploy-args` taking precedence.
+
+Pass existing deployment options through `--deploy-args`. Quoted values are preserved, for example `--deploy-args='--initial-organization "My organization" --tuning development'`. The command validates the options against the existing deployment CLI before changing any hosts, and normal persisted deployment parameters continue to apply.
+
+For each selected component, the workflow pulls a fresh base image and builds the requested PRs. Other runtime images are pulled by the normal deployment as needed. After all builds succeed, it stops an existing `foreman.target` and deploys the local images. A failed build stops the workflow before services are stopped or deployment is attempted. Deployment failures are returned to the caller with the deployment output.
+
+No separate `pull-images` or service-stop command is needed. The image builds require registry access and successful EL10 Packit builds; air-gapped deployment is not supported by this workflow. As with `deploy-packit`, plugin RPMs must already be installed in their base image, and the required plugin features must be enabled with deployment options.

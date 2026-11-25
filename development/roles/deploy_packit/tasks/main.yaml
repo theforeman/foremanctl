@@ -11,7 +11,8 @@
     name: "{{ deploy_packit_base_image }}"
     state: present
     pull: true
-    pull_policy: missing
+    force: "{{ deploy_packit_pull }}"
+    pull_policy: "{{ deploy_packit_pull | ternary('always', 'missing') }}"
 
 - name: Inspect the base image user
   become: true
@@ -55,6 +56,7 @@
       when: deploy_packit_build_context is defined and deploy_packit_build_context.path is defined
 
 - name: Show the next step
+  when: deploy_packit_show_next_step
   ansible.builtin.debug:
     msg: >-
       Built {{ deploy_packit_target_image }} with Packit projects {{ deploy_packit_projects | join(', ') }} directly in

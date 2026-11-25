@@ -6,6 +6,10 @@ OBSAH_DATA=${OBSAH_BASE}/development
 OBSAH_INVENTORY=${OBSAH_BASE}/inventories
 OBSAH_STATE=${OBSAH_BASE}/.var/lib/foremanctl
 OBSAH_PERSIST_PARAMS=true
+# The nested foremanctl deployment owns parameter persistence for this workflow.
+if [[ "${1:-}" == deploy-packit-stack ]]; then
+  OBSAH_PERSIST_PARAMS=false
+fi
 export OBSAH_NAME OBSAH_DATA OBSAH_INVENTORY OBSAH_STATE OBSAH_PERSIST_PARAMS
 
 ANSIBLE_COLLECTIONS_PATH=${OBSAH_BASE}/build/collections/forge

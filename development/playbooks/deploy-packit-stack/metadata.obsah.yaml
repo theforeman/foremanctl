@@ -1,0 +1,42 @@
+---
+help: |
+  Build and deploy Packit PR images for a server or standalone proxy.
+
+  Repeat --foreman-pr-url and --proxy-pr-url to group core and plugin PRs
+  into one image build per component. Select --deployment proxy for a
+  standalone proxy on the proxy inventory host; the default is a server
+  on quadlet. Supply normal foremanctl deploy or deploy-proxy options
+  as a quoted string using --deploy-args.
+
+  The command pulls fresh component base images, builds the PR images,
+  stops an existing foreman.target, and deploys. VMs and repositories
+  must already be configured. Packit PRs need successful EL10 builds.
+
+variables:
+  deploy_packit_stack_deployment:
+    parameter: --deployment
+    help: "Deployment type. Default: server."
+    choices:
+      - server
+      - proxy
+    persist: false
+  deploy_packit_stack_foreman_urls:
+    parameter: --foreman-pr-url
+    help: Foreman core or plugin PR URL. Repeat to combine PRs.
+    action: append_unique
+    persist: false
+  deploy_packit_stack_proxy_urls:
+    parameter: --proxy-pr-url
+    help: Smart Proxy core or plugin PR URL. Repeat to combine PRs.
+    action: append_unique
+    persist: false
+  deploy_packit_stack_deploy_args:
+    parameter: --deploy-args
+    help: Quoted options for foremanctl deploy or deploy-proxy, such as --tuning development.
+    persist: false
+
+constraints:
+  required_one_of:
+    - [deploy_packit_stack_foreman_urls, deploy_packit_stack_proxy_urls]
+  forbidden_if:
+    - [deploy_packit_stack_deployment, proxy, [deploy_packit_stack_foreman_urls]]

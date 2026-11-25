@@ -50,7 +50,7 @@ jobs:
           pip install --upgrade pip
           pip install ruff
       - name: Run ruff
-        run: ruff check --output-format=github tests/ src/ development/scripts/ development/tests/ inventories/
+        run: ruff check --output-format=github tests/ src/ development/scripts/ development/filter_plugins/ development/tests/ inventories/
 
   development-unit-tests:
     name: Development tool tests

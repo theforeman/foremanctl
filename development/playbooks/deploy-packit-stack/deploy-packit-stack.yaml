@@ -1,0 +1,80 @@
+---
+- name: Plan the Packit deployment
+  hosts: localhost
+  gather_facts: false
+  any_errors_fatal: true
+  vars:
+    deploy_packit_stack_request: >-
+      {{ deploy_packit_stack_deployment | default('server')
+         | packit_stack_plan(deploy_packit_stack_foreman_urls | default([]),
+                             deploy_packit_stack_proxy_urls | default([]),
+                             deploy_packit_stack_deploy_args | default('')) }}
+  tasks:
+    - name: Validate deployment options and require the target host in inventory
+      ansible.builtin.assert:
+        that:
+          - deploy_packit_stack_request.target in groups['all']
+        fail_msg: "Configure the {{ deploy_packit_stack_request.target }} inventory host before deploying."
+
+    - name: Save the validated deployment plan
+      ansible.builtin.set_fact:
+        deploy_packit_stack_plan: "{{ deploy_packit_stack_request }}"
+      no_log: true
+
+- name: Build the Packit images on the deployment host
+  hosts: "{{ 'proxy' if deploy_packit_stack_deployment | default('server') == 'proxy' else 'quadlet' }}"
+  gather_facts: false
+  any_errors_fatal: true
+  vars_files:
+    - "../../../src/vars/images.yml"
+  tasks:
+    - name: Pull fresh bases and build requested component images
+      ansible.builtin.include_role:
+        name: deploy_packit
+      vars:
+        deploy_packit_component: "{{ deploy_packit_stack_component.key }}"
+        deploy_packit_projects: "{{ deploy_packit_stack_component.value }}"
+        deploy_packit_pull: true
+        deploy_packit_show_next_step: false
+      loop: "{{ hostvars['localhost']['deploy_packit_stack_plan']['projects'] | dict2items }}"
+      loop_control:
+        loop_var: deploy_packit_stack_component
+        label: "{{ deploy_packit_stack_component.key }}"
+
+    - name: Stop existing services after all image builds succeed
+      tags:
+        - packit-stop-services
+      become: true
+      block:
+        - name: Check for an existing Foreman target
+          ansible.builtin.stat:
+            path: /etc/systemd/system/foreman.target
+          register: deploy_packit_stack_target
+
+        - name: Stop the existing Foreman target
+          ansible.builtin.systemd_service:
+            name: foreman.target
+            state: stopped
+          when: deploy_packit_stack_target.stat.exists
+
+- name: Deploy the Packit images
+  hosts: localhost
+  gather_facts: false
+  any_errors_fatal: true
+  tasks:
+    - name: Run the normal deployment command
+      block:
+        - name: Deploy using the locally built images
+          ansible.builtin.command:
+            argv: >-
+              {{ [deploy_packit_stack_foremanctl | default(playbook_dir ~ '/../../../foremanctl'),
+                  deploy_packit_stack_plan.command] + deploy_packit_stack_plan.arguments }}
+          register: deploy_packit_stack_result
+          changed_when: true
+          no_log: true
+      always:
+        - name: Show deployment output
+          ansible.builtin.debug:
+            msg: >-
+              {{ (deploy_packit_stack_result.stdout_lines | default([]))
+                 + (deploy_packit_stack_result.stderr_lines | default([])) }}
