@@ -89,6 +89,11 @@ def test_invalid_answer_file_preserves_ssl_build(server, pytestconfig):
 
     log_path = os.path.join(os.environ.get("OBSAH_STATE", ".var/lib/foremanctl"), "foremanctl.log")
     try:
+        previous_log = os.stat(log_path)
+        log_marker = (previous_log.st_ino, previous_log.st_size)
+    except OSError:
+        log_marker = None
+    try:
         result = subprocess.run(
             ["./foremanctl", "migrate", "--apply", "--answer-file", answer_file],
             check=False,
@@ -96,7 +101,16 @@ def test_invalid_answer_file_preserves_ssl_build(server, pytestconfig):
             text=True,
         )
         try:
+            current_log = os.stat(log_path)
             with open(log_path, errors="replace") as log_file:
+                # Same file was appended. A rotated log is a new inode and is read from the start.
+                appended = (
+                    log_marker is not None
+                    and current_log.st_ino == log_marker[0]
+                    and current_log.st_size >= log_marker[1]
+                )
+                if appended:
+                    log_file.seek(log_marker[1])
                 log_output = log_file.read()
         except OSError:
             log_output = ""
