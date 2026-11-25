@@ -53,6 +53,22 @@ Do not combine `--add-feature` flags into the initial deploy step. The base depl
 
 ## Running tests
 
+### Development tool tests
+
+Tests for development tools live in `development/tests/`, separately from the deployment tests in `tests/`. They run once in the **Development tool tests** CI job and do not need deployed VMs or `.tmp/ssh-config`.
+
+After setting up the development environment, run them with:
+
+```bash
+pytest development/tests/ -v
+```
+
+The Packit tests check component and repository selection using local Ansible playbooks. The `fake_dnf` pytest fixture supplies an executable DNF test double from `development/tests/helpers/`. It checks upgrade ordering and failure handling without installing RPMs or building containers. An executable is needed because the Containerfile runs DNF in a separate shell process.
+
+Default pytest collection is limited to `tests/` by `pytest.toml`, so `forge test` does not collect this development-tool suite. Explicit paths still work: `pytest development/tests/` runs local tool tests, while `forge test --pytest-args="tests/development/"` runs integration tests for a deployed development environment.
+
+### Deployment tests
+
 A working deployment is required before running tests.
 
 ```bash

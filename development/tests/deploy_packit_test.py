@@ -15,6 +15,19 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 @pytest.fixture
+def fake_dnf(tmp_path, monkeypatch):
+    bin_dir = tmp_path / 'bin'
+    bin_dir.mkdir()
+    executable = bin_dir / 'dnf'
+    shutil.copyfile(Path(__file__).parent / 'helpers/dnf.py', executable)
+    executable.chmod(0o755)
+    log = tmp_path / 'dnf-calls.jsonl'
+    monkeypatch.setenv('PATH', f'{bin_dir}:{os.environ["PATH"]}')
+    monkeypatch.setenv('DNF_LOG', str(log))
+    return log
+
+
+@pytest.fixture
 def packit_parser(monkeypatch, tmp_path):
     monkeypatch.setenv('OBSAH_DATA', str(ROOT / 'development'))
     monkeypatch.setenv('OBSAH_STATE', str(tmp_path))
@@ -126,45 +139,19 @@ def test_every_pull_request_url_is_validated(packit_parser, tmp_path, url):
 
 
 @pytest.mark.parametrize('failure', [None, 'enable', 'query', 'query-second', 'empty', 'empty-second', 'upgrade'])
-def test_repositories_upgrade_in_one_transaction(tmp_path, failure):
+def test_repositories_upgrade_in_one_transaction(fake_dnf, failure):
     """Execute the Containerfile's RPM commands with a DNF stub that records calls."""
-    log = tmp_path / 'dnf-calls.jsonl'
-    dnf = tmp_path / 'dnf'
-    dnf.write_text('''#!/usr/bin/env python3
-import json
-import os
-import sys
-
-args = sys.argv[1:]
-with open(os.environ['DNF_LOG'], 'a') as log:
-    log.write(json.dumps(args) + '\\n')
-failure = os.environ['DNF_FAILURE']
-second_repo = '--repo=copr:copr.fedorainfracloud.org:packit:example-smart_proxy_ansible-200' in args
-if (failure == 'enable' and 'enable' in args
-        or failure == 'query' and 'repoquery' in args
-        or failure == 'query-second' and 'repoquery' in args and second_repo
-        or failure == 'upgrade' and 'upgrade' in args):
-    sys.exit(1)
-if 'repoquery' in args and failure != 'empty' and not (failure == 'empty-second' and second_repo):
-    if second_repo:
-        print('rubygem-smart_proxy_ansible-0:3.0.0-0.pr200.noarch')
-    else:
-        print('foreman-proxy-0:5.2.0-0.pr100.noarch')
-''')
-    dnf.chmod(0o755)
     containerfile = (ROOT / 'development/roles/deploy_packit/files/Containerfile').read_text()
     command = 'set -e && ' + containerfile.split('RUN set -e && ', 1)[1].split('\nUSER ', 1)[0]
     result = subprocess.run(
         ['/bin/sh', '-c', command],
         env=os.environ | {
-            'PATH': f'{tmp_path}:{os.environ["PATH"]}',
-            'DNF_LOG': str(log),
             'DNF_FAILURE': failure or '',
             'PACKIT_PROJECTS': 'theforeman-smart-proxy-100 example-smart_proxy_ansible-200',
         },
         capture_output=True, text=True,
     )
-    calls = [json.loads(line) for line in log.read_text().splitlines()]
+    calls = [json.loads(line) for line in fake_dnf.read_text().splitlines()]
     if failure:
         assert result.returncode != 0, result.stdout + result.stderr
         assert ['clean', 'all'] not in calls
