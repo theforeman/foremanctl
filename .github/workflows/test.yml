@@ -370,6 +370,9 @@ jobs:
         run: |
           mkdir -p .var/lib/foremanctl
           ./foremanctl migrate
+      - name: Reject invalid answers before removing installer certificates
+        run: |
+          ./forge test --pytest-args="tests/migration_test.py::test_invalid_answer_file_preserves_ssl_build --require-ssl-build"
       - name: Run migration
         run: |
           ./foremanctl migrate --apply
