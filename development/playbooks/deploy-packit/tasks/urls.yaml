@@ -1,0 +1,19 @@
+---
+- name: Validate Packit pull request URLs
+  ansible.builtin.assert:
+    that:
+      - item | urlsplit('scheme') == 'https'
+      - item | urlsplit('hostname') == 'github.com'
+      - item | urlsplit('path') is match('^/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+/pull/[0-9]+/?$')
+    fail_msg: PR URLs must be HTTPS GitHub pull request URLs ending in /pull/NUMBER.
+  loop: "{{ deploy_packit_url_group.value }}"
+
+- name: Add projects from PR URLs
+  ansible.builtin.set_fact:
+    deploy_packit_requests: >-
+      {{ deploy_packit_requests | combine({deploy_packit_url_group.key:
+         (deploy_packit_requests[deploy_packit_url_group.key] + [deploy_packit_url_project]) | unique | list}) }}
+  vars:
+    deploy_packit_url_parts: "{{ (item | urlsplit('path') | regex_replace('/$', '')).split('/') }}"
+    deploy_packit_url_project: "{{ deploy_packit_url_parts[1] }}-{{ deploy_packit_url_parts[2] }}-{{ deploy_packit_url_parts[4] }}"
+  loop: "{{ deploy_packit_url_group.value }}"

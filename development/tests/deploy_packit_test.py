@@ -77,17 +77,19 @@ def _check_selection(parser, tmp_path, cli_args, image_vars, projects, base_imag
     variables['expected_projects'] = projects
     variables['expected_base_image'] = base_image
     variables['expected_target_image'] = target_image
-    source = yaml.safe_load((ROOT / 'development/playbooks/deploy-packit/deploy-packit.yaml').read_text())[0]
     playbook = tmp_path / 'check-component.yaml'
     playbook.write_text(yaml.safe_dump([{
         'hosts': 'localhost',
         'gather_facts': False,
         'vars': variables,
-        'tasks': source['pre_tasks'] + [{
+        'tasks': [{
+            'name': 'Parse the requested projects',
+            'ansible.builtin.import_tasks': str(ROOT / 'development/playbooks/deploy-packit/tasks/requests.yaml'),
+        }, {
             'name': 'Check selected image and repository',
             'ansible.builtin.assert': {
                 'that': [
-                    'deploy_packit_projects == expected_projects',
+                    'deploy_packit_requests[deploy_packit_component] == expected_projects',
                     'deploy_packit_base_image == expected_base_image',
                     'deploy_packit_target_image == expected_target_image',
                 ],

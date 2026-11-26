@@ -1,0 +1,66 @@
+---
+- name: Prepare the requested Packit projects
+  hosts: localhost
+  gather_facts: false
+  any_errors_fatal: true
+  tasks:
+    - name: Normalize legacy and grouped PR options
+      ansible.builtin.import_tasks: ../tasks/requests.yaml
+
+    - name: Validate the deployment target and requested components
+      ansible.builtin.assert:
+        that:
+          - deploy_packit_target_host in groups['all']
+          - deploy_packit_requests.values() | flatten | length > 0
+          - deploy_packit_deployment != 'proxy' or deploy_packit_requests.foreman | length == 0
+          - not (deploy_packit_deploy | default(false) | bool) or deploy_packit_target_host == deploy_packit_normal_target
+          - not (deploy_packit_deploy | default(false) | bool) or not (air_gapped | default(false) | bool)
+          - >-
+            not (deploy_packit_deploy | default(false) | bool)
+            or deploy_packit_deployment == 'proxy'
+            or deploy_packit_requests['foreman-proxy'] | length == 0
+            or 'foreman-proxy' in features | default([])
+        fail_msg: >-
+          Configure the target inventory host and supply PRs for its components.
+          --deploy uses {{ deploy_packit_normal_target }}, requires registry access,
+          and requires --add-feature foreman-proxy when building a server's local proxy.
+      vars:
+        deploy_packit_normal_target: "{{ 'proxy' if deploy_packit_deployment == 'proxy' else 'quadlet' }}"
+        deploy_packit_target_host: "{{ target_host | default(deploy_packit_normal_target, true) }}"
+
+- name: Build the requested component images
+  hosts: "{{ target_host | default('proxy' if deploy_packit_deployment | default('server') == 'proxy' else 'quadlet', true) }}"
+  gather_facts: false
+  any_errors_fatal: true
+  vars_files:
+    - "../../../../src/vars/images.yml"
+  tasks:
+    - name: Build each component once with all its PRs
+      ansible.builtin.include_role:
+        name: deploy_packit
+      vars:
+        deploy_packit_component: "{{ deploy_packit_request.key }}"
+        deploy_packit_projects: "{{ deploy_packit_request.value }}"
+        deploy_packit_pull: "{{ deploy_packit_deploy | default(false) | bool }}"
+        deploy_packit_show_next_step: "{{ not (deploy_packit_deploy | default(false) | bool) }}"
+      loop: "{{ hostvars['localhost'].deploy_packit_requests | dict2items | selectattr('value') | list }}"
+      loop_control:
+        loop_var: deploy_packit_request
+        label: "{{ deploy_packit_request.key }}"
+
+    - name: Stop existing services only after successful image builds
+      when: deploy_packit_deploy | default(false) | bool
+      tags:
+        - packit-stop-services
+      become: true
+      block:
+        - name: Check for an existing Foreman target
+          ansible.builtin.stat:
+            path: /etc/systemd/system/foreman.target
+          register: deploy_packit_existing_target
+
+        - name: Stop the existing Foreman target
+          ansible.builtin.systemd_service:
+            name: foreman.target
+            state: stopped
+          when: deploy_packit_existing_target.stat.exists

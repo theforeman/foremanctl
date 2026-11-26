@@ -1,0 +1,35 @@
+---
+- name: Select the component for legacy PR options
+  ansible.builtin.set_fact:
+    deploy_packit_request_component: >-
+      {{ deploy_packit_component
+         | default('foreman-proxy' if deploy_packit_deployment | default('server') == 'proxy' else 'foreman') }}
+    deploy_packit_requests:
+      foreman: []
+      foreman-proxy: []
+
+- name: Add a PR selected by number
+  ansible.builtin.set_fact:
+    deploy_packit_requests: >-
+      {{ deploy_packit_requests | combine({deploy_packit_request_component:
+         [deploy_packit_repo_org | default('theforeman') ~ '-'
+          ~ deploy_packit_repo_name | default('smart-proxy' if deploy_packit_request_component == 'foreman-proxy' else 'foreman')
+          ~ '-' ~ deploy_packit_pr | string]}) }}
+  when: deploy_packit_pr is defined
+
+- name: Group PR URLs by component
+  ansible.builtin.set_fact:
+    deploy_packit_url_groups:
+      foreman: >-
+        {{ deploy_packit_foreman_urls | default([])
+           + (deploy_packit_pr_url | default([]) if deploy_packit_request_component == 'foreman' else []) }}
+      foreman-proxy: >-
+        {{ deploy_packit_proxy_urls | default([])
+           + (deploy_packit_pr_url | default([]) if deploy_packit_request_component == 'foreman-proxy' else []) }}
+
+- name: Parse each component's PR URLs
+  ansible.builtin.include_tasks: urls.yaml
+  loop: "{{ deploy_packit_url_groups | dict2items }}"
+  loop_control:
+    loop_var: deploy_packit_url_group
+    label: "{{ deploy_packit_url_group.key }}"

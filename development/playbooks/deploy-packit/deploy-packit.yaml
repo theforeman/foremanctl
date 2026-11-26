@@ -1,32 +1,9 @@
 ---
-- name: Prepare a container image on the target with a Packit pull request
-  hosts: "{{ target_host if target_host is defined and target_host != '' else 'quadlet' }}"
-  gather_facts: false
-  vars_files:
-    - "../../../src/vars/images.yml"
-  pre_tasks:
-    - name: Validate Packit pull request URL
-      ansible.builtin.assert:
-        that:
-          - item | urlsplit('scheme') == 'https'
-          - item | urlsplit('hostname') == 'github.com'
-          - item | urlsplit('path') is match('^/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+/pull/[0-9]+/?$')
-        fail_msg: >-
-          --pr-url must be a GitHub pull request URL such as
-          https://github.com/theforeman/foreman/pull/100.
-      loop: "{{ deploy_packit_pr_url | default([]) }}"
+- name: Prepare Packit images
+  ansible.builtin.import_playbook: playbooks/_workflow.yaml
+  vars:
+    deploy_packit_deployment: server
 
-    - name: Initialize Packit projects from pull request URLs
-      ansible.builtin.set_fact:
-        deploy_packit_projects: []
-      when: deploy_packit_pr_url | default([]) | length > 0
-
-    - name: Parse Packit pull request URLs
-      ansible.builtin.set_fact:
-        deploy_packit_projects: "{{ deploy_packit_projects + [deploy_packit_project] }}"
-      vars:
-        deploy_packit_url_parts: "{{ (item | urlsplit('path') | regex_replace('/$', '')).split('/') }}"
-        deploy_packit_project: "{{ deploy_packit_url_parts[1] }}-{{ deploy_packit_url_parts[2] }}-{{ deploy_packit_url_parts[4] }}"
-      loop: "{{ deploy_packit_pr_url | default([]) }}"
-  roles:
-    - deploy_packit
+- name: Deploy the prepared Packit images
+  ansible.builtin.import_playbook: ../../../src/playbooks/deploy/deploy.yaml
+  when: deploy_packit_deploy | default(false) | bool

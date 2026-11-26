@@ -1,55 +1,13 @@
 ---
 help: |
-  Build a Foreman or Foreman Proxy container image with packages from a Packit pull request.
+  Build Packit PR images for a server and its local proxy, and optionally deploy with --deploy.
 
-  Specify either --pr (optionally with --repo-org and --repo-name), or pass a
-  GitHub pull request URL with --pr-url. Repeat --pr-url to combine PRs in a
-  single RPM transaction for the selected component.
+  Repeat --foreman-pr-url or --proxy-pr-url to combine core and plugin PRs.
+  Existing --pr, --pr-url, and repository options remain supported.
+  Normal foremanctl deploy options are accepted directly.
+  VMs and package repositories must already be configured.
 
-  Select --component foreman-proxy for Smart Proxy or its plugins.
-  The Containerfile is copied to the target machine, where the image is built
-  directly in root's local Podman image store under the selected component's
-  configured image reference. Podman is installed on the target if needed.
-  Run foremanctl deploy (or deploy-proxy for a standalone proxy) against the
-  same target to deploy a quadlet that uses the built image.
-
-variables:
-  deploy_packit_component:
-    parameter: --component
-    help: "Component whose image to build. Default: foreman."
-    choices:
-      - foreman
-      - foreman-proxy
-    persist: false
-  target_host:
-    help: Target hostname or IP address (defaults to quadlet).
-    action: store
-  deploy_packit_pr:
-    parameter: --pr
-    help: Packit pull request number to install in the selected component's image.
-    persist: false
-  deploy_packit_repo_org:
-    parameter: --repo-org
-    help: "Packit organization for --pr. Default: theforeman."
-    persist: false
-  deploy_packit_repo_name:
-    parameter: --repo-name
-    help: "Packit repository name for --pr. Default: foreman, or smart-proxy for the foreman-proxy component."
-    persist: false
-  deploy_packit_base_image:
-    parameter: --base-image
-    help: "Base image to build from. Default: the selected component's configured image."
-    persist: false
-  deploy_packit_pr_url:
-    parameter: --pr-url
-    help: GitHub pull request URL. Repeat to combine PRs from multiple repositories in one image build.
-    action: append_unique
-    persist: false
-
-constraints:
-  required_one_of:
-    - [deploy_packit_pr, deploy_packit_pr_url]
-  mutually_exclusive:
-    - [deploy_packit_pr_url, deploy_packit_pr]
-    - [deploy_packit_pr_url, deploy_packit_repo_org]
-    - [deploy_packit_pr_url, deploy_packit_repo_name]
+include:
+  - _packit
+  - path: ../../../src/playbooks/deploy/metadata.obsah.yaml
+    root: ../../../src/playbooks

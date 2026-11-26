@@ -1,0 +1,13 @@
+---
+help: |
+  Build Packit PR images for a standalone proxy, and optionally deploy with --deploy.
+
+  Repeat --proxy-pr-url to combine Smart Proxy core and plugin PRs.
+  Existing --pr, --pr-url, and repository options remain supported.
+  Normal foremanctl deploy-proxy options are accepted directly.
+  VMs and package repositories must already be configured.
+
+include:
+  - _packit
+  - path: ../../../src/playbooks/deploy-proxy/metadata.obsah.yaml
+    root: ../../../src/playbooks

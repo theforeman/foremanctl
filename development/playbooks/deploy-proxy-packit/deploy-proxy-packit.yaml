@@ -1,0 +1,9 @@
+---
+- name: Prepare Packit images
+  ansible.builtin.import_playbook: ../deploy-packit/playbooks/_workflow.yaml
+  vars:
+    deploy_packit_deployment: proxy
+
+- name: Deploy the prepared Packit images
+  ansible.builtin.import_playbook: ../../../src/playbooks/deploy-proxy/deploy-proxy.yaml
+  when: deploy_packit_deploy | default(false) | bool
