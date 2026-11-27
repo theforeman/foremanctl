@@ -56,6 +56,7 @@ def generate_bundle(server, certificate_source, generate_custom_proxy_certs):
 
     result = subprocess.run(command, capture_output=True, text=True)
     assert result.returncode == 0, f'auth-bundle failed: {result.stdout}\n{result.stderr}'
+    return result
 
 
 @pytest.fixture(scope="module")
@@ -67,6 +68,18 @@ def tarball_members(server, generate_bundle):
 
 def test_tarball_created(server, generate_bundle):
     assert server.file(TARBALL).exists
+
+
+def test_next_steps_include_copy_and_deploy_commands(generate_bundle, server_fqdn):
+    assert (
+        f'scp {TARBALL} root@{HOSTNAME}:/root/{HOSTNAME}.tar.gz'
+        in generate_bundle.stdout
+    )
+    assert (
+        'foremanctl deploy-proxy --flavor foreman-proxy-content '
+        f'--auth-bundle /root/{HOSTNAME}.tar.gz --foreman-fqdn {server_fqdn}'
+        in generate_bundle.stdout
+    )
 
 
 @pytest.mark.parametrize("expected_file", EXPECTED_CA_FILES)
