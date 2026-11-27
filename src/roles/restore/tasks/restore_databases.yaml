@@ -12,7 +12,15 @@
 
 - name: Wait for PostgreSQL readiness
   ansible.builtin.command:
-    cmd: pg_isready --host={{ database_management_host }} --port={{ database_port }}
+    argv:
+      - podman
+      - run
+      - --rm
+      - --network=host
+      - "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
+      - pg_isready
+      - "--host={{ database_management_host }}"
+      - "--port={{ database_port }}"
   register: restore_pg_ready
   retries: "{{ restore_postgresql_ready_retries }}"
   delay: "{{ restore_postgresql_ready_delay }}"
@@ -81,13 +89,20 @@
 
 - name: Restore databases from dump files
   ansible.builtin.command:
-    cmd: >
-      pg_restore
-      --host={{ database_management_host }}
-      --port={{ database_port }}
-      --username=postgres
-      --dbname={{ item.database }}
-      "{{ restore_backup_dir }}/{{ item.dump_file }}"
+    argv:
+      - podman
+      - run
+      - --rm
+      - --network=host
+      - "--volume={{ restore_backup_dir }}:/backup:ro,Z"
+      - --env=PGPASSWORD
+      - "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
+      - pg_restore
+      - "--host={{ database_management_host }}"
+      - "--port={{ database_port }}"
+      - --username=postgres
+      - "--dbname={{ item.database }}"
+      - "/backup/{{ item.dump_file }}"
   environment:
     PGPASSWORD: "{{ postgresql_admin_password }}"
   loop: "{{ restore_databases_to_restore }}"

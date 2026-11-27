@@ -1,14 +1,21 @@
 ---
 - name: Dump databases
   ansible.builtin.command:
-    cmd: >
-      pg_dump
-      --host={{ item.host }}
-      --port={{ item.port }}
-      --username={{ item.user }}
-      --format=custom
-      --file="{{ backup_dir_full }}/{{ item.database }}.dump"
-      "{{ item.database }}"
+    argv:
+      - podman
+      - run
+      - --rm
+      - --network=host
+      - "--volume={{ backup_dir_full }}:/backup:rw,Z"
+      - --env=PGPASSWORD
+      - "{{ postgresql_container_image }}:{{ postgresql_container_tag }}"
+      - pg_dump
+      - "--host={{ item.host }}"
+      - "--port={{ item.port }}"
+      - "--username={{ item.user }}"
+      - --format=custom
+      - "--file=/backup/{{ item.database }}.dump"
+      - "{{ item.database }}"
   environment:
     PGPASSWORD: "{{ item.password }}"
   loop: "{{ backup_databases_config }}"
