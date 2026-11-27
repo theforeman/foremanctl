@@ -1,0 +1,8 @@
+---
+development:
+  adapter: redis
+  url: "redis://:{{ foreman_development_valkey_password | default('') | urlencode }}@localhost:6379/1"
+  channel_prefix: foreman_development
+
+test:
+  adapter: test

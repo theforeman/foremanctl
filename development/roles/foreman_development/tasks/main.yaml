@@ -143,6 +143,17 @@
   become: true
   become_user: "{{ foreman_development_user }}"
 
+- name: Create Action Cable configuration
+  ansible.builtin.template:
+    src: cable.yml.j2
+    dest: "{{ foreman_development_foreman_dir }}/config/cable.yml"
+    owner: "{{ foreman_development_user }}"
+    group: "{{ foreman_development_group }}"
+    mode: "0600"
+  become: true
+  become_user: "{{ foreman_development_user }}"
+  no_log: true
+
 - name: Create environment file
   ansible.builtin.template:
     src: env.j2

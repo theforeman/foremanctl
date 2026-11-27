@@ -55,6 +55,16 @@
     - Restart foreman
     - Restart dynflow-sidekiq@
 
+- name: Create Action Cable config secret
+  containers.podman.podman_secret:
+    state: present
+    name: foreman-cable-yml
+    data: "{{ lookup('ansible.builtin.template', 'cable.yml.j2') }}"
+  no_log: true
+  notify:
+    - Restart foreman
+    - Restart dynflow-sidekiq@
+
 - name: Create katello config secret
   containers.podman.podman_secret:
     state: present
