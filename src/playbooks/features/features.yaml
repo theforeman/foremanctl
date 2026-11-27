@@ -12,6 +12,17 @@
     - "../../vars/flavors/{{ flavor }}.yml"
     - "../../vars/base.yaml"
   tasks:
+    - name: Check whether a deployment has completed
+      ansible.builtin.stat:
+        path: "{{ obsah_state_path }}/.installed"
+      delegate_to: localhost
+      become: false
+      register: foremanctl_deployment
+
     - name: Print features
       ansible.builtin.debug:
-        msg: "{{ enabled_features | list_all_features(list_enabled) }}"
+        msg: >-
+          {{ enabled_features | list_all_features(
+            list_enabled,
+            flavor if foremanctl_deployment.stat.exists else none
+          ) }}
