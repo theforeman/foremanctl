@@ -70,6 +70,8 @@ class UserParameters:
 def pytest_addoption(parser):
     parser.addoption("--server-hostname", action="store", default="quadlet", help="Hostname of the server VM to test against")
     parser.addoption("--featureset", action="store", help="Which featureset should be tested against")
+    parser.addoption("--require-ssl-build", action="store_true",
+                     help="Fail instead of skip when /root/ssl-build is absent")
 
 
 @pytest.fixture(scope="module")

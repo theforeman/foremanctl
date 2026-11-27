@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 import pytest
 import yaml
@@ -71,3 +72,53 @@ def test_answers_migration_admin_username(migrated_environment, obsah_state_path
     with open(parameters_file) as f:
         params = yaml.safe_load(f)
     assert params.get("foreman_initial_admin_username") == "admin"
+
+
+def test_invalid_answer_file_preserves_ssl_build(server, pytestconfig):
+    """migrate --apply must leave installer certificates in place when answers are invalid."""
+    answer_file = "/tmp/broken-answers.yaml"
+    if not server.file("/root/ssl-build").is_directory:
+        message = "/root/ssl-build is not present"
+        if pytestconfig.getoption("--require-ssl-build"):
+            pytest.fail(message)
+        pytest.skip(message)
+
+    backup_existed = server.file("/root/ssl-build.bak").exists
+    written = server.run(f"echo 'invalid: yaml: [' > {answer_file}")
+    assert written.rc == 0, written.stderr
+
+    log_path = os.path.join(os.environ.get("OBSAH_STATE", ".var/lib/foremanctl"), "foremanctl.log")
+    try:
+        previous_log = os.stat(log_path)
+        log_marker = (previous_log.st_ino, previous_log.st_size)
+    except OSError:
+        log_marker = None
+    try:
+        result = subprocess.run(
+            ["./foremanctl", "migrate", "--apply", "--answer-file", answer_file],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        try:
+            current_log = os.stat(log_path)
+            with open(log_path, errors="replace") as log_file:
+                # Same file was appended. A rotated log is a new inode and is read from the start.
+                appended = (
+                    log_marker is not None
+                    and current_log.st_ino == log_marker[0]
+                    and current_log.st_size >= log_marker[1]
+                )
+                if appended:
+                    log_file.seek(log_marker[1])
+                log_output = log_file.read()
+        except OSError:
+            log_output = ""
+        output = result.stdout + result.stderr + log_output
+        assert result.returncode != 0, output
+        assert "Invalid YAML in answer file" in output
+        assert server.file("/root/ssl-build").is_directory
+        if not backup_existed:
+            assert not server.file("/root/ssl-build.bak").exists
+    finally:
+        server.run(f"rm -f {answer_file}")

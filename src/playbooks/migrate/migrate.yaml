@@ -6,9 +6,6 @@
   become: true
   vars_files:
     - "../../vars/certificates.yml"
-  roles:
-    - role: migrate_foreman_installer
-      when: migrate_apply | default(false)
   tasks:
     - name: Run answer file migration
       migrate_answers:
@@ -37,6 +34,11 @@
         mode: '0600'
       delegate_to: localhost
       become: false
+
+    - name: Normalize installer certificates
+      when: migrate_apply | default(false)
+      ansible.builtin.include_role:
+        name: migrate_foreman_installer
 
     - name: Display migration results
       ansible.builtin.debug:
