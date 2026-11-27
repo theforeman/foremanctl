@@ -151,6 +151,10 @@ PARAMETER_MAP = {
     'foreman::plugin::virt_who_configure': ('features', map_virt_who_feature),
     'foreman::plugin::webhooks': ('features', map_webhooks_feature),
 
+    # Proxy plugins
+    'foreman_proxy::plugin::ansible': ('features', map_ansible_feature),
+    'foreman_proxy::plugin::remote_execution::script': ('features', map_remote_execution_feature),
+
     # TODO: Add more mappings as discovered
 }
 

@@ -298,6 +298,19 @@ class TestParameterMapping:
             'webhooks',
         }
 
+    def test_full_foreman_proxy_content_answers_enabled_features(self, fixture_dir):
+        """Migrate the full foreman-proxy-content answers fixture and check the enabled features."""
+        old_config = migrate_answers.load_answer_file(fixture_dir / 'installer-answers/foreman-proxy-content-answers.yaml')
+
+        result = migrate_answers.apply_mappings(old_config)
+
+        assert set(result['mapped']['features']) == {
+            'foreman-proxy',
+            'tftp',
+            'ansible',
+            'remote-execution',
+        }
+
 
 class TestFileOperations:
     """Test file loading and writing"""
