@@ -27,11 +27,43 @@ DEFAULT_FEATURES = {
     'webhooks',
 }
 
+MIGRATION_FEATURES = {
+    # Features enabled as Foreman plugins in katello-answers.yaml
+    'ansible',
+    'azure-rm',
+    # 'discovery', - missing feature
+    'google',
+    # 'leapp', - missing feature
+    # 'openscap', - missing feature
+    'remote-execution',
+    'rh-cloud',
+    'tasks',
+    'tftp',
+    # 'template-sync', - missing feature
+    'virt-who',
+    'webhooks',
+    # The following features don't map to Foreman plugins
+    'candlepin',
+    'content/ansible',
+    'content/container',
+    'content/deb',
+    'content/python',
+    'content/rpm',
+    'dynflow',
+    'foreman',
+    'foreman-proxy',
+    'hammer',
+    'httpd',
+    'katello',
+    'pulp',
+    'valkey',
+}
+
 EXPECTED_FEATURES = {
     'default': DEFAULT_FEATURES,
     'default-iop': DEFAULT_FEATURES | {'iop', 'rh-cloud'},
     'upgrade': ((DEFAULT_FEATURES | {'iop', 'rh-cloud'}) - {'ansible', 'webhooks'}),
-    'migration': DEFAULT_FEATURES,
+    'migration': MIGRATION_FEATURES,
     'proxy': {
         'bmc',
         'container-gateway',

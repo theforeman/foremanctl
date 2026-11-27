@@ -1,0 +1,277 @@
+---
+apache::mod::status: false
+certs:
+  node_fqdn: proxy.example.com
+  cname: []
+  generate: false
+  regenerate: false
+  deploy: true
+  ca_common_name: proxy.example.com
+  country: US
+  state: North Carolina
+  city: Raleigh
+  org: Katello
+  org_unit: SomeOrgUnit
+  expiration: '7300'
+  ca_expiration: '36500'
+  server_cert:
+  server_key:
+  server_cert_req:
+  server_ca_cert:
+  pki_dir: "/etc/pki/katello"
+  ssl_build_dir: "/root/ssl-build"
+  user: root
+  group: root
+  default_ca_name: katello-default-ca
+  server_ca_name: katello-server-ca
+  tar_file: "/root/proxy.example.com-certs.tar"
+foreman_proxy:
+  version: present
+  ensure_packages_version: installed
+  manage_service: true
+  bind_host:
+  - "*"
+  http_port: 8000
+  ssl_port: 9090
+  groups: []
+  log: "/var/log/foreman-proxy/proxy.log"
+  log_level: INFO
+  log_buffer: 2000
+  log_buffer_errors: 1000
+  http: true
+  ssl: true
+  ssl_ca: "/etc/foreman-proxy/ssl_ca.pem"
+  ssl_cert: "/etc/foreman-proxy/ssl_cert.pem"
+  ssl_key: "/etc/foreman-proxy/ssl_key.pem"
+  foreman_ssl_ca: "/etc/foreman-proxy/foreman_ssl_ca.pem"
+  foreman_ssl_cert: "/etc/foreman-proxy/foreman_ssl_cert.pem"
+  foreman_ssl_key: "/etc/foreman-proxy/foreman_ssl_key.pem"
+  trusted_hosts:
+  - foreman.example.com
+  - proxy.example.com
+  ssl_disabled_ciphers: []
+  tls_disabled_versions: []
+  puppetca: false
+  puppetca_listen_on: https
+  ssldir: "/etc/puppetlabs/puppet/ssl"
+  puppetdir: "/etc/puppetlabs/puppet"
+  puppet_group: puppet
+  puppetca_provider: puppetca_hostname_whitelisting
+  autosignfile: "/etc/puppetlabs/puppet/autosign.conf"
+  puppetca_sign_all: false
+  puppetca_tokens_file: "/var/lib/foreman-proxy/tokens.yml"
+  puppetca_token_ttl: 360
+  puppetca_certificate:
+  manage_puppet_group: false
+  puppet: false
+  puppet_listen_on: https
+  puppet_url: https://proxy.example.com:8140
+  puppet_ssl_ca: "/etc/puppetlabs/puppet/ssl/certs/ca.pem"
+  puppet_ssl_cert: "/etc/puppetlabs/puppet/ssl/certs/proxy.example.com.pem"
+  puppet_ssl_key: "/etc/puppetlabs/puppet/ssl/private_keys/proxy.example.com.pem"
+  puppet_api_timeout: 30
+  templates: true
+  templates_listen_on: both
+  template_url: http://proxy.example.com:8000
+  registration: true
+  registration_listen_on: https
+  logs: true
+  logs_listen_on: https
+  httpboot: false
+  httpboot_listen_on: both
+  tftp: true
+  tftp_listen_on: https
+  tftp_managed: true
+  tftp_manage_wget: true
+  tftp_root: "/var/lib/tftpboot"
+  tftp_dirs:
+  tftp_servername: proxy.example.com
+  tftp_replace_grub2_cfg: false
+  dhcp: false
+  dhcp_listen_on: https
+  dhcp_managed: false
+  dhcp_provider: isc
+  dhcp_subnets: []
+  dhcp_ping_free_ip: true
+  dhcp_option_domain:
+  - EXAMPLE.COM
+  dhcp_search_domains:
+  dhcp_interface: ens224
+  dhcp_additional_interfaces: []
+  dhcp_gateway: 172.25.10.1
+  dhcp_range: 172.25.10.100 172.25.10.200
+  dhcp_pxeserver:
+  dhcp_pxefilename: pxelinux.0
+  dhcp_ipxefilename:
+  dhcp_ipxe_bootstrap: false
+  dhcp_network:
+  dhcp_netmask:
+  dhcp_nameservers: 172.25.10.2
+  dhcp_server: 127.0.0.1
+  dhcp_config: "/etc/dhcp/dhcpd.conf"
+  dhcp_leases: "/var/lib/dhcpd/dhcpd.leases"
+  dhcp_key_name:
+  dhcp_key_secret:
+  dhcp_key_algorithm:
+  dhcp_omapi_port: 7911
+  dhcp_peer_address:
+  dhcp_node_type: standalone
+  dhcp_failover_address: x.y.z.20
+  dhcp_failover_port: 519
+  dhcp_max_response_delay: 30
+  dhcp_max_unacked_updates: 10
+  dhcp_mclt: 300
+  dhcp_load_split: 255
+  dhcp_load_balance: 3
+  dhcp_manage_acls: true
+  dns: false
+  dns_listen_on: https
+  dns_managed: false
+  dns_provider: nsupdate
+  dns_interface: ens224
+  dns_zone: EXAMPLE.COM
+  dns_reverse:
+  dns_server: 127.0.0.1
+  dns_ttl: 86400
+  dns_tsig_keytab: "/etc/foreman-proxy/dns.keytab"
+  dns_tsig_principal: foremanproxy/proxy.example.com@EXAMPLE.COM
+  dns_forwarders:
+  - 10.0.0.1
+  libvirt_network: default
+  libvirt_connection: qemu:///system
+  bmc: false
+  bmc_listen_on: https
+  bmc_default_provider: ipmitool
+  bmc_redfish_verify_ssl: true
+  bmc_ssh_user: root
+  bmc_ssh_key: "/usr/share/foreman/.ssh/id_rsa"
+  bmc_ssh_powerstatus: 'true'
+  bmc_ssh_powercycle: shutdown -r +1
+  bmc_ssh_poweroff: shutdown +1
+  bmc_ssh_poweron: 'false'
+  realm: false
+  realm_listen_on: https
+  realm_provider: freeipa
+  realm_keytab: "/etc/foreman-proxy/freeipa.keytab"
+  realm_principal: realm-proxy@EXAMPLE.COM
+  freeipa_config: "/etc/ipa/default.conf"
+  freeipa_remove_dns: true
+  keyfile: "/etc/rndc.key"
+  register_in_foreman: true
+  foreman_base_url: https://foreman.example.com
+  registered_name: proxy.example.com
+  registered_proxy_url:
+  oauth_effective_user: admin
+  oauth_consumer_key: changeme
+  oauth_consumer_secret: changeme
+  registration_url:
+foreman_proxy_content:
+  pulpcore_mirror: true
+  reverse_proxy_backend_protocol: h2
+  enable_yum: true
+  enable_file: true
+  enable_docker: true
+  enable_deb: false
+  enable_ansible: true
+  enable_python: false
+  enable_ostree: false
+  pulpcore_manage_postgresql: true
+  pulpcore_postgresql_host: localhost
+  pulpcore_postgresql_port: 5432
+  pulpcore_allowed_content_checksums:
+  - md5
+  - sha1
+  - sha224
+  - sha256
+  - sha384
+  - sha512
+  pulpcore_postgresql_user: pulp
+  pulpcore_postgresql_password: changeme
+  pulpcore_postgresql_db_name: pulpcore
+  pulpcore_postgresql_ssl: false
+  pulpcore_postgresql_ssl_require: true
+  pulpcore_postgresql_ssl_cert: "/etc/pki/katello/certs/pulpcore-database.crt"
+  pulpcore_postgresql_ssl_key: "/etc/pki/katello/private/pulpcore-database.key"
+  pulpcore_postgresql_ssl_root_ca: "/etc/pki/tls/certs/ca-bundle.crt"
+  pulpcore_worker_count: 2
+  pulpcore_django_secret_key:
+  pulpcore_content_service_worker_timeout: 90
+  pulpcore_api_service_worker_timeout: 90
+  pulpcore_cache_enabled: true
+  pulpcore_cache_expires_ttl:
+  pulpcore_additional_import_paths: []
+  pulpcore_additional_export_paths: []
+  pulpcore_analytics: false
+  pulpcore_hide_guarded_distributions: true
+  pulpcore_import_workers_percent:
+  container_gateway_database_max_connections:
+  container_gateway_database_pool_timeout:
+foreman_proxy::plugin::ansible:
+  enabled: true
+  listen_on: https
+  ansible_dir: "/usr/share/foreman-proxy"
+  working_dir: "/tmp"
+  host_key_checking: false
+  roles_path:
+  - "/etc/ansible/roles"
+  - "/usr/share/ansible/roles"
+  ssh_args: "-C -o ControlMaster=auto -o ControlPersist=60s -o ServerAliveInterval=15
+    -o ServerAliveCountMax=3"
+  install_runner: true
+  callback: theforeman.foreman.foreman
+  runner_package_name: ansible-runner
+  collections_paths:
+  - "/etc/ansible/collections"
+  - "/usr/share/ansible/collections"
+foreman_proxy::plugin::dhcp::infoblox: false
+foreman_proxy::plugin::dhcp::remote_isc: false
+foreman_proxy::plugin::discovery:
+  enabled: true
+  version:
+  listen_on: https
+  install_images: false
+  tftp_root: "/var/lib/tftpboot"
+  source_url: http://downloads.theforeman.org/discovery/releases/latest/
+  image_name: fdi-image-latest.tar
+foreman_proxy::plugin::dns::infoblox: false
+foreman_proxy::plugin::openscap:
+  enabled: true
+  version:
+  listen_on: https
+  openscap_send_log_file: "/var/log/foreman-proxy/openscap-send.log"
+  spooldir: "/var/spool/foreman-proxy/openscap"
+  contentdir: "/var/lib/foreman-proxy/openscap/content"
+  reportsdir: "/var/lib/foreman-proxy/openscap/reports"
+  failed_dir: "/var/lib/foreman-proxy/openscap/failed"
+  corrupted_dir: "/var/lib/foreman-proxy/openscap/corrupted"
+  proxy_name:
+  timeout: 60
+  ansible_module: false
+  ansible_module_ensure: present
+  puppet_module: false
+  puppet_module_ensure: present
+foreman_proxy::plugin::remote_execution::script:
+  enabled: true
+  listen_on: https
+  generate_keys: true
+  install_key: false
+  ssh_identity_dir: "/var/lib/foreman-proxy/ssh"
+  ssh_identity_file: id_rsa_foreman_proxy
+  ssh_user_ca_public_key_file:
+  ssh_host_ca_public_keys_file:
+  ssh_keygen: "/usr/bin/ssh-keygen"
+  local_working_dir: "/var/tmp"
+  remote_working_dir: "/var/tmp"
+  ssh_kerberos_auth: false
+  mode: ssh
+  ssh_log_level:
+  cockpit_integration: true
+  mqtt_ttl:
+  mqtt_rate_limit:
+  mqtt_resend_interval:
+foreman_proxy::plugin::shellhooks:
+  version:
+  enabled: true
+  directory: "/var/lib/foreman-proxy/shellhooks"
+  listen_on: https
+puppet: false
