@@ -12,16 +12,10 @@ Before migrating, ensure the following:
 
 1. **Foreman deployment using foreman-installer** - You should have an existing Foreman deployment has been installed using foreman-installer and has an answers file to migrate from.
 
-2. **foremanctl is installed** on the system:
+2. **foremanctl is installed** on the system (see the main [README](../README.md#packages) for repository options):
    ```bash
-   # Enable the foremanctl repository
-   dnf copr enable @theforeman/foremanctl rhel-9-x86_64
-
-   # Install foremanctl
    dnf install foremanctl
    ```
-
-   For more installation options, see the main [README](../README.md#packages).
 
 ## Migration Workflow
 
