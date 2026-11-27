@@ -131,7 +131,7 @@
   ## Proxy rules
   ProxyRequests Off
   ProxyAddHeaders On
-  ProxyPreserveHost {{ 'On' if httpd_with_foreman else 'Off' }}
+  ProxyPreserveHost On
 {% if httpd_with_foreman %}
   ProxyPass /pulp !
   ProxyPass /pub !

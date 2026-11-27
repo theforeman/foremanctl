@@ -77,8 +77,8 @@
 
   ## Proxy rules
   ProxyRequests Off
-{% if httpd_with_foreman %}
   ProxyPreserveHost On
+{% if httpd_with_foreman %}
   ProxyAddHeaders On
   ProxyPass /pulp !
   ProxyPass /pub !
