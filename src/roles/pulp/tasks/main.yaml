@@ -1,4 +1,7 @@
 ---
+- name: Configure Pulp CLI
+  ansible.builtin.include_tasks: cli.yaml
+
 - name: Deploy pulp image
   ansible.builtin.include_tasks: image.yaml
 
