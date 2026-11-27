@@ -1,22 +1,20 @@
 ---
-- name: Query foreman tasks for errors
-  community.postgresql.postgresql_query:
-    login_db: "{{ foreman_database_name }}"
-    login_user: "{{ foreman_database_user }}"
-    login_password: "{{ foreman_database_password }}"
-    login_host: "{{ database_management_host }}"
-    query: |
-      SELECT count(*) AS count
-        FROM foreman_tasks_tasks
-        WHERE state IN ('paused') AND result IN ('error')
-  register: check_foreman_tasks_error_query_result
+- name: Query Foreman tasks for errors
+  theforeman.foreman.resource_info:
+    server_url: "{{ health_foreman_url }}"
+    oauth1_consumer_key: "{{ health_foreman_oauth_consumer_key }}"
+    oauth1_consumer_secret: "{{ health_foreman_oauth_consumer_secret }}"
+    ca_path: "{{ health_foreman_ca_certificate }}"
+    resource: foreman_tasks
+    search: "state = paused and result = error"
+  register: check_foreman_tasks_error_api_result
   changed_when: false
   when: enabled_features | has_feature('tasks')
 
 - name: Check for errored foreman tasks
   ansible.builtin.assert:
     that:
-      - check_foreman_tasks_error_query_result.query_result[0].count | int == 0
-    fail_msg: "{{ check_foreman_tasks_error_query_result.query_result[0].count }} foreman tasks with errors"
+      - check_foreman_tasks_error_api_result.resources | length == 0
+    fail_msg: "{{ check_foreman_tasks_error_api_result.resources | length }} foreman tasks with errors"
     success_msg: "No foreman tasks with errors found"
   when: enabled_features | has_feature('tasks')

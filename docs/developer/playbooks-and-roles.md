@@ -223,6 +223,7 @@ The OAuth credentials are defined in `src/vars/foreman.yml` and aliased per-serv
 | Foreman Proxy | `foreman_proxy_oauth_consumer_key` | `foreman_proxy_oauth_consumer_secret` |
 | Pulp | `pulp_foreman_oauth_consumer_key` | `pulp_foreman_oauth_consumer_secret` |
 | Backup | `backup_foreman_oauth_consumer_key` | `backup_foreman_oauth_consumer_secret` |
+| Health checks | `health_foreman_oauth_consumer_key` | `health_foreman_oauth_consumer_secret` |
 | IOP Core | `iop_core_foreman_oauth_consumer_key` | `iop_core_foreman_oauth_consumer_secret` |
 
 Example:
