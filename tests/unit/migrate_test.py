@@ -193,6 +193,32 @@ class TestParameterMapping:
         assert result['mapped']['pulp_database_name'] == 'pulpcore'
         assert len(result['unmappable']) == 0
 
+    @pytest.mark.parametrize('answers', [
+        {'db_root_cert': '/etc/pki/tls/certs/db-ca.crt'},
+        {'db_root_cert': '/etc/pki/tls/certs/db-ca.crt', 'db_sslmode': None},
+    ])
+    def test_database_root_cert_without_sslmode_implies_verify_full(self, answers):
+        """foreman-installer uses verify-full when only db_root_cert is set"""
+        old_config = {'foreman': {'db_manage': False, 'db_host': 'db.example.com', **answers}}
+
+        result = migrate_answers.apply_mappings(old_config)
+
+        assert result['mapped']['database_ssl_ca'] == '/etc/pki/tls/certs/db-ca.crt'
+        assert result['mapped']['database_ssl_mode'] == 'verify-full'
+
+    def test_database_explicit_sslmode_is_kept_with_root_cert(self):
+        old_config = {'foreman': {'db_sslmode': 'verify-ca', 'db_root_cert': '/etc/pki/tls/certs/db-ca.crt'}}
+
+        result = migrate_answers.apply_mappings(old_config)
+
+        assert result['mapped']['database_ssl_mode'] == 'verify-ca'
+
+    def test_database_sslmode_not_added_without_root_cert(self):
+        result = migrate_answers.apply_mappings({'foreman': {'db_manage': False, 'db_host': 'db.example.com'}})
+
+        assert 'database_ssl_mode' not in result['mapped']
+        assert 'database_ssl_ca' not in result['mapped']
+
     def test_tuning_default(self):
         result = migrate_answers.apply_mappings({}, 'default')
 
