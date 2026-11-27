@@ -32,11 +32,11 @@ There are multiple use cases from the users perspective that dictate what parame
 
 | Parameter | Description | foreman-installer Parameters |
 | ----------| ----------- | ---------------------------- |
-| `--database-mode` | Denotes if the database is internally or externally managed | `--foreman-db-manage`<br/> `--katello-candlepin-db-manage`<br/> `--foreman-proxy-content-pulpcore-manage-postgresql` |
+| `--database-mode` | Denotes if the database is internally or externally managed | `--foreman-db-manage`<br/> `--katello-candlepin-manage-db`<br/> `--foreman-proxy-content-pulpcore-manage-postgresql` |
 | `--database-host` | Hostname application containers use to reach PostgreSQL (`postgresql` internal; remote host external) | `--foreman-db-host`<br/> `--katello-candlepin-db-host`<br/> `--foreman-proxy-content-pulpcore-postgresql-host` |
 | `--database-port` | Port to connect to the database | `--foreman-db-port`<br/> `--katello-candlepin-db-port`<br/> `--foreman-proxy-content-pulpcore-postgresql-port` |
 | `--database-ssl-mode` | SSL verification mode to use | `--foreman-db-sslmode` <br/> `--katello-candlepin-db-ssl-verify` <br/> `--katello-candlepin-db-ssl` <br/> `--foreman-proxy-content-pulpcore-postgresql-ssl`|
-| `--database-ssl-ca` | Path to the database CA certificate | `--foreman-db-root-cert` <br/> `--katello-candlepin-db-ssl-ca` <br/> `--foreman-proxy-content-pulpcore-db-ssl-root-ca` |
+| `--database-ssl-ca` | Path to the database CA certificate | `--foreman-db-root-cert` <br/> `--katello-candlepin-db-ssl-ca` <br/> `--foreman-proxy-content-pulpcore-postgresql-ssl-root-ca` |
 | `--foreman-database-name` | Name of the Foreman database | `--foreman-db-database` |
 | `--foreman-database-user` | Owner of the Foreman database | `--foreman-db-username` |
 | `--foreman-database-password` | Password for Foreman database | `--foreman-db-password` |
@@ -155,7 +155,7 @@ There are multiple use cases from the users perspective that dictate what parame
 | `--bmc-ipmi-implementation` | IPMI implementation to use for BMC | `--foreman-proxy-bmc-default-provider` |
 | `--bmc-redfish-verify-ssl` | Verify SSL certificates for Redfish BMC connections | `--foreman-proxy-bmc-redfish-verify-ssl` |
 | `--add-feature templates` | Enable Templates feature on Smart Proxy | `--foreman-proxy-templates` |
-| `--templates-url` | URL that hosts will use to contact the proxy for provisioning templates | `--foreman-proxy-templates-url` |
+| `--templates-url` | URL that hosts will use to contact the proxy for provisioning templates | `--foreman-proxy-template-url` |
 | `--add-feature registration` | Enable Registration feature | `--foreman-proxy-registration` |
 | `--registration-url` | URL that hosts use to reach the registration endpoint | `--foreman-proxy-registration-url` |
 | `--add-feature tftp` | Enable the Smart Proxy TFTP integration. Requires `foreman-proxy` and an independently managed TFTP server. Foremanctl creates the directory if needed and configures Smart Proxy access. See the [TFTP integration guide](tftp.md). | `--foreman-proxy-tftp` |
