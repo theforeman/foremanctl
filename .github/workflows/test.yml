@@ -162,6 +162,10 @@ jobs:
             --tuning development \
             --content-import-path /custom/import \
             --content-export-path /custom/export
+      - name: Setup Kea DHCP server
+        if: matrix.box == 'centos/stream10' && matrix.database == 'internal'
+        run: |
+          ./forge kea
       - name: Deploy features
         run: |
           ./foremanctl deploy \
@@ -175,10 +179,11 @@ jobs:
             --add-feature webhooks \
             --add-feature tftp \
             --tftp-servername quadlet.example.com \
+            ${{ matrix.box == 'centos/stream10' && matrix.database == 'internal' && '--add-feature dhcp --foreman-proxy-dhcp-kea-url http://127.0.0.1:18000' || '' }} \
             ${{ matrix.iop == 'enabled' && '--add-feature iop' || '' }}
       - name: Run tests
         run: |
-          ./forge test --pytest-args="--featureset=${{ matrix.iop == 'enabled' && 'default-iop' || 'default' }}"
+          ./forge test --pytest-args="--featureset=${{ matrix.box == 'centos/stream10' && matrix.database == 'internal' && (matrix.iop == 'enabled' && 'default-kea-iop' || 'default-kea') || (matrix.iop == 'enabled' && 'default-iop' || 'default') }}"
       - name: Run smoker
         run: |
           ./forge smoker

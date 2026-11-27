@@ -1,0 +1,126 @@
+---
+- name: Kea DHCP development server
+  hosts:
+    - quadlet
+  become: true
+
+  vars:
+    kea_api_port: 18000
+    kea_db_port: 5432
+    kea_db_password: "changeme"
+
+  vars_files:
+    - ../../../src/vars/defaults.yml
+    - ../../../src/vars/database.yml
+
+  tasks:
+    - name: Install Kea packages
+      ansible.builtin.package:
+        name:
+          - kea
+          - kea-hooks
+          - postgresql
+        state: present
+
+    - name: Wait for Kea PostgreSQL
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: "{{ kea_db_port }}"
+        state: started
+        timeout: 60
+
+    - name: Ensure Kea PostgreSQL user exists
+      community.postgresql.postgresql_user:
+        name: kea
+        password: "{{ kea_db_password }}"
+        login_user: postgres
+        login_password: "{{ postgresql_admin_password }}"
+        login_host: 127.0.0.1
+        state: present
+      no_log: true
+
+    - name: Ensure Kea PostgreSQL database exists
+      community.postgresql.postgresql_db:
+        name: kea
+        owner: kea
+        login_user: postgres
+        login_password: "{{ postgresql_admin_password }}"
+        login_host: 127.0.0.1
+        state: present
+      no_log: true
+
+    - name: Check Kea database schema version
+      ansible.builtin.command: >-
+        /usr/sbin/kea-admin db-version pgsql
+        -h 127.0.0.1
+        -P {{ kea_db_port }}
+        -u kea
+        -n kea
+      environment:
+        KEA_ADMIN_DB_PASSWORD: "{{ kea_db_password }}"
+      register: kea_schema_check
+      changed_when: false
+      failed_when: false
+      no_log: true
+
+    - name: Initialize Kea database schema
+      ansible.builtin.command: >-
+        /usr/sbin/kea-admin db-init pgsql
+        -h 127.0.0.1
+        -P {{ kea_db_port }}
+        -u kea
+        -n kea
+      environment:
+        KEA_ADMIN_DB_PASSWORD: "{{ kea_db_password }}"
+      when: kea_schema_check.rc != 0
+      no_log: true
+      changed_when: true
+
+    - name: Configure Kea DHCP4
+      ansible.builtin.template:
+        src: templates/kea-dhcp4.conf.j2
+        dest: /etc/kea/kea-dhcp4.conf
+        owner: root
+        group: kea
+        mode: '0640'
+        validate: /usr/sbin/kea-dhcp4 -T %s
+      notify: Restart Kea DHCP4
+      no_log: true
+
+    - name: Enable and start Kea DHCP4
+      ansible.builtin.systemd:
+        name: kea-dhcp4
+        enabled: true
+        state: started
+
+    - name: Apply pending Kea configuration changes
+      ansible.builtin.meta: flush_handlers
+
+    - name: Verify Kea HTTP API
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ kea_api_port }}/"
+        method: POST
+        body_format: json
+        body:
+          command: version-get
+          service:
+            - dhcp4
+        status_code: 200
+        return_content: true
+      register: kea_api_check
+      retries: 15
+      delay: 2
+      until: kea_api_check is succeeded
+      changed_when: false
+
+    - name: Confirm successful Kea API response
+      ansible.builtin.assert:
+        that:
+          - kea_api_check.json[0].result == 0
+        fail_msg: "Kea HTTP API returned an error"
+
+  handlers:
+    - name: Restart Kea DHCP4
+      ansible.builtin.systemd:
+        name: kea-dhcp4
+        state: restarted

@@ -30,6 +30,8 @@ DEFAULT_FEATURES = {
 EXPECTED_FEATURES = {
     'default': DEFAULT_FEATURES,
     'default-iop': DEFAULT_FEATURES | {'iop', 'rh-cloud'},
+    'default-kea': DEFAULT_FEATURES | {'dhcp'},
+    'default-kea-iop': DEFAULT_FEATURES | {'dhcp', 'iop', 'rh-cloud'},
     'upgrade': ((DEFAULT_FEATURES | {'iop', 'rh-cloud'}) - {'ansible', 'webhooks'}),
     'migration': DEFAULT_FEATURES,
     'proxy': {

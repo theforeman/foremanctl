@@ -42,6 +42,10 @@ def test_foreman_proxy_features(curl_request, proxy_base_url, enabled_features):
         assert "container_gateway" in features
     else:
         assert "container_gateway" not in features
+    if 'dhcp' in enabled_features:
+        assert "dhcp" in features
+    else:
+        assert "dhcp" not in features
 
 
 def test_foreman_proxy_permitted_hosts_config(server, server_fqdn, obsah_params):
