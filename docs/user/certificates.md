@@ -221,6 +221,7 @@ foremanctl auth-bundle \
 ```
 
 The command generates certificates for the given hostname and packages them into a tarball at `/var/lib/foremanctl/certs/bundles/<hostname>.tar.gz`.
+After creating the bundle, it prints ready-to-run `scp` and `foremanctl deploy-proxy` commands using the supplied proxy hostname and the detected Foreman server FQDN.
 
 An existing bundle is not rebuilt on every run. To refresh it, for example after providing updated custom server certificates, pass `--certificate-renew`:
 

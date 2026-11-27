@@ -102,6 +102,25 @@
         path: "{{ auth_bundle_build_directory.path }}"
         state: absent
 
-- name: Report auth bundle location
+- name: Report auth bundle location and next steps
   ansible.builtin.debug:
-    msg: "Auth bundle created: {{ auth_bundle_output_directory }}/{{ auth_bundle_hostname }}.tar.gz"
+    msg: |
+      Auth bundle created: {{ _bundle_path }}
+
+      Next steps:
+
+      1. Transfer the auth bundle to the proxy:
+
+        scp {{ _bundle_path | quote }} {{ _scp_target | quote }}
+
+      2. On {{ auth_bundle_hostname }}, run deploy-proxy with these options:
+
+        foremanctl deploy-proxy \
+          --auth-bundle {{ _target_path | quote }} \
+          --foreman-fqdn {{ foreman_name | quote }}
+  vars:
+    _bundle_path: >-
+      {{ auth_bundle_output_directory }}/{{ auth_bundle_hostname }}.tar.gz
+    _target_path: "/root/{{ auth_bundle_hostname }}.tar.gz"
+    _scp_target: >-
+      root@{{ auth_bundle_hostname }}:{{ _target_path }}
