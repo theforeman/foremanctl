@@ -11,6 +11,16 @@ def cast_database_mode(value):
     return value
 
 
+def migrate_bmc_ipmi_implementation(value):
+    if value in ['ipmitool', 'freeipmi']:
+        return value
+    return None
+
+
+def map_bmc_feature(value):
+    return map_feature(value, 'bmc')
+
+
 def map_tftp_feature(value):
     return map_feature(value, 'tftp')
 
@@ -125,6 +135,11 @@ PARAMETER_MAP = {
     ('foreman_proxy', 'tftp_root'): 'foreman_proxy_tftp_root',
     ('foreman_proxy', 'tftp_servername'): 'foreman_proxy_tftp_servername',
     ('foreman_proxy', 'tftp_managed'): 'IGNORE',
+
+    # BMC
+    ('foreman_proxy', 'bmc'): ('features', map_bmc_feature),
+    ('foreman_proxy', 'bmc_default_provider'): ('foreman_proxy_bmc_ipmi_implementation', migrate_bmc_ipmi_implementation),
+    ('foreman_proxy', 'bmc_redfish_verify_ssl'): 'foreman_proxy_bmc_redfish_verify_ssl',
 
     # Base features
     'foreman': ('features', map_foreman_feature),

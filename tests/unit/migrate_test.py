@@ -249,6 +249,46 @@ class TestParameterMapping:
         assert result['mapped']['foreman_proxy_tftp_root'] == '/srv/provisioning/tftp'
         assert result['mapped']['foreman_proxy_tftp_servername'] == 'tftp.example.test'
 
+    @pytest.mark.parametrize('provider', ['ipmitool', 'freeipmi'])
+    def test_bmc_enabled_mapping(self, provider):
+        """Map BMC enablement and its supported settings."""
+        result = migrate_answers.apply_mappings({
+            'foreman_proxy': {
+                'bmc': True,
+                'bmc_default_provider': provider,
+                'bmc_redfish_verify_ssl': False,
+            }
+        })
+
+        assert set(result['mapped']['features']) == {'bmc', 'foreman-proxy'}
+        assert result['mapped']['foreman_proxy_bmc_ipmi_implementation'] == provider
+        assert result['mapped']['foreman_proxy_bmc_redfish_verify_ssl'] is False
+        assert result['unmappable'] == []
+
+    def test_bmc_disabled_does_not_enable_feature(self):
+        result = migrate_answers.apply_mappings({
+            'foreman_proxy': {
+                'bmc': False,
+                'bmc_default_provider': 'freeipmi',
+                'bmc_redfish_verify_ssl': True,
+            }
+        })
+
+        assert result['mapped']['features'] == ['foreman-proxy']
+        assert result['mapped']['foreman_proxy_bmc_ipmi_implementation'] == 'freeipmi'
+        assert result['mapped']['foreman_proxy_bmc_redfish_verify_ssl'] is True
+
+    @pytest.mark.parametrize('provider', ['shell', 'ssh', 'redfish', None])
+    def test_bmc_non_ipmi_provider_not_migrated(self, provider):
+        """Providers without an IPMI implementation equivalent are dropped."""
+        result = migrate_answers.apply_mappings({
+            'foreman_proxy': {'bmc': True, 'bmc_default_provider': provider}
+        })
+
+        assert 'bmc' in result['mapped']['features']
+        assert 'foreman_proxy_bmc_ipmi_implementation' not in result['mapped']
+        assert 'foreman_proxy::bmc_default_provider' not in result['unmappable']
+
     def test_feature_mappings_merge_without_duplicates(self, monkeypatch):
         """Merge feature mappings without duplicating feature names."""
         monkeypatch.setitem(
@@ -379,3 +419,11 @@ class TestTransformations:
     def test_cast_database_mode_passthrough(self):
         """Test database mode transformation with non-boolean"""
         assert migrate_answers.cast_database_mode('already_a_string') == 'already_a_string'
+
+    @pytest.mark.parametrize('value', ['ipmitool', 'freeipmi'])
+    def test_migrate_bmc_ipmi_implementation_supported(self, value):
+        assert migrate_answers.migrate_bmc_ipmi_implementation(value) == value
+
+    @pytest.mark.parametrize('value', ['shell', 'ssh', 'redfish', 'IPMITOOL', '', None])
+    def test_migrate_bmc_ipmi_implementation_unsupported(self, value):
+        assert migrate_answers.migrate_bmc_ipmi_implementation(value) is None
