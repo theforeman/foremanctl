@@ -53,6 +53,23 @@ Do not combine `--add-feature` flags into the initial deploy step. The base depl
 
 ## Running tests
 
+### Vagrant configuration checks
+
+The box-selection regression test needs Python 3 and Ruby, but no Vagrant
+installation, SSH configuration or running VM. Run the same command as CI's
+**Vagrant Configuration** job:
+
+```bash
+python3 -m unittest discover -s tests/unit -p vagrant_box_test.py -v
+```
+
+Built-in CentOS Stream boxes use the official `cloud.centos.org` latest aliases
+and a local box name, avoiding Vagrant Cloud metadata lookups. Dated CentOS
+compose artifacts are not retained indefinitely and must not be hardcoded here.
+Custom box names continue to use their existing provider/registry configuration.
+
+### Deployment tests
+
 A working deployment is required before running tests.
 
 ```bash
