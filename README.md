@@ -24,6 +24,13 @@ This repository provides tooling for a deployment of Foreman and Katello using P
 
 ### RPM
 
+Release RPM packages of `foremanctl` can be found in the regular [Foreman repository on `yum.theforeman.org`](https://yum.theforeman.org).
+
+```bash
+dnf install https://yum.theforeman.org/releases/latest/el9/x86_64/foreman-release.rpm
+dnf install foremanctl
+```
+
 Snapshot RPM packages of `foremanctl` can be found in the [`@theforeman/develop` copr](https://copr.fedorainfracloud.org/coprs/g/theforeman/develop/)
 
 ```bash
