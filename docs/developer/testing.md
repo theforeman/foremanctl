@@ -32,6 +32,20 @@ Testinfra fixtures in `tests/conftest.py` open Paramiko sessions through that SS
 
 GitHub Actions mirrors the same workflow: start VMs, deploy, run tests. The [`.github/workflows/test.yml`](../../.github/workflows/test.yml) matrix covers combinations of certificate source, database mode, security profile, and base box.
 
+The final **Test suite** check requires every dependency job to report `success`.
+It prints each job's result and rejects failures, skipped jobs, cancellations,
+and unknown or missing results. An unavailable runner must not produce a green
+check. The result check uses `jq`, which is included in the Ubuntu CI runners;
+its regression tests exercise the workflow's actual shell commands.
+
+To run these tests without deploying VMs, use the development virtual environment:
+
+```bash
+python -m pytest --confcutdir=tests/unit tests/unit/ci_results_test.py
+```
+
+This local check also requires `bash` and `jq` on `PATH`.
+
 #### Two-step deploy pattern
 
 CI workflows must separate the base deployment from feature addition into two distinct `foremanctl deploy` calls:
