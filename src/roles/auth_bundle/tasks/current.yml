@@ -1,0 +1,55 @@
+---
+- name: Create current directory structure
+  ansible.builtin.file:
+    state: directory
+    path: "{{ auth_bundle_build_directory.path }}/certs/{{ item }}"
+    mode: '0755'
+  loop:
+    - certs
+    - private
+    - oauth
+
+- name: Copy current CA certificates
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ auth_bundle_build_directory.path }}/certs/certs/{{ item.dest }}"
+    remote_src: true
+    mode: '0444'
+  loop:
+    - src: "{{ auth_bundle_ca_certificate }}"
+      dest: ca.crt
+    - src: "{{ auth_bundle_server_ca_certificate }}"
+      dest: server-ca.crt
+    - src: "{{ auth_bundle_ca_bundle }}"
+      dest: ca-bundle.crt
+
+- name: Copy current host certificates
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ auth_bundle_build_directory.path }}/certs/{{ item.dest }}"
+    remote_src: true
+    mode: "{{ item.mode }}"
+  loop:
+    - src: "{{ auth_bundle_server_certificate }}"
+      dest: "certs/{{ auth_bundle_hostname }}.crt"
+      mode: '0444'
+    - src: "{{ auth_bundle_server_key }}"
+      dest: "private/{{ auth_bundle_hostname }}.key"
+      mode: '0440'
+    - src: "{{ auth_bundle_client_certificate }}"
+      dest: "certs/{{ auth_bundle_hostname }}-client.crt"
+      mode: '0444'
+    - src: "{{ auth_bundle_client_key }}"
+      dest: "private/{{ auth_bundle_hostname }}-client.key"
+      mode: '0440'
+
+- name: Copy OAuth credentials
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ auth_bundle_build_directory.path }}/certs/oauth/{{ item.dest }}"
+    mode: '0440'
+  loop:
+    - src: "{{ auth_bundle_oauth_consumer_key_file }}"
+      dest: foreman-oauth-consumer-key
+    - src: "{{ auth_bundle_oauth_consumer_secret_file }}"
+      dest: foreman-oauth-consumer-secret
