@@ -1,0 +1,71 @@
+---
+help: |
+  Build Packit PR images, optionally deploying them with --deploy.
+
+  Specify either --pr (optionally with --repo-org and --repo-name), or pass a
+  GitHub pull request URL with --pr-url. Repeat --pr-url to combine PRs in a
+  single RPM transaction for the selected component. Use --foreman-pr-url and
+  --proxy-pr-url to combine projects for both images in the same command.
+
+  Select --component foreman-proxy for Smart Proxy or its plugins.
+  The Containerfile is copied to the target machine, where the image is built
+  directly in root's local Podman image store under the selected component's
+  configured image reference. Podman is installed on the target if needed.
+  Run foremanctl deploy (or deploy-proxy for a standalone proxy) against the
+  same target to deploy a quadlet that uses the built image.
+
+variables:
+  deploy_packit_deploy:
+    parameter: --deploy
+    help: Deploy after all requested images build successfully. Otherwise only build images.
+    action: store_true
+    persist: false
+  deploy_packit_foreman_urls:
+    parameter: --foreman-pr-url
+    help: Foreman core or plugin PR URL. Repeat to combine PRs.
+    action: append_unique
+    persist: false
+  deploy_packit_proxy_urls:
+    parameter: --proxy-pr-url
+    help: Smart Proxy core or plugin PR URL. Repeat to combine PRs.
+    action: append_unique
+    persist: false
+  deploy_packit_cli_component:
+    parameter: --component
+    help: Component for legacy PR options. Defaults to foreman for deploy-packit and foreman-proxy for deploy-proxy-packit.
+    choices:
+      - foreman
+      - foreman-proxy
+    persist: false
+  target_host:
+    help: Inventory host to build on. Defaults to quadlet for deploy-packit and proxy for deploy-proxy-packit.
+    action: store
+  deploy_packit_pr:
+    parameter: --pr
+    help: Packit pull request number to install in the selected component's image.
+    persist: false
+  deploy_packit_repo_org:
+    parameter: --repo-org
+    help: "Packit organization for --pr. Default: theforeman."
+    persist: false
+  deploy_packit_repo_name:
+    parameter: --repo-name
+    help: "Packit repository name for --pr. Default: foreman, or smart-proxy for the foreman-proxy component."
+    persist: false
+  deploy_packit_base_image:
+    parameter: --base-image
+    help: "Base image to build from. Default: the selected component's configured image."
+    persist: false
+  deploy_packit_pr_url:
+    parameter: --pr-url
+    help: GitHub pull request URL. Repeat to combine PRs from multiple repositories in one image build.
+    action: append_unique
+    persist: false
+
+constraints:
+  required_one_of:
+    - [deploy_packit_pr, deploy_packit_pr_url, deploy_packit_foreman_urls, deploy_packit_proxy_urls]
+  mutually_exclusive:
+    - [deploy_packit_pr_url, deploy_packit_pr]
+    - [deploy_packit_pr_url, deploy_packit_repo_org]
+    - [deploy_packit_pr_url, deploy_packit_repo_name]

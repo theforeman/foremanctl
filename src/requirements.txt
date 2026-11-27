@@ -1,4 +1,5 @@
-obsah >= 1.11.1
+# Temporary until https://github.com/theforeman/obsah/pull/153 is released.
+obsah @ git+https://github.com/ofedoren/obsah.git@ac4c5f3d7c52ac226405ec563afa75a0afa960e7
 argcomplete
 requests
 requests-oauthlib

@@ -50,7 +50,21 @@ jobs:
           pip install --upgrade pip
           pip install ruff
       - name: Run ruff
-        run: ruff check --output-format=github tests/ src/ development/scripts/ inventories/
+        run: ruff check --output-format=github tests/ src/ development/scripts/ development/filter_plugins/ development/tests/ inventories/
+
+  development-unit-tests:
+    name: Development tool tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r src/requirements.txt pytest pyyaml
+      - name: Test development tools
+        run: pytest development/tests/ -v
 
   tests:
     strategy:
@@ -708,6 +722,7 @@ jobs:
       - capsule-tests
       - ansible-lint
       - python-lint
+      - development-unit-tests
     runs-on: ubuntu-latest
     name: Test suite
     steps:
