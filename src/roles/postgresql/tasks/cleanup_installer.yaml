@@ -1,0 +1,30 @@
+---
+- name: Check existance of foreman-installer created PostgreSQL configuration
+  ansible.builtin.stat:
+    path: /var/lib/pgsql/data/postgresql.conf
+  register: _postgresql_old_conf
+
+- name: Adjust foreman-installer created PostgreSQL configuration
+  when: _postgresql_old_conf.stat.exists
+  block:
+    - name: Remove data_directory from postgresql.conf
+      ansible.builtin.lineinfile:
+        path: /var/lib/pgsql/data/postgresql.conf
+        regexp: '^data_directory'
+        state: absent
+
+    - name: Include container specific config file
+      ansible.builtin.lineinfile:
+        path: /var/lib/pgsql/data/postgresql.conf
+        line: "include '/var/lib/pgsql/openshift-custom-postgresql.conf'"
+
+    - name: Remove postgres reject rule from HBA config
+      ansible.builtin.lineinfile:
+        path: /var/lib/pgsql/data/pg_hba.conf
+        regexp: "^host\\s+all\\s+postgres\\s+0.0.0.0/0\\s+reject"
+        state: absent
+
+    - name: Allow everyone to connect in HBA config
+      ansible.builtin.lineinfile:
+        path: /var/lib/pgsql/data/pg_hba.conf
+        line: "host all all all md5"
