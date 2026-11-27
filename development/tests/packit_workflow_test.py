@@ -37,20 +37,27 @@ def test_native_deployment_options_are_inherited(parser, command, native_options
     assert args.deploy_packit_proxy_urls == [PROXY]
 
 
-@pytest.mark.parametrize(('command', 'deploy', 'build_fails', 'target_exists', 'running'), [
-    ('deploy-packit', False, False, True, True),
-    ('deploy-packit', True, False, True, True),
-    ('deploy-proxy-packit', True, False, True, False),
-    ('deploy-proxy-packit', True, False, True, True),
-    ('deploy-packit', True, True, True, True),
-    ('deploy-proxy-packit', True, False, False, False),
+@pytest.mark.parametrize(('command', 'deploy', 'build_fails', 'target_exists', 'running', 'component'), [
+    ('deploy-packit', False, False, True, True, None),
+    ('deploy-packit', True, False, True, True, None),
+    ('deploy-proxy-packit', True, False, True, False, None),
+    ('deploy-proxy-packit', True, False, True, True, None),
+    ('deploy-packit', True, True, True, True, None),
+    ('deploy-proxy-packit', True, False, False, False, None),
+    ('deploy-packit', False, False, True, True, 'foreman'),
+    ('deploy-packit', True, False, True, True, 'foreman-proxy'),
 ])
-def test_shared_workflow(parser, tmp_path, command, deploy, build_fails, target_exists, running):
+def test_shared_workflow(parser, tmp_path, command, deploy, build_fails, target_exists, running, component):
     proxy = command == 'deploy-proxy-packit'
-    arguments = [command, '--proxy-pr-url', PROXY, '--proxy-pr-url', PROXY_PLUGIN]
+    arguments = [command, '--proxy-pr-url', PROXY_PLUGIN]
+    if component != 'foreman-proxy':
+        arguments += ['--proxy-pr-url', PROXY]
     if not proxy:
-        arguments += ['--foreman-pr-url', FOREMAN, '--foreman-pr-url', FOREMAN_PLUGIN,
-                      '--add-feature', 'foreman-proxy']
+        arguments += ['--foreman-pr-url', FOREMAN_PLUGIN, '--add-feature', 'foreman-proxy']
+        if component != 'foreman':
+            arguments += ['--foreman-pr-url', FOREMAN]
+    if component:
+        arguments += ['--component', component, '--pr', '100' if component == 'foreman' else '200']
     if deploy:
         arguments += ['--deploy']
     args = parser.parse_args(arguments)
@@ -60,10 +67,16 @@ def test_shared_workflow(parser, tmp_path, command, deploy, build_fails, target_
 
     role = tmp_path / 'roles/deploy_packit/tasks'
     role.mkdir(parents=True)
+    defaults = role.parent / 'defaults'
+    defaults.mkdir()
+    (defaults / 'main.yaml').write_text((ROOT / 'development/roles/deploy_packit/defaults/main.yaml').read_text())
     (role / 'main.yaml').write_text(yaml.safe_dump([
         {'name': 'Check builder mode', 'ansible.builtin.assert': {'that': [
             'deploy_packit_pull == (deploy_packit_deploy | default(false))',
             'deploy_packit_projects | length == 2',
+            'deploy_packit_component == deploy_packit_request.key',
+            'deploy_packit_base_image == "quay.io/foreman/" ~ deploy_packit_request.key ~ ":nightly"',
+            'deploy_packit_target_image == "quay.io/foreman/" ~ deploy_packit_request.key ~ ":nightly"',
         ]}},
         {'name': 'Record build', 'ansible.builtin.debug': {'msg': 'BUILD {{ deploy_packit_component }}'}},
         {'name': 'Simulate a build failure', 'ansible.builtin.fail': {'msg': 'Build failed'},

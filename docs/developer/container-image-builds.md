@@ -90,6 +90,8 @@ Use the same command for one or many PRs, from one or several repositories:
 
 Each component's Packit repositories are enabled before its packages are upgraded in one RPM transaction. The build fails if any selected repository has no packages. Existing `--pr-url` invocations remain supported; grouped component options let one invocation prepare both images.
 
+Combining PR builds combines changes across distinct packages. Two builds of the same package do not merge their source changes; use a PR branch containing the combined changes for that package.
+
 Without `--deploy`, builds can reuse the current local base image, including previous PR changes. Add `--deploy` for a fresh base and automatic deployment, as below. PR repositories need successful EL10 builds and plugin RPMs must already be installed in the base image.
 
 ### Building and deploying in one command

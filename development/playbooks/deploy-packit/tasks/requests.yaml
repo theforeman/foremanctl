@@ -2,7 +2,7 @@
 - name: Select the component for legacy PR options
   ansible.builtin.set_fact:
     deploy_packit_request_component: >-
-      {{ deploy_packit_component
+      {{ deploy_packit_cli_component
          | default('foreman-proxy' if deploy_packit_deployment | default('server') == 'proxy' else 'foreman') }}
     deploy_packit_requests:
       foreman: []

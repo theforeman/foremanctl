@@ -69,11 +69,12 @@ def _check_selection(parser, tmp_path, cli_args, image_vars, projects, base_imag
         pytest.skip('ansible-playbook is required')
     args = parser.parse_args(['deploy-packit'] + cli_args)
     assert not validate_constraints(args.playbook.metadata, args)
-    variables = yaml.safe_load((ROOT / 'development/roles/deploy_packit/defaults/main.yaml').read_text())
-    variables.update(yaml.safe_load((ROOT / 'src/vars/images.yml').read_text()))
+    builder_defaults = yaml.safe_load((ROOT / 'development/roles/deploy_packit/defaults/main.yaml').read_text())
+    builder_defaults['deploy_packit_component'] = '{{ deploy_packit_request_component }}'
+    variables = yaml.safe_load((ROOT / 'src/vars/images.yml').read_text())
     variables.update(image_vars)
-    variables.update({key: value for key, value in vars(args).items()
-                      if key.startswith('deploy_packit_') and value is not None})
+    cli_variables = {key: value for key, value in vars(args).items()
+                     if key.startswith('deploy_packit_') and value is not None}
     variables['expected_projects'] = projects
     variables['expected_base_image'] = base_image
     variables['expected_target_image'] = target_image
@@ -87,9 +88,10 @@ def _check_selection(parser, tmp_path, cli_args, image_vars, projects, base_imag
             'ansible.builtin.import_tasks': str(ROOT / 'development/playbooks/deploy-packit/tasks/requests.yaml'),
         }, {
             'name': 'Check selected image and repository',
+            'vars': builder_defaults,
             'ansible.builtin.assert': {
                 'that': [
-                    'deploy_packit_requests[deploy_packit_component] == expected_projects',
+                    'deploy_packit_requests[deploy_packit_request_component] == expected_projects',
                     'deploy_packit_base_image == expected_base_image',
                     'deploy_packit_target_image == expected_target_image',
                 ],
@@ -97,7 +99,7 @@ def _check_selection(parser, tmp_path, cli_args, image_vars, projects, base_imag
         }],
     }]))
     result = subprocess.run(
-        ['ansible-playbook', '-i', 'localhost,', '-c', 'local', str(playbook)],
+        ['ansible-playbook', '-i', 'localhost,', '-c', 'local', str(playbook), '-e', json.dumps(cli_variables)],
         env=os.environ | {'ANSIBLE_LOCAL_TEMP': str(tmp_path / 'ansible')},
         capture_output=True,
         text=True,

@@ -30,7 +30,7 @@ variables:
     help: Smart Proxy core or plugin PR URL. Repeat to combine PRs.
     action: append_unique
     persist: false
-  deploy_packit_component:
+  deploy_packit_cli_component:
     parameter: --component
     help: Component for legacy PR options. Defaults to foreman for deploy-packit and foreman-proxy for deploy-proxy-packit.
     choices:
