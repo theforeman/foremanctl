@@ -26,12 +26,10 @@ All steps must be run as root user.
     - `foremanctl pull-images`
     - Container image tags are updated over time for a given Foreman X.Y release to include the bug fixes and security patches.
     - This step is optional but recommended. Services can continue running while images are pulled, reducing the downtime window during the deploy.
-8. Stop the existing Foreman services:
-    - `systemctl stop foreman.target`
-9. Run upgrade tasks by re-deploying your Foreman environment: 
-    - `foremanctl deploy` 
-    - Please see [Parameters](parameters.md) for additional deployment options.
-    - This deploy command will pull new images (if not already pulled in the previous step) and run all upgrade jobs required by Foreman, its dependencies, and your configured plugins. Expect this deploy to take longer than typical deploys.
+8. Upgrade your Foreman environment:
+    - `foremanctl upgrade`
+    - This command stops the existing Foreman services (`foreman.target`), re-deploys your Foreman environment with the new images (pulling them if not already pulled in the previous step, and running all upgrade jobs required by Foreman, its dependencies, and your configured plugins), waits for the Foreman API to be available, and then executes registered upgrade tasks via `foreman-rake upgrade:run`. Expect this to take longer than typical deploys.
+    - Parameters persisted from previous `foremanctl deploy` runs are reused automatically. Executed upgrade tasks are tracked in the database and skipped on subsequent runs, so re-running `foremanctl upgrade` is safe.
 
 ## Upgrading foremanctl from disconnected RPM install
 
@@ -69,7 +67,6 @@ All steps must be run as root user.
     - `podman load -i <filename>.tar`
 11. On the disconnected environment, update all packages to their latest versions:
     - `dnf upgrade`
-12. Stop the existing Foreman services:
-    - `systemctl stop foreman.target`
-13. Run upgrade tasks by re-deploying your Foreman environment: 
-    - `foremanctl deploy`
+12. Upgrade your Foreman environment:
+    - `foremanctl upgrade`
+    - This command stops the existing Foreman services (`foreman.target`), re-deploys your Foreman environment with the staged images, waits for the Foreman API to be available, and then executes registered upgrade tasks via `foreman-rake upgrade:run`.

@@ -5,7 +5,7 @@ import pytest
 PERSISTED_EPILOG = "Parameters marked as (persisted) can be reset by --reset-<parameter-name>."
 
 
-@pytest.mark.parametrize("command", ["auth-bundle", "backup", "features", "migrate", "restore"])
+@pytest.mark.parametrize("command", ["auth-bundle", "backup", "features", "migrate", "restore", "upgrade"])
 def test_non_persisted_commands_do_not_show_persisted_epilog(command):
    result = subprocess.run(
        ["./foremanctl", command, "--help"],
