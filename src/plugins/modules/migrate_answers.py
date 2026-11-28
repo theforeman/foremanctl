@@ -221,6 +221,10 @@ def apply_mappings(old_config, old_tuning='default'):
         if db_host in ('localhost', '127.0.0.1'):
             result.pop('database_host', None)
 
+    # foreman-installer uses verify-full when db_root_cert is set without db_sslmode
+    if 'database_ssl_ca' in result and 'database_ssl_mode' not in result:
+        result['database_ssl_mode'] = 'verify-full'
+
     if old_tuning != 'default':
         result['tuning'] = old_tuning
 
